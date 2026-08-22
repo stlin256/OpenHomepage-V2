@@ -19,15 +19,21 @@
 ## 3. 目录结构（规划）
 
 ```
-├── data/                  # 【不入库】一切页面配置与内容
+├── data/                  # 【不入库】一切页面配置与内容（npm run setup 从 data.example 生成）
 │   ├── site.yaml          # 站点配置：GitHub 用户名、主题色、导航等
-│   ├── pages/             # 每个 *.md 自动成为一个路由 + 导航 tab
+│   ├── pages/<lang>/*.md  # 按语言子目录（zh/ en/）；每个 *.md 自动成为一个路由 + 导航 tab
+│   ├── streaming/<lang>/  # 流式区块预写内容，按语言分目录
 │   ├── rss.yaml           # RSS 源配置
 │   └── assets/            # 头像等素材
+├── data.example/          # 【入库】示例数据，兼作单元测试 fixture
 ├── docs/                  # 设计文档（本文档）
 ├── scripts/
-│   └── prefetch.mjs       # GitHub / RSS 数据预取，带缓存降级
+│   ├── prefetch.mjs       # GitHub / RSS 数据预取，带缓存降级
+│   └── setup.mjs          # npm run setup：从 data.example 初始化本地 data/
 ├── src/                   # Astro 站点源码
+│   ├── lib/config.ts      # data/ 配置加载层（纯 Node，可单测）
+│   └── pages/             # Astro 路由（M4 实现动态页面）
+├── tests/                 # vitest 单元测试
 ├── admin/                 # 可视化编辑器
 ├── .cache/                # 【不入库】预取数据缓存
 └── .github/workflows/     # 部署工作流

@@ -1,0 +1,19 @@
+display: grouped # grouped（按源分栏）| mixed（按权重混排）
+sources:
+  - name: "某技术博客"
+    url: "https://blog.example.com/feed.xml"
+    mode: latest
+    latest: 5
+    weight: 2
+    cover: "assets/rss/blog-cover.png" # 可选，源级封面，卡片无图时使用
+
+  - name: "精选收藏"
+    url: "https://another.example.com/rss"
+    mode: curated
+    weight: 3
+    articles:
+      - url: "https://another.example.com/post/1"
+        note: "推荐理由一句话"
+        cover: "assets/rss/post-1.png" # 可选，逐篇声明封面
+      - url: "https://another.example.com/post/2"
+        note: "这篇讲清了分布式时钟"

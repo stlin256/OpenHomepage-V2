@@ -1,0 +1,60 @@
+# ---- 站点基本信息 ----
+site:
+  title: "张三的主页"
+  description: "张三的个人主页：研究方向、开源项目与阅读记录"
+  language: zh-CN
+
+# ---- 个人资料（主页头部区块）----
+profile:
+  name: "张三"
+  tagline: # 双语映射：按当前语言取值，缺 key 回退另一语言
+    zh: "博士研究生 / 方向：计算机系统"
+    en: "PhD candidate / Computer Systems"
+  avatar: "assets/avatar.png"
+  bio_page: "index"
+  links:
+    - { label: "Email", url: "mailto:zhangsan@example.com" }
+    - { label: "GitHub", url: "https://github.com/zhangsan" }
+    - { label: "Google Scholar", url: "https://scholar.google.com/citations?user=xxxx" }
+
+# ---- 主题 ----
+theme:
+  accent: "#3a7bd5"
+  default_mode: "system"
+
+# ---- GitHub 区块 ----
+github:
+  username: "zhangsan"
+  show_contributions: true
+  pinned:
+    - repo: "zhangsan/awesome-project"
+      note: "我的主力开源项目"
+    - repo: "zhangsan/tiny-toolkit"
+
+# ---- RSS 区块 ----
+rss:
+  enabled: true
+  block_title:
+    zh: "最近在读"
+    en: "Reading"
+  sources_file: "rss.yaml"
+
+# ---- 主页布局：区块顺序完全可配置 ----
+home:
+  layout:
+    - block: profile
+    - block: markdown
+    - block: streaming
+      id: "welcome"
+    - block: github
+    - block: rss
+
+# ---- LLM 流式区块定义 ----
+streaming_blocks:
+  - id: "welcome"
+    title:
+      zh: "一段话"
+      en: "In short"
+    content_file: "streaming/welcome.md"
+    autoplay: true
+    speed: 40
