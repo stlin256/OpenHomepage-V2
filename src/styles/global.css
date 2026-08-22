@@ -1,0 +1,404 @@
+/**
+ * 全局样式：语义色变量（docs/specs/10）、明暗主题、杂志网格（docs/specs/02 方案 B）、
+ * 导航（design.md 5.3）、markdown 正文排版、Shiki 双主题切换。
+ * accent 四值由 BaseLayout 在构建时计算并内联到 <html style>（见 src/lib/theme.ts）。
+ */
+
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f6f7f8;
+  --text: #1a1d21;
+  --text-muted: #5f6670;
+  --border: #e3e6ea;
+  --accent: var(--accent-light);
+  --accent-contrast: var(--accent-light-contrast);
+  --font-sans:
+    'Inter Variable', 'Noto Sans SC Variable', system-ui, -apple-system, 'Segoe UI',
+    'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --content-width: 72rem;
+  --nav-width: 11rem;
+}
+
+html[data-theme='dark'] {
+  --bg: #121417;
+  --bg-subtle: #1a1d21;
+  --text: #e8eaed;
+  --text-muted: #9aa1a9;
+  --border: #2a2f36;
+  --accent: var(--accent-dark);
+  --accent-contrast: var(--accent-dark-contrast);
+}
+
+/* ---- 基础 ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 主题切换仅颜色 200ms 过渡，不动布局（spec 10 §3） */
+body,
+.site-nav,
+.icon-btn,
+.home-block,
+.markdown-body pre,
+.fallback-banner {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+/* ---- 导航：桌面左上竖排 tab（design.md 5.3） ---- */
+.site-nav {
+  position: fixed;
+  top: 2.5rem;
+  left: 2rem;
+  z-index: 20;
+  max-width: calc(var(--nav-width) - 2rem);
+}
+.site-nav .site-title {
+  margin: 0 0 1.25rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+.site-nav .site-title a {
+  color: var(--text);
+}
+.site-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.site-nav ul a {
+  display: block;
+  padding: 0.35rem 0.75rem;
+  color: var(--text-muted);
+  border-left: 2px solid transparent;
+}
+.site-nav ul a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+.site-nav ul a.active {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+/* 汉堡按钮（仅移动端显示） */
+.nav-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 30;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg);
+  cursor: pointer;
+}
+.nav-toggle .bar {
+  display: block;
+  height: 2px;
+  background: var(--text);
+  border-radius: 1px;
+}
+
+/* 右上工具区：语言切换 + 主题切换 */
+.header-tools {
+  position: fixed;
+  top: 1rem;
+  right: 1.25rem;
+  z-index: 25;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.icon-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.lang-switcher {
+  cursor: default;
+}
+.lang-switcher a {
+  color: var(--text-muted);
+}
+.lang-switcher a.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+.lang-switcher .sep {
+  margin: 0 0.15rem;
+  color: var(--border);
+}
+.theme-toggle .icon {
+  display: none;
+  width: 1rem;
+  height: 1rem;
+}
+html[data-theme-mode='system'] .theme-toggle .icon-system,
+html[data-theme-mode='light'] .theme-toggle .icon-light,
+html[data-theme-mode='dark'] .theme-toggle .icon-dark {
+  display: block;
+}
+
+/* ---- 主体 ---- */
+.site-main {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 3.5rem 2rem 5rem;
+}
+@media (min-width: 769px) {
+  body {
+    padding-left: var(--nav-width);
+  }
+}
+@media (max-width: 768px) {
+  .nav-toggle {
+    display: flex;
+  }
+  .site-nav {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    max-width: none;
+    width: 16rem;
+    padding: 4.5rem 1.25rem 2rem;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  body.nav-open .site-nav {
+    transform: none;
+  }
+  .site-main {
+    padding-top: 4.5rem;
+  }
+}
+
+/* ---- 杂志网格（spec 02 方案 B：12 列不对称跨栏，移动端单列） ---- */
+.mag-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+.span-5 {
+  grid-column: span 5;
+}
+.span-7 {
+  grid-column: span 7;
+}
+.span-12 {
+  grid-column: span 12;
+}
+@media (max-width: 768px) {
+  .mag-grid {
+    grid-template-columns: 1fr;
+  }
+  .span-5,
+  .span-7,
+  .span-12 {
+    grid-column: auto;
+  }
+}
+
+/* 主页区块：大留白 + 细分割线 */
+.home-block {
+  padding: 3rem 0;
+  border-top: 1px solid var(--border);
+}
+.home-block:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* profile 区块 */
+.profile-name {
+  margin: 0 0 0.5rem;
+  font-size: 2.5rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.profile-tagline {
+  margin: 0 0 1.25rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+.profile-links {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+  padding: 0;
+}
+.profile-avatar img {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+}
+
+/* 回退提示条（spec 11） */
+.fallback-banner {
+  margin: 0 0 2rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ---- markdown 正文 ---- */
+.page-content {
+  max-width: 46rem;
+}
+.page-content > h1 {
+  margin-top: 0;
+  letter-spacing: -0.01em;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  line-height: 1.35;
+  margin: 2em 0 0.6em;
+}
+.markdown-body > :first-child {
+  margin-top: 0;
+}
+.markdown-body p {
+  margin: 1em 0;
+}
+.markdown-body blockquote {
+  margin: 1.5em 0;
+  padding: 0.25em 1em;
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+}
+.markdown-body code:not(pre code) {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 0.3em;
+  padding: 0.1em 0.35em;
+}
+.markdown-body pre {
+  padding: 1rem 1.25rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.markdown-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5em 0;
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 0.45em 0.8em;
+  text-align: left;
+}
+.markdown-body th {
+  background: var(--bg-subtle);
+}
+.markdown-body hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.5em 0;
+}
+.markdown-body figure {
+  margin: 1.5em 0;
+}
+.markdown-body figcaption {
+  margin-top: 0.5em;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+.markdown-body .md-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin: 1.5em 0;
+}
+.markdown-body .embed-lazy {
+  aspect-ratio: 16 / 9;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  margin: 1.5em 0;
+}
+
+/* Shiki 双主题：产物只写 --shiki-light/--shiki-dark 变量，此处按主题取用（M2 约定） */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+.shiki {
+  background-color: var(--shiki-light-bg);
+}
+html[data-theme='dark'] .shiki,
+html[data-theme='dark'] .shiki span {
+  color: var(--shiki-dark);
+}
+html[data-theme='dark'] .shiki {
+  background-color: var(--shiki-dark-bg);
+}

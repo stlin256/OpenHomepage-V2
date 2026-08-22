@@ -31,8 +31,10 @@
 │   ├── prefetch.mjs       # GitHub / RSS 数据预取，带缓存降级
 │   └── setup.mjs          # npm run setup：从 data.example 初始化本地 data/
 ├── src/                   # Astro 站点源码
-│   ├── lib/config.ts      # data/ 配置加载层（纯 Node，可单测）
-│   └── pages/             # Astro 路由（M4 实现动态页面）
+│   ├── lib/               # 纯函数层（config / markdown / prefetch / theme / routes / home / data-dir，可单测）
+│   ├── layouts/           # BaseLayout.astro 站点外壳（导航 / 主题 / 语言切换）
+│   ├── styles/            # global.css：语义色变量、杂志网格、排版
+│   └── pages/             # [...slug].astro 全站动态路由（M4 起）
 ├── tests/                 # vitest 单元测试
 ├── admin/                 # 可视化编辑器
 ├── .cache/                # 【不入库】预取数据缓存

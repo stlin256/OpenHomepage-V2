@@ -1,0 +1,168 @@
+---
+/**
+ * 站点外壳：<head>（meta / 字体 / KaTeX / hreflang / 主题初始化脚本）、
+ * 桌面左上竖排 tab 导航 + 移动端汉堡抽屉、语言切换器、主题切换按钮。
+ * 所有数据经 props 传入（路由层在 getStaticPaths 算好），本组件不含配置读取逻辑。
+ *
+ * 决策：KaTeX CSS 全站加载（katex.min.css，字体按需下载），避免逐页检测公式的复杂度。
+ * 决策：页脚未实现——design.md §4 提到页脚字段，但 spec 01 的 site.yaml schema 尚无定义。
+ */
+import '@fontsource-variable/inter';
+import '@fontsource-variable/noto-sans-sc';
+import '@fontsource-variable/jetbrains-mono';
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+import type { AccentTheme } from '../lib/theme.ts';
+import type { NavItem } from '../lib/routes.ts';
+
+interface Props {
+  /** 页面标题（<title> 为 `${title} · ${siteTitle}`） */
+  title: string;
+  siteTitle: string;
+  description?: string;
+  /** 实际内容语言（回退时为内容语言，非 URL 语言） */
+  htmlLang: string;
+  /** 当前 URL 语言（语言切换器高亮用） */
+  lang: string;
+  defaultLang: string;
+  accent: AccentTheme;
+  defaultMode: 'system' | 'light' | 'dark';
+  nav: NavItem[];
+  currentPath: string;
+  i18n: boolean;
+  alternates: { lang: string; path: string }[];
+}
+
+const {
+  title,
+  siteTitle,
+  description,
+  htmlLang,
+  lang,
+  defaultLang,
+  accent,
+  defaultMode,
+  nav,
+  currentPath,
+  i18n,
+  alternates,
+} = Astro.props;
+
+const langLabel = (l: string) => ({ zh: '中', en: 'EN' })[l] ?? l;
+const xDefault = alternates.find((a) => a.lang === defaultLang) ?? alternates[0];
+/** 构建期注入的 accent 变量（global.css 中 --accent 引用这四个值） */
+const accentVars = `--accent-light:${accent.light.accent};--accent-light-contrast:${accent.light.contrast};--accent-dark:${accent.dark.accent};--accent-dark-contrast:${accent.dark.contrast};`;
+---
+
+<html lang={htmlLang} data-theme="light" data-theme-mode={defaultMode} style={accentVars}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{`${title} · ${siteTitle}`}</title>
+    {description && <meta name="description" content={description} />}
+    <script is:inline define:vars={{ defaultMode }}>
+      // 首帧绘制前确定主题，避免闪烁：localStorage > site.yaml default_mode > 跟随系统
+      (function () {
+        var mode = defaultMode || 'system';
+        try {
+          mode = localStorage.getItem('theme') || mode;
+        } catch (e) {}
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = mode === 'system' ? (dark ? 'dark' : 'light') : mode;
+        document.documentElement.dataset.themeMode = mode;
+      })();
+    </script>
+    {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={new URL(a.path, Astro.site)} />)}
+    {i18n && xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault.path, Astro.site)} />}
+  </head>
+  <body>
+    <header class="site-header">
+      <button class="nav-toggle" type="button" aria-label="打开导航菜单 / Menu" aria-expanded="false" aria-controls="site-nav">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="站点导航">
+        <p class="site-title"><a href="/">{siteTitle}</a></p>
+        <ul>
+          {nav.map((item) => (
+            <li>
+              <a
+                href={item.path}
+                class:list={[{ active: item.path === currentPath }]}
+                aria-current={item.path === currentPath ? 'page' : undefined}
+              >
+                {item.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div class="header-tools">
+        {i18n && alternates.length > 0 && (
+          <nav class="lang-switcher icon-btn" aria-label="语言切换 / Language">
+            {alternates.map((a, i) => (
+              <span>
+                {i > 0 && <span class="sep">/</span>}
+                <a href={a.path} hreflang={a.lang} class:list={[{ active: a.lang === lang }]}>
+                  {langLabel(a.lang)}
+                </a>
+              </span>
+            ))}
+          </nav>
+        )}
+        <button class="theme-toggle icon-btn" type="button" aria-label="切换主题（跟随系统/浅色/深色） / Toggle theme">
+          <svg class="icon icon-system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="12" rx="2" />
+            <path d="M9 20h6" />
+          </svg>
+          <svg class="icon icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </svg>
+          <svg class="icon icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+    <main class="site-main">
+      <slot />
+    </main>
+    <script is:inline>
+      // 主题切换：system → light → dark 循环，写 localStorage；system 模式下跟随系统变化。
+      // 汉堡按钮：切换 body.nav-open 抽屉。
+      (function () {
+        var root = document.documentElement;
+        var media = window.matchMedia('(prefers-color-scheme: dark)');
+        function apply(mode) {
+          root.dataset.theme = mode === 'system' ? (media.matches ? 'dark' : 'light') : mode;
+          root.dataset.themeMode = mode;
+        }
+        var themeBtn = document.querySelector('.theme-toggle');
+        if (themeBtn) {
+          themeBtn.addEventListener('click', function () {
+            var order = ['system', 'light', 'dark'];
+            var next = order[(order.indexOf(root.dataset.themeMode || 'system') + 1) % order.length];
+            try {
+              localStorage.setItem('theme', next);
+            } catch (e) {}
+            apply(next);
+          });
+        }
+        if (media.addEventListener) {
+          media.addEventListener('change', function () {
+            if ((root.dataset.themeMode || 'system') === 'system') apply('system');
+          });
+        }
+        var navBtn = document.querySelector('.nav-toggle');
+        if (navBtn) {
+          navBtn.addEventListener('click', function () {
+            var open = document.body.classList.toggle('nav-open');
+            navBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

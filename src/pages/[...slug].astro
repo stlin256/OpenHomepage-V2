@@ -1,0 +1,143 @@
+---
+/**
+ * 全站动态路由：getStaticPaths 从 data/（缺失时回退 data.example/，见 src/lib/data-dir.ts）
+ * 的 pages/<lang>/*.md 生成。默认语言无前缀，其他语言带 /lang/ 前缀；
+ * 缺失译文按回退链渲染并显示提示条（docs/specs/11）。
+ * 主页（slug 为 /）按 site.yaml home.layout 顺序渲染区块：profile / markdown 为实体区块，
+ * streaming / github / rss 为 M4b 预留的挂载点。
+ */
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { renderMarkdown } from '../lib/markdown.ts';
+import {
+  loadSiteConfig,
+  loadPages,
+  detectLanguages,
+  isI18nEnabled,
+  resolveText,
+  type SiteConfig,
+} from '../lib/config.ts';
+import {
+  normalizeLang,
+  buildRoutes,
+  navPagesForLang,
+  alternateLinks,
+  type RouteEntry,
+  type NavItem,
+} from '../lib/routes.ts';
+import { buildAccentTheme, type AccentTheme } from '../lib/theme.ts';
+import { planHomeBlocks, type PlannedHomeBlock } from '../lib/home.ts';
+import { resolveDataDir } from '../lib/data-dir.ts';
+
+interface Props {
+  route: RouteEntry;
+  site: SiteConfig;
+  i18n: boolean;
+  defaultLang: string;
+  accent: AccentTheme;
+  nav: NavItem[];
+  alternates: { lang: string; path: string }[];
+  avatarUrl?: string;
+  blocks: PlannedHomeBlock[];
+}
+
+export function getStaticPaths() {
+  const dataDir = resolveDataDir(process.cwd());
+  const site = loadSiteConfig(dataDir);
+  const pages = loadPages(dataDir);
+  const langs = detectLanguages(pages);
+  const i18n = isI18nEnabled(langs);
+  const defaultLang = normalizeLang(site.site.language) ?? langs[0] ?? 'zh';
+  const accent = buildAccentTheme(site.theme?.accent);
+  // 头像：仅在文件真实存在时输出 <img>，避免示例数据下 404
+  const avatar = site.profile.avatar;
+  const avatarUrl = avatar && existsSync(path.join(dataDir, avatar)) ? `/${avatar}` : undefined;
+  const blocks = planHomeBlocks(site.home?.layout);
+
+  return buildRoutes(pages, langs, defaultLang).map((route) => ({
+    params: { slug: route.param },
+    props: {
+      route,
+      site,
+      i18n,
+      defaultLang,
+      accent,
+      nav: navPagesForLang(pages, route.lang, defaultLang),
+      alternates: alternateLinks(route.slug, langs, defaultLang),
+      avatarUrl,
+      blocks,
+    } satisfies Props,
+  }));
+}
+
+const { route, site, i18n, defaultLang, accent, nav, alternates, avatarUrl, blocks } = Astro.props;
+const bodyHtml = await renderMarkdown(route.page.body);
+const isHome = route.slug === '/';
+const contentLang = route.page.lang;
+---
+
+<BaseLayout
+  title={route.page.title}
+  siteTitle={site.site.title}
+  description={route.page.description ?? site.site.description}
+  htmlLang={contentLang}
+  lang={route.lang}
+  defaultLang={defaultLang}
+  accent={accent}
+  defaultMode={site.theme?.default_mode ?? 'system'}
+  nav={nav}
+  currentPath={route.path}
+  i18n={i18n}
+  alternates={alternates}
+>
+  {route.fallback && (
+    <p class="fallback-banner" role="note">
+      暂无译文，以下为其他语言版本。 / Translation not available; showing a fallback version.
+    </p>
+  )}
+  {
+    isHome ? (
+      <div class="home">
+        {blocks.map((b) =>
+          b.block === 'profile' ? (
+            <section class="home-block block-profile mag-grid">
+              <div class="span-7 profile-intro">
+                <h1 class="profile-name">{site.profile.name}</h1>
+                {site.profile.tagline && (
+                  <p class="profile-tagline">{resolveText(site.profile.tagline, contentLang)}</p>
+                )}
+                {site.profile.links && site.profile.links.length > 0 && (
+                  <ul class="profile-links">
+                    {site.profile.links.map((l) => (
+                      <li>
+                        <a href={l.url}>{l.label}</a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div class="span-5 profile-avatar">
+                {avatarUrl && <img src={avatarUrl} alt={site.profile.name} loading="lazy" />}
+              </div>
+            </section>
+          ) : b.block === 'markdown' ? (
+            <section class="home-block block-markdown">
+              <div class="markdown-body" set:html={bodyHtml} />
+            </section>
+          ) : (
+            // streaming / github / rss 由 M4b 实现，此处仅按 home.layout 顺序留挂载点
+            <section class={`home-block block-${b.block}`} data-block={b.block} data-block-id={b.id}>
+              <!-- M4b 挂载点：区块名见 data-block 属性 -->
+            </section>
+          ),
+        )}
+      </div>
+    ) : (
+      <article class="page-content">
+        <h1>{route.page.title}</h1>
+        <div class="markdown-body" set:html={bodyHtml} />
+      </article>
+    )
+  }
+</BaseLayout>
