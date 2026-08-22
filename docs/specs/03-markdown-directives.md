@@ -13,7 +13,7 @@
 :::
 ```
 
-- `bilibili` / `youtube` 渲染为响应式 16:9 iframe，**默认懒加载**（点击封面才加载 iframe，减轻页面开销、避免第三方追踪）。
+- `bilibili` / `youtube` 渲染为响应式 16:9 iframe，**默认懒加载**（点击封面才加载 iframe，减轻页面开销、避免第三方追踪）。M2 管线输出 `<div class="embed-lazy" data-embed data-src>` 占位结构，前端 JS 点击后才注入 iframe；YouTube 嵌入 URL 用隐私增强域名 `youtube-nocookie.com`。
 - `video` / `audio` 渲染原生 `<video controls>` / `<audio controls>`，src 支持相对 data/ 的路径和外部 URL。
 
 ## 2. 图文排版（杂志化用）
@@ -22,18 +22,19 @@
 :::figure{src="assets/photo.jpg" caption="图 1：实验装置" width="70%"}
 :::
 
-:::grid{cols=2}
+::::grid{cols=2}
 :::cell
 左栏内容 markdown……
 :::
 :::cell
 右栏内容 markdown……
 :::
-:::
+::::
 ```
 
 - `figure`：带图注的图片块，可指定宽度。
 - `grid` / `cell`：多栏排版容器，栏内仍是完整 markdown。移动端自动塌缩为单列。
+- 嵌套容器指令时**外层冒号数必须多于内层**（如 `::::grid` 包 `:::cell`），否则内层的闭合 `:::` 会提前结束外层指令（remark-directive 解析规则）。
 
 ## 3. 功能指令
 
