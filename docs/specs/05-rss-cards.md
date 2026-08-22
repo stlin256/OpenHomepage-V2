@@ -1,6 +1,7 @@
 # RSS 卡片细节（细化项 #5）
 
-> 状态：待讨论确认。rss.yaml 结构已定（见 01-config-schema.md），本项定卡片视觉字段。
+> 状态：**已实现（M4b）**。视图模型 `src/lib/rss-block.ts`，组件 `src/components/blocks/RssBlock.astro` /
+> `RssCard.astro`，浮层交互 `src/scripts/rss-popover.ts` + 纯逻辑 `src/lib/interactive.ts`（TDD 覆盖）。
 
 ## 卡片字段
 

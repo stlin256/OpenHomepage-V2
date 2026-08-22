@@ -1,0 +1,111 @@
+---
+/**
+ * GitHub 区块：贡献热力图（自绘格子，周×7，accent 5 档色阶，按周 stagger 淡入）
+ * + pinned 仓库卡片（错落网格）。数据全部来自构建侧视图模型（src/lib/github-block.ts）。
+ * - stale（error 且有旧数据）→ 照常渲染 + 小字"数据更新于 {fetched_at}"；
+ * - 本地无 PAT 的贡献图占位块 → "本地预览不可用"提示；
+ * - view 为 null（.cache 缺失）→ 空态提示（报错闸口在 prefetch，见 spec 07 §4）。
+ */
+import type { GithubView } from '../../lib/github-block.ts';
+import { buildHeatScales, formatTimestamp, repoCardHtml } from '../../lib/github-block.ts';
+import type { AccentTheme } from '../../lib/theme.ts';
+
+interface Props {
+  view: GithubView | null;
+  lang: string;
+  accent: AccentTheme;
+  showContributions: boolean;
+}
+
+const { view, lang, accent, showContributions } = Astro.props;
+
+const L = {
+  zh: {
+    total: (n: number) => `过去一年 ${n} 次贡献`,
+    updated: '数据更新于',
+    placeholder: '本地预览不可用（未配置 GH_PAT；CI 部署将展示真实贡献数据）',
+    empty: 'GitHub 数据未预取：请先运行 npm run prefetch',
+    heatLabel: 'GitHub 贡献热力图',
+    day: (date: string, n: number) => `${date}：${n} 次贡献`,
+  },
+  en: {
+    total: (n: number) => `${n} contributions in the last year`,
+    updated: 'Data updated',
+    placeholder: 'Unavailable in local preview (no GH_PAT; CI builds show real data)',
+    empty: 'GitHub data not prefetched: run npm run prefetch first',
+    heatLabel: 'GitHub contribution heatmap',
+    day: (date: string, n: number) => `${date}: ${n} contributions`,
+  },
+}[lang === 'zh' ? 'zh' : 'en'];
+
+const scales = buildHeatScales(accent.light.accent, accent.dark.accent);
+const heatVars = Object.fromEntries(scales.light.map((c, i) => [`heat${i}`, c]));
+const heatVarsDark = Object.fromEntries(scales.dark.map((c, i) => [`heatDark${i}`, c]));
+
+const contributions = view?.contributions ?? { kind: 'hidden' };
+const pinned = view?.pinned ?? null;
+---
+
+<section class="home-block block-github reveal">
+  <h2 class="block-title">GitHub</h2>
+  {view === null && <p class="block-empty">{L.empty}</p>}
+
+  {showContributions && contributions.kind === 'placeholder' && (
+    <p class="block-empty heat-placeholder">{L.placeholder}</p>
+  )}
+
+  {showContributions && contributions.kind === 'ok' && (
+    <div class="heatmap-wrap">
+      <div class="heatmap" role="img" aria-label={L.heatLabel}>
+        {contributions.weeks.map((week, wi) => (
+          <div class="heat-week">
+            {week.days.map((day) =>
+              day ? (
+                <span
+                  class="heat-cell"
+                  data-level={day.level}
+                  title={L.day(day.date, day.count)}
+                  style={`animation-delay:${wi * 20}ms`}
+                />
+              ) : (
+                <span class="heat-cell heat-empty" />
+              ),
+            )}
+          </div>
+        ))}
+      </div>
+      <p class="heat-footer">
+        <span class="heat-total">{L.total(contributions.total)}</span>
+        {contributions.stale && contributions.fetchedAt !== null && (
+          <span class="data-age">{L.updated} {formatTimestamp(contributions.fetchedAt)}</span>
+        )}
+      </p>
+    </div>
+  )}
+
+  {pinned && (
+    <div class="gh-grid">
+      {pinned.repos.map((repo) => <Fragment set:html={repoCardHtml(repo)} />)}
+    </div>
+  )}
+  {pinned?.stale && pinned.fetchedAt !== null && (
+    <p class="data-age">{L.updated} {formatTimestamp(pinned.fetchedAt)}</p>
+  )}
+</section>
+
+<style define:vars={{ ...heatVars, ...heatVarsDark }}>
+  .block-github {
+    --heat-0: var(--heat0);
+    --heat-1: var(--heat1);
+    --heat-2: var(--heat2);
+    --heat-3: var(--heat3);
+    --heat-4: var(--heat4);
+  }
+  html[data-theme='dark'] .block-github {
+    --heat-0: var(--heatDark0);
+    --heat-1: var(--heatDark1);
+    --heat-2: var(--heatDark2);
+    --heat-3: var(--heatDark3);
+    --heat-4: var(--heatDark4);
+  }
+</style>

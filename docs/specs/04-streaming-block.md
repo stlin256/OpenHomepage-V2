@@ -1,6 +1,7 @@
 # 流式区块播放行为（细化项 #4）
 
-> 状态：待讨论确认。配置字段已在 01-config-schema.md 定义（id / title / content_file / autoplay / speed，布局中按 id 引用），本项定播放行为。
+> 状态：**已实现（M4b）**。构建侧 `src/lib/stream.ts`（hast → token 序列），前端 `src/scripts/stream-player.ts`，
+> 节奏纯逻辑在 `src/lib/interactive.ts`（TDD 覆盖）。配置字段见 01-config-schema.md。
 
 ## 1. 渲染方式
 
@@ -26,5 +27,9 @@
 
 ## 4. 性能
 
-- token 序列构建时生成 JSON，随区块懒加载（进入可视区附近才 fetch）。
+- ~~token 序列构建时生成 JSON，随区块懒加载（进入可视区附近才 fetch）。~~
+  **实现决策（M4b）：token JSON 直接内联在页面里**（`<script type="application/json" class="stream-tokens">`）。
+  单区块 ≤2000 字的 token JSON gzip 后仅几 KB，内联省一次请求往返、无加载瀑布，
+  也免去"接近可视区再 fetch"的额外监听复杂度；体积超限时应先精简内容而非改懒加载。
 - 单区块内容建议 ≤ 2000 字，播完总时长 ≤ 30s。
+- `autoplay: false` 的区块直接完整呈现（不做流式），重播按钮仍可触发一次动画播放（M4b 决策）。

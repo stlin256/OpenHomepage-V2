@@ -3,8 +3,8 @@
  * 全站动态路由：getStaticPaths 从 data/（缺失时回退 data.example/，见 src/lib/data-dir.ts）
  * 的 pages/<lang>/*.md 生成。默认语言无前缀，其他语言带 /lang/ 前缀；
  * 缺失译文按回退链渲染并显示提示条（docs/specs/11）。
- * 主页（slug 为 /）按 site.yaml home.layout 顺序渲染区块：profile / markdown 为实体区块，
- * streaming / github / rss 为 M4b 预留的挂载点。
+ * 主页（slug 为 /）按 site.yaml home.layout 顺序渲染区块：profile / markdown /
+ * streaming / github / rss（M4b 实体区块，数据来自 .cache 与 streaming/ 内容文件）。
  */
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -13,6 +13,7 @@ import { renderMarkdown } from '../lib/markdown.ts';
 import {
   loadSiteConfig,
   loadPages,
+  loadRssConfig,
   detectLanguages,
   isI18nEnabled,
   resolveText,
@@ -29,6 +30,16 @@ import {
 import { buildAccentTheme, type AccentTheme } from '../lib/theme.ts';
 import { planHomeBlocks, type PlannedHomeBlock } from '../lib/home.ts';
 import { resolveDataDir } from '../lib/data-dir.ts';
+import { loadGithubCache, buildGithubView, repoCardHtml, type GithubView } from '../lib/github-block.ts';
+import { loadRssCache, buildRssView, type RssView } from '../lib/rss-block.ts';
+import {
+  loadStreamingBlock,
+  streamEmbedHtml,
+  type LoadedStreamBlock,
+} from '../lib/stream.ts';
+import GithubBlock from '../components/blocks/GithubBlock.astro';
+import RssBlock from '../components/blocks/RssBlock.astro';
+import StreamBlock from '../components/blocks/StreamBlock.astro';
 
 interface Props {
   route: RouteEntry;
@@ -40,6 +51,10 @@ interface Props {
   alternates: { lang: string; path: string }[];
   avatarUrl?: string;
   blocks: PlannedHomeBlock[];
+  /** .cache/github.json 视图（M4b）；null = 缓存缺失（渲染空态） */
+  githubView: GithubView | null;
+  /** .cache/rss.json 视图；null = 缓存缺失或 rss 未启用 */
+  rssView: RssView | null;
 }
 
 export function getStaticPaths() {
@@ -53,7 +68,16 @@ export function getStaticPaths() {
   // 头像：仅在文件真实存在时输出 <img>，避免示例数据下 404
   const avatar = site.profile.avatar;
   const avatarUrl = avatar && existsSync(path.join(dataDir, avatar)) ? `/${avatar}` : undefined;
-  const blocks = planHomeBlocks(site.home?.layout);
+  const rssEnabled = !!site.rss && site.rss.enabled !== false;
+  // rss.enabled: false 时整区不渲染（即使 home.layout 引用了 rss 区块）
+  const blocks = planHomeBlocks(site.home?.layout).filter((b) => b.block !== 'rss' || rssEnabled);
+  // M4b：prefetch 缓存 → 区块视图（缺文件时各 load* 返回 null + warning，区块渲染空态；
+  // 缺数即报错的闸口在 prefetch，见 docs/specs/07 §4）
+  const cacheDir = path.join(process.cwd(), '.cache');
+  const githubView = buildGithubView(loadGithubCache(cacheDir));
+  const rssView = rssEnabled
+    ? buildRssView(loadRssCache(cacheDir), loadRssConfig(dataDir, site.rss?.sources_file))
+    : null;
 
   return buildRoutes(pages, langs, defaultLang).map((route) => ({
     params: { slug: route.param },
@@ -67,14 +91,46 @@ export function getStaticPaths() {
       alternates: alternateLinks(route.slug, langs, defaultLang),
       avatarUrl,
       blocks,
+      githubView,
+      rssView,
     } satisfies Props,
   }));
 }
 
-const { route, site, i18n, defaultLang, accent, nav, alternates, avatarUrl, blocks } = Astro.props;
-const bodyHtml = await renderMarkdown(route.page.body);
+const {
+  route,
+  site,
+  i18n,
+  defaultLang,
+  accent,
+  nav,
+  alternates,
+  avatarUrl,
+  blocks,
+  githubView,
+  rssView,
+} = Astro.props;
 const isHome = route.slug === '/';
 const contentLang = route.page.lang;
+
+// 流式区块：按内容语言沿回退链加载全部定义（页面语言 → en → 默认语言）；
+// 主页 streaming 区块与正文 ::stream{id} 占位共用同一份加载结果
+const dataDir = resolveDataDir(process.cwd());
+const streamBlocks: LoadedStreamBlock[] = [];
+for (const def of site.streaming_blocks ?? []) {
+  const b = await loadStreamingBlock(dataDir, def, contentLang, defaultLang);
+  if (b) streamBlocks.push(b);
+}
+const streamById = new Map(streamBlocks.map((b) => [b.id, b]));
+const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b)]));
+// ::ghcard{repo} 占位 ← pinned 缓存数据（大小写不敏感匹配）
+const ghHtmlByRepo = Object.fromEntries(
+  (githubView?.pinned?.repos ?? []).map((r) => [r.full_name.toLowerCase(), repoCardHtml(r)]),
+);
+const bodyHtml = await renderMarkdown(route.page.body, {
+  streamEmbeds,
+  ghCards: { htmlByRepo: ghHtmlByRepo },
+});
 ---
 
 <BaseLayout
@@ -101,7 +157,7 @@ const contentLang = route.page.lang;
       <div class="home">
         {blocks.map((b) =>
           b.block === 'profile' ? (
-            <section class="home-block block-profile mag-grid">
+            <section class="home-block block-profile mag-grid reveal">
               <div class="span-7 profile-intro">
                 <h1 class="profile-name">{site.profile.name}</h1>
                 {site.profile.tagline && (
@@ -117,20 +173,31 @@ const contentLang = route.page.lang;
                   </ul>
                 )}
               </div>
-              <div class="span-5 profile-avatar">
+              <div class="span-5 profile-avatar" data-parallax>
                 {avatarUrl && <img src={avatarUrl} alt={site.profile.name} loading="lazy" />}
               </div>
             </section>
           ) : b.block === 'markdown' ? (
-            <section class="home-block block-markdown">
+            <section class="home-block block-markdown reveal">
               <div class="markdown-body" set:html={bodyHtml} />
             </section>
-          ) : (
-            // streaming / github / rss 由 M4b 实现，此处仅按 home.layout 顺序留挂载点
-            <section class={`home-block block-${b.block}`} data-block={b.block} data-block-id={b.id}>
-              <!-- M4b 挂载点：区块名见 data-block 属性 -->
-            </section>
-          ),
+          ) : b.block === 'streaming' ? (
+            // 未定义的 id 在 loadStreamingBlock 已 warning，这里跳过渲染
+            streamById.has(b.id ?? '') ? <StreamBlock block={streamById.get(b.id ?? '')!} /> : null
+          ) : b.block === 'github' ? (
+            <GithubBlock
+              view={githubView}
+              lang={contentLang}
+              accent={accent}
+              showContributions={site.github.show_contributions !== false}
+            />
+          ) : b.block === 'rss' ? (
+            <RssBlock
+              view={rssView}
+              title={resolveText(site.rss?.block_title ?? 'RSS', contentLang)}
+              lang={contentLang}
+            />
+          ) : null,
         )}
       </div>
     ) : (

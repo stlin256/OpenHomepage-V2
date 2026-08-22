@@ -236,3 +236,46 @@ describe('图片', () => {
     expect(html).toContain('src="https://example.com/a.png"');
   });
 });
+
+describe('构建期占位替换（M4b）', () => {
+  it('::stream 占位被 streamEmbeds 片段替换', async () => {
+    const html = await renderMarkdown('::stream{id="welcome"}', {
+      streamEmbeds: { welcome: '<div class="stream-block" data-stream-id="welcome">FRAG</div>' },
+    });
+    expect(html).toContain('FRAG');
+    // 占位 div 被整段替换，不残留空占位
+    expect(html.match(/data-stream-id/g)).toHaveLength(1);
+  });
+
+  it('::stream 引用未定义 id：移除占位并 warning', async () => {
+    const html = await renderMarkdown('前文\n\n::stream{id="nope"}\n\n后文', {
+      streamEmbeds: {},
+    });
+    expect(html).toContain('前文');
+    expect(html).toContain('后文');
+    expect(html).not.toContain('stream-block');
+  });
+
+  it('::ghcard 命中 pinned 数据时替换为卡片', async () => {
+    const html = await renderMarkdown('::ghcard{repo="Owner/Repo"}', {
+      ghCards: {
+        htmlByRepo: { 'owner/repo': '<a class="gh-repo" href="https://github.com/owner/repo">owner/repo</a>' },
+      },
+    });
+    expect(html).toContain('class="gh-repo"');
+    expect(html).not.toContain('class="gh-card"');
+  });
+
+  it('::ghcard 匹配不到时移除并 warning', async () => {
+    const html = await renderMarkdown('::ghcard{repo="o/unknown"}', {
+      ghCards: { htmlByRepo: {} },
+    });
+    expect(html).not.toContain('gh-card');
+  });
+
+  it('不提供嵌入选项时占位原样保留（向后兼容）', async () => {
+    const html = await renderMarkdown('::stream{id="welcome"}\n\n::ghcard{repo="o/r"}');
+    expect(html).toContain('class="stream-block"');
+    expect(html).toContain('class="gh-card"');
+  });
+});

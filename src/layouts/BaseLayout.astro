@@ -12,6 +12,7 @@ import '@fontsource-variable/noto-sans-sc';
 import '@fontsource-variable/jetbrains-mono';
 import 'katex/dist/katex.min.css';
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import type { AccentTheme } from '../lib/theme.ts';
 import type { NavItem } from '../lib/routes.ts';
 
@@ -62,7 +63,9 @@ const accentVars = `--accent-light:${accent.light.accent};--accent-light-contras
     {description && <meta name="description" content={description} />}
     <script is:inline define:vars={{ defaultMode }}>
       // 首帧绘制前确定主题，避免闪烁：localStorage > site.yaml default_mode > 跟随系统
+      // html.js 标记：滚动显现等动效的初始隐藏态只在有 JS 时生效（无 JS 不隐藏内容）
       (function () {
+        document.documentElement.classList.add('js');
         var mode = defaultMode || 'system';
         try {
           mode = localStorage.getItem('theme') || mode;
@@ -72,6 +75,7 @@ const accentVars = `--accent-light:${accent.light.accent};--accent-light-contras
         document.documentElement.dataset.themeMode = mode;
       })();
     </script>
+    <ClientRouter />
     {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={new URL(a.path, Astro.site)} />)}
     {i18n && xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault.path, Astro.site)} />}
   </head>
@@ -129,6 +133,10 @@ const accentVars = `--accent-light:${accent.light.accent};--accent-light-contras
     <main class="site-main">
       <slot />
     </main>
+    <script>
+      // 前端交互入口（流式播放 / RSS 浮层 / 嵌入懒加载 / 动效），astro:page-load 驱动
+      import '../scripts/interactions.ts';
+    </script>
     <script is:inline>
       // 主题切换：system → light → dark 循环，写 localStorage；system 模式下跟随系统变化。
       // 汉堡按钮：切换 body.nav-open 抽屉。

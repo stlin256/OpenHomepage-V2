@@ -1,0 +1,15 @@
+---
+/**
+ * 主页流式区块：结构与 markdown `::stream{id}` 占位替换完全一致
+ * （同一份 streamEmbedHtml，见 src/lib/stream.ts），前端脚本全局初始化。
+ */
+import { streamEmbedHtml, type LoadedStreamBlock } from '../../lib/stream.ts';
+
+interface Props {
+  block: LoadedStreamBlock;
+}
+
+const { block } = Astro.props;
+---
+
+<section class="home-block block-streaming reveal" set:html={streamEmbedHtml(block)} />

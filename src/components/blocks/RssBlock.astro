@@ -1,0 +1,72 @@
+---
+/**
+ * RSS 区块（docs/specs/05）：按 rss.yaml display 渲染 grouped（按源分栏）/
+ * mixed（时间×权重混排，排序见 src/lib/rss-block.ts sortMixed）。
+ * 卡片：标题≤2行 / 来源标签 / 日期（hover title 完整时间）/ 摘要120字 / 可选封面 / curated note。
+ * hover 浮层骨架构建期内联（.rss-pop），方向决策与延迟逻辑在前端脚本
+ * （src/scripts/rss-popover.ts + src/lib/interactive.ts）。
+ * view 为 null（.cache 缺失）→ 空态；有视图但无卡片 → 整区隐藏（spec 07 §3）。
+ */
+import type { RssView } from '../../lib/rss-block.ts';
+import { formatTimestamp } from '../../lib/github-block.ts';
+import RssCard from './RssCard.astro';
+
+interface Props {
+  view: RssView | null;
+  title: string;
+  lang: string;
+}
+
+const { view, title, lang } = Astro.props;
+
+const L = {
+  zh: { empty: 'RSS 数据未预取：请先运行 npm run prefetch', read: '阅读原文', updated: '数据更新于' },
+  en: { empty: 'RSS data not prefetched: run npm run prefetch first', read: 'Read', updated: 'Data updated' },
+}[lang === 'zh' ? 'zh' : 'en'];
+
+const hasContent =
+  view !== null &&
+  (view.display === 'grouped' ? view.columns.length > 0 : view.cards.length > 0);
+---
+
+{view === null && (
+  <section class="home-block block-rss reveal">
+    <h2 class="block-title">{title}</h2>
+    <p class="block-empty">{L.empty}</p>
+  </section>
+)}
+
+{
+  view !== null && hasContent && (
+    <section class="home-block block-rss reveal">
+      <h2 class="block-title">{title}</h2>
+      {view.display === 'grouped' ? (
+        <div class="rss-columns">
+          {view.columns.map((col) => (
+            <div class="rss-column">
+              <h3 class="rss-source">
+                {col.name}
+                {col.stale && col.fetchedAt !== null && (
+                  <span class="data-age">
+                    {L.updated} {formatTimestamp(col.fetchedAt)}
+                  </span>
+                )}
+              </h3>
+              <div class="rss-cards">
+                {col.cards.map((card) => (
+                  <RssCard card={card} readLabel={L.read} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="rss-cards rss-mixed">
+          {view.cards.map((card) => (
+            <RssCard card={card} readLabel={L.read} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}

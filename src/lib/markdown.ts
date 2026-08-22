@@ -30,6 +30,18 @@ import type { VFile } from 'vfile';
 export interface MarkdownOptions {
   /** Shiki 明暗双主题（CSS 变量双写方案，前端按主题切换 var） */
   shikiThemes?: { light: string; dark: string };
+  /**
+   * 流式区块嵌入：id → 构建好的完整 HTML 片段（src/lib/stream.ts 的 streamEmbedHtml）。
+   * markdown 中 `::stream{id}` 占位（.stream-block div）在 rehype 阶段被整段替换；
+   * id 未匹配时移除占位并 warning。
+   */
+  streamEmbeds?: Record<string, string>;
+  /**
+   * GitHub 仓库卡片：仓库 full_name（小写）→ 卡片 HTML 片段
+   * （src/lib/github-block.ts 的 repoCardHtml，数据来自 .cache/github.json pinned）。
+   * markdown 中 `::ghcard{repo}` 占位（.gh-card div）被替换；匹配不到移除并 warning。
+   */
+  ghCards?: { htmlByRepo: Record<string, string>; warn?: (msg: string) => void };
 }
 
 const DEFAULT_SHIKI_THEMES = { light: 'github-light', dark: 'github-dark' };
@@ -261,13 +273,81 @@ function rehypeFilterIframes() {
 }
 
 // ---------------------------------------------------------------------------
+// rehype 插件：stream/ghcard 占位 → 构建好的 HTML 片段（须在 sanitize 之后运行，
+// 产物为 raw 节点直出；片段本身来自可信构建数据，见 src/lib/stream.ts、github-block.ts）
+// ---------------------------------------------------------------------------
+
+type WarnFn = (msg: string) => void;
+
+function classesOf(node: Element): string[] {
+  const c = node.properties?.className ?? node.properties?.class;
+  return Array.isArray(c) ? c.map(String) : c != null ? [String(c)] : [];
+}
+
+/** 把占位元素替换为 raw HTML 片段；片段缺省时按 replace=remove 移除并 warning */
+function replacePlaceholder(
+  tree: HastRoot,
+  markerClass: string,
+  keyOf: (node: Element) => string,
+  fragments: Record<string, string>,
+  warn: WarnFn,
+  missingMsg: (key: string) => string,
+): void {
+  visit(tree, 'element', (node: Element, index, parent) => {
+    if (node.tagName !== 'div' || parent == null || index == null) return;
+    if (!classesOf(node).includes(markerClass)) return;
+    const key = keyOf(node);
+    const html = fragments[key];
+    if (html === undefined) {
+      warn(missingMsg(key));
+      parent.children.splice(index, 1);
+      return [SKIP, index];
+    }
+    parent.children[index] = { type: 'raw', value: html } as unknown as ElementContent;
+    return [SKIP, index];
+  });
+}
+
+function rehypeStreamEmbeds(embeds: Record<string, string>, warn: WarnFn) {
+  return (tree: HastRoot) => {
+    replacePlaceholder(
+      tree,
+      'stream-block',
+      (node) => String(node.properties?.dataStreamId ?? node.properties?.['data-stream-id'] ?? ''),
+      embeds,
+      warn,
+      (id) =>
+        `::stream 引用了未定义的流式区块 "${id}"（site.yaml streaming_blocks 中没有或加载失败），已移除占位。/` +
+        ` Unknown stream block "${id}"; placeholder removed.`,
+    );
+  };
+}
+
+function rehypeGhCards(ghCards: { htmlByRepo: Record<string, string>; warn?: WarnFn }) {
+  const warn = ghCards.warn ?? console.warn;
+  return (tree: HastRoot) => {
+    replacePlaceholder(
+      tree,
+      'gh-card',
+      (node) => String(node.properties?.dataRepo ?? node.properties?.['data-repo'] ?? '').toLowerCase(),
+      ghCards.htmlByRepo,
+      warn,
+      (repo) =>
+        `::ghcard 的仓库 "${repo}" 不在 github.pinned 缓存数据中，已移除占位。/` +
+        ` Repo "${repo}" not found in pinned cache; placeholder removed.`,
+    );
+  };
+}
+
+// ---------------------------------------------------------------------------
 // 管线
 // ---------------------------------------------------------------------------
 
 /** 构建一条 markdown → HTML 渲染管线（processor 可复用，内部已缓存 Shiki 实例） */
 export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   const themes = options.shikiThemes ?? DEFAULT_SHIKI_THEMES;
-  return unified()
+  const warn = console.warn;
+  const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkDirective)
@@ -281,8 +361,12 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(rehypeShiki, { themes, defaultColor: false })
     .use(rehypeLazyImages)
     .use(rehypeSanitize, buildSanitizeSchema())
-    .use(rehypeFilterIframes)
-    .use(rehypeStringify);
+    .use(rehypeFilterIframes);
+  // stream/ghcard 占位替换在 sanitize 之后：产物为可信构建片段，raw 直出。
+  // 未提供对应选项时占位原样保留（如纯渲染场景）；提供后未匹配的占位移除并 warning。
+  if (options.streamEmbeds) processor.use(() => rehypeStreamEmbeds(options.streamEmbeds!, warn));
+  if (options.ghCards) processor.use(() => rehypeGhCards(options.ghCards!));
+  return processor.use(rehypeStringify);
 }
 
 const processorCache = new Map<string, ReturnType<typeof createMarkdownProcessor>>();

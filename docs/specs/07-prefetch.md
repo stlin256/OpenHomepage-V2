@@ -108,3 +108,13 @@ pinned 条目并入 site.yaml 的 `note`（无则 null）。
   此时收到 GitHub 失败邮件。
 - 例外：贡献图单块在**本地开发无 PAT** 时仍渲染占位提示（`placeholder`，不阻断本地预览）；
   CI 上 PAT 缺失则该块视为失败（`error`），计入缺数判定。
+
+## 5. 构建侧读取行为（M4b 决策）
+
+Astro 构建读 `.cache/*.json` 时的降级规则（报错闸口在 prefetch，构建侧**不崩**）：
+
+- 缓存文件**整体缺失/损坏**（从未 prefetch）：warning 提示先跑 `npm run prefetch`，
+  GitHub / RSS 区块渲染**空态提示**（方便本地开发定位原因）。
+- 缓存文件存在但**全部源/块无条目**（抓取降级且无旧缓存）：GitHub 对应部分隐藏、
+  RSS 整区隐藏（§3 降级规则的构建侧体现），不显示空态文案。
+- 块 `error` 非空但有旧数据（stale）：照常渲染 + 不显眼的小字"数据更新于 {fetched_at}"。

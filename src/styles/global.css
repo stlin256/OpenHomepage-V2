@@ -1,7 +1,9 @@
 /**
  * 全局样式：语义色变量（docs/specs/10）、明暗主题、杂志网格（docs/specs/02 方案 B）、
  * 导航（design.md 5.3）、markdown 正文排版、Shiki 双主题切换。
- * accent 四值由 BaseLayout 在构建时计算并内联到 <html style>（见 src/lib/theme.ts）。
+ * M4b：GitHub/RSS/流式区块样式、hover 浮层、嵌入懒加载封面、动效与降级（docs/specs/09）。
+ * accent 四值由 BaseLayout 在构建时计算并内联到 <html style>（见 src/lib/theme.ts）；
+ * 热力图 5 档色阶由 GithubBlock 构建时计算为 --heat-0..4（明暗两套，见 src/lib/github-block.ts）。
  */
 
 :root {
@@ -401,4 +403,459 @@ html[data-theme='dark'] .shiki span {
 }
 html[data-theme='dark'] .shiki {
   background-color: var(--shiki-dark-bg);
+}
+
+/* ==================== M4b：主页功能区块与动效 ==================== */
+
+/* 区块标题与通用小字 */
+.block-title {
+  margin: 0 0 1.5rem;
+  font-size: 1.4rem;
+  letter-spacing: -0.01em;
+}
+.block-empty {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.data-age {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+/* ---- GitHub 区块：贡献热力图 ---- */
+.heatmap-wrap {
+  margin-bottom: 1.5rem;
+}
+.heatmap {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+.heat-week {
+  display: grid;
+  grid-template-rows: repeat(7, 10px);
+  gap: 3px;
+  flex: none;
+}
+.heat-cell {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--heat-0);
+}
+.heat-cell[data-level='1'] { background: var(--heat-1); }
+.heat-cell[data-level='2'] { background: var(--heat-2); }
+.heat-cell[data-level='3'] { background: var(--heat-3); }
+.heat-cell[data-level='4'] { background: var(--heat-4); }
+.heat-empty {
+  background: transparent;
+}
+/* 格子按周交错淡入（stagger 20ms，animation-delay 内联在格子上）；
+   仅 JS 环境下先隐藏，区块滚动进入视口（.revealed）后播放 */
+html.js .block-github .heat-cell:not(.heat-empty) {
+  opacity: 0;
+}
+html.js .block-github.revealed .heat-cell:not(.heat-empty) {
+  animation: heat-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes heat-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.heat-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* pinned 仓库卡片：错落网格（偶数卡下移）+ hover 浮起 */
+.gh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+@media (min-width: 769px) {
+  .gh-grid .gh-repo:nth-child(even) {
+    margin-top: 1.25rem;
+  }
+}
+.gh-repo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--bg);
+  color: var(--text);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+.gh-repo-name {
+  font-weight: 600;
+  color: var(--accent);
+}
+.gh-repo-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gh-repo-meta {
+  margin-top: auto;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* 卡片 hover 浮起 + 主题色描边（spec 09：纯 CSS） */
+.gh-repo:hover,
+.rss-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.1);
+  text-decoration: none;
+}
+
+/* ---- RSS 区块 ---- */
+.rss-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 2rem;
+}
+.rss-source {
+  margin: 0 0 0.9rem;
+  font-size: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+}
+.rss-cards {
+  display: grid;
+  gap: 0.9rem;
+}
+.rss-card {
+  position: relative;
+  display: flex;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--bg);
+  color: var(--text);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+.rss-cover {
+  flex: none;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 0.4rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.rss-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.rss-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.rss-title {
+  font-weight: 600;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.rss-meta {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.rss-source-tag {
+  padding: 0.05em 0.5em;
+  border-radius: 0.35em;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
+.rss-summary {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.rss-note {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--accent);
+}
+
+/* hover 浮层：默认 hidden；JS 控制 .open 与 data-side（上/下自适应） */
+.rss-pop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.9rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  box-shadow: 0 14px 36px rgb(0 0 0 / 0.14);
+  font-size: 0.85rem;
+  opacity: 0;
+  transform: scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rss-pop[data-side='bottom'] {
+  top: calc(100% + 8px);
+}
+.rss-pop[data-side='top'] {
+  bottom: calc(100% + 8px);
+}
+.rss-pop.open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.rss-pop-title {
+  font-weight: 600;
+  line-height: 1.45;
+}
+.rss-pop-summary {
+  color: var(--text-muted);
+}
+.rss-pop-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ---- 流式区块 ---- */
+.stream-block {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-subtle);
+  padding: 1.25rem 1.5rem;
+}
+.stream-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.stream-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.stream-head:has(.stream-title) {
+  margin-bottom: 0.25rem;
+}
+.stream-replay {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stream-replay svg {
+  width: 1rem;
+  height: 1rem;
+}
+.stream-replay:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: rotate(-40deg);
+}
+.stream-block .stream-content {
+  margin-top: 0.5rem;
+}
+/* 播放中光标：主题色闪烁方块，跟随插入点 */
+.stream-cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 0.05em;
+  vertical-align: -0.15em;
+  background: var(--accent);
+  border-radius: 1px;
+  animation: cursor-blink 0.8s steps(1) infinite;
+}
+@keyframes cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ---- 嵌入懒加载（bilibili/youtube 封面占位） ---- */
+.markdown-body .embed-lazy {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+.embed-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  background: var(--bg-subtle);
+  display: block;
+}
+.embed-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.embed-play {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.92;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.embed-play::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-38%, -50%);
+  border-style: solid;
+  border-width: 0.55rem 0 0.55rem 0.95rem;
+  border-color: transparent transparent transparent var(--accent-contrast);
+}
+.embed-cover:hover .embed-play {
+  transform: scale(1.08);
+}
+.embed-loaded iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* ::ghcard 指令卡片与 pinned 卡片共用 .gh-repo 样式；
+   markdown 正文里的 gh-card 保持块间距 */
+.markdown-body .gh-repo {
+  margin: 1.5em 0;
+  max-width: 26rem;
+}
+
+/* ---- 动效：滚动显现 ---- */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html.js .reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* 动效：页面转场（View Transitions，spec 09：旧页淡出 + 新页淡入上移） */
+::view-transition-old(root) {
+  animation: vt-fade-out 0.2s ease both;
+}
+::view-transition-new(root) {
+  animation: vt-fade-in-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* ---- 全局降级（spec 09 §2）：仅 transform/opacity；reduced-motion 只留简单淡入 ---- */
+@media (prefers-reduced-motion: reduce) {
+  html.js .reveal {
+    transform: none;
+    transition: opacity 0.2s ease;
+  }
+  html.js .block-github .heat-cell:not(.heat-empty) {
+    opacity: 1;
+    animation: none;
+  }
+  .stream-cursor {
+    animation: none;
+  }
+  .stream-replay,
+  .gh-repo,
+  .rss-card,
+  .embed-play {
+    transition: none;
+  }
+  .gh-repo:hover,
+  .rss-card:hover {
+    transform: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }
