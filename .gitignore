@@ -1,0 +1,13 @@
+# 用户内容与个人信息（不入库）
+data/
+reusable-components.md
+
+# 运行时与构建产物
+.cache/
+node_modules/
+dist/
+dist-*/
+
+# 系统文件
+.DS_Store
+Thumbs.db

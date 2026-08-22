@@ -1,0 +1,77 @@
+# GitHub Actions 工作流细节（细化项 #8）
+
+> 状态：待讨论确认。总体策略见 design.md 第 8 节，本项定实现细节。
+
+## 1. 触发条件
+
+```yaml
+on:
+  push:
+    branches: [main]        # 代码变更触发
+  schedule:
+    - cron: '30 */8 * * *'  # 每 8 小时的半点（00:30 / 08:30 / 16:30 UTC）
+  workflow_dispatch:        # 手动触发
+```
+
+> **修改频率/基准时间的方法**：GitHub Actions 的 schedule 只能是 workflow 文件里的字面 cron，无法从 secret/variable 注入。要改频率或基准时间，直接编辑 `.github/workflows/deploy.yml` 中这一行 cron（编辑器可提供一个快捷入口帮你算好表达式并打开该文件）。注意 GitHub 对定时任务有排队延迟（高峰期可能晚几分钟到几十分钟），且长间隔建议 ≥ 1 小时。
+
+## 2. Job 步骤
+
+```yaml
+steps:
+  - uses: actions/checkout@v4                      # main 分支代码
+
+  - name: 拉取上次部署产物（gh-pages）
+    uses: actions/checkout@v4
+    with: { ref: gh-pages, path: prev }
+    continue-on-error: true                        # 首次部署无 gh-pages，容忍失败
+
+  - name: 获取 data（在线源优先）
+    id: data
+    run: |
+      if curl -fsSL "$DATA_SOURCE_URL" -o data.zip && unzip -q data.zip; then
+        echo "mode=online" >> $GITHUB_OUTPUT
+      elif [ -f prev/data-snapshot.zip ]; then
+        unzip -q prev/data-snapshot.zip -d .
+        echo "mode=snapshot" >> $GITHUB_OUTPUT
+      else
+        echo "::error::在线源失效且无历史快照，无法构建"
+        exit 1
+      fi
+    env:
+      DATA_SOURCE_URL: ${{ secrets.DATA_SOURCE_URL }}
+
+  - uses: actions/setup-node@v4
+    with: { node-version: 20, cache: npm }
+
+  - run: npm ci
+  - run: node scripts/prefetch.mjs --force
+    env: { GH_TOKEN: ${{ secrets.GH_PAT }} }
+  - run: npm run build                             # astro build → dist/
+
+  - name: 打包 data 快照
+    run: cd data && zip -qr ../dist/data-snapshot.zip . && cd ..
+
+  - name: 部署到 gh-pages
+    uses: peaceiris/actions-gh-pages@v4
+    with: { github_token: ${{ secrets.GITHUB_TOKEN }}, publish_dir: dist }
+
+  - name: 快照回退标记（触发邮件通知）
+    if: steps.data.outputs.mode == 'snapshot'
+    run: |
+      echo "::warning::在线 data 源失效，本次使用上次快照部署，仅动态数据已更新。请检查 DATA_SOURCE_URL。"
+      exit 1
+```
+
+## 3. 要点说明
+
+- **邮件触发**：最后一步故意 `exit 1`——部署已完成，但 workflow 标红，GitHub 自动发失败邮件；Actions 页面 summary/warning 里写明原因。
+- **快照内容**：`data-snapshot.zip` 放在产物根目录，含当次完整 data/（含 `.snapshots/` 版本快照，便于线上留存历史）。
+- **校验**：部署前检查 `dist/index.html` 非空且包含 `<html`（沿用旧项目做法）。
+- **权限**：workflow 需 `contents: write`（推 gh-pages）；`GH_PAT` 仅用于 prefetch 的 GraphQL。
+- zip 下载校验：检查 `unzip` 后存在 `data/site.yaml`，否则视为源无效走快照。
+
+## 4. 已定细节
+
+- ✅ 定时：每 8 小时半点（`30 */8 * * *`）；改频率/基准时间 = 编辑 workflow 里的 cron 行（见上方说明）。
+- ✅ 快照包含编辑器的 `.snapshots/` 版本历史，线上产物可找回误删内容。
