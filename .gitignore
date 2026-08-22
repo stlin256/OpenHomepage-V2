@@ -5,6 +5,7 @@ reusable-components.md
 # 运行时与构建产物
 .cache/
 .astro/
+.scratch/
 node_modules/
 dist/
 dist-*/

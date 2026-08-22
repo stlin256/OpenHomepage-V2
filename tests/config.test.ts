@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadSiteConfig, loadRssConfig } from '../src/lib/config.ts';
 
-const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data.example');
+const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/data');
 
 /** 构造一个临时 data 目录，site.yaml 内容为给定 yaml 文本 */
 function withTempData(files: Record<string, string>, fn: (dir: string) => void) {

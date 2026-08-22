@@ -1,21 +1,21 @@
 # ---- 站点基本信息 ----
 site:
-  title: "张三的主页"
-  description: "张三的个人主页：研究方向、开源项目与阅读记录"
+  title: "林知远 · Zhiyuan Lin"
+  description: "林知远的个人主页：机器学习研究、开源项目与阅读记录"
   language: zh-CN
 
 # ---- 个人资料（主页头部区块）----
 profile:
-  name: "张三"
-  tagline: # 双语映射：按当前语言取值，缺 key 回退另一语言
-    zh: "博士研究生 / 方向：计算机系统"
-    en: "PhD candidate / Computer Systems"
-  avatar: "assets/avatar.png"
+  name: "林知远"
+  tagline:
+    zh: "博士研究生 / 机器学习与系统"
+    en: "PhD candidate / ML & Systems"
+  avatar: "assets/avatar.svg"   # 文字徽标，无需照片
   bio_page: "index"
   links:
-    - { label: "Email", url: "mailto:zhangsan@example.com" }
-    - { label: "GitHub", url: "https://github.com/zhangsan" }
-    - { label: "Google Scholar", url: "https://scholar.google.com/citations?user=xxxx" }
+    - { label: "Email", url: "mailto:zhiyuan@example.com" }
+    - { label: "GitHub", url: "https://github.com/octocat" }
+    - { label: "Google Scholar", url: "https://scholar.google.com/" }
 
 # ---- 主题 ----
 theme:
@@ -24,28 +24,30 @@ theme:
 
 # ---- GitHub 区块 ----
 github:
-  username: "zhangsan"
+  username: "octocat"
   show_contributions: true
   pinned:
-    - repo: "zhangsan/awesome-project"
-      note: "我的主力开源项目"
-    - repo: "zhangsan/tiny-toolkit"
+    - repo: "huggingface/transformers"
+      note: "State-of-the-art NLP for everyone —— 复现论文时的基础设施"
+    - repo: "ggml-org/llama.cpp"
+      note: "在笔记本上跑大模型，本地实验的起点"
+    - repo: "openai/whisper"
 
 # ---- RSS 区块 ----
 rss:
   enabled: true
   block_title:
-    zh: "最近在读"
-    en: "Reading"
+    zh: "前沿动态"
+    en: "Frontier Radar"
   sources_file: "rss.yaml"
 
-# ---- 主页布局：区块顺序完全可配置 ----
+# ---- 主页布局：区块顺序完全可配置（调整列表顺序即可重排主页）----
 home:
   layout:
     - block: profile
-    - block: markdown
     - block: streaming
       id: "welcome"
+    - block: markdown
     - block: github
     - block: rss
 
@@ -53,8 +55,8 @@ home:
 streaming_blocks:
   - id: "welcome"
     title:
-      zh: "一段话"
-      en: "In short"
+      zh: "AI 助理致辞"
+      en: "A word from my assistant"
     content_file: "streaming/welcome.md"
     autoplay: true
     speed: 40

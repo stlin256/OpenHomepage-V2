@@ -1,19 +1,42 @@
-display: grouped # grouped（按源分栏）| mixed（按权重混排）
+# RSS 源配置：display 支持 grouped（按源分栏）/ mixed（时间×权重混排）
+display: grouped
+
 sources:
-  - name: "某技术博客"
-    url: "https://blog.example.com/feed.xml"
+  - name: "OpenAI"
+    url: "https://openai.com/news/rss.xml"
     mode: latest
     latest: 5
-    weight: 2
-    cover: "assets/rss/blog-cover.png" # 可选，源级封面，卡片无图时使用
+    weight: 3
 
-  - name: "精选收藏"
-    url: "https://another.example.com/rss"
+  - name: "Google DeepMind"
+    url: "https://deepmind.google/blog/rss.xml"
+    mode: latest
+    latest: 5
+    weight: 3
+
+  - name: "Hugging Face"
+    url: "https://huggingface.co/blog/feed.xml"
+    mode: latest
+    latest: 3
+    weight: 2
+
+  - name: "量子位"
+    url: "https://www.qbitai.com/feed"
+    mode: latest
+    latest: 3
+    weight: 1
+
+  # 指定文章模式：按本列表顺序编排，note 显示为推荐语，cover 为卡片封面（可选）
+  - name: "编辑精选"
+    url: "https://deepmind.google/blog/rss.xml"   # 用于匹配元数据；匹配不到则抓文章页
     mode: curated
     weight: 3
     articles:
-      - url: "https://another.example.com/post/1"
-        note: "推荐理由一句话"
-        cover: "assets/rss/post-1.png" # 可选，逐篇声明封面
-      - url: "https://another.example.com/post/2"
-        note: "这篇讲清了分布式时钟"
+      - url: "https://deepmind.google/blog/co-scientist-a-multi-agent-ai-partner-to-accelerate-research/"
+        note: "多智能体系统做科研加速，和我的方向直接相关"
+        cover: "assets/cover-1.jpg"
+      - url: "https://deepmind.google/blog/10-years-of-alphago/"
+        note: "AlphaGo 十年，值得一读的技术史"
+        cover: "assets/cover-2.jpg"
+      - url: "https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/"
+        note: "可解释性工具的标杆；这张卡片故意不配图，演示纯文字卡片"

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadPages, detectLanguages, isI18nEnabled } from '../src/lib/config.ts';
 
-const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data.example');
+const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/data');
 
 function withTempData(files: Record<string, string>, fn: (dir: string) => void) {
   const dir = mkdtempSync(path.join(tmpdir(), 'oh-pages-'));

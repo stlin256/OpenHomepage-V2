@@ -10,7 +10,7 @@ import {
   alternateLinks,
 } from '../src/lib/routes.ts';
 
-const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data.example');
+const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/data');
 
 describe('normalizeLang', () => {
   it('取主语言子标签', () => {
