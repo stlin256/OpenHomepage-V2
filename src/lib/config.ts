@@ -90,9 +90,9 @@ function readYaml(file: string): unknown {
 
 /** 校验必需字段，缺失时抛出中文错误 */
 function requireField(obj: unknown, dotted: string, file: string): void {
-  let cur = obj as Record<string, unknown> | undefined;
+  let cur: unknown = obj;
   for (const key of dotted.split('.')) {
-    cur = cur?.[key] as Record<string, unknown> | undefined;
+    cur = (cur as Record<string, unknown> | null | undefined)?.[key];
   }
   if (cur === undefined || cur === null || cur === '') {
     throw new Error(`配置缺少必需字段 ${dotted}（${file}）`);
@@ -108,18 +108,18 @@ export function loadSiteConfig(dataDir: string): SiteConfig {
   return cfg;
 }
 
-export function loadRssConfig(dataDir: string): RssConfig {
-  const file = path.join(dataDir, 'rss.yaml');
-  const cfg = readYaml(file) as RssConfig;
+export function loadRssConfig(dataDir: string, file = 'rss.yaml'): RssConfig {
+  const filePath = path.join(dataDir, file);
+  const cfg = readYaml(filePath) as RssConfig;
   if (!Array.isArray(cfg.sources) || cfg.sources.length === 0) {
-    throw new Error(`rss.yaml 的 sources 不能为空（${file}）`);
+    throw new Error(`${file} 的 sources 不能为空（${filePath}）`);
   }
   for (const [i, src] of cfg.sources.entries()) {
-    requireField(src, 'name', `${file} sources[${i}]`);
-    requireField(src, 'url', `${file} sources[${i}]`);
+    requireField(src, 'name', `${filePath} sources[${i}]`);
+    requireField(src, 'url', `${filePath} sources[${i}]`);
     if (src.mode !== 'latest' && src.mode !== 'curated') {
       throw new Error(
-        `rss.yaml sources[${i}]（${src.name}）的 mode 必须是 latest 或 curated，当前为：${src.mode}`
+        `${file} sources[${i}]（${src.name}）的 mode 必须是 latest 或 curated，当前为：${src.mode}`
       );
     }
   }

@@ -28,20 +28,20 @@ describe('loadSiteConfig', () => {
     expect(cfg.site.title).toBe('张三的主页');
     expect(cfg.profile.name).toBe('张三');
     expect(cfg.github.username).toBe('zhangsan');
-    expect(cfg.github.pinned).toHaveLength(2);
-    expect(cfg.github.pinned[0].repo).toBe('zhangsan/awesome-project');
-    expect(cfg.theme.accent).toBe('#3a7bd5');
-    expect(cfg.rss.sources_file).toBe('rss.yaml');
-    expect(cfg.home.layout.map((b: { block: string }) => b.block)).toEqual([
+    expect(cfg.github.pinned!).toHaveLength(2);
+    expect(cfg.github.pinned![0].repo).toBe('zhangsan/awesome-project');
+    expect(cfg.theme!.accent).toBe('#3a7bd5');
+    expect(cfg.rss!.sources_file).toBe('rss.yaml');
+    expect(cfg.home!.layout!.map((b: { block: string }) => b.block)).toEqual([
       'profile', 'markdown', 'streaming', 'github', 'rss',
     ]);
-    expect(cfg.streaming_blocks[0].id).toBe('welcome');
+    expect(cfg.streaming_blocks![0].id).toBe('welcome');
   });
 
   it('保留双语映射字段原始形态', () => {
     const cfg = loadSiteConfig(EXAMPLE);
     expect(cfg.profile.tagline).toEqual({ zh: '博士研究生 / 方向：计算机系统', en: 'PhD candidate / Computer Systems' });
-    expect(cfg.rss.block_title).toEqual({ zh: '最近在读', en: 'Reading' });
+    expect(cfg.rss!.block_title).toEqual({ zh: '最近在读', en: 'Reading' });
   });
 
   it('site.yaml 不存在时报中文错误', () => {
@@ -82,9 +82,9 @@ describe('loadRssConfig', () => {
     expect(latest.mode).toBe('latest');
     expect(latest.latest).toBe(5);
     expect(curated.mode).toBe('curated');
-    expect(curated.articles).toHaveLength(2);
-    expect(curated.articles[0].note).toBe('推荐理由一句话');
-    expect(curated.articles[0].cover).toBe('assets/rss/post-1.png');
+    expect(curated.articles!).toHaveLength(2);
+    expect(curated.articles![0].note).toBe('推荐理由一句话');
+    expect(curated.articles![0].cover).toBe('assets/rss/post-1.png');
   });
 
   it('rss.yaml 不存在时报中文错误', () => {

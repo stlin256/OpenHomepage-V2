@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "vitest run",
+    "prefetch": "tsx scripts/prefetch.ts",
     "dev": "astro dev",
     "build": "astro build",
     "setup": "node scripts/setup.mjs"
@@ -32,12 +33,16 @@
     "remark-math": "^6.0.0",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
+    "rss-parser": "^3.13.0",
     "shiki": "^4.4.3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2",
     "vitest": "^4.1.11"
   }
 }
