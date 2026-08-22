@@ -1,6 +1,6 @@
 # GitHub Actions 工作流细节（细化项 #8）
 
-> 状态：待讨论确认。总体策略见 design.md 第 8 节，本项定实现细节。
+> 状态：✅ 已实现（2026-08-23）——见 `.github/workflows/deploy.yml`。总体策略见 design.md 第 8 节。
 
 ## 1. 触发条件
 
@@ -29,13 +29,15 @@ steps:
   - name: 获取 data（在线源优先）
     id: data
     run: |
-      if curl -fsSL "$DATA_SOURCE_URL" -o data.zip && unzip -q data.zip; then
-        echo "mode=online" >> $GITHUB_OUTPUT
+      if [ -n "$DATA_SOURCE_URL" ] && curl -fsSL --max-time 120 "$DATA_SOURCE_URL" -o data.zip \
+         && unzip -q -o data.zip && [ -f data/site.yaml ]; then
+        echo "mode=online" >> "$GITHUB_OUTPUT"
       elif [ -f prev/data-snapshot.zip ]; then
-        unzip -q prev/data-snapshot.zip -d .
-        echo "mode=snapshot" >> $GITHUB_OUTPUT
+        unzip -q -o prev/data-snapshot.zip -d .
+        echo "mode=snapshot" >> "$GITHUB_OUTPUT"
+        echo "::warning::在线 data 源失效，使用上次部署的快照（仅动态数据将更新）/ Online data source failed; restored from last snapshot."
       else
-        echo "::error::在线源失效且无历史快照，无法构建"
+        echo "::error::在线 data 源失效且无历史快照，无法构建 / Online data source failed and no snapshot available; build aborted."
         exit 1
       fi
     env:
@@ -45,9 +47,12 @@ steps:
     with: { node-version: 20, cache: npm }
 
   - run: npm ci
-  - run: node scripts/prefetch.mjs --force
-    env: { GH_TOKEN: ${{ secrets.GH_PAT }} }
+  - run: npm run prefetch -- --force          # scripts/prefetch.ts（tsx 运行）
+    env: { GH_PAT: ${{ secrets.GH_PAT }}, GH_TOKEN: ${{ secrets.GH_PAT }} }
   - run: npm run build                             # astro build → dist/
+
+  - name: 校验产物                                # dist/index.html 非空且含 <html
+    run: test -s dist/index.html && grep -q "<html" dist/index.html
 
   - name: 打包 data 快照
     run: cd data && zip -qr ../dist/data-snapshot.zip . && cd ..
@@ -59,7 +64,8 @@ steps:
   - name: 快照回退标记（触发邮件通知）
     if: steps.data.outputs.mode == 'snapshot'
     run: |
-      echo "::warning::在线 data 源失效，本次使用上次快照部署，仅动态数据已更新。请检查 DATA_SOURCE_URL。"
+      # 中英双语写入 GITHUB_STEP_SUMMARY，然后 exit 1 触发 GitHub 失败邮件
+      echo "## ⚠️ 使用了快照回退 / Snapshot fallback used ..." >> "$GITHUB_STEP_SUMMARY"
       exit 1
 ```
 

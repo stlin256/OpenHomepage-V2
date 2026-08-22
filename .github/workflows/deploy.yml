@@ -1,0 +1,92 @@
+# 部署到 GitHub Pages。设计依据：docs/specs/08-workflow.md
+# 定时频率/基准时间 = 改下面 cron 行（schedule 只能是字面量，无法用变量注入）
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '30 */8 * * *'   # 每 8 小时的半点（00:30 / 08:30 / 16:30 UTC）
+  workflow_dispatch:
+
+permissions:
+  contents: write            # 推送 gh-pages 分支
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 拉取上次部署产物（含 data 快照），首次部署容忍失败
+      - name: 拉取上次 gh-pages 产物 / Fetch previous gh-pages output
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: prev
+        continue-on-error: true
+
+      - name: 获取 data（在线源优先，快照兜底）/ Acquire data (online source first, snapshot fallback)
+        id: data
+        run: |
+          if [ -n "$DATA_SOURCE_URL" ] && curl -fsSL --max-time 120 "$DATA_SOURCE_URL" -o data.zip \
+             && unzip -q -o data.zip && [ -f data/site.yaml ]; then
+            echo "mode=online" >> "$GITHUB_OUTPUT"
+            echo "在线 data 源获取成功 / Online data source OK"
+          elif [ -f prev/data-snapshot.zip ]; then
+            unzip -q -o prev/data-snapshot.zip -d .
+            echo "mode=snapshot" >> "$GITHUB_OUTPUT"
+            echo "::warning::在线 data 源失效，使用上次部署的快照（仅动态数据将更新）/ Online data source failed; restored from last snapshot (only dynamic data refreshed)."
+          else
+            echo "::error::在线 data 源失效且无历史快照，无法构建 / Online data source failed and no snapshot available; build aborted."
+            exit 1
+          fi
+        env:
+          DATA_SOURCE_URL: ${{ secrets.DATA_SOURCE_URL }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: 预取 GitHub / RSS 数据 / Prefetch GitHub & RSS data
+        run: npm run prefetch -- --force
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: 构建 / Build
+        run: npm run build
+
+      - name: 校验产物 / Verify output
+        run: |
+          test -s dist/index.html && grep -q "<html" dist/index.html \
+            || { echo "::error::dist/index.html 无效 / dist/index.html invalid"; exit 1; }
+
+      - name: 打包 data 快照 / Pack data snapshot
+        run: cd data && zip -qr ../dist/data-snapshot.zip . && cd ..
+
+      - name: 部署到 gh-pages / Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+
+      # 快照回退：部署完成后故意标红，触发 GitHub 失败邮件提醒（预期行为，见 spec 08）
+      - name: 快照回退标记（触发邮件通知）/ Snapshot fallback marker (triggers e-mail)
+        if: steps.data.outputs.mode == 'snapshot'
+        run: |
+          {
+            echo "## ⚠️ 使用了快照回退 / Snapshot fallback used"
+            echo ""
+            echo "部署已成功完成，但在线 data 源（DATA_SOURCE_URL）失效，本次内容来自上次部署的快照，仅 GitHub/RSS 动态数据已更新。请检查在线源。"
+            echo ""
+            echo "Deploy succeeded, but the online data source (DATA_SOURCE_URL) failed; content was restored from the previous snapshot. Only GitHub/RSS dynamic data was refreshed. Please check the source."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1

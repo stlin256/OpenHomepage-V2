@@ -28,7 +28,7 @@
 ├── data.example/          # 【入库】示例数据，兼作单元测试 fixture
 ├── docs/                  # 设计文档（本文档）
 ├── scripts/
-│   ├── prefetch.mjs       # GitHub / RSS 数据预取，带缓存降级
+│   ├── prefetch.ts        # GitHub / RSS 数据预取，带缓存降级（tsx 运行，npm run prefetch）
 │   └── setup.mjs          # npm run setup：从 data.example 初始化本地 data/
 ├── src/                   # Astro 站点源码
 │   ├── lib/               # 纯函数层（config / markdown / prefetch / theme / routes / home / data-dir，可单测）
