@@ -28,11 +28,14 @@ export function initRssPopovers(): void {
       const r = card.getBoundingClientRect();
       pop.hidden = false;
       // 读取 offsetHeight 强制回流，保证 .open 过渡生效，同时拿到浮层高度做方向决策
-      pop.dataset.side = popoverPlacement(
+      const placement = popoverPlacement(
         { top: r.top, bottom: r.bottom },
         pop.offsetHeight,
         window.innerHeight,
       );
+      pop.dataset.side = placement.side;
+      // 两侧都放不下时收缩到可用空间（内部滚动），浮层不被视口截断
+      pop.style.maxHeight = `${placement.maxHeight}px`;
       pop.classList.add('open');
     };
     const hide = () => {

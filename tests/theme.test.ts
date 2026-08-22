@@ -7,6 +7,8 @@ import {
   pickContrastText,
   correctAccentForDark,
   buildAccentTheme,
+  initialTheme,
+  toggleTheme,
   DARK_BG,
 } from '../src/lib/theme.ts';
 
@@ -90,5 +92,35 @@ describe('buildAccentTheme', () => {
   it('缺省参数使用默认 accent', () => {
     const theme = buildAccentTheme();
     expect(theme.light.accent).toMatch(/^#[0-9a-f]{6}$/);
+  });
+});
+
+describe('initialTheme（亮/暗两态，见 spec 10）', () => {
+  it('sessionStorage 有用户选择时优先（覆盖系统与站点默认）', () => {
+    expect(initialTheme('dark', 'system', false)).toBe('dark');
+    expect(initialTheme('light', 'system', true)).toBe('light');
+    expect(initialTheme('light', 'dark', true)).toBe('light');
+  });
+
+  it('无用户选择：站点默认模式为 light/dark 时用之', () => {
+    expect(initialTheme(null, 'dark', false)).toBe('dark');
+    expect(initialTheme(null, 'light', true)).toBe('light');
+  });
+
+  it('无用户选择且默认 system：跟随系统', () => {
+    expect(initialTheme(null, 'system', true)).toBe('dark');
+    expect(initialTheme(null, 'system', false)).toBe('light');
+  });
+
+  it('非法存储值视为未选择', () => {
+    expect(initialTheme('system', 'system', true)).toBe('dark');
+    expect(initialTheme('', 'light', false)).toBe('light');
+  });
+});
+
+describe('toggleTheme', () => {
+  it('亮暗互换', () => {
+    expect(toggleTheme('light')).toBe('dark');
+    expect(toggleTheme('dark')).toBe('light');
   });
 });

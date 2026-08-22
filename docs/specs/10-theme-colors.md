@@ -25,8 +25,10 @@ CSS 自定义属性，按明暗主题各一套：
 
 ## 3. 主题切换
 
-- `<html data-theme>` 属性切换；默认跟随 `prefers-color-scheme`（site.yaml `default_mode` 可强制 light/dark）。
-- 导航栏提供切换按钮，选择写入 localStorage 覆盖系统设置。
+- `<html data-theme>` 属性切换；**只有亮/暗两态**（无"跟随系统"第三态）。
+- 页面打开时：sessionStorage 中的用户选择 > site.yaml `theme.default_mode`（light/dark 时）> 跟随系统 `prefers-color-scheme`；首帧前由 `<head>` 内联脚本完成解析，防闪烁。
+- 用户点击导航区角落的小图标按钮（太阳/月亮，按当前主题显示，hover 才显轮廓）切换后，选择写入 **sessionStorage**：本次会话内（含 ClientRouter 站内转场）保持；离开站点/关闭标签页后重置，重新跟随系统。系统主题变化只在用户未手动选择时跟随。
+- ClientRouter 转场会把 `<html>` 属性还原为 SSR 值且内联脚本不重放，因此常驻模块脚本（`src/scripts/theme.ts`）监听 `astro:after-swap` 立即重放主题，避免闪回亮色。
 - 切换时仅颜色变量 200ms 过渡，不动布局。
 
 ## 4. 编辑器取色器回写

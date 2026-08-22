@@ -107,15 +107,22 @@ describe('navPagesForLang', () => {
 });
 
 describe('alternateLinks', () => {
-  it('i18n 启用时输出全部语言的当前页链接', () => {
-    const links = alternateLinks('research', ['en', 'zh'], 'zh');
-    expect(links).toEqual([
-      { lang: 'en', path: '/en/research' },
+  const pages = loadPages(EXAMPLE); // zh: /, research; en: /（research 无 en 版）
+
+  it('只输出当前 slug 真实存在的语言版本（不含回退）', () => {
+    // 主页 zh/en 都有 → 两个链接
+    expect(alternateLinks(pages, '/', ['en', 'zh'], 'zh')).toEqual([
+      { lang: 'en', path: '/en/' },
+      { lang: 'zh', path: '/' },
+    ]);
+    // research 只有 zh 真实版本 → 不输出 en 回退链接
+    expect(alternateLinks(pages, 'research', ['en', 'zh'], 'zh')).toEqual([
       { lang: 'zh', path: '/research' },
     ]);
   });
 
   it('单语言站点不输出备选链接', () => {
-    expect(alternateLinks('research', ['zh'], 'zh')).toEqual([]);
+    const zhOnly = pages.filter((p) => p.lang === 'zh');
+    expect(alternateLinks(zhOnly, 'research', ['zh'], 'zh')).toEqual([]);
   });
 });

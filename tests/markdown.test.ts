@@ -114,22 +114,21 @@ describe('HTML 混写与白名单过滤', () => {
 });
 
 describe('自定义指令：内嵌播放器', () => {
-  it('::bilibili 渲染为点击加载占位容器', async () => {
+  it('::bilibili 直接渲染播放器 iframe（lazy + 16:9 容器）', async () => {
     const html = await renderMarkdown('::bilibili{bvid="BV1xx411c7mD"}');
-    expect(html).toContain('class="embed-lazy embed-bilibili"');
-    expect(html).toContain('data-embed="bilibili"');
-    expect(html).toContain('data-bvid="BV1xx411c7mD"');
+    expect(html).toContain('class="embed-player embed-bilibili"');
+    expect(html).toContain('<iframe');
     expect(html).toContain('player.bilibili.com/player.html?bvid=BV1xx411c7mD');
-    expect(html).not.toContain('<iframe');
+    expect(html).toContain('loading="lazy"');
+    expect(html).toContain('allowfullscreen');
   });
 
-  it('::youtube 渲染为点击加载占位容器', async () => {
+  it('::youtube 直接渲染播放器 iframe（youtube-nocookie 域名）', async () => {
     const html = await renderMarkdown('::youtube{id="dQw4w9WgXcQ"}');
-    expect(html).toContain('class="embed-lazy embed-youtube"');
-    expect(html).toContain('data-embed="youtube"');
-    expect(html).toContain('data-id="dQw4w9WgXcQ"');
-    expect(html).toContain('youtube');
-    expect(html).not.toContain('<iframe');
+    expect(html).toContain('class="embed-player embed-youtube"');
+    expect(html).toContain('<iframe');
+    expect(html).toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ');
+    expect(html).toContain('loading="lazy"');
   });
 
   it(':::video 渲染原生 video 标签', async () => {
@@ -151,7 +150,8 @@ describe('自定义指令：内嵌播放器', () => {
 
   it('指令缺必需参数时降级为普通文本', async () => {
     const html = await renderMarkdown('::bilibili{}');
-    expect(html).not.toContain('embed-lazy');
+    expect(html).not.toContain('embed-player');
+    expect(html).not.toContain('<iframe');
     expect(html).toContain('::bilibili');
   });
 });
@@ -242,7 +242,9 @@ describe('构建期占位替换（M4b）', () => {
     const html = await renderMarkdown('::stream{id="welcome"}', {
       streamEmbeds: { welcome: '<div class="stream-block" data-stream-id="welcome">FRAG</div>' },
     });
-    expect(html).toContain('FRAG');
+    // 片段必须以真实 HTML 直出（回归：曾被 stringify 转义成裸文本，见 #8）
+    expect(html).toContain('<div class="stream-block" data-stream-id="welcome">FRAG</div>');
+    expect(html).not.toContain('&#x3C;');
     // 占位 div 被整段替换，不残留空占位
     expect(html.match(/data-stream-id/g)).toHaveLength(1);
   });
@@ -262,7 +264,9 @@ describe('构建期占位替换（M4b）', () => {
         htmlByRepo: { 'owner/repo': '<a class="gh-repo" href="https://github.com/owner/repo">owner/repo</a>' },
       },
     });
-    expect(html).toContain('class="gh-repo"');
+    // 真实 HTML 直出，不被转义（回归 #8）
+    expect(html).toContain('<a class="gh-repo" href="https://github.com/owner/repo">owner/repo</a>');
+    expect(html).not.toContain('&#x3C;');
     expect(html).not.toContain('class="gh-card"');
   });
 
@@ -277,5 +281,56 @@ describe('构建期占位替换（M4b）', () => {
     const html = await renderMarkdown('::stream{id="welcome"}\n\n::ghcard{repo="o/r"}');
     expect(html).toContain('class="stream-block"');
     expect(html).toContain('class="gh-card"');
+  });
+
+  // 回归 #8：特性页"功能指令"场景——ghcard/stream 相邻出现且后续还有正文，
+  // 替换产物必须直出为真实 HTML，后续内容不受影响
+  const FEATURES_MD = [
+    '## 功能指令',
+    '',
+    '正文任意位置插入 GitHub 仓库卡片：',
+    '',
+    '::ghcard{repo="ggml-org/llama.cpp"}',
+    '',
+    '插入一个流式区块：',
+    '',
+    '::stream{id="welcome"}',
+    '',
+    '## HTML 混写',
+    '',
+    '前面 <strong>混写</strong> 后面',
+  ].join('\n');
+
+  it('有缓存场景：ghcard/stream 直出真实 HTML 且后续内容正常', async () => {
+    const html = await renderMarkdown(FEATURES_MD, {
+      streamEmbeds: {
+        welcome:
+          '<div class="stream-block" data-stream-id="welcome">' +
+          '<script type="application/json" class="stream-tokens">[]</script></div>',
+      },
+      ghCards: {
+        htmlByRepo: { 'ggml-org/llama.cpp': '<a class="gh-repo" href="https://github.com/ggml-org/llama.cpp">card</a>' },
+      },
+    });
+    expect(html).toContain('<a class="gh-repo" href="https://github.com/ggml-org/llama.cpp">card</a>');
+    expect(html).toContain('<div class="stream-block" data-stream-id="welcome">');
+    expect(html).not.toContain('&#x3C;');
+    // 后续内容完好
+    expect(html).toContain('<h2>HTML 混写</h2>');
+    expect(html).toContain('<p>前面 <strong>混写</strong> 后面</p>');
+  });
+
+  it('无缓存场景（ghcard 移除、stream 保留）：后续内容不受影响', async () => {
+    const html = await renderMarkdown(FEATURES_MD, {
+      streamEmbeds: {
+        welcome: '<div class="stream-block" data-stream-id="welcome">S</div>',
+      },
+      ghCards: { htmlByRepo: {}, warn: () => {} },
+    });
+    expect(html).not.toContain('gh-card');
+    expect(html).toContain('<div class="stream-block" data-stream-id="welcome">S</div>');
+    expect(html).not.toContain('&#x3C;');
+    expect(html).toContain('<h2>HTML 混写</h2>');
+    expect(html).toContain('<p>前面 <strong>混写</strong> 后面</p>');
   });
 });

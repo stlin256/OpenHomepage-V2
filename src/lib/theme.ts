@@ -103,3 +103,32 @@ export function buildAccentTheme(accent: string = DEFAULT_ACCENT): AccentTheme {
     dark: { accent: darkAccent, contrast: pickContrastText(darkAccent) },
   };
 }
+
+// ---------------------------------------------------------------------------
+// 亮/暗主题模式（两态）：初始主题解析与切换。
+// 行为契约（spec 10 §3）：页面打开时无用户选择则跟随系统（或 site.yaml
+// theme.default_mode 的 light/dark）；用户手动切换后写入 sessionStorage，
+// 本次会话内（含站内导航转场）保持，离开站点后重置。
+// ---------------------------------------------------------------------------
+
+export type ThemeName = 'light' | 'dark';
+export type ThemeModeSetting = 'system' | 'light' | 'dark';
+
+/**
+ * 初始主题：sessionStorage 中的用户选择（'light'/'dark'，其余值视为未选择）
+ * > site.yaml default_mode 为 light/dark 时 > 跟随系统。
+ */
+export function initialTheme(
+  saved: string | null,
+  defaultMode: ThemeModeSetting = 'system',
+  systemDark: boolean = false,
+): ThemeName {
+  if (saved === 'light' || saved === 'dark') return saved;
+  if (defaultMode === 'light' || defaultMode === 'dark') return defaultMode;
+  return systemDark ? 'dark' : 'light';
+}
+
+/** 两态切换（无"跟随系统"第三态，系统变化只在无用户选择时生效，见前端脚本） */
+export function toggleTheme(current: ThemeName): ThemeName {
+  return current === 'dark' ? 'light' : 'dark';
+}

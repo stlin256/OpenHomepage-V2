@@ -1,6 +1,6 @@
 /**
- * 前端交互的纯逻辑层（可单测）：RSS 浮层方向决策、磁吸位移、流式打字节奏、
- * 视差位移、嵌入封面 URL。浏览器脚本（src/scripts/）只负责 DOM/事件，
+ * 前端交互的纯逻辑层（可单测）：RSS 浮层方向决策、流式打字节奏、
+ * 视差位移。浏览器脚本（src/scripts/）只负责 DOM/事件，
  * 决策与计算全部收口到这里。
  */
 
@@ -8,8 +8,6 @@
 export const POPOVER_SHOW_DELAY = 300;
 /** 浮层收起延迟（spec 05：离开 150ms 后收起） */
 export const POPOVER_HIDE_DELAY = 150;
-/** 磁吸最大位移 px（spec 09：≤6px） */
-export const MAGNET_MAX = 6;
 /** 视差最大位移 px（spec 09：≤40px） */
 export const PARALLAX_MAX = 40;
 /** 打字抖动幅度（spec 04：±40%） */
@@ -22,35 +20,30 @@ export interface Rect {
   bottom: number;
 }
 
+export interface PopoverPlacement {
+  side: 'top' | 'bottom';
+  /** 浮层可用最大高度（px）：所在侧放得下时为浮层自然高度；两侧都放不下时收缩到较大一侧（前端配 overflow-y 防截断） */
+  maxHeight: number;
+}
+
 /**
- * 浮层方向决策：下方空间够（含 gap）→ bottom；否则上方够 → top；
- * 都不够 → 放在空间较大的一侧。
+ * 浮层方向决策（基于卡片在视口中的位置）：默认弹向卡片上方；
+ * 上方空间不足（含 gap）才翻转到下方；两侧都放不下 → 放在空间较大的一侧并
+ * 以 maxHeight 收缩，保证不溢出视口。
  */
 export function popoverPlacement(
   card: Rect,
   popoverHeight: number,
   viewportHeight: number,
   gap = 8,
-): 'top' | 'bottom' {
-  const below = viewportHeight - card.bottom - gap;
-  const above = card.top - gap;
-  if (below >= popoverHeight) return 'bottom';
-  if (above >= popoverHeight) return 'top';
-  return below >= above ? 'bottom' : 'top';
-}
-
-/**
- * 磁吸位移：指针相对元素中心的偏移 × strength，双向 clamp 到 ±max。
- * 移动端/触摸环境由调用方整体关闭（不调用本函数）。
- */
-export function magnetOffset(
-  dx: number,
-  dy: number,
-  max = MAGNET_MAX,
-  strength = 0.2,
-): { x: number; y: number } {
-  const clamp = (v: number) => Math.max(-max, Math.min(max, v));
-  return { x: clamp(dx * strength), y: clamp(dy * strength) };
+): PopoverPlacement {
+  const above = Math.max(0, card.top - gap);
+  const below = Math.max(0, viewportHeight - card.bottom - gap);
+  if (above >= popoverHeight) return { side: 'top', maxHeight: popoverHeight };
+  if (below >= popoverHeight) return { side: 'bottom', maxHeight: popoverHeight };
+  return above >= below
+    ? { side: 'top', maxHeight: above }
+    : { side: 'bottom', maxHeight: below };
 }
 
 /** 标点 token 判定（标点后加短停顿，spec 04 §2） */
@@ -83,13 +76,4 @@ export function tokenDelay(
 export function parallaxShift(progress: number, max = PARALLAX_MAX): number {
   const p = Math.max(-1, Math.min(1, progress));
   return Math.round(p * max * 100) / 100;
-}
-
-/**
- * 嵌入视频封面 URL：youtube 有公开缩略图 CDN；bilibili 封面需 API 查询，
- * 构建期拿不到 → null（前端用纯色 + 播放按钮占位，spec 决策见 09/任务书）。
- */
-export function embedCoverUrl(kind: 'bilibili' | 'youtube', id: string): string | null {
-  if (kind === 'youtube') return `https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`;
-  return null;
 }

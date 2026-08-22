@@ -19,6 +19,8 @@ export interface SiteConfig {
     name: string;
     tagline?: LocalizedText;
     avatar?: string;
+    /** 头像布局：side=姓名/简介右侧（杂志分栏，默认）；top=头像居顶居中 */
+    avatar_position?: 'side' | 'top';
     bio_page?: string;
     links?: { label: string; url: string }[];
   };
@@ -201,6 +203,11 @@ export function resolveText(field: LocalizedText, lang: string): string {
   if (typeof field === 'string') return field;
   const value = field[lang] ?? field.en ?? field.zh ?? Object.values(field)[0];
   return value ?? '';
+}
+
+/** profile.avatar_position 归一化：缺省/非法值回退 'side'（默认侧边杂志布局） */
+export function resolveAvatarPosition(profile: SiteConfig['profile']): 'side' | 'top' {
+  return profile.avatar_position === 'top' ? 'top' : 'side';
 }
 
 export interface ResolvedPage {

@@ -67,7 +67,7 @@ Text on the left. Magazine typography is about **whitespace and alignment**, not
 
 ## Embedded players
 
-Players render a cover placeholder and only load the iframe **after a click**:
+Players render the official iframe directly in a responsive 16:9 container (`loading="lazy"`, so first paint stays fast):
 
 ::youtube{id="aircAruvnKk"}
 

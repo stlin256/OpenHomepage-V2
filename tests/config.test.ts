@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSiteConfig, loadRssConfig } from '../src/lib/config.ts';
+import { loadSiteConfig, loadRssConfig, resolveAvatarPosition } from '../src/lib/config.ts';
 
 const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/data');
 
@@ -70,6 +70,17 @@ describe('loadSiteConfig', () => {
     withTempData({ 'site.yaml': 'site:\n  title: [未闭合\n' }, (dir) => {
       expect(() => loadSiteConfig(dir)).toThrowError(/YAML|解析/i);
     });
+  });
+});
+
+describe('resolveAvatarPosition', () => {
+  it('缺省/非法值回退 side；显式 top 生效', () => {
+    const cfg = loadSiteConfig(EXAMPLE);
+    expect(resolveAvatarPosition(cfg.profile)).toBe('side');
+    expect(resolveAvatarPosition({ name: 'N', avatar_position: 'top' })).toBe('top');
+    expect(
+      resolveAvatarPosition({ name: 'N', avatar_position: 'left' as 'side' }),
+    ).toBe('side');
   });
 });
 

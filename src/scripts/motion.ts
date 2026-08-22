@@ -1,10 +1,10 @@
 /**
- * 动效（docs/specs/09）：滚动显现（IO + CSS）、杂志视差（头像 ≤40px）、
- * 磁吸按钮（导航 tab / 图标 ≤6px）。
- * 规则：仅 transform/opacity；prefers-reduced-motion 或触摸设备关闭视差与磁吸；
+ * 动效（docs/specs/09）：滚动显现（IO + CSS）、杂志视差（头像 ≤40px）。
+ * 规则：仅 transform/opacity；prefers-reduced-motion 或触摸设备关闭视差；
  * 无 JS 时 .reveal 不隐藏（初始隐藏态挂在 html.js 下）。
+ * （原磁吸按钮效果已废弃：可点元素 hover 改为传统高亮背景块，纯 CSS。）
  */
-import { magnetOffset, parallaxShift, MAGNET_MAX, PARALLAX_MAX } from '../lib/interactive.ts';
+import { parallaxShift, PARALLAX_MAX } from '../lib/interactive.ts';
 
 function reducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -68,30 +68,9 @@ function initParallax(): void {
   updateParallax();
 }
 
-/** 磁吸：导航 tab / 图标按钮向指针轻微吸附，离开复位 */
-function initMagnet(): void {
-  for (const el of document.querySelectorAll<HTMLElement>('.site-nav a, .icon-btn')) {
-    if (el.dataset.magnetInit) continue;
-    el.dataset.magnetInit = '1';
-    el.addEventListener('pointermove', (e) => {
-      const r = el.getBoundingClientRect();
-      const { x, y } = magnetOffset(
-        e.clientX - (r.left + r.width / 2),
-        e.clientY - (r.top + r.height / 2),
-        MAGNET_MAX,
-      );
-      el.style.transform = `translate(${x}px, ${y}px)`;
-    });
-    el.addEventListener('pointerleave', () => {
-      el.style.transform = '';
-    });
-  }
-}
-
 export function initMotion(): void {
   initReveal();
-  // spec 09 §2：reduced-motion 与移动端关闭视差/磁吸，保留淡入
+  // spec 09 §2：reduced-motion 与移动端关闭视差，保留淡入
   if (reducedMotion() || coarsePointer()) return;
   initParallax();
-  initMagnet();
 }

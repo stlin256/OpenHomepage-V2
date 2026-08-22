@@ -1,38 +1,52 @@
 import { describe, it, expect } from 'vitest';
 import {
   popoverPlacement,
-  magnetOffset,
   isPauseToken,
   tokenDelay,
   parallaxShift,
-  embedCoverUrl,
   JITTER_RATIO,
-  MAGNET_MAX,
   PARALLAX_MAX,
   PAUSE_MAX_MS,
 } from '../src/lib/interactive.ts';
 
 describe('popoverPlacement', () => {
   const vh = 800;
-  it('下方空间够 → bottom', () => {
-    expect(popoverPlacement({ top: 100, bottom: 200 }, 300, vh)).toBe('bottom');
+  it('上方空间够 → top（默认向卡片上方弹出）', () => {
+    // 上 92 不够 300？不：top=400 → above=392 ≥ 300 → top，即使下方也够
+    expect(popoverPlacement({ top: 400, bottom: 500 }, 300, vh)).toEqual({
+      side: 'top',
+      maxHeight: 300,
+    });
   });
-  it('下方不够、上方够 → top', () => {
-    expect(popoverPlacement({ top: 600, bottom: 750 }, 300, vh)).toBe('top');
+  it('上方不够、下方够 → bottom（上方不足才翻转）', () => {
+    // above = 100-8 = 92 < 300；below = 800-200-8 = 592 ≥ 300
+    expect(popoverPlacement({ top: 100, bottom: 200 }, 300, vh)).toEqual({
+      side: 'bottom',
+      maxHeight: 300,
+    });
   });
-  it('两侧都不够时放在空间较大的一侧（相等取下方）', () => {
-    // 上 342 = 下 342 → bottom；top 上移则上方更大 → top
-    expect(popoverPlacement({ top: 350, bottom: 450 }, 500, vh)).toBe('bottom');
-    expect(popoverPlacement({ top: 390, bottom: 460 }, 500, vh)).toBe('top');
-    expect(popoverPlacement({ top: 300, bottom: 400 }, 500, vh)).toBe('bottom');
+  it('卡片贴视口顶部（上方空间为 0）→ bottom', () => {
+    expect(popoverPlacement({ top: 0, bottom: 100 }, 300, vh).side).toBe('bottom');
   });
-});
-
-describe('magnetOffset', () => {
-  it('按强度缩放并 clamp 到 ±6px', () => {
-    expect(magnetOffset(10, -10)).toEqual({ x: 2, y: -2 });
-    expect(magnetOffset(100, -100)).toEqual({ x: MAGNET_MAX, y: -MAGNET_MAX });
-    expect(magnetOffset(0, 0)).toEqual({ x: 0, y: 0 });
+  it('两侧都不够 → 放在空间较大的一侧，maxHeight 收缩到该侧空间（防截断）', () => {
+    // 上 342 = 下 342 → 平局取上方；下方更大时取下方
+    expect(popoverPlacement({ top: 350, bottom: 450 }, 500, vh)).toEqual({
+      side: 'top',
+      maxHeight: 342,
+    });
+    expect(popoverPlacement({ top: 390, bottom: 460 }, 500, vh)).toEqual({
+      side: 'top',
+      maxHeight: 382,
+    });
+    expect(popoverPlacement({ top: 300, bottom: 400 }, 500, vh)).toEqual({
+      side: 'bottom',
+      maxHeight: 392,
+    });
+  });
+  it('卡片超出视口（滚动中）：上方空间按视口顶 clamp 不为负', () => {
+    const p = popoverPlacement({ top: -50, bottom: 700 }, 300, vh);
+    expect(p.maxHeight).toBeGreaterThanOrEqual(0);
+    expect(p.side).toBe('bottom'); // above=0，below=92 更大
   });
 });
 
@@ -66,12 +80,5 @@ describe('parallaxShift', () => {
     expect(parallaxShift(-1)).toBe(-PARALLAX_MAX);
     expect(parallaxShift(2)).toBe(PARALLAX_MAX);
     expect(parallaxShift(0.5, 40)).toBe(20);
-  });
-});
-
-describe('embedCoverUrl', () => {
-  it('youtube 有 CDN 封面；bilibili 返回 null（纯色占位）', () => {
-    expect(embedCoverUrl('youtube', 'abc123')).toBe('https://i.ytimg.com/vi/abc123/hqdefault.jpg');
-    expect(embedCoverUrl('bilibili', 'BV1xx')).toBeNull();
   });
 });

@@ -13,7 +13,7 @@
 :::
 ```
 
-- `bilibili` / `youtube` 渲染为响应式 16:9 iframe，**默认懒加载**（点击封面才加载 iframe，减轻页面开销、避免第三方追踪）。M2 管线输出 `<div class="embed-lazy" data-embed data-src>` 占位结构，前端 JS 点击后才注入 iframe；YouTube 嵌入 URL 用隐私增强域名 `youtube-nocookie.com`。
+- `bilibili` / `youtube` **直接渲染**官方播放器 iframe（`<div class="embed-player">` 响应式 16:9 容器 + `<iframe loading="lazy">`，浏览器视口附近才加载，不拖慢首屏）。YouTube 嵌入 URL 用隐私增强域名 `youtube-nocookie.com`。
 - `video` / `audio` 渲染原生 `<video controls>` / `<audio controls>`，src 支持相对 data/ 的路径和外部 URL。
 
 ## 2. 图文排版（杂志化用）

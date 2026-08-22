@@ -11,6 +11,7 @@ profile:
     zh: "博士研究生 / 机器学习与系统"
     en: "PhD candidate / ML & Systems"
   avatar: "assets/avatar.svg"   # 文字徽标，无需照片
+  # avatar_position: "side"     # side=头像在简介右侧（默认杂志布局）；top=头像在姓名上方居顶居中
   bio_page: "index"
   links:
     - { label: "Email", url: "mailto:zhiyuan@example.com" }

@@ -102,13 +102,21 @@ export function navPagesForLang(pages: PageEntry[], lang: string, defaultLang: s
   return items;
 }
 
-/** 当前页的全部语言版本链接（hreflang 与语言切换器共用）；单语言站点返回空 */
+/**
+ * 当前页真实存在的语言版本链接（hreflang 与语言切换器共用）；
+ * 只统计该 slug 在对应语言有真实页面的语言（回退渲染不算），
+ * 单语言站点或该页无真实他语言版本时返回空/单元素 → 切换器不显示（spec 11）。
+ */
 export function alternateLinks(
+  pages: PageEntry[],
   slug: string,
   langs: string[],
   defaultLang: string,
 ): { lang: string; path: string }[] {
   if (!isI18nEnabled(langs)) return [];
   const effectiveDefault = langs.includes(defaultLang) ? defaultLang : langs[0];
-  return langs.map((lang) => ({ lang, path: pageUrlPath(slug, lang, effectiveDefault) }));
+  const realLangs = new Set(pages.filter((p) => p.slug === slug).map((p) => p.lang));
+  return langs
+    .filter((lang) => realLangs.has(lang))
+    .map((lang) => ({ lang, path: pageUrlPath(slug, lang, effectiveDefault) }));
 }

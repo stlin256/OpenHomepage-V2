@@ -67,7 +67,7 @@ $$
 
 ## 内嵌播放器
 
-播放器默认显示封面占位，**点击后才加载** iframe，页面打开飞快：
+播放器以响应式 16:9 容器直接渲染官方 iframe（`loading="lazy"` 惰性加载，不拖慢首屏）：
 
 ::youtube{id="aircAruvnKk"}
 

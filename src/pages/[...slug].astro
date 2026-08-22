@@ -17,6 +17,7 @@ import {
   detectLanguages,
   isI18nEnabled,
   resolveText,
+  resolveAvatarPosition,
   type SiteConfig,
 } from '../lib/config.ts';
 import {
@@ -88,7 +89,7 @@ export function getStaticPaths() {
       defaultLang,
       accent,
       nav: navPagesForLang(pages, route.lang, defaultLang),
-      alternates: alternateLinks(route.slug, langs, defaultLang),
+      alternates: alternateLinks(pages, route.slug, langs, defaultLang),
       avatarUrl,
       blocks,
       githubView,
@@ -112,6 +113,8 @@ const {
 } = Astro.props;
 const isHome = route.slug === '/';
 const contentLang = route.page.lang;
+// 头像布局：side=侧边杂志分栏（默认）；top=头像在姓名/简介上方居顶
+const avatarTop = resolveAvatarPosition(site.profile) === 'top';
 
 // 流式区块：按内容语言沿回退链加载全部定义（页面语言 → en → 默认语言）；
 // 主页 streaming 区块与正文 ::stream{id} 占位共用同一份加载结果
@@ -157,8 +160,13 @@ const bodyHtml = await renderMarkdown(route.page.body, {
       <div class="home">
         {blocks.map((b) =>
           b.block === 'profile' ? (
-            <section class="home-block block-profile mag-grid reveal">
-              <div class="span-7 profile-intro">
+            <section
+              class:list={[
+                'home-block block-profile reveal',
+                avatarTop ? 'profile-top' : 'mag-grid',
+              ]}
+            >
+              <div class:list={['profile-intro', { 'span-7': !avatarTop }]}>
                 <h1 class="profile-name">{site.profile.name}</h1>
                 {site.profile.tagline && (
                   <p class="profile-tagline">{resolveText(site.profile.tagline, contentLang)}</p>
@@ -173,7 +181,10 @@ const bodyHtml = await renderMarkdown(route.page.body, {
                   </ul>
                 )}
               </div>
-              <div class="span-5 profile-avatar" data-parallax>
+              <div
+                class:list={['profile-avatar', { 'span-5': !avatarTop }]}
+                {...(avatarTop ? {} : { 'data-parallax': true })}
+              >
                 {avatarUrl && <img src={avatarUrl} alt={site.profile.name} loading="lazy" />}
               </div>
             </section>

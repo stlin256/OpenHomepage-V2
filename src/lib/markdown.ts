@@ -99,25 +99,32 @@ function buildSanitizeSchema(): Schema {
 
 type Directive = ContainerDirective | LeafDirective | TextDirective;
 
-/** 指令参数值原样写入 hast properties，序列化时由 hast-util-to-html 统一转义 */
-function toEmbedDiv(kind: 'bilibili' | 'youtube', attrs: Record<string, string>): Properties | null {
+/** bilibili/youtube 指令：直接输出官方播放器 iframe（loading=lazy），外层 16:9 响应式容器 */
+function toEmbedDiv(
+  kind: 'bilibili' | 'youtube',
+  attrs: Record<string, string>,
+): { properties: Properties; children: ElementContent[] } | null {
+  let src: string;
+  let title: string;
   if (kind === 'bilibili') {
-    const bvid = attrs.bvid;
-    if (!bvid) return null;
-    return {
-      className: ['embed-lazy', 'embed-bilibili'],
-      dataEmbed: 'bilibili',
-      dataBvid: bvid,
-      dataSrc: `https://player.bilibili.com/player.html?bvid=${bvid}&autoplay=0`,
-    };
+    if (!attrs.bvid) return null;
+    src = `https://player.bilibili.com/player.html?bvid=${attrs.bvid}&autoplay=0`;
+    title = 'bilibili 播放器';
+  } else {
+    if (!attrs.id) return null;
+    src = `https://www.youtube-nocookie.com/embed/${attrs.id}`;
+    title = 'YouTube 播放器';
   }
-  const id = attrs.id;
-  if (!id) return null;
   return {
-    className: ['embed-lazy', 'embed-youtube'],
-    dataEmbed: 'youtube',
-    dataId: id,
-    dataSrc: `https://www.youtube-nocookie.com/embed/${id}`,
+    properties: { className: ['embed-player', `embed-${kind}`] },
+    children: [
+      {
+        type: 'element',
+        tagName: 'iframe',
+        properties: { src, loading: 'lazy', allowFullScreen: true, title },
+        children: [],
+      },
+    ],
   };
 }
 
@@ -195,9 +202,10 @@ function remarkCustomDirectives() {
       switch (name) {
         case 'bilibili':
         case 'youtube': {
-          const properties = toEmbedDiv(name, attrs);
-          if (!properties) return degradeToText(directive, file);
-          setElement('div', properties);
+          const embed = toEmbedDiv(name, attrs);
+          if (!embed) return degradeToText(directive, file);
+          setElement('div', embed.properties);
+          data.hChildren = embed.children;
           break;
         }
         case 'video':
@@ -366,7 +374,9 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   // 未提供对应选项时占位原样保留（如纯渲染场景）；提供后未匹配的占位移除并 warning。
   if (options.streamEmbeds) processor.use(() => rehypeStreamEmbeds(options.streamEmbeds!, warn));
   if (options.ghCards) processor.use(() => rehypeGhCards(options.ghCards!));
-  return processor.use(rehypeStringify);
+  // allowDangerousHtml：sanitize 之后用户内容的 raw 节点已被 rehypeRaw 全部解析，
+  // 树中仅剩上面替换进来的可信构建片段（stream/ghcard），须直出而非转义（回归 #8）
+  return processor.use(rehypeStringify, { allowDangerousHtml: true });
 }
 
 const processorCache = new Map<string, ReturnType<typeof createMarkdownProcessor>>();

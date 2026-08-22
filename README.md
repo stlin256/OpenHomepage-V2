@@ -7,11 +7,11 @@ A lightweight, magazine-style personal homepage generator — static, bilingual 
 ## Features
 
 - **Markdown-first content** — pages are plain markdown files with frontmatter; rendered with GFM, Shiki syntax highlighting, KaTeX math, and custom directives (`::bilibili`, `::youtube`, `:::video`, `:::audio`, `:::figure`, `::::grid`, `::stream`, `::ghcard`), plus safe raw-HTML mixing.
-- **Magazine layout, researcher-grade restraint** — asymmetric 12-column grid, expressive yet cheap animations (transform/opacity only), dark/light themes with a configurable accent color.
+- **Magazine layout, researcher-grade restraint** — asymmetric 12-column grid, expressive yet cheap animations (transform/opacity only), dark/light themes (two-state toggle; follows your system until you pick — the choice sticks for the session and resets once you leave) with a configurable accent color.
 - **GitHub blocks** — contribution heatmap and pinned repo cards, fetched at build time with cache fallback.
 - **RSS cards** — multiple feeds, grouped or weighted-mixed display, hover previews, curated article lists with per-card covers.
 - **LLM-style streaming blocks** — pre-written markdown replayed with a realistic streaming effect.
-- **Optional i18n** — add a second language folder under `data/pages/` and the whole site (routes, nav, language switcher, fallback chain) lights up automatically.
+- **Optional i18n** — add a second language folder under `data/pages/` and the whole site (routes, nav, fallback chain) lights up automatically; the language switcher only appears when the current page has a real translation.
 - **Visual editor (PC)** — `npm run admin` launches a local WordPress-like editor (WYSIWYG via Milkdown) for pages and all configuration, with autosave, version snapshots, and a theme color picker.
 - **Private data, public repo** — `data/` is git-ignored; CI downloads it from a secret URL, with snapshot fallback and e-mail notification via GitHub's built-in failure alerts.
 
