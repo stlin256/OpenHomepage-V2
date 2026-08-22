@@ -1,19 +1,19 @@
 # 可视化编辑器信息架构（细化项 #6）
 
-> 状态：待讨论确认。形态已定：`npm run admin` 本地 Web 服务，仅 PC，WYSIWYG（Milkdown），读写本地 data/。
+> 状态：✅ 已实现（M5）。形态：`npm run admin` 本地 Web 服务，仅 PC，WYSIWYG（Milkdown），读写本地 data/。
 
 ## 1. 界面布局
 
 ```
 ┌────────────────────────────────────────────────┐
-│ 顶栏: Logo  [保存]  [预览站点]  状态提示        │
+│ 顶栏: Logo  保存状态  [预览站点]  [中/EN]        │
 ├──────────┬─────────────────────────────────────┤
 │ 侧栏      │  主编辑区                            │
 │ ▸ 页面    │  （随侧栏选中项切换）                │
 │   - index │                                     │
 │   - 研究   │  页面 → Milkdown WYSIWYG 编辑器     │
-│ ▸ 配置    │  配置 → 对应表单                    │
-│   - 站点  │                                     │
+│ ▸ 配置    │  （frontmatter 表单条置顶）          │
+│   - 站点  │  配置 → 对应表单                    │
 │   - GitHub│                                     │
 │   - RSS   │                                     │
 │   - 流式块 │                                     │
@@ -34,13 +34,16 @@
 | 主题 | accent 取色器 | 头像候选色条（自动提取 4-6 色）+ 在头像上点取 + 手动色值输入 |
 | 素材 | data/assets/ | 上传/删除/复制引用路径 |
 
-## 3. 技术要点
+## 3. 技术要点（实现注记，M5）
 
-- 服务：Node（fastify 或原生 http），端口默认 4174，仅监听 127.0.0.1。
-- API：`GET/PUT /api/pages/:slug`、`GET/PUT /api/config/:name`、`POST /api/assets` 等，REST 直写文件。
-- 保存：显式点"保存"按钮写盘（非自动保存），写盘前校验 YAML/schema，失败保留草稿并提示。
-- 预览站点：按钮打开 `npm run dev` 的 dev server（若未启动则提示先启动）。
-- Milkdown 自定义节点：与 03 文档指令一一对应（播放器/figure/grid/stream/ghcard 在编辑器里渲染为占位卡片，可编辑参数）。
+- 服务：`admin/server/`，**原生 node:http**（选型：零新增依赖、离线可装，API 简单不需要框架；放弃 fastify），端口默认 4174（`ADMIN_PORT` 可改），仅监听 127.0.0.1。
+- 前端：`admin/ui/`，TS + Milkdown 单页应用；**esbuild 启动时内存打包**（选型：importmap 需手工维护 prosemirror 十余个包的映射，脆弱；vite 构建对单页小工具过重）。`admin/shared/` 为前后端共用纯函数（slugify/i18n/取色/autosave），全部有单测。
+- API：`GET /api/info`、`GET /api/pages`、`GET/PUT /api/page`、`POST /api/page/create|rename|delete`、`GET/PUT /api/config/site|rss`、`GET /api/assets`、`POST /api/asset`（原始二进制上传）、`POST /api/asset/delete`、`GET /api/asset/file`、`GET /api/snapshots`、`POST /api/snapshot/restore`、`GET /api/dev-status`。REST 直写文件；所有路径参数经 `safeResolve` 规范化并限制在 data/ 内（含 URL 编码伪装防护）。
+- 保存：**自动保存**（编辑停顿 ~1.5s 写盘，debounce 合并）；写盘前校验 schema（复用 `src/lib/config.ts` 的 `validateSiteConfig`/`validateRssConfig`，页面要求 frontmatter.title），失败不落盘并在顶栏提示。
+- 预览站点：按钮先探 `GET /api/dev-status`（探测 127.0.0.1:4321），已启动则打开新标签页，未启动则提示先 `npm run dev`。
+- Milkdown 自定义节点：与 03 文档指令一一对应。叶指令（bilibili/youtube/stream/ghcard）与空容器指令（video/audio/figure）为原子节点；grid/grid_cell 为真嵌套容器（remark-directive 序列化自动让外层冒号多于内层）。编辑器里渲染为参数卡片，序列化回指令语法；往返有 jsdom 测试守护。
+- 粘贴图片：ProseMirror `handlePaste` 钩子拦截图片文件 → 上传 `POST /api/asset`（自动命名 `pasted-<时间戳>.<ext>`）→ 插入 image 节点引用 `assets/<name>`。
+- 无 data/ 时编辑器启动自动从 data.example/ 初始化（复用 scripts/setup.mjs 逻辑），界面顶部横幅提示。
 
 ## 4. 已定细节
 

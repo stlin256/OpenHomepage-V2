@@ -99,30 +99,40 @@ function requireField(obj: unknown, dotted: string, file: string): void {
   }
 }
 
-export function loadSiteConfig(dataDir: string): SiteConfig {
-  const file = path.join(dataDir, 'site.yaml');
-  const cfg = readYaml(file) as SiteConfig;
+/** 校验 site 配置对象（纯函数，缺失/非法字段抛中文错误），供加载与编辑器写盘前复用 */
+export function validateSiteConfig(cfg: SiteConfig, file = 'site.yaml'): void {
   requireField(cfg, 'site.title', file);
   requireField(cfg, 'profile.name', file);
   requireField(cfg, 'github.username', file);
+}
+
+export function loadSiteConfig(dataDir: string): SiteConfig {
+  const file = path.join(dataDir, 'site.yaml');
+  const cfg = readYaml(file) as SiteConfig;
+  validateSiteConfig(cfg, file);
   return cfg;
 }
 
-export function loadRssConfig(dataDir: string, file = 'rss.yaml'): RssConfig {
-  const filePath = path.join(dataDir, file);
-  const cfg = readYaml(filePath) as RssConfig;
+/** 校验 rss 配置对象（纯函数），供加载与编辑器写盘前复用 */
+export function validateRssConfig(cfg: RssConfig, file = 'rss.yaml'): void {
   if (!Array.isArray(cfg.sources) || cfg.sources.length === 0) {
-    throw new Error(`${file} 的 sources 不能为空（${filePath}）`);
+    throw new Error(`${file} 的 sources 不能为空（${file}）`);
   }
   for (const [i, src] of cfg.sources.entries()) {
-    requireField(src, 'name', `${filePath} sources[${i}]`);
-    requireField(src, 'url', `${filePath} sources[${i}]`);
+    requireField(src, 'name', `${file} sources[${i}]`);
+    requireField(src, 'url', `${file} sources[${i}]`);
     if (src.mode !== 'latest' && src.mode !== 'curated') {
       throw new Error(
         `${file} sources[${i}]（${src.name}）的 mode 必须是 latest 或 curated，当前为：${src.mode}`
       );
     }
   }
+}
+
+export function loadRssConfig(dataDir: string, file = 'rss.yaml'): RssConfig {
+  const filePath = path.join(dataDir, file);
+  const cfg = readYaml(filePath) as RssConfig;
+  validateRssConfig(cfg, filePath);
   return cfg;
 }
 

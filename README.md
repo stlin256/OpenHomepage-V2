@@ -12,7 +12,7 @@ A lightweight, magazine-style personal homepage generator — static, bilingual 
 - **RSS cards** — multiple feeds, grouped or weighted-mixed display, hover previews, curated article lists with per-card covers.
 - **LLM-style streaming blocks** — pre-written markdown replayed with a realistic streaming effect.
 - **Optional i18n** — add a second language folder under `data/pages/` and the whole site (routes, nav, language switcher, fallback chain) lights up automatically.
-- **Visual editor (PC)** — `npm run admin` will launch a local WordPress-like editor for pages and all configuration. *(in progress)*
+- **Visual editor (PC)** — `npm run admin` launches a local WordPress-like editor (WYSIWYG via Milkdown) for pages and all configuration, with autosave, version snapshots, and a theme color picker.
 - **Private data, public repo** — `data/` is git-ignored; CI downloads it from a secret URL, with snapshot fallback and e-mail notification via GitHub's built-in failure alerts.
 
 ## Quick start
@@ -28,6 +28,21 @@ npm run build       # static build → dist/
 
 Without a `data/` folder the site falls back to the bundled `data.example/` (a complete AI-themed demo) with a warning.
 
+## Visual editor
+
+```bash
+npm run admin       # → http://127.0.0.1:4174 (loopback only)
+```
+
+- **Pages** — sidebar groups pages by language folder; Milkdown WYSIWYG editing with the custom directives rendered as parameter cards; frontmatter (title/nav/order/slug/description) as a form bar; new-page wizard (title → auto slug + template), rename, delete, and one-click "create the other-language version". `Ctrl+V` pastes images straight into `data/assets/` and inserts the reference.
+- **Config** — forms for site/profile/links, GitHub (username, contributions toggle, pinned repos with up/down ordering), RSS (sources with mode/latest/weight/cover and curated article sub-lists), streaming blocks, and a drag-sortable `home.layout`.
+- **Theme** — palette of 4–6 colors extracted from your avatar, click-anywhere pixel picking on the avatar, or manual hex; writes back `theme.accent` with live preview.
+- **Assets** — list/upload (file picker or drag & drop)/delete/copy reference path.
+- **Autosave & snapshots** — edits are written to disk after ~1.5s idle; every write snapshots the previous version to `data/.snapshots/<path>/<timestamp>` (latest 20 kept), with list/restore in the UI. Writes are schema-validated first and rejected with a message on failure.
+- The editor UI is bilingual (zh/en, switcher in the top bar, remembered in localStorage). If `data/` is missing on first launch it is initialized from `data.example/` automatically.
+
+Details: [docs/specs/06-editor.md](docs/specs/06-editor.md).
+
 ## Project layout
 
 ```
@@ -37,6 +52,7 @@ docs/           # design docs: docs/design.md + docs/specs/*
 skills/         # AI editing guide for the data folder
 scripts/        # prefetch / setup scripts
 src/            # Astro site source (src/lib = pure functions, fully unit-tested)
+admin/          # visual editor (admin/server = local API, admin/ui = SPA, admin/shared = pure logic)
 tests/          # vitest suite
 ```
 

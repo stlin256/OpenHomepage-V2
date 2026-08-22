@@ -1,0 +1,226 @@
+/**
+ * SPA 入口：顶栏（保存状态/预览/语言切换）+ 侧栏（页面/配置/素材）+ 主区路由。
+ * 路由用 location.hash：#/page/<lang>/<file>、#/config/<section>、#/assets。
+ */
+import { createT, detectLang, type Lang } from '../shared/i18n.ts';
+import { el, btn } from './dom.ts';
+import { api, type PageMeta } from './api.ts';
+import { renderPageEditor } from './views/pages.ts';
+import {
+  renderSiteConfig,
+  renderGithubConfig,
+  renderRssConfig,
+  renderStreamingConfig,
+} from './views/configs.ts';
+import { renderThemePicker } from './views/theme.ts';
+import { renderAssets } from './views/assets.ts';
+
+export interface AppState {
+  lang: Lang;
+  t: (k: string) => string;
+  setStatus: (msg: string, kind?: 'ok' | 'err') => void;
+  navigate: (hash: string) => void;
+  refreshSidebar: () => Promise<void>;
+}
+
+const LANG_KEY = 'oh-admin-lang';
+
+let state: AppState;
+let pages: PageMeta[] = [];
+let currentCleanup: (() => void) | null = null;
+
+function route(): { name: string; parts: string[] } {
+  const hash = location.hash.replace(/^#\/?/, '');
+  const parts = hash.split('/').filter(Boolean);
+  return { name: parts[0] ?? 'page', parts };
+}
+
+async function refreshSidebar(): Promise<void> {
+  const { pages: list } = await api.pages();
+  pages = list;
+  renderSidebar();
+}
+
+function renderSidebar(): void {
+  const t = state.t;
+  const sidebar = document.querySelector('.sidebar')!;
+  sidebar.replaceChildren();
+
+  // 页面（按语言目录分组）
+  sidebar.append(el('div', { class: 'side-title' }, t('navPages')));
+  const langs = [...new Set(pages.map((p) => p.lang))].sort();
+  for (const lang of langs) {
+    const group = el('div', { class: 'side-group' }, el('div', { class: 'side-lang' }, lang));
+    for (const p of pages.filter((x) => x.lang === lang)) {
+      const item = el(
+        'a',
+        { class: 'side-item', href: `#/page/${p.lang}/${p.file}` },
+        p.title || p.file
+      );
+      group.append(item);
+    }
+    sidebar.append(group);
+  }
+  sidebar.append(
+    el('div', { class: 'side-actions' }, btn(t('newPage'), () => openWizard(), 'btn-block'))
+  );
+
+  sidebar.append(el('div', { class: 'side-title' }, t('navConfig')));
+  for (const [key, label] of [
+    ['site', t('configSite')],
+    ['github', t('configGithub')],
+    ['rss', t('configRss')],
+    ['streaming', t('configStreaming')],
+    ['theme', t('configTheme')],
+  ] as const) {
+    sidebar.append(el('a', { class: 'side-item', href: `#/config/${key}` }, label));
+  }
+
+  sidebar.append(el('div', { class: 'side-title' }, t('navAssets')));
+  sidebar.append(el('a', { class: 'side-item', href: '#/assets' }, t('navAssets')));
+}
+
+/** 新建页面向导 */
+function openWizard(): void {
+  const t = state.t;
+  const overlay = el('div', { class: 'modal-overlay' });
+  const langs = [...new Set(pages.map((p) => p.lang))].sort();
+  const titleInput = el('input', { type: 'text', class: 'input' }) as HTMLInputElement;
+  const slugInput = el('input', { type: 'text', class: 'input' }) as HTMLInputElement;
+  const langSel = el('select', { class: 'input' }) as HTMLSelectElement;
+  for (const l of langs.length ? langs : ['zh']) langSel.append(el('option', { value: l }, l));
+  const error = el('div', { class: 'form-error' });
+
+  const close = () => overlay.remove();
+  const submit = async () => {
+    error.textContent = '';
+    try {
+      const r = await api.createPage(
+        langSel.value,
+        titleInput.value,
+        slugInput.value || undefined
+      );
+      close();
+      await state.refreshSidebar();
+      state.navigate(`#/page/${langSel.value}/${r.file}`);
+    } catch (e) {
+      error.textContent = (e as Error).message;
+    }
+  };
+
+  overlay.append(
+    el(
+      'div',
+      { class: 'modal' },
+      el('h3', {}, t('wizardTitle')),
+      el('label', { class: 'field' }, el('span', { class: 'field-label' }, t('wizardPageTitle')), titleInput),
+      el('label', { class: 'field' }, el('span', { class: 'field-label' }, t('wizardLang')), langSel),
+      el('label', { class: 'field' }, el('span', { class: 'field-label' }, t('wizardSlug')), slugInput),
+      error,
+      el('div', { class: 'modal-ops' }, btn(t('wizardCreate'), () => void submit(), 'btn-primary'), btn(t('cancel'), close))
+    )
+  );
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  document.body.append(overlay);
+  titleInput.focus();
+}
+
+async function renderMain(): Promise<void> {
+  const main = document.querySelector<HTMLElement>('.main')!;
+  currentCleanup?.();
+  currentCleanup = null;
+  main.replaceChildren();
+  const { name, parts } = route();
+  try {
+    if (name === 'page' && parts.length >= 3) {
+      currentCleanup = await renderPageEditor(main, state, parts[1], parts[2]);
+    } else if (name === 'config') {
+      const section = parts[1] ?? 'site';
+      const renderers: Record<string, (c: HTMLElement, s: AppState) => Promise<void> | void> = {
+        site: renderSiteConfig,
+        github: renderGithubConfig,
+        rss: renderRssConfig,
+        streaming: renderStreamingConfig,
+        theme: renderThemePicker,
+      };
+      await (renderers[section] ?? renderSiteConfig)(main, state);
+    } else if (name === 'assets') {
+      await renderAssets(main, state);
+    } else {
+      // 默认打开第一页
+      if (pages.length > 0) {
+        state.navigate(`#/page/${pages[0].lang}/${pages[0].file}`);
+      } else {
+        main.append(el('p', { class: 'muted' }, state.t('assetEmpty')));
+      }
+    }
+  } catch (e) {
+    main.replaceChildren(
+      el('div', { class: 'error-box' }, `${state.t('loadFailed')}: ${(e as Error).message}`)
+    );
+  }
+}
+
+async function boot(): Promise<void> {
+  const lang = detectLang(navigator.language, localStorage.getItem(LANG_KEY));
+  const app = document.getElementById('app')!;
+
+  state = {
+    lang,
+    t: createT(lang),
+    setStatus(msg, kind) {
+      const s = document.querySelector('.status')!;
+      s.textContent = msg;
+      s.className = `status ${kind ?? ''}`;
+    },
+    navigate(hash) {
+      location.hash = hash;
+    },
+    refreshSidebar,
+  };
+
+  const info = await api.info();
+
+  const statusEl = el('span', { class: 'status' });
+  const langSel = el('select', { class: 'input lang-switch' }) as HTMLSelectElement;
+  langSel.append(el('option', { value: 'zh' }, '中文'), el('option', { value: 'en' }, 'English'));
+  langSel.value = lang;
+  langSel.addEventListener('change', () => {
+    localStorage.setItem(LANG_KEY, langSel.value);
+    location.reload();
+  });
+
+  const previewBtn = btn(state.t('previewSite'), () => {
+    void api.devStatus().then(({ up }) => {
+      if (up) window.open('http://127.0.0.1:4321', '_blank');
+      else state.setStatus(state.t('previewDown'), 'err');
+    });
+  });
+
+  app.append(
+    el(
+      'header',
+      { class: 'topbar' },
+      el('span', { class: 'logo' }, state.t('appTitle')),
+      statusEl,
+      el('span', { class: 'topbar-spacer' }),
+      previewBtn,
+      langSel
+    ),
+    el('div', { class: 'layout' }, el('aside', { class: 'sidebar' }), el('main', { class: 'main' }))
+  );
+
+  if (info.initialized) {
+    document.querySelector('.topbar')!.after(
+      el('div', { class: 'banner' }, state.t('initializedBanner'))
+    );
+  }
+
+  await refreshSidebar();
+  window.addEventListener('hashchange', () => void renderMain());
+  await renderMain();
+}
+
+void boot();

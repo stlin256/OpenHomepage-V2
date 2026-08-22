@@ -12,7 +12,7 @@
 - **RSS 卡片**——多源订阅，分栏/加权混排两种模式，hover 预览浮层，支持精选文章列表与逐篇封面。
 - **LLM 流式区块**——预写 markdown 以拟真流式效果播放。
 - **可选 i18n**——在 `data/pages/` 下增加第二种语言目录，整站（路由、导航、语言切换、回退链）自动启用。
-- **可视化编辑器（PC）**——`npm run admin` 启动本地 WordPress 式编辑器，编辑页面与全部配置。*（开发中）*
+- **可视化编辑器（PC）**——`npm run admin` 启动本地 WordPress 式编辑器（Milkdown WYSIWYG），编辑页面与全部配置；自动保存、版本快照、主题取色器齐备。
 - **数据私有，仓库公开**——`data/` 不入库；CI 从 secret 指定的 zip 直链下载，失效时用上次部署快照回退，并借 GitHub 失败通知发邮件提醒。
 
 ## 快速开始
@@ -28,6 +28,21 @@ npm run build       # 静态构建 → dist/
 
 没有 `data/` 时站点回退到内置的 `data.example/`（完整的 AI 主题示例）并给出警告。
 
+## 可视化编辑器
+
+```bash
+npm run admin       # → http://127.0.0.1:4174（仅监听回环地址）
+```
+
+- **页面**——侧栏按语言目录分组；Milkdown 所见即所得编辑，自定义指令渲染为参数卡片；frontmatter（title/nav/order/slug/description）以表单条呈现；新建向导（标题 → 自动 slug + 模板）、重命名、删除、一键"创建另一语言版"。编辑器内 `Ctrl+V` 粘贴图片自动存入 `data/assets/` 并插入引用。
+- **配置**——站点/资料/链接、GitHub（用户名、贡献图开关、pinned 增删与上移下移排序）、RSS（源的 mode/latest/weight/cover 与精选文章子列表）、流式块定义，以及可拖拽排序的 `home.layout`。
+- **主题**——从头像自动提取 4–6 个候选色、点击头像任意像素取色或手动输入 hex；写回 `theme.accent` 并实时预览。
+- **素材**——列表/上传（文件选择或拖拽）/删除/复制引用路径。
+- **自动保存与快照**——编辑停顿 ~1.5s 自动写盘；每次写盘前把旧版本快照到 `data/.snapshots/<路径>/<时间戳>`（保留最近 20 版），界面可查看/回滚。写盘前做 schema 校验，失败不落盘并提示。
+- 编辑器界面中英双语（顶栏切换，localStorage 记忆）。首次启动若无 `data/` 会自动从 `data.example/` 初始化。
+
+详见 [docs/specs/06-editor.md](docs/specs/06-editor.md)。
+
 ## 目录结构
 
 ```
@@ -37,6 +52,7 @@ docs/           # 设计文档：docs/design.md + docs/specs/*
 skills/         # 指导 AI 编辑 data/ 的 skill
 scripts/        # prefetch / setup 脚本
 src/            # Astro 站点源码
+admin/          # 可视化编辑器（admin/server = 本地 API，admin/ui = SPA，admin/shared = 纯逻辑）
 tests/          # vitest 测试
 ```
 

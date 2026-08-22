@@ -11,7 +11,8 @@
     "prefetch": "tsx scripts/prefetch.ts",
     "dev": "astro dev",
     "build": "astro build",
-    "setup": "node scripts/setup.mjs"
+    "setup": "node scripts/setup.mjs",
+    "admin": "tsx admin/server/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -22,11 +23,19 @@
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/noto-sans-sc": "^5.3.0",
+    "@milkdown/core": "^7.22.1",
+    "@milkdown/ctx": "^7.22.1",
+    "@milkdown/preset-commonmark": "^7.22.1",
+    "@milkdown/preset-gfm": "^7.22.1",
+    "@milkdown/prose": "^7.22.1",
+    "@milkdown/transformer": "^7.22.1",
+    "@milkdown/utils": "^7.22.1",
     "@shikijs/rehype": "^4.4.3",
     "astro": "^7.2.4",
     "js-yaml": "^5.3.0",
     "katex": "^0.18.4",
     "mdast-util-directive": "^3.1.0",
+    "prosemirror-history": "^1.5.0",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
@@ -44,6 +53,8 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^26.2.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.0.1",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
