@@ -11,8 +11,11 @@ import type { ChildProcess, spawn } from 'node:child_process';
 import {
   buildAstroSpawn,
   parseLocalUrl,
+  normalizeLoopbackUrl,
+  loopbackUrl,
   pushLog,
   probePort,
+  probePortHost,
   createDevServerManager,
   type DevServerDeps,
 } from '../admin/server/devserver.ts';
@@ -66,7 +69,7 @@ function makeDeps(overrides: Partial<DevServerDeps> = {}) {
   const { calls, spawnImpl } = makeFakeSpawn(children);
   const deps: DevServerDeps = {
     spawn: spawnImpl,
-    probe: async () => false,
+    probe: async () => null,
     platform: 'linux',
     execPath: '/usr/bin/node',
     ...overrides,
@@ -83,12 +86,24 @@ describe('buildAstroSpawn / parseLocalUrl / pushLog（纯函数）', () => {
     expect(spec.cwd).toBe('/proj');
   });
 
-  it('parseLocalUrl：识别 Astro 的 Local 行（含端口递增），拒绝其他行', () => {
+  it('parseLocalUrl：识别 Astro 的 Local 行（含端口递增与 [::1]），拒绝其他行', () => {
     expect(parseLocalUrl(' ┃ Local    http://localhost:4321/')).toBe('http://localhost:4321/');
     expect(parseLocalUrl('┃ Local    http://127.0.0.1:4322/')).toBe('http://127.0.0.1:4322/');
+    expect(parseLocalUrl('┃ Local    http://[::1]:4321/')).toBe('http://[::1]:4321/');
     expect(parseLocalUrl('┃ Network  http://192.168.1.2:4321/')).toBeNull();
     expect(parseLocalUrl('astro v7 ready in 100 ms')).toBeNull();
     expect(parseLocalUrl('')).toBeNull();
+  });
+
+  it('normalizeLoopbackUrl：localhost 归一化为 127.0.0.1（spawn 用 --host 127.0.0.1）', () => {
+    expect(normalizeLoopbackUrl('http://localhost:4321/')).toBe('http://127.0.0.1:4321/');
+    expect(normalizeLoopbackUrl('http://127.0.0.1:4322/')).toBe('http://127.0.0.1:4322/');
+    expect(normalizeLoopbackUrl('http://[::1]:4321/')).toBe('http://[::1]:4321/');
+  });
+
+  it('loopbackUrl：IPv4 原样、IPv6 加方括号', () => {
+    expect(loopbackUrl('127.0.0.1', 4321)).toBe('http://127.0.0.1:4321/');
+    expect(loopbackUrl('::1', 4322)).toBe('http://[::1]:4322/');
   });
 
   it('pushLog：忽略空行，超出上限丢最旧行', () => {
@@ -99,8 +114,8 @@ describe('buildAstroSpawn / parseLocalUrl / pushLog（纯函数）', () => {
   });
 });
 
-describe('probePort（双栈）', () => {
-  it('服务只绑 IPv6 ::1 时也能探到（外部 astro dev 的默认绑定）', async () => {
+describe('probePort / probePortHost（双栈）', () => {
+  it('服务只绑 IPv6 ::1 时也能探到，并返回实际可连通的 host（::1）', async () => {
     const server = http.createServer((_req, res) => res.end('ok'));
     // 环境不支持 IPv6 时跳过
     const ok = await new Promise<boolean>((resolve) => {
@@ -110,11 +125,24 @@ describe('probePort（双栈）', () => {
     if (!ok) return;
     try {
       const port = (server.address() as AddressInfo).port;
+      expect(await probePortHost(port)).toBe('::1');
       expect(await probePort(port)).toBe(true);
     } finally {
       await new Promise((r) => server.close(r));
     }
+    expect(await probePortHost(1)).toBeNull();
     expect(await probePort(1)).toBe(false);
+  });
+
+  it('IPv4-only 服务返回 127.0.0.1', async () => {
+    const server = http.createServer((_req, res) => res.end('ok'));
+    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+    try {
+      const port = (server.address() as AddressInfo).port;
+      expect(await probePortHost(port)).toBe('127.0.0.1');
+    } finally {
+      await new Promise((r) => server.close(r));
+    }
   });
 });
 
@@ -131,7 +159,8 @@ describe('createDevServerManager', () => {
 
     children[0].stdout.emit('data', Buffer.from('astro v7 ready\n ┃ Local    http://localhost:4321/\n'));
     s = await m.status();
-    expect(s.url).toBe('http://localhost:4321/');
+    // localhost 归一化为 127.0.0.1（spawn 固定 --host 127.0.0.1）
+    expect(s.url).toBe('http://127.0.0.1:4321/');
     expect(s.logTail.join('\n')).toContain('Local');
   });
 
@@ -144,7 +173,7 @@ describe('createDevServerManager', () => {
   });
 
   it('外部已有 dev server（probe 通）时不 spawn，managed=false', async () => {
-    const { deps, calls } = makeDeps({ probe: async () => true });
+    const { deps, calls } = makeDeps({ probe: async () => '127.0.0.1' });
     const m = createDevServerManager({ rootDir: '/proj', deps });
     const s = await m.start();
     expect(calls.length).toBe(0);
@@ -154,13 +183,31 @@ describe('createDevServerManager', () => {
 
   it('端口可访问即 up（不论是不是自己 spawn 的）', async () => {
     let alive = false;
-    const { deps } = makeDeps({ probe: async () => alive });
+    const { deps } = makeDeps({ probe: async () => (alive ? '127.0.0.1' : null) });
     const m = createDevServerManager({ rootDir: '/proj', deps });
     await m.start();
     alive = true;
     const s = await m.status();
     expect(s.up).toBe(true);
     expect(s.starting).toBe(false);
+  });
+
+  it('外部 dev server 只绑 ::1 时，status.url 用 [::1]（iframe 直连 127.0.0.1 会拒连，回归）', async () => {
+    const { deps, calls } = makeDeps({ probe: async () => '::1' });
+    const m = createDevServerManager({ rootDir: '/proj', deps, port: 4321 });
+    const s = await m.start();
+    expect(calls.length).toBe(0);
+    expect(s.up).toBe(true);
+    expect(s.url).toBe('http://[::1]:4321/');
+  });
+
+  it('spawn 后日志解析出 localhost URL 时归一化为 127.0.0.1', async () => {
+    const { deps, children } = makeDeps();
+    const m = createDevServerManager({ rootDir: '/proj', deps });
+    await m.start();
+    children[0].stdout.emit('data', Buffer.from(' ┃ Local    http://localhost:4321/\n'));
+    const s = await m.status();
+    expect(s.url).toBe('http://127.0.0.1:4321/');
   });
 
   it('Windows stop：taskkill /pid /T /F 树杀，之后 managed=false', async () => {
@@ -184,7 +231,7 @@ describe('createDevServerManager', () => {
   });
 
   it('stop 不杀外部 dev server（未 spawn 时为空操作）', async () => {
-    const { deps, calls } = makeDeps({ probe: async () => true });
+    const { deps, calls } = makeDeps({ probe: async () => '127.0.0.1' });
     const m = createDevServerManager({ rootDir: '/proj', deps });
     const s = await m.stop();
     expect(calls.length).toBe(0);

@@ -215,8 +215,9 @@ async function boot(): Promise<void> {
   });
 
   const previewBtn = btn(state.t('previewSite'), () => {
-    void api.devStatus().then(({ up }) => {
-      if (up) window.open('http://127.0.0.1:4321', '_blank');
+    void api.devStatus().then(({ up, url }) => {
+      // url 由探测到的可连通 host 构造（外部 dev server 可能只绑 ::1）
+      if (up) window.open(url ?? 'http://127.0.0.1:4321', '_blank');
       else state.setStatus(state.t('previewDown'), 'err');
     });
   });

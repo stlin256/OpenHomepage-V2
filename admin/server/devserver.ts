@@ -48,8 +48,22 @@ export function buildAstroSpawn(rootDir: string, port: number, execPath: string)
 /** 从 Astro 日志行解析本地 URL（"┃ Local    http://localhost:4321/"） */
 export function parseLocalUrl(line: string): string | null {
   if (!/local/i.test(line)) return null;
-  const m = line.match(/https?:\/\/(?:localhost|127\.0\.0\.1):\d+\/?/);
+  const m = line.match(/https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):\d+\/?/);
   return m ? m[0] : null;
+}
+
+/**
+ * 回环 URL 归一化为 127.0.0.1：Astro 日志可能打印 localhost（我们 spawn 时固定
+ * --host 127.0.0.1，实际绑定在 IPv4 回环）；若浏览器把 localhost 解析到 ::1，
+ * iframe/新标签页会 ERR_CONNECTION_REFUSED（Windows 双栈常见坑）。
+ */
+export function normalizeLoopbackUrl(url: string): string {
+  return url.replace(/^(https?:\/\/)localhost/, '$1' + '127.0.0.1');
+}
+
+/** 回环 host + 端口 → 可用 URL（IPv6 加方括号） */
+export function loopbackUrl(host: string, port: number): string {
+  return `http://${host.includes(':') ? `[${host}]` : host}:${port}/`;
 }
 
 /** 日志尾部环形缓冲（单行追加，超出长度丢最旧行） */
@@ -73,12 +87,18 @@ function probeHost(port: number, host: string, timeoutMs: number): Promise<boole
   });
 }
 
-/** 探测本机端口上的 http 服务（IPv4/IPv6 回环都试，外部 astro dev 默认只绑 ::1） */
-export async function probePort(port: number, timeoutMs = 800): Promise<boolean> {
+/** 探测本机端口上的 http 服务，返回可连通的回环 host；不可达返回 null。
+    IPv4/IPv6 回环都试（外部 astro dev 默认可能只绑 ::1） */
+export async function probePortHost(port: number, timeoutMs = 800): Promise<string | null> {
   for (const host of ['127.0.0.1', '::1']) {
-    if (await probeHost(port, host, timeoutMs)) return true;
+    if (await probeHost(port, host, timeoutMs)) return host;
   }
-  return false;
+  return null;
+}
+
+/** 探测本机端口上的 http 服务是否可达（probePortHost 的布尔包装） */
+export async function probePort(port: number, timeoutMs = 800): Promise<boolean> {
+  return (await probePortHost(port, timeoutMs)) !== null;
 }
 
 /** 终止子进程树：Windows 用 taskkill /T /F；POSIX 杀 detached 进程组，退化 child.kill */
@@ -121,7 +141,8 @@ export async function killProcessTree(
 
 export interface DevServerDeps {
   spawn: typeof spawn;
-  probe: (port: number) => Promise<boolean>;
+  /** 探测端口，返回可连通的回环 host（'127.0.0.1' / '::1'），不可达返回 null */
+  probe: (port: number) => Promise<string | null>;
   platform: string;
   execPath: string;
 }
@@ -142,7 +163,7 @@ export function createDevServerManager(opts: {
   const port = opts.port ?? 4321;
   const deps: DevServerDeps = {
     spawn,
-    probe: probePort,
+    probe: probePortHost,
     platform: process.platform,
     execPath: process.execPath,
     ...opts.deps,
@@ -162,7 +183,10 @@ export function createDevServerManager(opts: {
     lineBuf = lines.pop() ?? '';
     for (const line of lines) {
       pushLog(tail, line);
-      if (!url) url = parseLocalUrl(line);
+      if (!url) {
+        const u = parseLocalUrl(line);
+        if (u) url = normalizeLoopbackUrl(u);
+      }
     }
   };
 
@@ -172,18 +196,22 @@ export function createDevServerManager(opts: {
       const u = Number(new URL(url).port);
       if (u && u !== port) ports.push(u);
     }
-    let up = false;
+    // 探测实际可连通的回环 host 并据此构造 URL：外部 dev server 可能只绑 ::1，
+    // iframe 一律写 127.0.0.1 会 ERR_CONNECTION_REFUSED（修正：双栏预览/预览按钮）
+    let reachableUrl: string | null = null;
     for (const p of ports) {
-      if (await deps.probe(p)) {
-        up = true;
+      const host = await deps.probe(p);
+      if (host) {
+        reachableUrl = loopbackUrl(host, p);
         break;
       }
     }
+    const up = reachableUrl !== null;
     return {
       up,
       starting: child !== null && !up,
       managed: child !== null,
-      url,
+      url: reachableUrl ?? (url ? normalizeLoopbackUrl(url) : null),
       logTail: [...tail],
       error,
     };
