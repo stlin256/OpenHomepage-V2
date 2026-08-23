@@ -1,0 +1,53 @@
+# 测试夹具：稳定的示例配置（与 data.example 解耦，示例数据可自由演进）
+site:
+  title: "张三的主页"
+  description: "张三的个人主页"
+  language: zh-CN
+
+profile:
+  name: "张三"
+  tagline:
+    zh: "博士研究生 / 方向：计算机系统"
+    en: "PhD candidate / Computer Systems"
+  avatar: "assets/avatar.png"
+  bio_page: "index"
+  links:
+    - { label: "Email", url: "mailto:zhangsan@example.com" }
+    - { label: "GitHub", url: "https://github.com/zhangsan" }
+
+theme:
+  accent: "#3a7bd5"
+  default_mode: "system"
+
+github:
+  username: "zhangsan"
+  show_contributions: true
+  pinned:
+    - repo: "zhangsan/awesome-project"
+      note: "我的主力开源项目"
+    - repo: "zhangsan/tiny-toolkit"
+
+rss:
+  enabled: true
+  block_title:
+    zh: "最近在读"
+    en: "Reading"
+  sources_file: "rss.yaml"
+
+home:
+  layout:
+    - block: profile
+    - block: markdown
+    - block: streaming
+      id: "welcome"
+    - block: github
+    - block: rss
+
+streaming_blocks:
+  - id: "welcome"
+    title:
+      zh: "一段话"
+      en: "In short"
+    content_file: "streaming/welcome.md"
+    autoplay: true
+    speed: 40

@@ -5,7 +5,6 @@
  * 主题切换（src/scripts/theme.ts）在模块加载时即注册 astro:after-swap 重放（#4）。
  */
 import { initStreamBlocks } from './stream-player.ts';
-import { initRssPopovers } from './rss-popover.ts';
 import { initMotion } from './motion.ts';
 import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
@@ -26,7 +25,6 @@ function initAll(): void {
   initThemeToggle();
   initNavToggle();
   initStreamBlocks();
-  initRssPopovers();
   initMotion();
   initBgm();
 }

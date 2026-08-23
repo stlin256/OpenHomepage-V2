@@ -596,16 +596,12 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
   color: var(--text-muted);
 }
 
-/* pinned 仓库卡片：错落网格（偶数卡下移）+ hover 浮起 */
+/* pinned 仓库卡片：统一等高（grid 默认同行拉伸），hover 浮起 */
 .gh-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   gap: 1rem;
-}
-@media (min-width: 769px) {
-  .gh-grid .gh-repo:nth-child(even) {
-    margin-top: 1.25rem;
-  }
+  align-items: stretch;
 }
 .gh-repo {
   display: flex;
@@ -733,58 +729,6 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
   font-size: 0.8rem;
   font-style: italic;
   color: var(--accent);
-}
-
-/* hover 浮层：默认 hidden；JS 控制 .open 与 data-side（上/下自适应，默认上方） */
-.rss-pop {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  padding: 0.9rem 1rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 0.6rem;
-  box-shadow: 0 14px 36px rgb(0 0 0 / 0.14);
-  font-size: 0.85rem;
-  opacity: 0;
-  transform: scale(0.96);
-  pointer-events: none;
-  /* 视口装不下时内部滚动（maxHeight 由 JS 按可用空间内联） */
-  overflow-y: auto;
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-}
-/* display:flex 会盖掉 hidden 属性的 UA 样式，必须显式隐藏——
-   否则浮层永远参与布局（不可见但占位），在页面底部撑出幽灵滚动高度 */
-.rss-pop[hidden] {
-  display: none;
-}
-.rss-pop[data-side='bottom'] {
-  top: calc(100% + 8px);
-}
-.rss-pop[data-side='top'] {
-  bottom: calc(100% + 8px);
-}
-.rss-pop.open {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
-}
-.rss-pop-title {
-  font-weight: 600;
-  line-height: 1.45;
-}
-.rss-pop-summary {
-  color: var(--text-muted);
-}
-.rss-pop-meta {
-  font-size: 0.78rem;
-  color: var(--text-muted);
 }
 
 /* ---- 流式区块 ---- */

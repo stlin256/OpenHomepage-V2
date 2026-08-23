@@ -59,14 +59,12 @@ export interface RssCardView {
   link: string;
   /** 来源名（sources[].name） */
   source: string;
-  /** ISO 原文时间（无日期为 null，浮层完整时间用） */
+  /** ISO 原文时间（无日期为 null，卡片悬停 title 用） */
   published: string | null;
   /** 卡片日期 'YYYY-MM-DD'（无日期为 null） */
   day: string | null;
   /** 卡片摘要（≤120 字符） */
   summary: string;
-  /** 浮层摘要全文（prefetch 已截 ≤300 字符） */
-  summaryFull: string;
   cover: string | null;
   /** curated 推荐语 */
   note: string | null;
@@ -82,7 +80,6 @@ function toCard(entry: RssEntry, source: string, weight: number, summaryMax: num
     published: entry.published,
     day: formatDay(entry.published),
     summary: truncateText(entry.summary, summaryMax),
-    summaryFull: entry.summary,
     cover: coverUrl(entry.cover),
     note: entry.note,
     weight,

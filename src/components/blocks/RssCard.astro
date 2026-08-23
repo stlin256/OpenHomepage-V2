@@ -1,17 +1,15 @@
 ---
 /**
- * 单张 RSS 卡片 + hover 浮层骨架（spec 05）。
- * 卡片本身是外链 <a>；浮层 .rss-pop 默认 hidden，由前端脚本控制
- * （hover 300ms 浮出 / 离开 150ms 收起 / 上下方向自适应 / 触摸两次点击）。
+ * 单张 RSS 卡片（spec 05）：卡片本身是外链 <a>，点击直达原文。
+ * （hover 预览浮层已按用户要求移除。）
  */
 import type { RssCardView } from '../../lib/rss-block.ts';
 
 interface Props {
   card: RssCardView;
-  readLabel: string;
 }
 
-const { card, readLabel } = Astro.props;
+const { card } = Astro.props;
 ---
 
 <a class="rss-card" href={card.link} target="_blank" rel="noopener">
@@ -32,14 +30,5 @@ const { card, readLabel } = Astro.props;
     </span>
     {card.summary && <span class="rss-summary">{card.summary}</span>}
     {card.note && <span class="rss-note">{card.note}</span>}
-  </span>
-  <span class="rss-pop" data-side="bottom" hidden>
-    <span class="rss-pop-title">{card.title}</span>
-    {card.summaryFull && <span class="rss-pop-summary">{card.summaryFull}</span>}
-    <span class="rss-pop-meta">
-      {card.source}
-      {card.day && ` · ${card.day}`}
-      {` · ${readLabel} →`}
-    </span>
   </span>
 </a>

@@ -35,7 +35,6 @@ function card(over: Partial<RssCardView> = {}): RssCardView {
     published: '2026-08-01T00:00:00.000Z',
     day: '2026-08-01',
     summary: '',
-    summaryFull: '',
     cover: null,
     note: null,
     weight: 1,
@@ -177,7 +176,6 @@ describe('buildRssView', () => {
     if (v.display !== 'grouped') throw new Error('unreachable');
     const cd = v.columns[0].cards[0];
     expect([...cd.summary]).toHaveLength(CARD_SUMMARY_MAX);
-    expect([...cd.summaryFull]).toHaveLength(200);
     expect(cd.day).toBe('2026-08-01');
     expect(cd.cover).toBe('/assets/x.png');
     expect(cd.note).toBe('注');

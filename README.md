@@ -11,7 +11,7 @@ A lightweight, magazine-style personal homepage generator — static, bilingual 
 - **Image lightbox** — click any content image to preview it full-screen (scale/fade animation, reduced-motion aware); a same-named `-full` file (e.g. `assets/hero-full.jpg`) is loaded automatically when present.
 - **Background music (optional)** — configure `bgm` in `site.yaml` and a play/pause button appears in the header; `transition:persist` keeps it playing across in-site navigations, remembers the user's choice, and respects autoplay policies and reduced-motion.
 - **GitHub blocks** — contribution heatmap and pinned repo cards, fetched at build time with cache fallback.
-- **RSS cards** — multiple feeds, grouped or weighted-mixed display, hover previews, curated article lists with per-card covers.
+- **RSS cards** — multiple feeds, grouped or weighted-mixed display, curated article lists with per-card covers; cards link straight to the original article.
 - **LLM-style streaming blocks** — pre-written markdown replayed with a realistic streaming effect.
 - **Optional i18n** — add a second language folder under `data/pages/` and the whole site (routes, nav, fallback chain) lights up automatically; the language switcher only appears when the current page has a real translation.
 - **Visual editor (PC)** — `npm run admin` launches a local WordPress-like editor (WYSIWYG via Milkdown) for pages and all configuration, with autosave, version snapshots, and a theme color picker.
