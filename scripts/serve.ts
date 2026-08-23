@@ -7,7 +7,7 @@
 import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { load as loadYaml } from 'js-yaml';
 import { resolveDataDir } from '../src/lib/data-dir.ts';
@@ -51,7 +51,8 @@ export function createStaticServer(plan: ServePlan, dist: string = distDir): htt
       res.end('404 Not Found');
       return;
     }
-    const body = readFileSync(file);
+    const size = statSync(file).size;
+    const type = SERVE_MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream';
     const isHtml = file.endsWith('.html');
     // Astro 产物（/_astro/ 下文件名带 hash）可长缓存；HTML 每次校验
     const cache = isHtml
@@ -59,8 +60,40 @@ export function createStaticServer(plan: ServePlan, dist: string = distDir): htt
       : file.includes(`${path.sep}_astro${path.sep}`)
         ? 'public, max-age=31536000, immutable'
         : 'public, max-age=3600';
+    const range = req.headers.range;
+    if (range) {
+      const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+      if (!match) {
+        res.writeHead(416, { 'Content-Range': `bytes */${size}` });
+        res.end();
+        return;
+      }
+      const start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2] || 0));
+      const end = match[2] ? Number(match[2]) : size - 1;
+      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || start >= size) {
+        res.writeHead(416, { 'Content-Range': `bytes */${size}` });
+        res.end();
+        return;
+      }
+      const boundedEnd = Math.min(end, size - 1);
+      res.writeHead(206, {
+        'Accept-Ranges': 'bytes',
+        'Content-Range': `bytes ${start}-${boundedEnd}/${size}`,
+        'Content-Length': boundedEnd - start + 1,
+        'Content-Type': type,
+        'Cache-Control': cache,
+      });
+      if (req.method === 'HEAD') {
+        res.end();
+        return;
+      }
+      createReadStream(file, { start, end: boundedEnd }).pipe(res);
+      return;
+    }
+    const body = readFileSync(file);
     res.writeHead(200, {
-      'content-type': SERVE_MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream',
+      'content-type': type,
+      'accept-ranges': 'bytes',
       'content-length': body.byteLength,
       'cache-control': cache,
     });

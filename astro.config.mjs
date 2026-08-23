@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import { cpSync, existsSync, readFileSync, statSync } from 'node:fs';
+import { cpSync, createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -19,6 +19,9 @@ const MIME = {
   '.ogg': 'audio/ogg',
   '.m4a': 'audio/mp4',
   '.flac': 'audio/flac',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
 };
 
 /**
@@ -44,8 +47,37 @@ function dataAssets() {
           if (!file.startsWith(dir + path.sep) || !existsSync(file) || !statSync(file).isFile()) {
             return next();
           }
-          res.setHeader('Content-Type', MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream');
-          res.end(readFileSync(file));
+          const size = statSync(file).size;
+          const type = MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream';
+          const range = req.headers.range;
+          res.setHeader('Accept-Ranges', 'bytes');
+          res.setHeader('Content-Type', type);
+          if (!range) {
+            res.setHeader('Content-Length', String(size));
+            if (req.method === 'HEAD') return res.end();
+            createReadStream(file).pipe(res);
+            return;
+          }
+          const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+          if (!match) {
+            res.writeHead(416, { 'Content-Range': `bytes */${size}` });
+            return res.end();
+          }
+          const start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2] || 0));
+          const end = match[2] ? Number(match[2]) : size - 1;
+          if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || start >= size) {
+            res.writeHead(416, { 'Content-Range': `bytes */${size}` });
+            return res.end();
+          }
+          const boundedEnd = Math.min(end, size - 1);
+          res.writeHead(206, {
+            'Accept-Ranges': 'bytes',
+            'Content-Range': `bytes ${start}-${boundedEnd}/${size}`,
+            'Content-Length': String(boundedEnd - start + 1),
+            'Content-Type': type,
+          });
+          if (req.method === 'HEAD') return res.end();
+          createReadStream(file, { start, end: boundedEnd }).pipe(res);
         });
       },
       'astro:build:done'({ dir }) {
