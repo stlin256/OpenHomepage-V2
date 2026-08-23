@@ -57,7 +57,7 @@ npm run admin       # terminal 2: editor at :4174 — make your edits here
 Notes:
 
 - The two servers are independent — run either one alone if you only need it. In the editor's split-preview mode, if the dev server isn't running you can click "Start preview server" to let the editor spawn it; the editor stops that child process when it exits.
-- If a port is busy (e.g. from a forgotten dev server), stop the old one: on Windows `netstat -ano | findstr :4321` then `taskkill /PID <pid> /F`; or end the stray `node` process in Task Manager; or just close the old terminal. (The Astro CLI has no `astro dev stop` command — killing the process is the way.)
+- If a port is busy (e.g. from a forgotten dev server), run `npx astro dev stop`, or find the PID with `netstat -ano | findstr :4321` and `taskkill /PID <pid> /F`; closing the old terminal also works.
 - `.cache/` is reused across runs; use `npm run prefetch -- --force` to bypass the 1-hour TTL.
 
 ## Visual editor

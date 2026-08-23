@@ -56,7 +56,7 @@ npm run admin       # 终端 2：编辑器 :4174，在这里改内容
 说明：
 
 - 两个服务相互独立，只需要哪个就启动哪个。编辑器里用"双栏预览"时若 dev server 未启动，可点"启动预览服务"由编辑器代启，编辑器退出时会自动把它停掉。
-- 端口被占用（比如之前的 dev server 忘关了）：Windows 下 `netstat -ano | findstr :4321` 找到 PID 后 `taskkill /PID <pid> /F`；或在任务管理器里结束对应的 `node` 进程；直接关掉旧终端窗口也行。（Astro CLI 没有 `astro dev stop` 之类的停止命令，结束进程即可。）
+- 端口被占用（比如之前的 dev server 忘关了）：运行 `npx astro dev stop` 即可停止；或者 `netstat -ano | findstr :4321` 找到 PID 后 `taskkill /PID <pid> /F`；直接关掉旧终端窗口也行。
 - `.cache/` 跨次运行复用（1 小时有效期）；想强制刷新用 `npm run prefetch -- --force`。
 
 ## 可视化编辑器
