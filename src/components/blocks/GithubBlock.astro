@@ -66,7 +66,6 @@ const totalFmt = contributions.kind === 'ok' ? formatCount(contributions.total) 
 ---
 
 <section class="home-block block-github reveal">
-  <h2 class="block-title">GitHub</h2>
   {view === null && <p class="block-empty">{L.empty}</p>}
 
   {showContributions && contributions.kind === 'placeholder' && (
@@ -75,8 +74,7 @@ const totalFmt = contributions.kind === 'ok' ? formatCount(contributions.total) 
 
   {showContributions && contributions.kind === 'ok' && (
     <div class="heatmap-wrap">
-      <p class="heat-total">{L.total(totalFmt)}</p>
-      <p class="heat-total heat-total-alt">{L.totalAlt(totalFmt)}</p>
+      <p class="heat-total">{L.totalAlt(totalFmt)}</p>
       <div class="heatmap-scroll">
         <div class="heatmap-inner">
           <div class="heat-main">
