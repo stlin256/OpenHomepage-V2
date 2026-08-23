@@ -5,6 +5,7 @@
  */
 import type { GithubPinnedRepo } from './prefetch.ts';
 import { escapeHtml } from './html.ts';
+import { resolveText } from './localize.ts';
 
 export { escapeHtml };
 
@@ -128,7 +129,8 @@ export function repoCardHtml(
 ): string {
   const lang = opts.lang === 'zh' ? 'zh' : 'en';
   const now = opts.now ?? Date.now();
-  const desc = repo.note ?? repo.description ?? '';
+  const noteText = repo.note != null ? resolveText(repo.note, lang) : '';
+  const desc = noteText || repo.description || '';
   const [owner, name] = repo.full_name.split('/');
   const url = repo.html_url ?? `https://github.com/${repo.full_name}`;
 

@@ -163,8 +163,8 @@ const bodyHtml = await renderMarkdown(route.page.body, {
 
 <BaseLayout
   title={route.page.title}
-  siteTitle={site.site.title}
-  description={route.page.description ?? site.site.description}
+  siteTitle={resolveText(site.site.title, contentLang)}
+  description={route.page.description ?? (site.site.description ? resolveText(site.site.description, contentLang) : undefined)}
   htmlLang={contentLang}
   lang={route.lang}
   defaultLang={defaultLang}
@@ -197,7 +197,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
               ]}
             >
               <div class:list={['profile-intro', { 'span-7': !avatarTop }]}>
-                <h1 class="profile-name">{site.profile.name}</h1>
+                <h1 class="profile-name">{resolveText(site.profile.name, contentLang)}</h1>
                 {site.profile.tagline && (
                   <p class="profile-tagline">{resolveText(site.profile.tagline, contentLang)}</p>
                 )}
@@ -215,7 +215,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
                 class:list={['profile-avatar', { 'span-5': !avatarTop }]}
                 {...(avatarTop ? {} : { 'data-parallax': true })}
               >
-                {avatarUrl && <img src={avatarUrl} alt={site.profile.name} loading="lazy" />}
+                {avatarUrl && <img src={avatarUrl} alt={resolveText(site.profile.name, contentLang)} loading="lazy" />}
               </div>
             </section>
           ) : b.block === 'markdown' ? (

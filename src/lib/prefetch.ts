@@ -12,7 +12,7 @@
 import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import path from 'node:path';
 import Parser from 'rss-parser';
-import { loadSiteConfig, loadRssConfig, type RssSource } from './config.ts';
+import { loadSiteConfig, loadRssConfig, type LocalizedText, type RssSource } from './config.ts';
 
 // ---------- 常量 ----------
 
@@ -69,8 +69,8 @@ export interface GithubPinnedRepo {
   pushed_at?: string;
   updated_at?: string;
   topics?: string[];
-  /** site.yaml pinned[].note，覆盖官方描述 */
-  note: string | null;
+  /** site.yaml pinned[].note，覆盖官方描述（支持双语） */
+  note: LocalizedText | null;
 }
 
 export interface ContributionDay {

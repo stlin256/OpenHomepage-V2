@@ -6,19 +6,21 @@ import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { load as loadYaml } from 'js-yaml';
 
-/** 支持双语映射的文案字段：纯字符串（所有语言通用）或 { zh, en } 映射 */
-export type LocalizedText = string | Record<string, string>;
+import { type LocalizedText, resolveText } from './localize.ts';
+
+export type { LocalizedText };
+export { resolveText };
 
 export interface SiteConfig {
   site: {
-    title: string;
-    description?: string;
+    title: LocalizedText;
+    description?: LocalizedText;
     language?: string;
     /** 站点图标（favicon），相对 data/ 的路径，如 assets/favicon.svg（svg/png/ico） */
     favicon?: string;
   };
   profile: {
-    name: string;
+    name: LocalizedText;
     tagline?: LocalizedText;
     avatar?: string;
     /** 头像布局：side=姓名/简介右侧（杂志分栏，默认）；top=头像居顶居中 */
@@ -33,7 +35,7 @@ export interface SiteConfig {
   github: {
     username: string;
     show_contributions?: boolean;
-    pinned?: { repo: string; note?: string }[];
+    pinned?: { repo: string; note?: LocalizedText }[];
   };
   rss?: {
     enabled?: boolean;
@@ -211,15 +213,6 @@ export function isI18nEnabled(langs: string[]): boolean {
   return langs.length >= 2;
 }
 
-/**
- * 双语映射解析：纯字符串原样返回；{ zh, en } 映射按语言取值，
- * 缺 key 回退 en → zh → 任意可用值。
- */
-export function resolveText(field: LocalizedText, lang: string): string {
-  if (typeof field === 'string') return field;
-  const value = field[lang] ?? field.en ?? field.zh ?? Object.values(field)[0];
-  return value ?? '';
-}
 
 /** profile.avatar_position 归一化：缺省/非法值回退 'side'（默认侧边杂志布局） */
 export function resolveAvatarPosition(profile: SiteConfig['profile']): 'side' | 'top' {
