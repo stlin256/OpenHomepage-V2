@@ -1,8 +1,9 @@
 /**
  * GitHub 区块构建侧视图模型（docs/specs/07 缓存结构 + spec 09 贡献图 stagger）。
  * 读 .cache/github.json（prefetch 产物），产出渲染用纯数据：
- * - 贡献热力图：周×7 格子、5 档色阶（构建时从 accent 与底色混合计算）；
- * - pinned 仓库卡片（note 优先于官方描述）；
+ * - 贡献热力图：周×7 格子、5 档色阶（构建时从 accent 与底色混合计算）、
+ *   月份/星期坐标轴与格子 tooltip 文案（GitHub 首页对齐）；
+ * - pinned 仓库卡片（note 优先于官方描述；卡片渲染纯函数在 github-card.ts，转口导出）；
  * - error 且有旧数据 → 照常渲染 + stale 标记（组件据此显示"数据更新于"）；
  * - 本地无 PAT 的贡献图占位块 → placeholder；.cache 缺失 → null（组件渲染空态）。
  */
@@ -15,6 +16,18 @@ import type {
   GithubCache,
   GithubPinnedRepo,
 } from './prefetch.ts';
+
+// 卡片渲染纯函数拆到 github-card.ts（浏览器安全，编辑器 SPA 复用）；此处转口保持既有调用不变
+export {
+  OCTICONS,
+  LANGUAGE_COLOR_UNKNOWN,
+  languageColor,
+  compactCount,
+  formatCount,
+  relativeUpdated,
+  TOPICS_MAX,
+  repoCardHtml,
+} from './github-card.ts';
 
 /** 读 .cache/github.json；文件缺失/损坏时 warning 并返回 null（构建侧空态，报错闸口在 prefetch） */
 export function loadGithubCache(
@@ -175,30 +188,47 @@ export function formatTimestamp(ts: number): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+/** 热力图格子 tooltip 文案（双语）："N contributions on 2026-08-22" / "2026年8月22日，N 次贡献" */
+export function heatTooltip(date: string, count: number, lang: 'zh' | 'en'): string {
+  if (lang === 'zh') {
+    const [y, m, d] = date.split('-').map(Number);
+    const zhDate = `${y}年${m}月${d}日`;
+    return count === 0 ? `${zhDate}，无贡献` : `${zhDate}，${count} 次贡献`;
+  }
+  if (count === 0) return `No contributions on ${date}`;
+  return `${count} contribution${count === 1 ? '' : 's'} on ${date}`;
 }
 
+const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 /**
- * pinned 仓库卡片 HTML（主页 github 区块与 markdown `::ghcard` 占位替换共用）。
- * 描述优先用 site.yaml 的 note（prefetch 已并入 repo.note），否则官方 description。
+ * 月份标签列（GitHub 风）：含某月 1 日的周列标该月（"只标新月起始列"）；
+ * 首周不含 1 日时按首天月份兜底标注（坐标轴起点有标签）。
  */
-export function repoCardHtml(repo: GithubPinnedRepo): string {
-  const desc = repo.note ?? repo.description ?? '';
-  const meta: string[] = [];
-  if (repo.language) meta.push(escapeHtml(repo.language));
-  if (repo.stargazers_count !== undefined) meta.push(`★ ${repo.stargazers_count}`);
-  if (repo.forks_count !== undefined) meta.push(`⑂ ${repo.forks_count}`);
-  return (
-    `<a class="gh-repo" href="${escapeHtml(repo.html_url ?? `https://github.com/${repo.full_name}`)}"` +
-    ` target="_blank" rel="noopener">` +
-    `<span class="gh-repo-name">${escapeHtml(repo.full_name)}</span>` +
-    (desc ? `<span class="gh-repo-desc">${escapeHtml(desc)}</span>` : '') +
-    (meta.length ? `<span class="gh-repo-meta">${meta.join(' · ')}</span>` : '') +
-    `</a>`
-  );
+export function monthLabels(
+  weeks: HeatWeek[],
+  lang: 'zh' | 'en',
+): { weekIndex: number; label: string }[] {
+  const monthLabel = (date: string) => {
+    const m = Number(date.slice(5, 7));
+    return lang === 'zh' ? `${m}月` : MONTHS_EN[m - 1];
+  };
+  const out: { weekIndex: number; label: string }[] = [];
+  weeks.forEach((w, i) => {
+    const firstOfMonth = w.days.find((d) => d !== null && d.date.endsWith('-01'));
+    if (firstOfMonth) {
+      out.push({ weekIndex: i, label: monthLabel(firstOfMonth.date) });
+    } else if (i === 0) {
+      const first = w.days.find((d) => d !== null);
+      if (first) out.push({ weekIndex: 0, label: monthLabel(first.date) });
+    }
+  });
+  return out;
+}
+
+/** 星期标签（周日开头）：GitHub 只显示 Mon/Wed/Fri（中文 一/三/五），其余行留空占位 */
+export function weekdayLabels(lang: 'zh' | 'en'): (string | null)[] {
+  return lang === 'zh'
+    ? [null, '一', null, '三', null, '五', null]
+    : [null, 'Mon', null, 'Wed', null, 'Fri', null];
 }

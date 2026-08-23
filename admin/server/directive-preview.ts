@@ -16,6 +16,9 @@ export interface GhPinnedPreview {
   stargazers_count?: number;
   forks_count?: number;
   html_url?: string;
+  /** GitHub 仓库 topics（站点卡片 pill 用） */
+  topics?: string[];
+  updated_at?: string;
 }
 
 export interface StreamPreview {
@@ -61,6 +64,8 @@ export function readDirectivePreview(rootDir: string, dataDir: string): Directiv
           stargazers_count: typeof r.stargazers_count === 'number' ? r.stargazers_count : undefined,
           forks_count: typeof r.forks_count === 'number' ? r.forks_count : undefined,
           html_url: (r.html_url as string | undefined) ?? undefined,
+          topics: Array.isArray(r.topics) ? r.topics.map(String) : undefined,
+          updated_at: (r.updated_at as string | undefined) ?? undefined,
         }))
         .filter((r) => r.full_name !== '');
     }

@@ -47,6 +47,8 @@ export interface DirectivePreviewData {
     stargazers_count?: number;
     forks_count?: number;
     html_url?: string;
+    topics?: string[];
+    updated_at?: string;
   }[];
   streams: { id: string; title: string; excerpt: string }[];
 }

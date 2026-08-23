@@ -1,13 +1,22 @@
 ---
 /**
- * GitHub 区块：贡献热力图（自绘格子，周×7，accent 5 档色阶，按周 stagger 淡入）
- * + pinned 仓库卡片（错落网格）。数据全部来自构建侧视图模型（src/lib/github-block.ts）。
+ * GitHub 区块：贡献热力图（对齐 github.com 首页：顶部计数行×2、月份/星期坐标轴、
+ * 格子 tooltip、Less→More 图例、自定义横向滚动条）+ pinned 仓库卡（1:1 官网样式）。
+ * 数据全部来自构建侧视图模型（src/lib/github-block.ts）。
  * - stale（error 且有旧数据）→ 照常渲染 + 小字"数据更新于 {fetched_at}"；
  * - 本地无 PAT 的贡献图占位块 → "本地预览不可用"提示；
  * - view 为 null（.cache 缺失）→ 空态提示（报错闸口在 prefetch，见 spec 07 §4）。
  */
 import type { GithubView } from '../../lib/github-block.ts';
-import { buildHeatScales, formatTimestamp, repoCardHtml } from '../../lib/github-block.ts';
+import {
+  buildHeatScales,
+  formatTimestamp,
+  repoCardHtml,
+  formatCount,
+  heatTooltip,
+  monthLabels,
+  weekdayLabels,
+} from '../../lib/github-block.ts';
 import type { AccentTheme } from '../../lib/theme.ts';
 
 interface Props {
@@ -18,25 +27,30 @@ interface Props {
 }
 
 const { view, lang, accent, showContributions } = Astro.props;
+const L2 = lang === 'zh' ? 'zh' : 'en';
 
 const L = {
   zh: {
-    total: (n: number) => `过去一年 ${n} 次贡献`,
+    total: (n: string) => `过去一年 ${n} 次贡献`,
+    totalAlt: (n: string) => `过去一年 ${n} 次 GitHub 贡献`,
     updated: '数据更新于',
     placeholder: '本地预览不可用（未配置 GH_PAT；CI 部署将展示真实贡献数据）',
     empty: 'GitHub 数据未预取：请先运行 npm run prefetch',
     heatLabel: 'GitHub 贡献热力图',
-    day: (date: string, n: number) => `${date}：${n} 次贡献`,
+    less: '少',
+    more: '多',
   },
   en: {
-    total: (n: number) => `${n} contributions in the last year`,
+    total: (n: string) => `${n} contributions in the last year`,
+    totalAlt: (n: string) => `${n} GitHub contributions in the last year`,
     updated: 'Data updated',
     placeholder: 'Unavailable in local preview (no GH_PAT; CI builds show real data)',
     empty: 'GitHub data not prefetched: run npm run prefetch first',
     heatLabel: 'GitHub contribution heatmap',
-    day: (date: string, n: number) => `${date}: ${n} contributions`,
+    less: 'Less',
+    more: 'More',
   },
-}[lang === 'zh' ? 'zh' : 'en'];
+}[L2];
 
 const scales = buildHeatScales(accent.light.accent, accent.dark.accent);
 const heatVars = Object.fromEntries(scales.light.map((c, i) => [`heat${i}`, c]));
@@ -44,6 +58,11 @@ const heatVarsDark = Object.fromEntries(scales.dark.map((c, i) => [`heatDark${i}
 
 const contributions = view?.contributions ?? { kind: 'hidden' };
 const pinned = view?.pinned ?? null;
+
+// 坐标轴（纯函数，src/lib/github-block.ts）：月份只标新月起始列；星期只显示 一/三/五
+const months = contributions.kind === 'ok' ? monthLabels(contributions.weeks, L2) : [];
+const weekdays = weekdayLabels(L2);
+const totalFmt = contributions.kind === 'ok' ? formatCount(contributions.total) : '';
 ---
 
 <section class="home-block block-github reveal">
@@ -56,36 +75,56 @@ const pinned = view?.pinned ?? null;
 
   {showContributions && contributions.kind === 'ok' && (
     <div class="heatmap-wrap">
-      <div class="heatmap" role="img" aria-label={L.heatLabel}>
-        {contributions.weeks.map((week, wi) => (
-          <div class="heat-week">
-            {week.days.map((day) =>
-              day ? (
-                <span
-                  class="heat-cell"
-                  data-level={day.level}
-                  title={L.day(day.date, day.count)}
-                  style={`animation-delay:${wi * 20}ms`}
-                />
-              ) : (
-                <span class="heat-cell heat-empty" />
-              ),
-            )}
+      <p class="heat-total">{L.total(totalFmt)}</p>
+      <p class="heat-total heat-total-alt">{L.totalAlt(totalFmt)}</p>
+      <div class="heatmap-scroll">
+        <div class="heatmap-inner">
+          <div class="heat-main">
+            <div class="heat-weekdays" aria-hidden="true">
+              {weekdays.map((w) => <span>{w ?? ''}</span>)}
+            </div>
+            <div class="heat-right">
+              <div class="heat-months" aria-hidden="true">
+                {months.map((m) => <span style={`--w:${m.weekIndex}`}>{m.label}</span>)}
+              </div>
+              <div class="heatmap" role="img" aria-label={L.heatLabel}>
+                {contributions.weeks.map((week, wi) => (
+                  <div class="heat-week">
+                    {week.days.map((day) =>
+                      day ? (
+                        <span
+                          class="heat-cell"
+                          data-level={day.level}
+                          data-tip={heatTooltip(day.date, day.count, L2)}
+                          style={`animation-delay:${wi * 20}ms`}
+                        />
+                      ) : (
+                        <span class="heat-cell heat-empty" />
+                      ),
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        ))}
+          <p class="heat-legend" aria-hidden="true">
+            <span>{L.less}</span>
+            {[0, 1, 2, 3, 4].map((i) => <span class="heat-cell heat-legend-cell" data-level={i} />)}
+            <span>{L.more}</span>
+          </p>
+        </div>
       </div>
-      <p class="heat-footer">
-        <span class="heat-total">{L.total(contributions.total)}</span>
-        {contributions.stale && contributions.fetchedAt !== null && (
+      {contributions.stale && contributions.fetchedAt !== null && (
+        <p class="heat-footer">
           <span class="data-age">{L.updated} {formatTimestamp(contributions.fetchedAt)}</span>
-        )}
-      </p>
+        </p>
+      )}
     </div>
   )}
 
   {pinned && (
     <div class="gh-grid">
-      {pinned.repos.map((repo) => <Fragment set:html={repoCardHtml(repo)} />)}
+      {pinned.repos.map((repo) => <Fragment set:html={repoCardHtml(repo, { lang: L2 })} />)}
     </div>
   )}
   {pinned?.stale && pinned.fetchedAt !== null && (

@@ -142,9 +142,12 @@ for (const def of site.streaming_blocks ?? []) {
 }
 const streamById = new Map(streamBlocks.map((b) => [b.id, b]));
 const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b)]));
-// ::ghcard{repo} 占位 ← pinned 缓存数据（大小写不敏感匹配）
+// ::ghcard{repo} 占位 ← pinned 缓存数据（大小写不敏感匹配；1:1 官网仓库卡，随页面语言）
 const ghHtmlByRepo = Object.fromEntries(
-  (githubView?.pinned?.repos ?? []).map((r) => [r.full_name.toLowerCase(), repoCardHtml(r)]),
+  (githubView?.pinned?.repos ?? []).map((r) => [
+    r.full_name.toLowerCase(),
+    repoCardHtml(r, { lang: contentLang === 'zh' ? 'zh' : 'en' }),
+  ]),
 );
 const bodyHtml = await renderMarkdown(route.page.body, {
   streamEmbeds,

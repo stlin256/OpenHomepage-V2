@@ -279,7 +279,18 @@ a { color: var(--accent); text-decoration: none; }
 }
 .dp-ghrepo-name { font-weight: 600; color: var(--accent); }
 .dp-ghrepo-desc { font-size: 12px; color: var(--text-muted); }
-.dp-ghrepo-meta { font-size: 12px; color: var(--text-muted); }
+.dp-ghrepo-meta { font-size: 12px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.dp-ghrepo-lang { display: inline-flex; align-items: center; gap: 4px; }
+.dp-ghrepo-dot { width: 0.7em; height: 0.7em; border-radius: 50%; flex: none; }
+.dp-ghrepo-topics { display: flex; flex-wrap: wrap; gap: 4px; }
+.dp-ghrepo-topic {
+  padding: 0 8px;
+  border-radius: 2em;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
 .dp-stream {
   max-width: 30rem;
   border: 1px solid var(--border);
@@ -518,6 +529,35 @@ html[data-theme='dark'] {
 html[data-theme='dark'] .status.ok { color: #5cb860; }
 html[data-theme='dark'] .banner { background: #2a2410; border-color: #4a3f1a; color: #e8d998; }
 html[data-theme='dark'] .modal-overlay { background: rgba(0, 0, 0, 0.55); }
+
+/* 顶栏预览服务状态指示灯：绿=运行 / 黄=启动中（呼吸） / 灰=未运行 */
+.dev-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+}
+.dev-indicator:hover { border-color: var(--border); background: var(--bg-subtle); }
+.dev-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+.dev-indicator.up .dev-dot { background: #2e9e4f; opacity: 1; }
+.dev-indicator.starting .dev-dot {
+  background: #d9a514;
+  opacity: 1;
+  animation: dev-pulse 1s ease-in-out infinite;
+}
+@keyframes dev-pulse { 50% { opacity: 0.35; } }
 
 /* 顶栏主题切换：小方块图标按钮（与站点 .theme-toggle 同款，按主题显隐太阳/月亮） */
 .icon-btn {

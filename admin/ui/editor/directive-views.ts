@@ -11,6 +11,7 @@ import type { Node } from '@milkdown/prose/model';
 import type { EditorView, NodeView, NodeViewConstructor, ViewMutationRecord } from '@milkdown/prose/view';
 import { DIRECTIVE_DEFS, directiveAtomNodes, gridNode, gridCellNode } from './directive-nodes.ts';
 import { api, type DirectivePreviewData } from '../api.ts';
+import { languageColor, compactCount, relativeUpdated } from '../../../src/lib/github-card.ts';
 
 type T = (key: string) => string;
 type Attrs = Record<string, string>;
@@ -81,7 +82,8 @@ export function renderDirectivePreview(
   name: string,
   values: Attrs,
   data: DirectivePreviewData,
-  t: T
+  t: T,
+  lang: 'zh' | 'en' = 'zh'
 ): void {
   const el = (tag: string, className: string, text = ''): HTMLElement => {
     const node = document.createElement(tag);
@@ -138,11 +140,26 @@ export function renderDirectivePreview(
       if (repo) {
         const desc = repo.note ?? repo.description ?? '';
         if (desc) card.append(el('span', 'dp-ghrepo-desc', desc));
-        const meta: string[] = [];
-        if (repo.language) meta.push(repo.language);
-        if (repo.stargazers_count !== undefined) meta.push(`★ ${repo.stargazers_count}`);
-        if (repo.forks_count !== undefined) meta.push(`⑂ ${repo.forks_count}`);
-        if (meta.length) card.append(el('span', 'dp-ghrepo-meta', meta.join(' · ')));
+        // topics pill（与站点卡同上限 6）
+        if (repo.topics && repo.topics.length > 0) {
+          const topics = el('span', 'dp-ghrepo-topics');
+          for (const tp of repo.topics.slice(0, 6)) topics.append(el('span', 'dp-ghrepo-topic', tp));
+          card.append(topics);
+        }
+        const meta = el('span', 'dp-ghrepo-meta');
+        const color = languageColor(repo.language);
+        if (repo.language && color) {
+          const langEl = el('span', 'dp-ghrepo-lang');
+          const dot = el('i', 'dp-ghrepo-dot');
+          dot.style.backgroundColor = color;
+          langEl.append(dot, document.createTextNode(repo.language));
+          meta.append(langEl);
+        }
+        if (repo.stargazers_count !== undefined) meta.append(el('span', '', `★ ${compactCount(repo.stargazers_count)}`));
+        if (repo.forks_count !== undefined) meta.append(el('span', '', `⑂ ${compactCount(repo.forks_count)}`));
+        const updated = relativeUpdated(repo.updated_at, Date.now(), lang);
+        if (updated) meta.append(el('span', '', updated));
+        if (meta.childNodes.length > 0) card.append(meta);
       } else {
         card.append(el('span', 'dp-ghrepo-desc', t('ghcardNotPinned')));
       }
@@ -216,7 +233,8 @@ class AtomCardView implements NodeView {
     private getPos: () => number | undefined,
     private defIndex: number,
     private t: T,
-    load: PreviewLoader
+    load: PreviewLoader,
+    private lang: 'zh' | 'en' = 'zh'
   ) {
     this.node = node;
     const def = DIRECTIVE_DEFS[defIndex];
@@ -279,7 +297,8 @@ class AtomCardView implements NodeView {
       DIRECTIVE_DEFS[this.defIndex].name,
       this.node.attrs.values as Attrs,
       this.previewData,
-      this.t
+      this.t,
+      this.lang
     );
   }
 
@@ -390,15 +409,19 @@ class CellView implements NodeView {
   }
 }
 
-/** 全部指令节点视图（t 用于卡片内文案；load 可注入预览数据替身用于测试） */
-export function createDirectiveViews(t: T, load: PreviewLoader = defaultLoader): unknown[] {
+/** 全部指令节点视图（t 用于卡片内文案；load 可注入预览数据替身用于测试；lang 影响相对时间等文案） */
+export function createDirectiveViews(
+  t: T,
+  load: PreviewLoader = defaultLoader,
+  lang: 'zh' | 'en' = 'zh'
+): unknown[] {
   // 预览数据共享一次加载（多张 ghcard/stream 卡片不重复请求）；失败降级为空数据
   let cache: Promise<DirectivePreviewData> | null = null;
   const loadOnce = () => (cache ??= load().catch(() => EMPTY_PREVIEW));
   const views = DIRECTIVE_DEFS.map((def, i) =>
     $view(directiveAtomNodes[i].node, (): NodeViewConstructor => {
       return (node, view, getPos) =>
-        new AtomCardView(node, view, getPos as () => number | undefined, i, t, loadOnce);
+        new AtomCardView(node, view, getPos as () => number | undefined, i, t, loadOnce, lang);
     })
   );
   views.push(

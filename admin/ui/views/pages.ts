@@ -404,7 +404,7 @@ export async function renderPageEditor(
         }
       },
     },
-    createDirectiveViews(t)
+    createDirectiveViews(t, undefined, state.lang)
   );
 
   return () => {

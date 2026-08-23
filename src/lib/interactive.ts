@@ -42,3 +42,13 @@ export function parallaxShift(progress: number, max = PARALLAX_MAX): number {
   const p = Math.max(-1, Math.min(1, progress));
   return Math.round(p * max * 100) / 100;
 }
+
+/**
+ * 热力图格子 tooltip 水平定位：以格中心为锚点居中，clamp 到 [minX, maxX] 容器边界内；
+ * tooltip 比容器还宽时贴左缘（保证不溢出右界由 CSS max-width 兜底）。
+ */
+export function tooltipLeft(centerX: number, tipWidth: number, minX: number, maxX: number): number {
+  const ideal = centerX - tipWidth / 2;
+  if (tipWidth >= maxX - minX) return minX;
+  return Math.max(minX, Math.min(maxX - tipWidth, ideal));
+}

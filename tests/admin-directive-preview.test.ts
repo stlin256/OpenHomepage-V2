@@ -52,6 +52,8 @@ describe('readDirectivePreview', () => {
               stargazers_count: 7,
               forks_count: 1,
               html_url: 'https://github.com/octocat/hello',
+              topics: ['go', 'cli'],
+              updated_at: '2026-08-20T00:00:00Z',
               node_id: 'drop-me',
             },
           ],
@@ -72,6 +74,8 @@ describe('readDirectivePreview', () => {
         stargazers_count: 7,
         forks_count: 1,
         html_url: 'https://github.com/octocat/hello',
+        topics: ['go', 'cli'],
+        updated_at: '2026-08-20T00:00:00Z',
       },
     ]);
     expect(preview.streams).toEqual([

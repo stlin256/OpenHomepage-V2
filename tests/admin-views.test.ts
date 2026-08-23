@@ -22,6 +22,8 @@ const fakeLoader: PreviewLoader = async () => ({
       language: 'C++',
       stargazers_count: 100,
       forks_count: 5,
+      topics: ['llm', 'ggml'],
+      updated_at: '2026-08-20T00:00:00Z',
     },
   ],
   streams: [{ id: 'welcome', title: 'AI 助理致辞', excerpt: '你好，我是这个站点的 AI 助理。' }],
@@ -80,7 +82,7 @@ describe('指令预览卡（所见即所得）', () => {
     await editor.destroy();
   });
 
-  it('ghcard 命中 pinned 快照渲染仓库卡；未命中显示占位提示', async () => {
+  it('ghcard 命中 pinned 快照渲染仓库卡（贴近站点卡：语言色点/topics/相对更新）；未命中显示占位提示', async () => {
     const { host, editor } = await editorWithViews(
       '::ghcard{repo="ggml-org/llama.cpp"}\n\n::ghcard{repo="owner/unknown"}\n'
     );
@@ -90,6 +92,11 @@ describe('指令预览卡（所见即所得）', () => {
     expect(cards[0].textContent).toContain('在笔记本上跑大模型'); // note 优先
     expect(cards[0].textContent).toContain('C++');
     expect(cards[0].textContent).toContain('★ 100');
+    // 语言色点用 linguist 官方色；topics 渲染为 pill；显示相对更新时间
+    const dot = cards[0].querySelector<HTMLElement>('.dp-ghrepo-dot')!;
+    expect(dot.style.backgroundColor).toBe('rgb(243, 75, 125)'); // #f34b7d
+    expect(cards[0].querySelectorAll('.dp-ghrepo-topic').length).toBe(2);
+    expect(cards[0].textContent).toContain('更新于');
     expect(cards[1].textContent).toContain('owner/unknown');
     expect(cards[1].textContent).toContain(t('ghcardNotPinned'));
     await editor.destroy();

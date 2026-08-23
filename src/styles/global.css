@@ -592,15 +592,84 @@ html[data-theme='dark'] .shiki {
   font-weight: 400;
 }
 
-/* ---- GitHub 区块：贡献热力图 ---- */
+/* ---- GitHub 区块：贡献热力图（对齐 github.com：坐标轴/计数行/图例/自定义滚动条） ---- */
 .heatmap-wrap {
   margin-bottom: 1.5rem;
+}
+/* 顶部计数行：第一行原版式 "2,467 contributions in the last year"，第二行带 GitHub 变体 */
+.heat-total {
+  margin: 0 0 0.15rem;
+  font-size: 0.95rem;
+}
+.heat-total-alt {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+}
+/* 横向滚动容器：自定义细滚动条（轨道透明、thumb 圆角、明暗主题适配），
+   WebKit 伪元素 + Firefox scrollbar-width/color 双写 */
+.heatmap-scroll {
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.heatmap-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.heatmap-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.heatmap-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.heatmap-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+.heatmap-inner {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 100%;
+}
+.heat-main {
+  display: flex;
+  gap: 6px;
+}
+/* 星期标签列（左）：与格子同 pitch（10px + 3px gap），只显示 Mon/Wed/Fri（一/三/五） */
+.heat-weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, 10px);
+  gap: 3px;
+  flex: none;
+  font-size: 9px;
+  line-height: 10px;
+  color: var(--text-muted);
+  user-select: none;
+}
+.heat-right {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+/* 月份标签行（顶）：绝对定位在对应周列上方（--w × 13px pitch，见下方 .heatmap） */
+.heat-months {
+  position: relative;
+  height: 12px;
+  margin-bottom: 4px;
+  font-size: 9px;
+  line-height: 1;
+  color: var(--text-muted);
+  user-select: none;
+}
+.heat-months span {
+  position: absolute;
+  left: calc(13px * var(--w));
+  white-space: nowrap;
 }
 .heatmap {
   display: flex;
   gap: 3px;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
 }
 .heat-week {
   display: grid;
@@ -618,15 +687,32 @@ html[data-theme='dark'] .shiki {
 .heat-cell[data-level='2'] { background: var(--heat-2); }
 .heat-cell[data-level='3'] { background: var(--heat-3); }
 .heat-cell[data-level='4'] { background: var(--heat-4); }
+.heat-cell[data-tip] {
+  cursor: default;
+}
 .heat-empty {
   background: transparent;
 }
+/* Less → More 图例：热力图底部右侧（与 GitHub 一致） */
+.heat-legend {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 3px;
+  margin: 6px 0 0;
+  font-size: 9px;
+  color: var(--text-muted);
+  user-select: none;
+}
+.heat-legend span:not(.heat-cell) {
+  padding: 0 2px;
+}
 /* 格子按周交错淡入（stagger 20ms，animation-delay 内联在格子上）；
-   仅 JS 环境下先隐藏，区块滚动进入视口（.revealed）后播放 */
-html.js .block-github .heat-cell:not(.heat-empty) {
+   仅 JS 环境下先隐藏，区块滚动进入视口（.revealed）后播放；图例格不参与 */
+html.js .block-github .heatmap .heat-cell:not(.heat-empty) {
   opacity: 0;
 }
-html.js .block-github.revealed .heat-cell:not(.heat-empty) {
+html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   animation: heat-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes heat-in {
@@ -639,6 +725,21 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
     transform: none;
   }
 }
+/* 格子 tooltip（src/scripts/heatmap.ts）：GitHub 风反色小气泡，fixed 定位不溢出容器 */
+.heat-tooltip {
+  position: fixed;
+  z-index: 90;
+  max-width: 16rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+}
 .heat-footer {
   display: flex;
   flex-wrap: wrap;
@@ -649,7 +750,8 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
   color: var(--text-muted);
 }
 
-/* pinned 仓库卡片：统一等高（grid 默认同行拉伸），hover 浮起 */
+/* pinned 仓库卡片：1:1 复刻 github.com 仓库卡（octicon 图标/语言色点/topic pill），
+   统一等高（grid 默认同行拉伸），hover 浮起 */
 .gh-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
@@ -670,9 +772,40 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
     box-shadow 0.2s ease,
     border-color 0.2s ease;
 }
+.gh-octicon {
+  width: 0.95em;
+  height: 0.95em;
+  flex: none;
+}
+.gh-repo-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-muted);
+  min-width: 0;
+}
+.gh-repo-link {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gh-repo-owner {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.gh-repo-sep {
+  color: var(--text-muted);
+  margin: 0 0.15em;
+}
 .gh-repo-name {
   font-weight: 600;
   color: var(--accent);
+}
+.gh-repo-link:hover .gh-repo-name {
+  text-decoration: underline;
 }
 .gh-repo-desc {
   font-size: 0.9rem;
@@ -682,10 +815,43 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* topic pill：GitHub 风蓝底小胶囊（accent 10% 底 + accent 字） */
+.gh-repo-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.gh-topic {
+  padding: 0.05em 0.6em;
+  border-radius: 2em;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.gh-topic:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  text-decoration: none;
+}
 .gh-repo-meta {
   margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+.gh-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.gh-lang-dot {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  flex: none;
 }
 
 /* 卡片 hover 浮起 + 主题色描边（spec 09：纯 CSS） */
@@ -694,6 +860,8 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
   transform: translateY(-4px);
   border-color: var(--accent);
   box-shadow: 0 10px 28px rgb(0 0 0 / 0.1);
+}
+.rss-card:hover {
   text-decoration: none;
 }
 

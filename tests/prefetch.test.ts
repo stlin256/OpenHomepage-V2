@@ -123,6 +123,7 @@ const GH_REPO_HELLO = {
   stargazers_count: 10,
   forks_count: 2,
   pushed_at: '2026-08-01T00:00:00Z',
+  updated_at: '2026-08-20T00:00:00Z',
   topics: ['a', 'b'],
   node_id: 'drop-me',
 };
@@ -293,9 +294,16 @@ describe('GitHub 数据块', () => {
     expect(gh.user.data).toMatchObject({ login: 'octocat', name: 'The Octocat', followers: 100 });
     expect(gh.user.data).not.toHaveProperty('node_id');
 
-    // pinned：顺序保持，note 合并
+    // pinned：顺序保持，note 合并；卡片 1:1 所需字段（topics/forks/language/stars/updated_at）全保留
     expect(gh.pinned.data).toHaveLength(2);
     expect(gh.pinned.data![0]).toMatchObject({ full_name: 'octocat/hello', note: '我的项目' });
+    expect(gh.pinned.data![0]).toMatchObject({
+      language: 'TypeScript',
+      stargazers_count: 10,
+      forks_count: 2,
+      updated_at: '2026-08-20T00:00:00Z',
+      topics: ['a', 'b'],
+    });
     expect(gh.pinned.data![1]).toMatchObject({ full_name: 'octocat/world', note: null });
     expect(gh.pinned.data![0]).not.toHaveProperty('node_id');
 

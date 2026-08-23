@@ -8,6 +8,7 @@ import { initStreamBlocks } from './stream-player.ts';
 import { initMotion } from './motion.ts';
 import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
+import { initHeatmapTooltips } from './heatmap.ts';
 import './lightbox.ts';
 
 /** 移动端汉堡按钮：切换 body.nav-open 抽屉（转场后 DOM 重建，需重新绑定） */
@@ -27,6 +28,7 @@ function initAll(): void {
   initStreamBlocks();
   initMotion();
   initBgm();
+  initHeatmapTooltips();
 }
 
 document.addEventListener('astro:page-load', initAll);
