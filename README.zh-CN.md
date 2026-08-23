@@ -10,7 +10,7 @@
 - **杂志化布局，科研式克制**——不对称 12 列网格、表现力动效（transform/opacity 实现）、明暗双主题（亮/暗两态切换，默认跟随系统；手动选择会话内保持、离开站点后重置）+ 可配置主题色。
 - **图片灯箱**——正文图片点击放大预览（缩放淡入动画，遵循 reduced-motion），存在同名 `-full` 文件（如 `assets/hero-full.jpg`）时自动加载高清版。
 - **背景音乐（可选）**——`site.yaml` 配置 `bgm` 段后，页顶出现播放/暂停按钮；`transition:persist` 保证站内转场不中断，记住用户选择，遵守浏览器自动播放策略与 reduced-motion。
-- **GitHub 区块**——贡献热力图与 pin 项目卡片，构建时抓取。
+- **GitHub 区块**——贡献热力图（对齐 GitHub 首页：月份/星期坐标轴、格子 tooltip、Less→More 图例、自定义滚动条）与 1:1 官网风 pinned 仓库卡（octicon 图标、topics pill、语言色点、star/fork/相对更新时间），构建时抓取。
 - **RSS 卡片**——多源订阅，分栏/加权混排两种模式，支持精选文章列表与逐篇封面；精选条目未声明封面时自动抓取文章页 `og:image`（回退 `twitter:image` → 正文首个图片），外链封面加载失败自动隐藏图位；卡片点击直达原文。
 - **LLM 流式区块**——预写 markdown 以拟真流式效果播放。
 - **可选 i18n**——在 `data/pages/` 下增加第二种语言目录，整站（路由、导航、回退链）自动启用；语言切换器（页顶翻译图标 + 弹出菜单）仅在当前页存在真实译文时出现；缺译页面顶部显示中英双语回退提示条。
@@ -37,25 +37,24 @@ npm run build       # 静态构建 → dist/
 
 | 命令 | 作用 | 地址 | 如何关闭 |
 |------|------|------|----------|
-| `npm run dev` | 站点开发服务器（热更新，改完即看） | http://localhost:4321 | 在该终端窗口按 `Ctrl+C` |
-| `npm run admin` | 可视化编辑器 | http://127.0.0.1:4174 | 在该终端窗口按 `Ctrl+C` |
+| `npm run admin` | 可视化编辑器（**自动连带启动站点预览服务**，已在跑则接管不重复拉起） | http://127.0.0.1:4174 + http://localhost:4321 | 在该终端窗口按 `Ctrl+C`（预览服务一并停止） |
+| `npm run dev` | 只跑站点开发服务器（热更新，不需要编辑器时用） | http://localhost:4321 | 在该终端窗口按 `Ctrl+C` |
 | `npm run prefetch` | 一次性：抓取 GitHub/RSS 数据到 `.cache/` | — | 跑完自动退出 |
 | `npm test` | 一次性：运行测试 | — | 跑完自动退出 |
 | `npm run build` | 一次性：静态构建 → `dist/` | — | 跑完自动退出 |
 | `npm run preview` | 预览构建产物 `dist/` | http://localhost:4321 | `Ctrl+C` |
 | `npm run serve` | 自部署静态服务 `dist/`（可选 HTTPS，见下文） | http://localhost:8080（或 https://localhost:8443） | `Ctrl+C` |
 
-典型工作流：
+典型工作流（一条命令启动全部）：
 
 ```bash
-npm run dev         # 终端 1：实时预览 :4321，保持运行
-npm run admin       # 终端 2：编辑器 :4174，在这里改内容
-# ……编辑、看预览；结束后在两个终端各按一次 Ctrl+C 即可（直接关终端窗口也行）
+npm run admin       # 编辑器 :4174 + 站点预览 :4321 一起拉起，在这里改内容、看实时预览
+# ……结束后按一次 Ctrl+C：编辑器与它代启的预览服务一并停止（直接关终端窗口也行）
 ```
 
 说明：
 
-- 两个服务相互独立，只需要哪个就启动哪个。编辑器里用"双栏预览"时若 dev server 未启动，可点"启动预览服务"由编辑器代启，编辑器退出时会自动把它停掉。
+- 顶栏有预览服务状态指示灯（绿=运行 / 黄=启动中 / 灰=未运行），点击可手动停止/再启动；编辑器只停掉它代启的进程，你自己跑的 `npm run dev` 不受影响。
 - 端口被占用（比如之前的 dev server 忘关了）：运行 `npx astro dev stop` 即可停止；或者 `netstat -ano | findstr :4321` 找到 PID 后 `taskkill /PID <pid> /F`；直接关掉旧终端窗口也行。
 - `.cache/` 跨次运行复用（1 小时有效期）；想强制刷新用 `npm run prefetch -- --force`。
 
@@ -72,6 +71,7 @@ npm run admin       # → http://127.0.0.1:4174（仅监听回环地址）
 - **素材**——列表/上传（文件选择或拖拽）/删除/复制引用路径。
 - **自动保存与快照**——编辑停顿 ~1.5s 自动写盘；每次写盘前把旧版本快照到 `data/.snapshots/<路径>/<时间戳>`（保留最近 20 版），界面可查看/回滚。写盘前做 schema 校验，失败不落盘并提示。
 - 编辑器界面中英双语（顶栏切换，localStorage 记忆）+ 亮/暗主题切换（顶栏小方块按钮，localStorage 记忆，默认跟随系统）。首次启动若无 `data/` 会自动从 `data.example/` 初始化。
+- **导出 data 压缩包**——顶栏"导出 data 压缩包"按钮把整个 `data/`（含 `.snapshots/` 版本快照）打包为 zip 下载，可直接作为 CI 的 `DATA_SOURCE_URL` 数据源（见下文部署一节）。
 
 详见 [docs/specs/06-editor.md](docs/specs/06-editor.md)。
 
@@ -121,6 +121,14 @@ GitHub Actions 在 push 与定时（每 8 小时）触发，构建并发布到 G
 | `GH_PAT` | GitHub PAT（`read:user`），用于贡献图 |
 
 在线源失效时，CI 从上次部署产物中的快照恢复 `data/`，只刷新 GitHub/RSS 动态区块并完成部署，随后将该次运行标记为失败，以便你收到邮件提醒。详见 [docs/specs/08-workflow.md](docs/specs/08-workflow.md)。
+
+### 托管 data.zip 获取直链的常见途径
+
+`DATA_SOURCE_URL` 需要一个能直接下载到 zip 的 URL（无需登录、无跳转页面）。编辑器顶栏的"导出 data 压缩包"产出的 zip 可直接用于以下任一途径：
+
+- **GitHub 私有仓库 Release 附件**：建一个私有仓库（如 `mysite-data`），把 zip 作为 release 附件上传，用 `https://github.com/<owner>/<repo>/releases/download/<tag>/data.zip` 形式的链接——配合 `GH_PAT`（release 附件需要 token 鉴权时，把 token 放在 workflow 的下载步骤里）；
+- **对象存储**：阿里云 OSS / 腾讯云 COS / S3 / Cloudflare R2 等，上传 zip 后开私有读 + 签名长链（或公共读，自行权衡隐私）；
+- **任意静态托管**：自己的服务器/NAS、静态文件托管服务，能给出直链即可。
 
 ## 文档
 

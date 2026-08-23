@@ -222,6 +222,48 @@ async function boot(): Promise<void> {
     });
   });
 
+  // 导出 data/ 压缩包（GET /api/export-data，浏览器直接下载）
+  const exportBtn = el(
+    'a',
+    { class: 'btn', href: '/api/export-data', title: state.t('exportData') },
+    state.t('exportData')
+  );
+
+  // 预览服务状态指示灯：绿=运行 / 黄=启动中 / 灰=未运行；点击手动停止/启动（重启=停后再启）
+  const devDot = el('button', { class: 'dev-indicator', type: 'button' }) as HTMLButtonElement;
+  devDot.append(el('span', { class: 'dev-dot' }));
+  let devState: 'up' | 'starting' | 'down' = 'down';
+  const paintDev = () => {
+    devDot.classList.toggle('up', devState === 'up');
+    devDot.classList.toggle('starting', devState === 'starting');
+    const label =
+      devState === 'up'
+        ? state.t('devIndicatorRunning')
+        : devState === 'starting'
+          ? state.t('devIndicatorStarting')
+          : state.t('devIndicatorStopped');
+    devDot.title = label;
+    devDot.setAttribute('aria-label', label);
+  };
+  const pollDev = async () => {
+    try {
+      const s = await api.devStatus();
+      devState = s.up ? 'up' : s.starting ? 'starting' : 'down';
+    } catch {
+      devState = 'down';
+    }
+    paintDev();
+  };
+  devDot.addEventListener('click', () => {
+    if (devState === 'starting') return;
+    void (devState === 'up' ? api.devStop() : api.devStart())
+      .then(() => pollDev())
+      .catch((e) => state.setStatus((e as Error).message, 'err'));
+  });
+  paintDev();
+  void pollDev();
+  setInterval(() => void pollDev(), 5000);
+
   // 主题切换：小方块图标按钮（太阳/月亮，与站点同款）
   const themeBtn = el('button', {
     class: 'theme-toggle icon-btn',
@@ -252,6 +294,8 @@ async function boot(): Promise<void> {
       el('span', { class: 'logo' }, state.t('appTitle')),
       statusEl,
       el('span', { class: 'topbar-spacer' }),
+      exportBtn,
+      devDot,
       previewBtn,
       themeBtn,
       langSel

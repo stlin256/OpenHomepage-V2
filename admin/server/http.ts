@@ -20,6 +20,7 @@ import { listSnapshots, restoreSnapshot } from './snapshots.ts';
 import { safeResolve, PathError } from './paths.ts';
 import { createDevServerManager, type DevServerManager } from './devserver.ts';
 import { readDirectivePreview } from './directive-preview.ts';
+import { buildZip, collectDataEntries, exportZipName } from './export.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 
 const ADMIN_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -152,6 +153,16 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       // 指令卡片预览数据（::ghcard 用 pinned 缓存，::stream 用流式块摘要）
       '/api/directive-preview': ({ res }) =>
         sendJson(res, 200, readDirectivePreview(opts.rootDir ?? path.resolve(dataDir, '..'), dataDir)),
+      // 导出 data/ 全量 zip（含 .snapshots/ 版本快照）
+      '/api/export-data': ({ res }) => {
+        const zip = buildZip(collectDataEntries(dataDir));
+        res.writeHead(200, {
+          'content-type': 'application/zip',
+          'content-disposition': `attachment; filename="${exportZipName()}"`,
+          'content-length': zip.byteLength,
+        });
+        res.end(zip);
+      },
     },
     PUT: {
       '/api/page': ({ body, res }) => {

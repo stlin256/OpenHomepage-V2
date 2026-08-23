@@ -182,6 +182,11 @@ const zh = {
   previewLinkSample: '链接示例',
   previewButtonSample: '按钮示例',
   streamingIdPlaceholder: '流式块 id',
+  exportData: '导出 data 压缩包',
+  devIndicatorRunning: '预览服务运行中（点击停止）',
+  devIndicatorStarting: '预览服务启动中…',
+  devIndicatorStopped: '预览服务未运行（点击启动）',
+  devIndicatorRestart: '重启预览服务',
 } as const;
 
 export type DictKey = keyof typeof zh;
@@ -363,6 +368,11 @@ const en: Record<DictKey, string> = {
   previewLinkSample: 'Link sample',
   previewButtonSample: 'Button sample',
   streamingIdPlaceholder: 'streaming id',
+  exportData: 'Export data.zip',
+  devIndicatorRunning: 'Preview server running (click to stop)',
+  devIndicatorStarting: 'Preview server starting…',
+  devIndicatorStopped: 'Preview server not running (click to start)',
+  devIndicatorRestart: 'Restart preview server',
 };
 
 export const dict: Record<Lang, Record<string, string>> = { zh, en };

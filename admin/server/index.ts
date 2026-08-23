@@ -36,6 +36,25 @@ server.listen(port, '127.0.0.1', () => {
   console.log('仅监听本机回环地址 / Listening on loopback only.');
 });
 
+// 一键全启动（批次 5）：编辑器启动时自动拉起预览 dev server——已在跑则探测接管不重复
+// spawn（devserver.start 幂等）；端口被占用时 astro dev 自动递增，真实 URL 从日志解析；
+// admin 退出（SIGINT/SIGTERM）连带停止它 spawn 的子进程（见下方 shutdown）。
+void devManager.start().then(async () => {
+  // 给 astro dev 一点就绪时间再探测打印 URL（失败不致命，界面指示灯会持续轮询）
+  for (let i = 0; i < 30; i++) {
+    const s = await devManager.status();
+    if (s.up && s.url) {
+      console.log(`预览服务已就绪 / Preview ready:  ${s.url}`);
+      return;
+    }
+    if (s.error) {
+      console.warn(`预览服务启动失败 / Preview failed: ${s.error}`);
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+});
+
 // admin 退出时连带终止由它 spawn 的 astro dev（Windows 走 taskkill /T 树杀，见 devserver.ts）
 let shuttingDown = false;
 const shutdown = () => {

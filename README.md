@@ -10,7 +10,7 @@ A lightweight, magazine-style personal homepage generator — static, bilingual 
 - **Magazine layout, researcher-grade restraint** — asymmetric 12-column grid, expressive yet cheap animations (transform/opacity only), dark/light themes (two-state toggle; follows your system until you pick — the choice sticks for the session and resets once you leave) with a configurable accent color.
 - **Image lightbox** — click any content image to preview it full-screen (scale/fade animation, reduced-motion aware); a same-named `-full` file (e.g. `assets/hero-full.jpg`) is loaded automatically when present.
 - **Background music (optional)** — configure `bgm` in `site.yaml` and a play/pause button appears in the header; `transition:persist` keeps it playing across in-site navigations, remembers the user's choice, and respects autoplay policies and reduced-motion.
-- **GitHub blocks** — contribution heatmap and pinned repo cards, fetched at build time with cache fallback.
+- **GitHub blocks** — contribution heatmap (GitHub-style month/weekday axes, per-cell tooltips, Less→More legend, custom scrollbar) and pinned repo cards mirroring github.com (octicons, topic pills, language dots, stars/forks/relative updated time), fetched at build time with cache fallback.
 - **RSS cards** — multiple feeds, grouped or weighted-mixed display, curated article lists with per-card covers; when a curated entry declares no cover, its article page's `og:image` is scraped at prefetch time (fallback: `twitter:image` → first content `<img>`), and a cover that fails to load hides its slot; cards link straight to the original article.
 - **LLM-style streaming blocks** — pre-written markdown replayed with a realistic streaming effect.
 - **Optional i18n** — add a second language folder under `data/pages/` and the whole site (routes, nav, fallback chain) lights up automatically; the language switcher (a translate icon with a popup menu in the header) only appears when the current page has a real translation, and fallback pages carry a bilingual two-line notice.
@@ -37,26 +37,25 @@ All commands are long-running local servers (except one-shot ones); they print t
 
 | Command | What it does | URL | How to stop |
 |---------|--------------|-----|-------------|
-| `npm run dev` | Site dev server with hot reload — preview your edits live | http://localhost:4321 | Focus the terminal and press `Ctrl+C` |
-| `npm run admin` | Visual editor | http://127.0.0.1:4174 | Focus the terminal and press `Ctrl+C` |
+| `npm run admin` | Visual editor (**also starts the site preview server automatically**; adopts an already-running one instead of spawning a duplicate) | http://127.0.0.1:4174 + http://localhost:4321 | `Ctrl+C` in that terminal (the preview server stops with it) |
+| `npm run dev` | Site dev server only (hot reload; use when you don't need the editor) | http://localhost:4321 | `Ctrl+C` |
 | `npm run prefetch` | One-shot: fetch GitHub/RSS data into `.cache/` | — | exits by itself |
 | `npm test` | One-shot: run the test suite | — | exits by itself |
 | `npm run build` | One-shot: static build → `dist/` | — | exits by itself |
 | `npm run preview` | Serve the built `dist/` for a final check | http://localhost:4321 | `Ctrl+C` |
 | `npm run serve` | Self-hosted static server for `dist/` (optional HTTPS, see below) | http://localhost:8080 (or https://localhost:8443) | `Ctrl+C` |
 
-Typical session:
+Typical session (one command starts everything):
 
 ```bash
-npm run dev         # terminal 1: live preview at :4321 — keep it running
-npm run admin       # terminal 2: editor at :4174 — make your edits here
+npm run admin       # editor at :4174 + site preview at :4321 come up together
 # ...edit, watch the preview update; when done:
-# Ctrl+C in each terminal to stop. Closing the terminal window also works.
+# one Ctrl+C stops the editor and the preview server it spawned (closing the terminal also works)
 ```
 
 Notes:
 
-- The two servers are independent — run either one alone if you only need it. In the editor's split-preview mode, if the dev server isn't running you can click "Start preview server" to let the editor spawn it; the editor stops that child process when it exits.
+- The top bar has a preview-server status light (green = running / amber = starting / gray = stopped); click it to stop/start manually. The editor only kills processes it spawned — your own `npm run dev` is left alone.
 - If a port is busy (e.g. from a forgotten dev server), run `npx astro dev stop`, or find the PID with `netstat -ano | findstr :4321` and `taskkill /PID <pid> /F`; closing the old terminal also works.
 - `.cache/` is reused across runs; use `npm run prefetch -- --force` to bypass the 1-hour TTL.
 
@@ -73,6 +72,7 @@ npm run admin       # → http://127.0.0.1:4174 (loopback only)
 - **Assets** — list/upload (file picker or drag & drop)/delete/copy reference path.
 - **Autosave & snapshots** — edits are written to disk after ~1.5s idle; every write snapshots the previous version to `data/.snapshots/<path>/<timestamp>` (latest 20 kept), with list/restore in the UI. Writes are schema-validated first and rejected with a message on failure.
 - The editor UI is bilingual (zh/en, switcher in the top bar, remembered in localStorage) and has a light/dark theme toggle (small square button in the top bar, remembered in localStorage, follows the system by default). If `data/` is missing on first launch it is initialized from `data.example/` automatically.
+- **Export data.zip** — the top-bar "Export data.zip" button downloads the whole `data/` folder (including the `.snapshots/` version history) as a zip, ready to be used as the CI `DATA_SOURCE_URL` (see Deployment below).
 
 Details: [docs/specs/06-editor.md](docs/specs/06-editor.md).
 
@@ -122,6 +122,14 @@ GitHub Actions builds and deploys to GitHub Pages on push and on a schedule (eve
 | `GH_PAT` | GitHub PAT (`read:user`) for the contribution graph |
 
 If the online source fails, CI restores `data/` from the snapshot embedded in the last deployment, refreshes only the dynamic blocks (GitHub/RSS), deploys, then marks the run as failed so you get an e-mail reminder. Details: [docs/specs/08-workflow.md](docs/specs/08-workflow.md).
+
+### Hosting data.zip for a direct link
+
+`DATA_SOURCE_URL` needs a URL that serves the zip directly (no login, no interstitial page). The zip produced by the editor's "Export data.zip" button works with any of these:
+
+- **GitHub private-repo release asset**: create a private repo (e.g. `mysite-data`), attach the zip to a release, and use a `https://github.com/<owner>/<repo>/releases/download/<tag>/data.zip` URL (release assets of private repos need token auth — put the token in the workflow's download step);
+- **Object storage**: S3 / Cloudflare R2 / Aliyun OSS / Tencent COS — upload the zip and hand out a signed long-lived URL (or public-read, your privacy call);
+- **Any static hosting**: your own server/NAS or a static file host — anything that returns the zip bytes directly.
 
 ## Documentation
 
