@@ -11,7 +11,7 @@ description: 指导 AI 如何正确编辑 OpenHomepage V2 的 data/ 文件夹内
 
 ```
 data/
-├── site.yaml          # 站点配置（profile / theme / github / rss / home.layout / streaming_blocks）
+├── site.yaml          # 站点配置（site[含 favicon] / profile / theme / bgm / footer / github / rss / home.layout / streaming_blocks）
 ├── rss.yaml           # RSS 源（display: grouped|mixed；sources 列表）
 ├── pages/             # 页面，按语言分目录，每个 *.md 自动成路由
 │   ├── zh/            # 中文页面（index.md = 主页，slug 为 /）
