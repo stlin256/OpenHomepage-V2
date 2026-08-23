@@ -280,7 +280,7 @@ async function fetchGithubUser(ctx: Ctx, username: string): Promise<GithubUser> 
 
 async function fetchPinnedRepos(
   ctx: Ctx,
-  pinned: { repo: string; note?: string }[]
+  pinned: { repo: string; note?: LocalizedText }[]
 ): Promise<GithubPinnedRepo[]> {
   // 单源内串行（spec 07 §2）
   const repos: GithubPinnedRepo[] = [];

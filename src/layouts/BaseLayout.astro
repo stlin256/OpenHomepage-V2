@@ -69,7 +69,13 @@ const FAVICON_MIME: Record<string, string> = {
 const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLowerCase()];
 ---
 
-<html lang={htmlLang} data-theme="light" data-default-mode={defaultMode} style={accentVars}>
+<html
+  lang={htmlLang}
+  data-theme="light"
+  data-default-mode={defaultMode}
+  data-default-lang={defaultLang}
+  style={accentVars}
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

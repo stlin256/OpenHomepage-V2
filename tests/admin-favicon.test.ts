@@ -78,7 +78,7 @@ describe('POST /api/favicon', () => {
     const res = await fetch(`${base}/api/favicon`, {
       method: 'POST',
       headers: { 'content-type': 'application/octet-stream' },
-      body: await fixturePng(),
+      body: new Uint8Array(await fixturePng()),
     });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { favicon: string; files: string[] };
@@ -94,7 +94,7 @@ describe('POST /api/favicon', () => {
     const res = await fetch(`${base}/api/favicon`, {
       method: 'POST',
       headers: { 'content-type': 'application/octet-stream' },
-      body: Buffer.from('definitely not an image'),
+      body: new Uint8Array(Buffer.from('definitely not an image')),
     });
     expect(res.status).toBe(400);
     expect(existsSync(path.join(dataDir, 'assets', 'favicon-180.png'))).toBe(false);

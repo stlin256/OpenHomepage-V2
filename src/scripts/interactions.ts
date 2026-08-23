@@ -12,6 +12,52 @@ import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
 import './lightbox.ts';
 
+const LANGUAGE_STORAGE_KEY = 'oh-language';
+type SiteLanguage = 'zh' | 'en';
+
+function normalizeLanguage(value: string | null | undefined): SiteLanguage | null {
+  const lang = value?.toLowerCase().split(/[-_]/)[0];
+  return lang === 'zh' || lang === 'en' ? lang : null;
+}
+
+function readPreferredLanguage(): SiteLanguage | null {
+  try {
+    return normalizeLanguage(localStorage.getItem(LANGUAGE_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function writePreferredLanguage(lang: SiteLanguage): void {
+  try {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+  } catch {
+    /* 存储不可用时仅保持当前页面状态 */
+  }
+}
+
+function browserLanguage(): SiteLanguage | null {
+  return normalizeLanguage(navigator.language);
+}
+
+function currentLanguage(): SiteLanguage | null {
+  return normalizeLanguage(document.documentElement.lang);
+}
+
+function languagePath(lang: SiteLanguage, pathname = location.pathname): string {
+  const defaultLang = normalizeLanguage(document.documentElement.dataset.defaultLang) ?? 'zh';
+  const currentLang = currentLanguage();
+  let rest = pathname || '/';
+  if (currentLang) {
+    const prefix = `/${currentLang}`;
+    if (rest === prefix || rest.startsWith(`${prefix}/`)) {
+      rest = rest.slice(prefix.length) || '/';
+    }
+  }
+  if (lang === defaultLang) return rest || '/';
+  return rest === '/' ? `/${lang}/` : `/${lang}${rest}`;
+}
+
 // ---- 加载遮罩 ----
 
 function ensureLoadingOverlay(): HTMLElement {
@@ -85,8 +131,8 @@ async function swapContent(path: string): Promise<void> {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const newMain = doc.querySelector('main.site-main');
     const newFooter = doc.querySelector('footer.site-footer');
-    const oldMain = document.querySelector('main.site-main');
-    const oldFooter = document.querySelector('footer.site-footer');
+    const oldMain = document.querySelector<HTMLElement>('main.site-main');
+    const oldFooter = document.querySelector<HTMLElement>('footer.site-footer');
     if (!newMain || !oldMain) {
       hideLoading();
       location.href = path;
@@ -98,16 +144,18 @@ async function swapContent(path: string): Promise<void> {
     // 替换内容
     oldMain.replaceChildren(...newMain.children);
     if (newFooter && oldFooter) {
-      oldFooter.replaceChildren(...newFooter.children);
+      oldFooter.replaceChildren(
+        ...Array.from(newFooter.childNodes, (node) => node.cloneNode(true)),
+      );
     } else if (newFooter && !oldFooter) {
-      oldMain.after(newFooter);
+      oldMain.after(newFooter.cloneNode(true));
     } else if (!newFooter && oldFooter) {
       oldFooter.remove();
     }
     updateNavActive(path);
     // 同步 header 中的导航和语言菜单到新语言（header 不整体替换，保留按钮监听）
     const newNav = doc.querySelector('nav.site-nav');
-    const oldNav = document.querySelector('nav.site-nav');
+    const oldNav = document.querySelector<HTMLElement>('nav.site-nav');
     if (newNav && oldNav) {
       const newTitle = newNav.querySelector('.site-title a');
       const oldTitle = oldNav.querySelector('.site-title a');
@@ -119,15 +167,17 @@ async function swapContent(path: string): Promise<void> {
     const newLangMenu = doc.querySelector('.lang-menu');
     const oldLangMenu = document.querySelector('.lang-menu');
     if (newLangMenu && oldLangMenu) {
-      const newLinks = newLangMenu.querySelectorAll('a');
-      const oldLinks = oldLangMenu.querySelectorAll('a');
-      for (let i = 0; i < Math.min(newLinks.length, oldLinks.length); i++) {
-        oldLinks[i].className = newLinks[i].className;
-      }
+      oldLangMenu.replaceChildren(
+        ...Array.from(newLangMenu.children, (node) => node.cloneNode(true)),
+      );
     }
     // 更新 html lang 属性（从新页面的 <html> 提取）
     const newLang = doc.documentElement.getAttribute('lang');
-    if (newLang) document.documentElement.setAttribute('lang', newLang);
+    const nextLanguage = normalizeLanguage(newLang);
+    if (nextLanguage) {
+      document.documentElement.setAttribute('lang', nextLanguage);
+      writePreferredLanguage(nextLanguage);
+    }
     document.body.classList.remove('nav-open');
     document.querySelector('.nav-toggle')?.setAttribute('aria-expanded', 'false');
     // 淡入新内容
@@ -154,12 +204,14 @@ document.addEventListener('click', (e) => {
   const link = e.target instanceof Element ? e.target.closest('a') : null;
   if (!link) return;
   const href = link.getAttribute('href') ?? '';
+  const selectedLanguage = normalizeLanguage(link.getAttribute('hreflang'));
   // 语言切换器也走内容交换（保留当前页面）
   // 外链 / 锚点不动
   if (!isInternalLink(href) || href.includes('#')) return;
   // 修饰键点击不动
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
+  if (selectedLanguage) writePreferredLanguage(selectedLanguage);
   void swapContent(href);
 });
 
@@ -198,5 +250,15 @@ document.addEventListener(
   true
 );
 
-// 首屏初始化
+async function bootstrapLanguage(): Promise<void> {
+  const current = currentLanguage();
+  const preferred = readPreferredLanguage() ?? browserLanguage() ?? current;
+  if (!preferred) return;
+  if (!readPreferredLanguage()) writePreferredLanguage(preferred);
+  if (current === preferred) return;
+  await swapContent(languagePath(preferred));
+}
+
+// 首屏初始化；语言偏好不匹配时在遮罩下加载对应语言页面。
 initAll();
+void bootstrapLanguage();
