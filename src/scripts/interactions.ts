@@ -30,3 +30,38 @@ function initAll(): void {
 }
 
 document.addEventListener('astro:page-load', initAll);
+
+// 语言切换器菜单开合：点击按钮切换；点别处 / Esc 关闭（事件委托注册一次，
+// ClientRouter 转场后新 DOM 仍被覆盖；hover 展开由 CSS 承担）
+function setLangMenu(menu: Element, open: boolean): void {
+  menu.classList.toggle('open', open);
+  menu
+    .closest('.lang-switcher')
+    ?.querySelector('.lang-toggle')
+    ?.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+document.addEventListener('click', (e) => {
+  const toggle = e.target instanceof Element ? e.target.closest('.lang-toggle') : null;
+  const ownMenu = toggle?.closest('.lang-switcher')?.querySelector('.lang-menu');
+  for (const menu of document.querySelectorAll('.lang-menu.open')) {
+    if (menu !== ownMenu) setLangMenu(menu, false);
+  }
+  if (ownMenu) setLangMenu(ownMenu, !ownMenu.classList.contains('open'));
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  for (const menu of document.querySelectorAll('.lang-menu.open')) setLangMenu(menu, false);
+});
+
+// RSS 封面（多为外链 og:image，见 spec 05）加载失败时隐藏图位：
+// 资源 error 事件不冒泡，用捕获阶段委托；ClientRouter 转场后新 DOM 仍被覆盖
+document.addEventListener(
+  'error',
+  (e) => {
+    if (e.target instanceof HTMLImageElement) {
+      const cover = e.target.closest<HTMLElement>('.rss-cover');
+      if (cover) cover.style.display = 'none';
+    }
+  },
+  true
+);

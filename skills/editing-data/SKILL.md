@@ -26,7 +26,7 @@ data/
 2. **markdown 扩展**：可用指令 `::bilibili{}` `::youtube{}` `:::video{}` `:::audio{}` `:::figure{}` `:::grid{}` `::stream{}` `::ghcard{}`，语法见 `docs/specs/03-markdown-directives.md`；支持 HTML 混写和 KaTeX（`$...$` / `$$...$$`）。
 3. **配置文案双语**：site.yaml / rss.yaml 中面向用户的文案字段可写 `{zh: ..., en: ...}` 映射；存在多语言页面时应主动把区块标题等补成双语文案。
 4. **主页布局**：区块顺序改 `site.yaml` 的 `home.layout` 列表；流式区块以 `- block: streaming` + `id:` 引用 `streaming_blocks` 中定义的块。
-5. **RSS**：加源在 `rss.yaml` 的 `sources` 追加；curated 模式逐篇配 `url` + 可选 `note`/`cover`。封面不自动抓取，只能声明。
+5. **RSS**：加源在 `rss.yaml` 的 `sources` 追加；curated 模式逐篇配 `url` + 可选 `note`/`cover`。封面规则：显式声明的 `cover` 优先；curated 条目未声明时 prefetch 会自动抓文章页提取 `og:image`（回退 `twitter:image` → 正文首个 img），无需手动声明；外链封面加载失败时前端自动隐藏图位。
 6. **素材**：图片放入 `data/assets/`，markdown 里用 `assets/xxx.jpg` 相对路径引用。不要引用 data/ 之外的路径。
 7. **校验**：改完 YAML 后用 `npm run validate`（若已实现）或至少 `npx js-yaml <file>` 校验语法；改完页面用 `npm run dev` 本地预览确认渲染无误。
 8. **不要做的事**：

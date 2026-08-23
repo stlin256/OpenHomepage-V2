@@ -5,11 +5,14 @@
  * - 手动切换：写 sessionStorage，本次会话内（含站内转场导航）保持；
  *   离开站点/关闭标签页后重置，重新跟随系统；
  * - ClientRouter 转场：swap 会把 <html> 属性还原为 SSR 值（默认亮色）且内联脚本
- *   不重放（swap-functions deselectScripts），故在 astro:after-swap 立即重放主题（#4）。
+ *   不重放（swap-functions deselectScripts）。astro:before-swap 先把旧 <html> 的
+ *   data-theme / 内联 accent style / .js 标记复制进新文档（carryThemeAttrs），
+ *   保证 swap 完成瞬间主题已正确；astro:after-swap 再重放一次作兜底（#4）。
  *
  * 纯逻辑（initialTheme/toggleTheme）在 src/lib/theme.ts，可单测；这里只做 DOM/存储。
  */
 import {
+  carryThemeAttrs,
   initialTheme,
   toggleTheme,
   type ThemeName,
@@ -61,7 +64,14 @@ export function initThemeToggle(): void {
   });
 }
 
-// 模块脚本在转场间常驻：swap 后立即重放主题，避免闪回 SSR 默认亮色
+// 模块脚本在转场间常驻：
+// - before-swap：把旧 <html> 的 data-theme / 内联 accent style / .js 标记搬进新文档，
+//   swap 完成瞬间主题即正确（否则新文档 SSR 默认亮色，暗色下先闪一帧白）；
+// - after-swap：立即重放主题，作兜底（如 before-swap 未覆盖的场景）。
+document.addEventListener('astro:before-swap', (e) => {
+  const newDoc = (e as Event & { newDocument?: Document }).newDocument;
+  if (newDoc) carryThemeAttrs(document.documentElement, newDoc.documentElement);
+});
 document.addEventListener('astro:after-swap', () => applyTheme(currentTheme()));
 
 // 系统主题变化：只在用户未手动选择时跟随

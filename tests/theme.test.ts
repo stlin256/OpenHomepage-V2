@@ -9,6 +9,7 @@ import {
   buildAccentTheme,
   initialTheme,
   toggleTheme,
+  carryThemeAttrs,
   DARK_BG,
 } from '../src/lib/theme.ts';
 
@@ -122,5 +123,43 @@ describe('toggleTheme', () => {
   it('亮暗互换', () => {
     expect(toggleTheme('light')).toBe('dark');
     expect(toggleTheme('dark')).toBe('light');
+  });
+});
+
+describe('carryThemeAttrs（ClientRouter before-swap 防闪白）', () => {
+  /** Map 实现的 AttrCarrier 测试替身 */
+  function fakeEl(attrs: Record<string, string>) {
+    const map = new Map(Object.entries(attrs));
+    return {
+      getAttribute: (n: string) => map.get(n) ?? null,
+      setAttribute: (n: string, v: string) => void map.set(n, v),
+      has: (n: string) => map.has(n),
+    };
+  }
+
+  it('复制 data-theme / 内联 accent style / class（.js 标记）到新文档', () => {
+    const from = fakeEl({
+      'data-theme': 'dark',
+      style: '--accent-light:#3a7bd5;',
+      class: 'js',
+      lang: 'zh-CN',
+    });
+    // 新文档为 SSR 默认值（亮色、无 class）
+    const to = fakeEl({ 'data-theme': 'light', lang: 'zh-CN' });
+    carryThemeAttrs(from, to);
+    expect(to.getAttribute('data-theme')).toBe('dark');
+    expect(to.getAttribute('style')).toBe('--accent-light:#3a7bd5;');
+    expect(to.getAttribute('class')).toBe('js');
+    // 不搬运 lang 等其他属性（语言页切换时 lang 必须保留新文档的 SSR 值）
+    expect(to.getAttribute('lang')).toBe('zh-CN');
+  });
+
+  it('旧文档缺某属性时不写入（保留新文档原值）', () => {
+    const from = fakeEl({ 'data-theme': 'dark' });
+    const to = fakeEl({ style: 'keep-me', class: 'other' });
+    carryThemeAttrs(from, to);
+    expect(to.getAttribute('data-theme')).toBe('dark');
+    expect(to.getAttribute('style')).toBe('keep-me');
+    expect(to.getAttribute('class')).toBe('other');
   });
 });

@@ -132,3 +132,23 @@ export function initialTheme(
 export function toggleTheme(current: ThemeName): ThemeName {
   return current === 'dark' ? 'light' : 'dark';
 }
+
+/** getAttribute/setAttribute 的最小元素接口（document.documentElement 或测试替身） */
+export interface AttrCarrier {
+  getAttribute(name: string): string | null;
+  setAttribute(name: string, value: string): void;
+}
+
+/**
+ * ClientRouter 转场防闪白（spec 10 §3）：swap 会把 <html> 属性还原为 SSR 值
+ * （data-theme="light"、无 .js 标记），而 after-swap 重放发生在渲染之后，
+ * 暗色下会先闪一帧白。在 astro:before-swap 把旧 <html> 的主题相关属性
+ * （data-theme / 内联 accent style / class 上的 .js 标记）复制到新文档 <html>，
+ * 保证 swap 完成瞬间主题已正确；after-swap 重放保留作兜底。
+ */
+export function carryThemeAttrs(from: AttrCarrier, to: AttrCarrier): void {
+  for (const name of ['data-theme', 'style', 'class']) {
+    const v = from.getAttribute(name);
+    if (v !== null) to.setAttribute(name, v);
+  }
+}

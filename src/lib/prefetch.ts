@@ -368,8 +368,28 @@ function feedItemToEntry(item: FeedItem, cover: string | null, note: string | nu
   };
 }
 
-/** 从文章页 HTML 提取标题（og:title → <title>）与摘要（meta description → og:description → 首段文本） */
-function scrapeArticleHtml(html: string): { title: string | null; summary: string | null } {
+/** 提取到的图片地址归一化为绝对 URL：去实体/空白；data: URI 丢弃（缓存 JSON 不存内联图） */
+function resolveImageUrl(src: string | null, pageUrl?: string): string | null {
+  if (!src) return null;
+  const s = decodeEntities(src).trim();
+  if (!s || /^data:/i.test(s)) return null;
+  if (!pageUrl) return /^https?:\/\//i.test(s) ? s : null;
+  try {
+    return new URL(s, pageUrl).href;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 从文章页 HTML 提取标题（og:title → <title>）、摘要（meta description → og:description → 首段文本）
+ * 与封面（og:image → twitter:image(:src) → body 首个 <img>；相对地址按 pageUrl 解析为绝对 URL）。
+ * 封面用于 curated 条目未显式声明 cover 时的回退（spec 05）。
+ */
+export function scrapeArticleHtml(
+  html: string,
+  pageUrl?: string,
+): { title: string | null; summary: string | null; cover: string | null } {
   const extractMeta = (attr: 'name' | 'property', value: string): string | null => {
     const tag = html.match(new RegExp(`<meta\\b[^>]*\\b${attr}=["']${value}["'][^>]*>`, 'i'))?.[0];
     if (!tag) return null;
@@ -380,17 +400,27 @@ function scrapeArticleHtml(html: string): { title: string | null; summary: strin
   const title = ogTitle ?? titleTag ?? null;
 
   const metaDesc = extractMeta('name', 'description') ?? extractMeta('property', 'og:description');
+  const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? html;
   let summary = metaDesc;
   if (!summary) {
-    const body = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? html;
     const paragraphs = [...body.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)];
     // 优先取第一段有实质内容（≥40 字符）的段落，否则退到第一段
     const substantial = paragraphs.find((p) => [...stripHtml(p[1])].length >= 40);
     summary = (substantial ?? paragraphs[0])?.[1] ?? null;
   }
+
+  const metaCover =
+    extractMeta('property', 'og:image') ??
+    extractMeta('name', 'twitter:image') ??
+    extractMeta('property', 'twitter:image') ??
+    extractMeta('name', 'twitter:image:src');
+  const firstImg = body.match(/<img\b[^>]*?\bsrc=["']([^"']+)["']/i)?.[1] ?? null;
+  const cover = resolveImageUrl(metaCover ?? firstImg, pageUrl);
+
   return {
     title: title ? decodeEntities(stripHtml(title)) : null,
     summary: summary ? truncateText(stripHtml(summary), SUMMARY_MAX) : null,
+    cover,
   };
 }
 
@@ -426,16 +456,23 @@ async function fetchRssSource(ctx: Ctx, src: RssSource): Promise<{ data: RssEntr
   const entries: RssEntry[] = [];
   const failures: string[] = [];
   for (const art of articles) {
-    const cover = art.cover ?? src.cover ?? null;
+    const declaredCover = art.cover ?? src.cover ?? null;
     const note = art.note ?? null;
     const hit = items.find((it) => it.link && sameLink(it.link, art.url));
-    if (hit) {
-      entries.push({ ...feedItemToEntry(hit, cover, note), link: art.url });
+    // feed 命中且封面已显式声明：无需抓文章页
+    if (hit && declaredCover) {
+      entries.push({ ...feedItemToEntry(hit, declaredCover, note), link: art.url });
       continue;
     }
+    // 其余情况抓文章页：feed 未命中（补标题/摘要），或未声明封面（提取 og:image，spec 05）
     try {
       const html = await fetchText(ctx.fetchFn, art.url, { headers: { 'User-Agent': USER_AGENT } }, ctx.requestTimeoutMs);
-      const scraped = scrapeArticleHtml(html);
+      const scraped = scrapeArticleHtml(html, art.url);
+      const cover = declaredCover ?? scraped.cover;
+      if (hit) {
+        entries.push({ ...feedItemToEntry(hit, cover, note), link: art.url });
+        continue;
+      }
       if (!scraped.title && !scraped.summary) {
         throw new Error('页面无可提取内容');
       }
@@ -448,8 +485,13 @@ async function fetchRssSource(ctx: Ctx, src: RssSource): Promise<{ data: RssEntr
         note,
       });
     } catch (e) {
+      if (hit) {
+        // 仅封面抓取失败不致命：feed 数据完整，封面回退声明值（可能为 null）
+        entries.push({ ...feedItemToEntry(hit, declaredCover, note), link: art.url });
+        continue;
+      }
       failures.push(`${art.url}（${(e as Error).message}）`);
-      entries.push({ title: art.url, link: art.url, published: null, summary: '', cover, note });
+      entries.push({ title: art.url, link: art.url, published: null, summary: '', cover: declaredCover, note });
     }
   }
   if (failures.length === 0) return { data: entries };

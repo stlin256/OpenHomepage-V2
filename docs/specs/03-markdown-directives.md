@@ -14,7 +14,7 @@
 ```
 
 - `bilibili` / `youtube` **直接渲染**官方播放器 iframe（`<div class="embed-player">` 响应式 16:9 容器 + `<iframe loading="lazy">`，浏览器视口附近才加载，不拖慢首屏）。YouTube 嵌入 URL 用隐私增强域名 `youtube-nocookie.com`。
-- `video` / `audio` 渲染原生 `<video controls>` / `<audio controls>`，src 支持相对 data/ 的路径和外部 URL。
+- `video` / `audio` 渲染原生 `<video controls>` / `<audio controls>`，src 支持相对 data/ 的路径和外部 URL。版式与 figure/embed-player 一致：块级、杂志全宽（`width:100%`、1.5em 上下间距），video 带与 embed-player 同款的底色/描边/圆角。
 
 ## 2. 图文排版（杂志化用）
 

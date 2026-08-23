@@ -161,7 +161,9 @@ const bodyHtml = await renderMarkdown(route.page.body, {
 >
   {route.fallback && (
     <p class="fallback-banner" role="note">
-      暂无译文，以下为其他语言版本。 / Translation not available; showing a fallback version.
+      {/* 该提示恰恰出现在没有译文的页面上，故中英双语两行各写一遍 */}
+      <span class="fallback-line">暂无译文，以下为其他语言版本。</span>
+      <span class="fallback-line">Translation not available; showing a fallback version.</span>
     </p>
   )}
   {

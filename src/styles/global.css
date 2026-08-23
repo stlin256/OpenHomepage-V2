@@ -183,29 +183,58 @@ samp {
   border-color: var(--border);
   background: var(--hover-bg);
 }
+/* 语言切换器：翻译图标按钮（与主题按钮同款小方块）+ 弹出菜单
+   （hover 或点击展开；点别处 / Esc 由 interactions.ts 委托关闭） */
 .lang-switcher {
-  cursor: default;
+  position: relative;
 }
-.lang-switcher a {
+.lang-toggle {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  justify-content: center;
+}
+.lang-toggle .icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  min-width: 5.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  display: none;
+}
+.lang-switcher:hover .lang-menu,
+.lang-menu.open {
+  display: block;
+}
+.lang-menu a {
+  display: block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 0.4rem;
   color: var(--text-muted);
-  padding: 0.05rem 0.25rem;
-  border-radius: 0.3rem;
+  white-space: nowrap;
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
 }
-.lang-switcher a:hover {
+.lang-menu a:hover {
   color: var(--text);
   background: var(--hover-bg);
   text-decoration: none;
 }
-.lang-switcher a.active {
+.lang-menu a.active {
   color: var(--accent);
   font-weight: 600;
-}
-.lang-switcher .sep {
-  margin: 0 0.15rem;
-  color: var(--border);
 }
 /* 主题切换：小正方形图标按钮，按当前主题显示太阳/月亮 */
 .theme-toggle {
@@ -351,12 +380,21 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   background: var(--hover-bg);
   text-decoration: none;
 }
-/* 头像尺寸收敛：侧边布局上限 180px，移动端 140px，绝不撑满屏幕 */
+/* 头像尺寸收敛：侧边布局 150px，移动端 140px，绝不撑满屏幕 */
 .profile-avatar img {
-  width: 180px;
+  width: 150px;
   max-width: 100%;
   border-radius: 1rem;
   border: 1px solid var(--border);
+}
+/* 页顶工具区安全区（修正 D）：侧边布局的头像位于页顶右上，与绝对定位的
+   .header-tools（top 1rem + 高约 2.25rem）同区，且视差会把头像再向上拉 ≤40px；
+   桌面端给头像列预留 3rem 顶部空间，保证最坏情况下也不叠压。移动端头像在简介
+   下方（单列），无需预留。 */
+@media (min-width: 769px) {
+  .block-profile:not(.profile-top) .profile-avatar {
+    padding-top: 3rem;
+  }
 }
 /* 居顶布局（profile.avatar_position: top）：头像在姓名/简介上方居中 */
 .block-profile.profile-top {
@@ -367,7 +405,7 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   text-align: center;
 }
 .profile-top .profile-avatar img {
-  width: 104px;
+  width: 92px;
 }
 .profile-top .profile-links {
   justify-content: center;
@@ -380,8 +418,7 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
     width: 96px;
   }
 }
-
-/* 回退提示条（spec 11） */
+/* 回退提示条（spec 11）：中英双语两行（该提示恰恰出现在没有译文的页面上） */
 .fallback-banner {
   margin: 0 0 2rem;
   padding: 0.75rem 1rem;
@@ -391,6 +428,9 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   border-radius: 0.5rem;
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+.fallback-banner .fallback-line {
+  display: block;
 }
 
 /* ---- markdown 正文 ---- */
@@ -498,6 +538,19 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   height: 100%;
   border: 0;
   display: block;
+}
+/* :::video/:::audio 原生媒体块（修正 C）：裸标签默认是内联元素（300px 宽、
+   贴文本基线、无块间距），与 figure/embed-player 对齐为杂志全宽块 */
+.markdown-body video,
+.markdown-body audio {
+  display: block;
+  width: 100%;
+  margin: 1.5em 0;
+}
+.markdown-body video {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
 }
 
 /* Shiki 双主题：产物只写 --shiki-light/--shiki-dark 变量，此处按主题取用（M2 约定） */

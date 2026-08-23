@@ -17,7 +17,7 @@ profile:
   name: "张三"
   tagline: "博士研究生 / 方向：XXX"   # 名字下方一行
   avatar: "assets/avatar.png"   # 相对 data/ 的路径
-  # avatar_position: "side"     # side=头像在简介右侧（默认杂志分栏，≤180px）；top=头像在姓名上方居顶居中（≤104px）
+  # avatar_position: "side"     # side=头像在简介右侧（默认杂志分栏，≤150px）；top=头像在姓名上方居顶居中（≤92px）
   bio_page: "index"             # 简介正文来自哪个页面文件（默认 index.md）
   links:                        # 社交/联系链接，渲染为图标行
     - { label: "Email",  url: "mailto:a@b.com" }

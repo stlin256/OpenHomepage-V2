@@ -731,6 +731,124 @@ rss: { enabled: true }
   }, 10_000);
 });
 
+// ---------- curated 封面抓取（og:image，spec 05） ----------
+
+describe('curated 封面抓取（og:image）', () => {
+  const OG_PAGE = `<html><head>
+<title>OG Post</title>
+<meta property="og:title" content="OG Post">
+<meta property="og:image" content="https://cdn.test/og.jpg">
+<meta name="twitter:image" content="https://cdn.test/tw.jpg">
+</head><body><p>这段正文足够长，足够长，足够长，足够长，足够长，足够长，足够长，足够长。</p></body></html>`;
+  const TW_PAGE = `<html><head>
+<title>TW Post</title>
+<meta name="twitter:image" content="https://cdn.test/tw.jpg">
+</head><body><p>这段正文足够长，足够长，足够长，足够长，足够长，足够长，足够长，足够长。</p></body></html>`;
+  const IMG_PAGE = `<html><head><title>Img Post</title></head>
+<body><p>这段正文足够长，足够长，足够长，足够长，足够长，足够长，足够长，足够长。</p><img src="/static/photo.png"></body></html>`;
+
+  /** 单 curated 源、两篇文章（均不在 feed 内），feed 本身可用 */
+  const curatedYaml = (articles: string) => `
+display: grouped
+sources:
+  - name: Picks
+    url: https://pick.test/feed
+    mode: curated
+    articles:
+${articles}
+`;
+
+  it('未声明 cover：抓文章页提取 og:image 作封面（og:image 优先于 twitter:image）', async () => {
+    writeConfig(
+      SITE_FULL,
+      curatedYaml('      - { url: https://pick.test/a/og }')
+    );
+    const { fn } = mockFetch([
+      ['https://pick.test/a/og', () => textResponse(OG_PAGE)],
+      ...happyRoutes().filter(([m]) => m !== 'https://pick.test/a/2'),
+    ]);
+    await runPrefetch(opts(fn));
+
+    const picks = readRss().sources.find((s) => s.name === 'Picks')!;
+    expect(picks.entries[0].cover).toBe('https://cdn.test/og.jpg');
+  });
+
+  it('og:image 缺失时回退 twitter:image，再回退正文首个 img（相对地址按页面 URL 解析）', async () => {
+    writeConfig(
+      SITE_FULL,
+      curatedYaml('      - { url: https://pick.test/a/tw }\n      - { url: https://pick.test/a/img }')
+    );
+    const { fn } = mockFetch([
+      ['https://pick.test/a/tw', () => textResponse(TW_PAGE)],
+      ['https://pick.test/a/img', () => textResponse(IMG_PAGE)],
+      ...happyRoutes().filter(([m]) => m !== 'https://pick.test/a/2'),
+    ]);
+    await runPrefetch(opts(fn));
+
+    const picks = readRss().sources.find((s) => s.name === 'Picks')!;
+    expect(picks.entries[0].cover).toBe('https://cdn.test/tw.jpg');
+    expect(picks.entries[1].cover).toBe('https://pick.test/static/photo.png');
+  });
+
+  it('显式声明的 cover 优先于 og:image', async () => {
+    writeConfig(
+      SITE_FULL,
+      curatedYaml('      - { url: https://pick.test/a/og, cover: assets/explicit.png }')
+    );
+    const { fn } = mockFetch([
+      ['https://pick.test/a/og', () => textResponse(OG_PAGE)],
+      ...happyRoutes().filter(([m]) => m !== 'https://pick.test/a/2'),
+    ]);
+    await runPrefetch(opts(fn));
+
+    const picks = readRss().sources.find((s) => s.name === 'Picks')!;
+    expect(picks.entries[0].cover).toBe('assets/explicit.png');
+  });
+
+  it('feed 命中但未声明封面：额外抓文章页补 og:image，标题/摘要仍用 feed 数据', async () => {
+    writeConfig(SITE_FULL, RSS_FULL.replace(', cover: assets/1.png', ''));
+    const { fn, calls } = mockFetch([
+      ['https://pick.test/a/1', () => textResponse(OG_PAGE)],
+      ...happyRoutes(),
+    ]);
+    await runPrefetch(opts(fn));
+
+    const picks = readRss().sources.find((s) => s.name === 'Picks')!;
+    expect(calls.some((c) => c.url === 'https://pick.test/a/1')).toBe(true);
+    expect(picks.entries[0]).toEqual({
+      title: 'Picked One', // feed 数据优先
+      link: 'https://pick.test/a/1',
+      published: '2026-08-03T00:00:00.000Z',
+      summary: 'feed 里的摘要',
+      cover: 'https://cdn.test/og.jpg', // 文章页补的封面
+      note: '推荐一',
+    });
+  });
+
+  it('feed 命中时封面补抓失败不致命：条目保留 feed 数据，源不记 partial', async () => {
+    writeConfig(SITE_FULL, RSS_FULL.replace(', cover: assets/1.png', ''));
+    const { fn } = mockFetch([
+      ['https://pick.test/a/1', () => textResponse('boom', 500)],
+      ...happyRoutes(),
+    ]);
+    const result = await runPrefetch(opts(fn));
+
+    const picks = readRss().sources.find((s) => s.name === 'Picks')!;
+    expect(picks.error).toBeNull();
+    expect(picks.entries[0]).toMatchObject({ title: 'Picked One', cover: null });
+    expect(result.blocks.find((b) => b.key === 'rss.Picks')!.status).toBe('fresh');
+  });
+
+  it('文章页无任何封面线索：cover 为 null，渲染纯文字卡片', async () => {
+    writeConfig(SITE_FULL, RSS_FULL);
+    const { fn } = mockFetch(happyRoutes());
+    await runPrefetch(opts(fn));
+
+    const picks = readRss().sources.find((s) => s.name === 'Picks')!;
+    expect(picks.entries[1].cover).toBeNull();
+  });
+});
+
 // ---------- 其他行为与工具函数 ----------
 
 describe('其他行为', () => {
