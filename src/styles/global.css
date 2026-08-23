@@ -57,7 +57,8 @@ body,
 .icon-btn,
 .home-block,
 .markdown-body pre,
-.fallback-banner {
+.fallback-banner,
+.site-footer {
   transition:
     background-color 0.2s ease,
     color 0.2s ease,
@@ -431,6 +432,25 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 }
 .fallback-banner .fallback-line {
   display: block;
+}
+
+/* ---- 页脚（默认开启，spec 01 footer 段）：页面底部小字 muted，细分割线 ---- */
+.site-footer {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 1.25rem 2rem 2.5rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.site-footer a {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.site-footer a:hover {
+  color: var(--accent);
 }
 
 /* ---- markdown 正文 ---- */

@@ -4,14 +4,9 @@
  * octicons 内联 SVG、linguist 语言色、紧凑计数、相对时间、卡片 HTML。
  */
 import type { GithubPinnedRepo } from './prefetch.ts';
+import { escapeHtml } from './html.ts';
 
-export function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+export { escapeHtml };
 
 /** 官方 octicons（内联 SVG，不引依赖）：repo / star / repo-forked，16×16 */
 export const OCTICONS = {

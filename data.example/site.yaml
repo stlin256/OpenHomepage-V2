@@ -24,6 +24,13 @@ theme:
   accent: "#3a7bd5"
   default_mode: "system"
 
+# ---- 页脚（默认开启；显式 enabled: false 关闭；text 支持 [文字](链接) 内联链接）----
+footer:
+  enabled: true
+  text:
+    zh: "由 [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2) 驱动"
+    en: "Powered by [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2)"
+
 # ---- 背景音乐（缺省整段不启用；enabled: false 强制关闭）----
 bgm:
   file: "assets/bgm.wav"        # 相对 data/ 的音频路径（wav/mp3/ogg/m4a/flac）

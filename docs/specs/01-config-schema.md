@@ -11,7 +11,13 @@ site:
   description: ""               # SEO meta description
   language: zh-CN
   favicon: "assets/favicon.svg" # 站点图标（svg/png/ico，相对 data/）；缺省/文件缺失用内置默认（public/favicon.svg → /favicon.svg）
-  # footer: 暂无字段定义——design.md §4 提到页脚，但 schema 未定；M4a 未实现页脚，待补充字段后实现
+
+# ---- 页脚（默认开启；整段缺省也视为开启）----
+footer:
+  enabled: true                 # 显式 false 才关闭
+  text:                         # 支持内联 markdown 链接 [文字](url)，仅 http(s)/mailto 协议（其余原样输出文本）；缺省用默认内容
+    zh: "由 [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2) 驱动"
+    en: "Powered by [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2)"
 
 # ---- 个人资料（主页头部区块）----
 profile:
@@ -90,6 +96,12 @@ serve:
 - 自动播放策略：localStorage 记住用户上次播放/暂停；上次为播放态时，等首次用户交互（click/keydown）后才恢复播放；用户点过播放按钮（本身是手势）立即开播。
 - `prefers-reduced-motion: reduce`：整功能不启用（按钮隐藏、不自动播放）。
 - 归一化逻辑在 `src/lib/config.ts` 的 `resolveBgm`（纯函数，有单测）。
+
+### 1.2 页脚（footer）行为
+
+- **默认开启**：`footer` 段整段缺省、`enabled` 未写都视为开启；只有显式 `enabled: false` 才不渲染。
+- `text` 缺省用默认内容（zh/en 双语文本，OpenHomepage-V2 链到项目仓库）；支持内联 markdown 链接 `[文字](url)`，轻量解析 + sanitize（仅 http/https/mailto 协议，危险协议与不完整语法原样输出转义文本），实现见 `src/lib/footer.ts`（纯函数，有单测）。
+- 渲染在 `BaseLayout` 底部（页面底部小字 muted、细分割线，样式类 `.site-footer`）。
 
 ## 2. data/rss.yaml
 

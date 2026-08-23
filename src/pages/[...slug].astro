@@ -32,6 +32,7 @@ import {
 } from '../lib/routes.ts';
 import { buildAccentTheme, type AccentTheme } from '../lib/theme.ts';
 import { planHomeBlocks, type PlannedHomeBlock } from '../lib/home.ts';
+import { resolveFooter, footerTextToHtml } from '../lib/footer.ts';
 import { resolveDataDir } from '../lib/data-dir.ts';
 import { loadGithubCache, buildGithubView, repoCardHtml, type GithubView } from '../lib/github-block.ts';
 import { loadRssCache, buildRssView, type RssView } from '../lib/rss-block.ts';
@@ -129,6 +130,11 @@ const {
 } = Astro.props;
 const isHome = route.slug === '/';
 const contentLang = route.page.lang;
+// 页脚：默认开启（footer.enabled:false 关闭）；文本按内容语言解析后渲染内联链接
+const footerCfg = resolveFooter(site);
+const footerHtml = footerCfg
+  ? footerTextToHtml(resolveText(footerCfg.text, contentLang))
+  : null;
 // 头像布局：side=侧边杂志分栏（默认）；top=头像在姓名/简介上方居顶
 const avatarTop = resolveAvatarPosition(site.profile) === 'top';
 
@@ -170,6 +176,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   alternates={alternates}
   bgm={bgm}
   favicon={favicon}
+  footer={footerHtml}
 >
   {route.fallback && (
     <p class="fallback-banner" role="note">

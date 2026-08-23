@@ -5,7 +5,7 @@
  * 所有数据经 props 传入（路由层在 getStaticPaths 算好），本组件不含配置读取逻辑。
  *
  * 决策：KaTeX CSS 全站加载（katex.min.css，字体按需下载），避免逐页检测公式的复杂度。
- * 决策：页脚未实现——design.md §4 提到页脚字段，但 spec 01 的 site.yaml schema 尚无定义。
+ * 页脚：site.yaml footer 段（默认开启，显式 false 关闭；内联链接见 src/lib/footer.ts）。
  */
 import '@fontsource-variable/inter';
 import '@fontsource-variable/noto-sans-sc';
@@ -36,6 +36,8 @@ interface Props {
   bgm?: { src: string; volume: number };
   /** favicon URL（路由层已决定：配置的文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
   favicon: string;
+  /** 页脚 HTML（路由层 resolveFooter + footerTextToHtml 渲染；null = 关闭） */
+  footer?: string | null;
 }
 
 const {
@@ -53,6 +55,7 @@ const {
   alternates,
   bgm,
   favicon,
+  footer,
 } = Astro.props;
 
 const langLabel = (l: string) => ({ zh: '中文', en: 'English' })[l] ?? l;
@@ -176,6 +179,8 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
     <main class="site-main">
       <slot />
     </main>
+    {/* 页脚（默认开启，site.yaml footer.enabled:false 关闭；文本支持内联链接，见 src/lib/footer.ts） */}
+    {footer && <footer class="site-footer" set:html={footer} />}
     {/* 背景音乐：<audio> 跨页面转场常驻（transition:persist），状态见 src/scripts/bgm.ts */}
     {bgm && (
       <audio

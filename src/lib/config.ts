@@ -52,6 +52,11 @@ export interface SiteConfig {
     /** false 强制关闭；缺省（配置了 file）即启用 */
     enabled?: boolean;
   };
+  /** 页脚（默认开启；显式 enabled:false 关闭；text 支持内联 [label](url) 链接） */
+  footer?: {
+    enabled?: boolean;
+    text?: LocalizedText;
+  };
   streaming_blocks?: {
     id: string;
     title?: LocalizedText;
