@@ -105,6 +105,26 @@ async function swapContent(path: string): Promise<void> {
       oldFooter.remove();
     }
     updateNavActive(path);
+    // 同步 header 中的导航和语言菜单到新语言（header 不整体替换，保留按钮监听）
+    const newNav = doc.querySelector('nav.site-nav');
+    const oldNav = document.querySelector('nav.site-nav');
+    if (newNav && oldNav) {
+      const newTitle = newNav.querySelector('.site-title a');
+      const oldTitle = oldNav.querySelector('.site-title a');
+      if (newTitle && oldTitle) oldTitle.textContent = newTitle.textContent;
+      const newList = newNav.querySelector('ul');
+      const oldList = oldNav.querySelector('ul');
+      if (newList && oldList) oldList.replaceChildren(...newList.children);
+    }
+    const newLangMenu = doc.querySelector('.lang-menu');
+    const oldLangMenu = document.querySelector('.lang-menu');
+    if (newLangMenu && oldLangMenu) {
+      const newLinks = newLangMenu.querySelectorAll('a');
+      const oldLinks = oldLangMenu.querySelectorAll('a');
+      for (let i = 0; i < Math.min(newLinks.length, oldLinks.length); i++) {
+        oldLinks[i].className = newLinks[i].className;
+      }
+    }
     // 更新 html lang 属性（从新页面的 <html> 提取）
     const newLang = doc.documentElement.getAttribute('lang');
     if (newLang) document.documentElement.setAttribute('lang', newLang);
