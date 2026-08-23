@@ -17,7 +17,7 @@ import { history, undo, redo } from 'prosemirror-history';
 import { keymap } from '@milkdown/prose/keymap';
 import { Plugin } from '@milkdown/prose/state';
 import type { EditorView } from '@milkdown/prose/view';
-import { directiveRemark, directiveNodes } from './directive-nodes.ts';
+import { directiveRemark, directiveFallbackRemark, directiveNodes } from './directive-nodes.ts';
 
 export interface EditorHooks {
   /** 文档内容变化（用于自动保存调度） */
@@ -91,6 +91,7 @@ export async function buildEditor(
       ctx.set(defaultValueCtx, defaultValue);
     })
     .use(directiveRemark)
+    .use(directiveFallbackRemark)
     .use(commonmark)
     .use(gfm)
     .use(directiveNodes)

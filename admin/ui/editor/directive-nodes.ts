@@ -7,10 +7,71 @@
  */
 import { $remark, $nodeSchema } from '@milkdown/utils';
 import remarkDirective from 'remark-directive';
+import { visit, SKIP } from 'unist-util-visit';
 import type { NodeSchema } from '@milkdown/transformer';
 
 /** 注册 remark-directive：解析与序列化指令节点都依赖它 */
 export const directiveRemark = $remark('remark-directive', () => remarkDirective);
+
+interface DirectiveMdast {
+  type: string;
+  name?: string;
+  position?: { start?: { offset?: number }; end?: { offset?: number } };
+}
+
+/** 已注册节点视图的指令名（延迟初始化，避免引用下方 DIRECTIVE_DEFS 的 TDZ） */
+let knownDirectives: Set<string> | null = null;
+function knownDirectiveNames(): Set<string> {
+  return (knownDirectives ??= new Set([...DIRECTIVE_DEFS.map((d) => d.name), 'grid', 'cell']));
+}
+
+/**
+ * 未识别指令降级（与站点管线 markdown.ts degradeToText 对齐）：按原文文本保留。
+ * 典型场景：正文里的 "16:9" 会被 remark-directive 误解析为 textDirective name="9"，
+ * 没有对应节点视图会让 Milkdown 直接抛错（Cannot match target parser），
+ * 编辑器因此打不开包含它的页面。
+ * 同时移除误嵌套指令残留的纯冒号段落（站点管线 isStrayFenceParagraph 同款容错）：
+ * 这类段落夹在 grid（content: grid_cell+）里会让 ProseMirror 解析整棵子树失配，
+ * 静默丢成空文档。
+ */
+function directiveFallback() {
+  return (tree: unknown, file: unknown) => {
+    visit(
+      tree as never,
+      ['textDirective', 'leafDirective', 'containerDirective'],
+      (node: DirectiveMdast, index: number | undefined, parent: { children: unknown[] } | undefined) => {
+        if (!node.name || knownDirectiveNames().has(node.name) || parent == null || index == null) return;
+        const { start, end } = node.position ?? {};
+        const raw =
+          start?.offset != null && end?.offset != null
+            ? String(file).slice(start.offset, end.offset)
+            : `:${node.name}`;
+        parent.children[index] =
+          node.type === 'textDirective'
+            ? { type: 'text', value: raw }
+            : { type: 'paragraph', children: [{ type: 'text', value: raw }] };
+        return [SKIP, index];
+      }
+    );
+    // 纯冒号段落（残留闭合围栏）直接移除
+    visit(
+      tree as never,
+      'paragraph',
+      (node: { children?: { type: string; value?: string }[] }, index: number | undefined, parent: { children: unknown[] } | undefined) => {
+        if (parent == null || index == null) return;
+        const children = node.children ?? [];
+        if (children.length === 1 && children[0].type === 'text' && /^:{3,}$/.test((children[0].value ?? '').trim())) {
+          parent.children.splice(index, 1);
+          return [SKIP, index];
+        }
+        return undefined;
+      }
+    );
+  };
+}
+
+/** 未识别指令降级插件（必须在 remark-directive 之后注册） */
+export const directiveFallbackRemark = $remark('directive-fallback', () => directiveFallback);
 
 type Attrs = Record<string, string>;
 

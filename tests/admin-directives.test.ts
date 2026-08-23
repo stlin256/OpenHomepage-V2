@@ -86,3 +86,31 @@ describe('与普通 markdown 混排', () => {
     expect(out).toContain('$$');
   });
 });
+
+describe('未识别指令降级', () => {
+  it('正文中的 "16:9" 被 remark-directive 误解析为 textDirective，降级为原文不抛错', async () => {
+    const out = await serialize('播放器以响应式 16:9 容器渲染。\n');
+    expect(out).toContain('16:9 容器');
+  });
+
+  it('未识别的叶/容器指令按原文文本降级保留', async () => {
+    const out = await serialize('::unknown{a="1"}\n');
+    expect(out).toContain('::unknown{a="1"}');
+    const out2 = await serialize(':::unknown{a="1"}\n内容\n:::\n');
+    expect(out2).toContain(':::unknown{a="1"}');
+    expect(out2).toContain('内容');
+  });
+
+  it('grid 单元格内同冒号数误嵌套的 figure 不丢内容（纯冒号残留段落被移除）', async () => {
+    const md =
+      '::::grid{cols=2}\n:::cell\n左\n:::\n:::cell\n:::figure{src="assets/x.jpg"}\n:::\n:::\n::::\n';
+    const out = await serialize(md);
+    expect(out).toContain('figure{src="assets/x.jpg"}');
+    expect(out).toContain('左');
+    // 序列化自动把外层冒号数加大（grid 5 冒号 > cell 4 冒号 > figure 3 冒号），形成正确嵌套
+    expect(out).toContain(':::::grid');
+    expect(out).toContain('::::cell');
+    // 再次解析-序列化结果稳定（无残留 ":::" 文本段落）
+    expect(await serialize(out)).toBe(out);
+  });
+});

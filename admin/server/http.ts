@@ -19,6 +19,7 @@ import { listAssets, saveAsset, readAsset, deleteAsset, MAX_ASSET_BYTES } from '
 import { listSnapshots, restoreSnapshot } from './snapshots.ts';
 import { safeResolve, PathError } from './paths.ts';
 import { createDevServerManager, type DevServerManager } from './devserver.ts';
+import { readDirectivePreview } from './directive-preview.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 
 const ADMIN_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -148,6 +149,9 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         sendJson(res, 200, { snapshots: listSnapshots(dataDir, rel) });
       },
       '/api/dev-status': async ({ res }) => sendJson(res, 200, await dev.status()),
+      // 指令卡片预览数据（::ghcard 用 pinned 缓存，::stream 用流式块摘要）
+      '/api/directive-preview': ({ res }) =>
+        sendJson(res, 200, readDirectivePreview(opts.rootDir ?? path.resolve(dataDir, '..'), dataDir)),
     },
     PUT: {
       '/api/page': ({ body, res }) => {
