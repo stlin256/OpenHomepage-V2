@@ -21,6 +21,7 @@ import { safeResolve, PathError } from './paths.ts';
 import { createDevServerManager, type DevServerManager } from './devserver.ts';
 import { readDirectivePreview } from './directive-preview.ts';
 import { buildZip, collectDataEntries, exportZipName } from './export.ts';
+import { convertFavicon, saveFavicon } from './favicon.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 
 const ADMIN_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -219,6 +220,11 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       },
       '/api/dev/start': async ({ res }) => sendJson(res, 200, await dev.start()),
       '/api/dev/stop': async ({ res }) => sendJson(res, 200, await dev.stop()),
+      // favicon 上传：原始二进制图片 → 居中裁方 → 180/32 PNG 入 assets + 写回 site.favicon
+      '/api/favicon': async ({ raw, res }) => {
+        const outputs = await convertFavicon(raw);
+        sendJson(res, 200, saveFavicon(dataDir, outputs));
+      },
     },
   };
 
@@ -227,7 +233,8 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       const url = new URL(req.url ?? '/', 'http://127.0.0.1');
       const handler = routes[req.method ?? '']?.[url.pathname];
       if (handler) {
-        const isUpload = url.pathname === '/api/asset';
+        // 原始二进制上传（素材 / favicon 图片）；其余按 JSON 解析
+        const isUpload = url.pathname === '/api/asset' || url.pathname === '/api/favicon';
         const raw = await readBody(req, isUpload ? MAX_ASSET_BYTES + 1024 : MAX_JSON_BYTES);
         let body: Json = {};
         if (!isUpload && raw.byteLength > 0) {

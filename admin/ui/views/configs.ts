@@ -87,6 +87,40 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
     ...faviconFiles.map((f) => ({ value: f, label: f })),
   ];
 
+  // favicon 上传：任意图片 → 服务端居中裁方 → 180/32 PNG 入素材库并写回 site.favicon
+  const faviconFileInput = el('input', {
+    type: 'file',
+    accept: 'image/*',
+    style: 'display:none',
+  }) as HTMLInputElement;
+  faviconFileInput.addEventListener('change', () => {
+    const f = faviconFileInput.files?.[0];
+    if (!f) return;
+    state.setStatus(t('faviconUploading'));
+    void (async () => {
+      try {
+        const r = await api.uploadFavicon(await f.arrayBuffer());
+        (cfg.site as Obj).favicon = r.favicon;
+        await api.saveSite(cfg);
+        state.setStatus(t('faviconDone'), 'ok');
+        autosave.cancel(); // 配置已显式落盘，丢弃待触发定时器后重渲染本视图刷新下拉候选
+        await renderSiteConfig(container, state);
+      } catch (e) {
+        state.setStatus(`${t('saveFailed')}: ${(e as Error).message}`, 'err');
+      }
+    })();
+  });
+  const faviconField = field(
+    t('siteFavicon'),
+    el(
+      'div',
+      { class: 'favicon-row' },
+      select(faviconOptions, curFavicon, (v) => { (cfg.site as Obj).favicon = v || undefined; touch(); }),
+      btn(t('faviconUpload'), () => faviconFileInput.click()),
+      faviconFileInput
+    )
+  );
+
   container.replaceChildren(
     sectionTitle(t('siteSection')),
     el(
@@ -102,10 +136,7 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
           (v) => { (cfg.site as Obj).language = v; touch(); }
         )
       ),
-      field(
-        t('siteFavicon'),
-        select(faviconOptions, curFavicon, (v) => { (cfg.site as Obj).favicon = v || undefined; touch(); })
-      )
+      faviconField
     ),
     sectionTitle(t('profileSection')),
     el(
@@ -147,7 +178,19 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
         t('bgmVolume'),
         rangeInput(bgmVolume, 0, 1, 0.05, (v) => { bgm.volume = v; touch(); })
       )
-    )
+    ),
+    // 页脚（默认开启，显式关闭才禁用；文本支持 [文字](链接) 内联链接）
+    sectionTitle(t('footerSection')),
+    el(
+      'div',
+      { class: 'form-grid' },
+      field(
+        t('footerEnabled'),
+        checkbox(((cfg.footer ??= {}) as Obj).enabled !== false, (v) => { (cfg.footer as Obj).enabled = v; touch(); })
+      )
+    ),
+    localizedField((cfg.footer as Obj).text, t('footerTextZh'), t('footerTextEn'), (v) => { (cfg.footer as Obj).text = v; touch(); }),
+    el('p', { class: 'muted' }, t('footerHint'))
   );
 }
 

@@ -91,6 +91,18 @@ export const api = {
   },
   deleteAsset: (name: string) => req('/api/asset/delete', json('POST', { name })),
 
+  /** favicon 上传：任意图片二进制 → 服务端转换 180/32 PNG 并写回 site.favicon */
+  uploadFavicon: async (buf: ArrayBuffer) => {
+    const res = await fetch('/api/favicon', {
+      method: 'POST',
+      headers: { 'content-type': 'application/octet-stream' },
+      body: buf,
+    });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!res.ok) throw new Error((data.error as string) ?? `HTTP ${res.status}`);
+    return data as { favicon: string; files: string[] };
+  },
+
   snapshots: (path: string) =>
     req<{ snapshots: { ts: string }[] }>(`/api/snapshots?path=${encodeURIComponent(path)}`),
   restoreSnapshot: (path: string, ts: string) =>
