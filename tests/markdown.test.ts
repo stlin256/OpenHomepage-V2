@@ -81,7 +81,7 @@ describe('HTML 混写与白名单过滤', () => {
 
   it('img onerror 等事件属性被剔除', async () => {
     const html = await renderMarkdown('<img src="assets/x.jpg" onerror="alert(1)">');
-    expect(html).toContain('<img src="assets/x.jpg"');
+    expect(html).toContain('<img src="/assets/x.jpg"');
     expect(html).not.toContain('onerror');
   });
 
@@ -137,15 +137,15 @@ describe('自定义指令：内嵌播放器', () => {
     );
     expect(html).toContain('<video');
     expect(html).toContain('controls');
-    expect(html).toContain('src="assets/demo.mp4"');
-    expect(html).toContain('poster="assets/cover.png"');
+    expect(html).toContain('src="/assets/demo.mp4"');
+    expect(html).toContain('poster="/assets/cover.png"');
   });
 
   it(':::audio 渲染原生 audio 标签', async () => {
     const html = await renderMarkdown(':::audio{src="assets/podcast.mp3"}\n:::');
     expect(html).toContain('<audio');
     expect(html).toContain('controls');
-    expect(html).toContain('src="assets/podcast.mp3"');
+    expect(html).toContain('src="/assets/podcast.mp3"');
   });
 
   it('指令缺必需参数时降级为普通文本', async () => {
@@ -162,7 +162,7 @@ describe('自定义指令：图文排版', () => {
       ':::figure{src="assets/photo.jpg" caption="图 1：实验装置" width="70%"}\n:::'
     );
     expect(html).toContain('<figure style="width:70%">');
-    expect(html).toContain('src="assets/photo.jpg"');
+    expect(html).toContain('src="/assets/photo.jpg"');
     expect(html).toContain('loading="lazy"');
     expect(html).toContain('alt="图 1：实验装置"');
     expect(html).toContain('<figcaption>图 1：实验装置</figcaption>');
@@ -275,7 +275,7 @@ describe('指令健壮性', () => {
 describe('图片', () => {
   it('markdown 图片保留相对路径并加 loading=lazy', async () => {
     const html = await renderMarkdown('![示例图](assets/pic.jpg)');
-    expect(html).toContain('src="assets/pic.jpg"');
+    expect(html).toContain('src="/assets/pic.jpg"');
     expect(html).toContain('alt="示例图"');
     expect(html).toContain('loading="lazy"');
   });

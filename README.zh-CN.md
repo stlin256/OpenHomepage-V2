@@ -1,6 +1,6 @@
 # OpenHomepage V2
 
-[English → README.md](README.md)
+[English](README.md)
 
 轻量、杂志化排版的个人主页生成器——纯静态、中英双语，一切内容由本地 `data/` 文件夹（markdown + YAML）驱动。基于 Astro，经 GitHub Actions 部署到 GitHub Pages。
 

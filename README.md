@@ -1,6 +1,6 @@
 # OpenHomepage V2
 
-[中文文档 → README.zh-CN.md](README.zh-CN.md)
+[中文](README.zh-CN.md)
 
 A lightweight, magazine-style personal homepage generator — static, bilingual (zh/en), and driven entirely by a local `data/` folder of markdown and YAML. Built with Astro; deployed to GitHub Pages via GitHub Actions.
 

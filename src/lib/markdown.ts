@@ -289,6 +289,26 @@ function remarkCustomDirectives() {
 // rehype 插件：图片懒加载、iframe 域名白名单
 // ---------------------------------------------------------------------------
 
+/**
+ * 归一化 data/assets 相对路径：src="assets/..." → "/assets/..."。
+ * 中文页在根路径下相对路径恰好可用，但 /en/ 等语言前缀页会解析为
+ * /en/assets/... 导致 404；渲染时统一补前导 / 保证任意路由深度可用。
+ */
+function rehypeNormalizeAssetPaths() {
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node: Element) => {
+      const tag = node.tagName;
+      if (tag !== 'img' && tag !== 'video' && tag !== 'audio' && tag !== 'source') return;
+      for (const attr of ['src', 'poster'] as const) {
+        const v = node.properties?.[attr];
+        if (typeof v === 'string' && v.startsWith('assets/')) {
+          node.properties[attr] = `/${v}`;
+        }
+      }
+    });
+  };
+}
+
 function rehypeLazyImages() {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element) => {
@@ -399,6 +419,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(rehypeKatex)
     // defaultColor: false → 双主题全部走 CSS 变量（--shiki-light/--shiki-dark），前端切换 var 即可
     .use(rehypeShiki, { themes, defaultColor: false })
+    .use(rehypeNormalizeAssetPaths)
     .use(rehypeLazyImages)
     .use(rehypeSanitize, buildSanitizeSchema())
     .use(rehypeFilterIframes);
