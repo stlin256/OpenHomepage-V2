@@ -12,7 +12,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "setup": "node scripts/setup.mjs",
-    "admin": "tsx admin/server/index.ts"
+    "admin": "tsx admin/server/index.ts",
+    "preview": "astro preview"
   },
   "keywords": [],
   "author": "",

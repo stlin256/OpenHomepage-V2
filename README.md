@@ -30,6 +30,34 @@ npm run build       # static build → dist/
 
 Without a `data/` folder the site falls back to the bundled `data.example/` (a complete AI-themed demo) with a warning.
 
+## Daily usage: starting and stopping
+
+All commands are long-running local servers (except one-shot ones); they print their URL on start.
+
+| Command | What it does | URL | How to stop |
+|---------|--------------|-----|-------------|
+| `npm run dev` | Site dev server with hot reload — preview your edits live | http://localhost:4321 | Focus the terminal and press `Ctrl+C` |
+| `npm run admin` | Visual editor | http://127.0.0.1:4174 | Focus the terminal and press `Ctrl+C` |
+| `npm run prefetch` | One-shot: fetch GitHub/RSS data into `.cache/` | — | exits by itself |
+| `npm test` | One-shot: run the test suite | — | exits by itself |
+| `npm run build` | One-shot: static build → `dist/` | — | exits by itself |
+| `npm run preview` | Serve the built `dist/` for a final check | http://localhost:4321 | `Ctrl+C` |
+
+Typical session:
+
+```bash
+npm run dev         # terminal 1: live preview at :4321 — keep it running
+npm run admin       # terminal 2: editor at :4174 — make your edits here
+# ...edit, watch the preview update; when done:
+# Ctrl+C in each terminal to stop. Closing the terminal window also works.
+```
+
+Notes:
+
+- The two servers are independent — run either one alone if you only need it.
+- If a port is busy (e.g. from a forgotten server), stop the old one: on Windows `netstat -ano | findstr :4321` then `taskkill /PID <pid> /F`; or just close the old terminal.
+- `.cache/` is reused across runs; use `npm run prefetch -- --force` to bypass the 1-hour TTL.
+
 ## Visual editor
 
 ```bash

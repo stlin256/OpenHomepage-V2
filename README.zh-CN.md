@@ -30,6 +30,33 @@ npm run build       # 静态构建 → dist/
 
 没有 `data/` 时站点回退到内置的 `data.example/`（完整的 AI 主题示例）并给出警告。
 
+## 日常使用：启动与关闭
+
+以下命令里，一次性任务跑完自动退出；长期运行的本地服务启动时会打印访问地址。
+
+| 命令 | 作用 | 地址 | 如何关闭 |
+|------|------|------|----------|
+| `npm run dev` | 站点开发服务器（热更新，改完即看） | http://localhost:4321 | 在该终端窗口按 `Ctrl+C` |
+| `npm run admin` | 可视化编辑器 | http://127.0.0.1:4174 | 在该终端窗口按 `Ctrl+C` |
+| `npm run prefetch` | 一次性：抓取 GitHub/RSS 数据到 `.cache/` | — | 跑完自动退出 |
+| `npm test` | 一次性：运行测试 | — | 跑完自动退出 |
+| `npm run build` | 一次性：静态构建 → `dist/` | — | 跑完自动退出 |
+| `npm run preview` | 预览构建产物 `dist/` | http://localhost:4321 | `Ctrl+C` |
+
+典型工作流：
+
+```bash
+npm run dev         # 终端 1：实时预览 :4321，保持运行
+npm run admin       # 终端 2：编辑器 :4174，在这里改内容
+# ……编辑、看预览；结束后在两个终端各按一次 Ctrl+C 即可（直接关终端窗口也行）
+```
+
+说明：
+
+- 两个服务相互独立，只需要哪个就启动哪个。
+- 端口被占用（比如之前的服务忘关了）：Windows 下 `netstat -ano | findstr :4321` 找到 PID 后 `taskkill /PID <pid> /F`，或者直接关掉旧终端窗口。
+- `.cache/` 跨次运行复用（1 小时有效期）；想强制刷新用 `npm run prefetch -- --force`。
+
 ## 可视化编辑器
 
 ```bash
