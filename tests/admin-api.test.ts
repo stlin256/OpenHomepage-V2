@@ -5,6 +5,7 @@ import path from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { ensureDataDir } from '../admin/server/setup.ts';
 import { createAdminServer } from '../admin/server/http.ts';
+import type { DevServerManager } from '../admin/server/devserver.ts';
 import type { Server } from 'node:http';
 
 let root: string;
@@ -238,14 +239,73 @@ describe('快照回滚与 dev 探测', () => {
     expect(readFileSync(path.join(root, 'data/pages/zh/index.md'), 'utf8')).toContain('你好');
   });
 
-  it('GET /api/dev-status 返回 {up:boolean}', async () => {
+  it('GET /api/dev-status 返回 {up, starting, managed, url, logTail, error}', async () => {
     const r = await api('/api/dev-status');
     expect(r.status).toBe(200);
-    expect(typeof (r.body as { up: boolean }).up).toBe('boolean');
+    const s = r.body as Record<string, unknown>;
+    expect(typeof s.up).toBe('boolean');
+    expect(typeof s.starting).toBe('boolean');
+    expect(typeof s.managed).toBe('boolean');
+    expect(Array.isArray(s.logTail)).toBe(true);
+  });
+
+  it('GET /api/page 附 previewPath（默认语言无前缀，其他语言带前缀）', async () => {
+    // 先把站点默认语言固定为 zh-CN（缺省按 langs[0] 字典序，与站点行为一致）
+    const got = await api('/api/config/site');
+    const data = (got.body as { data: Record<string, unknown> }).data;
+    (data.site as Record<string, unknown>).language = 'zh-CN';
+    await api('/api/config/site', {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ data }),
+    });
+
+    const zh = await api('/api/page?lang=zh&file=index.md');
+    expect((zh.body as { previewPath: string }).previewPath).toBe('/');
+    // 造一个英文页：slug hello → /en/hello
+    await api('/api/page/create', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ lang: 'en', title: 'Hello', slug: 'hello' }),
+    });
+    const en = await api('/api/page?lang=en&file=hello.md');
+    expect((en.body as { previewPath: string }).previewPath).toBe('/en/hello');
   });
 
   it('未知 API 返回 404', async () => {
     const r = await api('/api/nope');
     expect(r.status).toBe(404);
+  });
+});
+
+describe('dev server 管理 API（注入 stub 管理器）', () => {
+  it('POST /api/dev/start 与 /api/dev/stop 透传管理器状态', async () => {
+    let started = 0;
+    let stopped = 0;
+    const stub: DevServerManager = {
+      status: async () => ({ up: false, starting: false, managed: false, url: null, logTail: [], error: null }),
+      start: async () => {
+        started++;
+        return { up: false, starting: true, managed: true, url: null, logTail: ['boot'], error: null };
+      },
+      stop: async () => {
+        stopped++;
+        return { up: false, starting: false, managed: false, url: null, logTail: [], error: null };
+      },
+    };
+    const s2 = createAdminServer({ dataDir: path.join(root, 'data'), initialized: false, appJs: '', devManager: stub });
+    await new Promise<void>((r) => s2.listen(0, '127.0.0.1', r));
+    const b2 = `http://127.0.0.1:${(s2.address() as AddressInfo).port}`;
+    try {
+      const start = await fetch(`${b2}/api/dev/start`, { method: 'POST' });
+      expect(start.status).toBe(200);
+      expect(((await start.json()) as { starting: boolean }).starting).toBe(true);
+      const stop = await fetch(`${b2}/api/dev/stop`, { method: 'POST' });
+      expect(stop.status).toBe(200);
+      expect(started).toBe(1);
+      expect(stopped).toBe(1);
+    } finally {
+      await new Promise((r) => s2.close(r));
+    }
   });
 });

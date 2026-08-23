@@ -18,6 +18,8 @@ import { readSiteConfig, writeSiteConfig, readRssConfig, writeRssConfig } from '
 import { listAssets, saveAsset, readAsset, deleteAsset, MAX_ASSET_BYTES } from './assets.ts';
 import { listSnapshots, restoreSnapshot } from './snapshots.ts';
 import { safeResolve, PathError } from './paths.ts';
+import { createDevServerManager, type DevServerManager } from './devserver.ts';
+import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 
 const ADMIN_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATIC_DIR = path.join(ADMIN_DIR, 'public');
@@ -28,6 +30,10 @@ export interface AdminServerOptions {
   initialized: boolean;
   /** 打包后的前端 JS（启动时由 esbuild 产物注入） */
   appJs: string;
+  /** 项目根目录（spawn astro dev 用；缺省取 dataDir 的上一级） */
+  rootDir?: string;
+  /** dev server 管理器（测试可注入替身） */
+  devManager?: DevServerManager;
 }
 
 type Json = Record<string, unknown>;
@@ -87,31 +93,43 @@ function sendError(res: http.ServerResponse, e: unknown): void {
   sendJson(res, status, { error: msg });
 }
 
-/** 探测本地 dev server（npm run dev，默认 4321）是否已启动 */
-function probeDevServer(port = 4321): Promise<boolean> {
-  return new Promise((resolve) => {
-    const req = http.get({ host: '127.0.0.1', port, path: '/', timeout: 800 }, (res) => {
-      res.resume();
-      resolve(res.statusCode !== undefined && res.statusCode < 500);
-    });
-    req.on('timeout', () => {
-      req.destroy();
-      resolve(false);
-    });
-    req.on('error', () => resolve(false));
-  });
+/** 页面在 dev server 上的预览路径（默认语言无前缀，与 src/lib/routes.ts + [...slug].astro 规则一致） */
+function previewPathFor(
+  dataDir: string,
+  lang: string,
+  file: string,
+  fm: Record<string, unknown>
+): string {
+  const base = file.replace(/\.md$/, '');
+  const slug = (fm.slug as string | undefined) ?? (base === 'index' ? '/' : base);
+  const langs = [...new Set(listPages(dataDir).map((p) => p.lang))].sort();
+  let defaultLang = langs[0] ?? lang;
+  try {
+    const siteLang = normalizeLang(readSiteConfig(dataDir).site?.language);
+    if (siteLang) defaultLang = langs.includes(siteLang) ? siteLang : defaultLang;
+  } catch {
+    /* 配置读不出时用语言目录兜底 */
+  }
+  return pageUrlPath(slug, lang, defaultLang);
 }
 
 export function createAdminServer(opts: AdminServerOptions): http.Server {
   const { dataDir } = opts;
+  const dev =
+    opts.devManager ??
+    createDevServerManager({ rootDir: opts.rootDir ?? path.resolve(dataDir, '..') });
 
   const routes: Record<string, Record<string, Handler>> = {
     GET: {
       '/api/info': ({ res }) =>
         sendJson(res, 200, { initialized: opts.initialized, dataDir: path.basename(dataDir) }),
       '/api/pages': ({ res }) => sendJson(res, 200, { pages: listPages(dataDir) }),
-      '/api/page': ({ query, res }) =>
-        sendJson(res, 200, readPage(dataDir, query.get('lang') ?? '', query.get('file') ?? '')),
+      '/api/page': ({ query, res }) => {
+        const lang = query.get('lang') ?? '';
+        const file = query.get('file') ?? '';
+        const content = readPage(dataDir, lang, file);
+        sendJson(res, 200, { ...content, previewPath: previewPathFor(dataDir, lang, file, content.frontmatter) });
+      },
       '/api/config/site': ({ res }) => sendJson(res, 200, { data: readSiteConfig(dataDir) }),
       '/api/config/rss': ({ res }) => sendJson(res, 200, { data: readRssConfig(dataDir) }),
       '/api/assets': ({ res }) => sendJson(res, 200, { assets: listAssets(dataDir) }),
@@ -129,7 +147,7 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         safeResolve(dataDir, rel);
         sendJson(res, 200, { snapshots: listSnapshots(dataDir, rel) });
       },
-      '/api/dev-status': async ({ res }) => sendJson(res, 200, { up: await probeDevServer() }),
+      '/api/dev-status': async ({ res }) => sendJson(res, 200, await dev.status()),
     },
     PUT: {
       '/api/page': ({ body, res }) => {
@@ -184,6 +202,8 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         restoreSnapshot(dataDir, rel, String(body.ts ?? ''));
         sendJson(res, 200, { ok: true });
       },
+      '/api/dev/start': async ({ res }) => sendJson(res, 200, await dev.start()),
+      '/api/dev/stop': async ({ res }) => sendJson(res, 200, await dev.stop()),
     },
   };
 

@@ -334,7 +334,7 @@ export async function renderStreamingConfig(container: HTMLElement, state: AppSt
       'profile',
       () => undefined
     );
-    const idInput = textInput('', () => undefined, 'streaming id');
+    const idInput = textInput('', () => undefined, t('streamingIdPlaceholder'));
     rows.push(
       el(
         'div',

@@ -316,3 +316,109 @@ a { color: var(--accent); text-decoration: none; }
 /* 滑块（BGM 音量等） */
 .range-wrap { display: inline-flex; align-items: center; gap: 10px; }
 .range-value { min-width: 2.5em; color: var(--text-muted); font-size: 13px; }
+
+/* ---- 编辑模式分段控件（所见即所得 / 源码 / 双栏预览） ---- */
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+.seg-item {
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.seg-item + .seg-item { border-left: 1px solid var(--border); }
+.seg-item:hover { color: var(--text); }
+.seg-item.active { background: var(--accent); color: #fff; }
+.seg-mini { margin-bottom: 8px; }
+.seg-mini .seg-item { padding: 3px 10px; font-size: 12px; }
+
+/* ---- 编辑/预览双栏 ---- */
+.editor-wrap.split { display: flex; gap: 14px; align-items: stretch; }
+.editor-wrap.split .edit-pane { flex: 1; min-width: 0; }
+.editor-wrap.split .preview-pane { flex: 1; min-width: 0; }
+
+/* 源码编辑器（等宽） */
+.source-editor {
+  width: 100%;
+  min-height: 60vh;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+}
+.source-editor:focus { outline: 1px solid var(--accent); }
+
+/* 预览面板（iframe 指向 dev server） */
+.preview-pane { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+.preview-url {
+  flex: 1;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.preview-bar .btn { padding: 3px 10px; font-size: 12px; }
+.preview-body { min-height: 60vh; display: flex; flex-direction: column; }
+.preview-frame { width: 100%; flex: 1; min-height: 60vh; border: 0; background: #fff; }
+.preview-guide {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.preview-log pre {
+  max-height: 200px;
+  overflow: auto;
+  background: var(--bg-subtle);
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  max-width: 100%;
+}
+
+/* ---- 亮/暗主题（与站点同一套语义色思路，spec 10） ---- */
+html[data-theme='dark'] {
+  --bg: #121417;
+  --bg-subtle: #1a1d21;
+  --text: #e8eaed;
+  --text-muted: #9aa1a9;
+  --border: #2a2f36;
+}
+html[data-theme='dark'] .status.ok { color: #5cb860; }
+html[data-theme='dark'] .banner { background: #2a2410; border-color: #4a3f1a; color: #e8d998; }
+html[data-theme='dark'] .modal-overlay { background: rgba(0, 0, 0, 0.55); }
+
+/* 顶栏主题切换：小方块图标按钮（与站点 .theme-toggle 同款，按主题显隐太阳/月亮） */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--border); background: var(--bg-subtle); }
+.theme-toggle .icon { display: none; width: 1rem; height: 1rem; }
+html[data-theme='light'] .theme-toggle .icon-light,
+html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }

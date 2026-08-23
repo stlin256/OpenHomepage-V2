@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { ensureDataDir } from './setup.ts';
 import { createAdminServer } from './http.ts';
+import { createDevServerManager } from './devserver.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -28,8 +29,22 @@ const bundle = await build({
 const appJs = bundle.outputFiles[0].text;
 
 const port = Number(process.env.ADMIN_PORT ?? 4174);
-const server = createAdminServer({ dataDir, initialized, appJs });
+const devManager = createDevServerManager({ rootDir: root });
+const server = createAdminServer({ dataDir, initialized, appJs, rootDir: root, devManager });
 server.listen(port, '127.0.0.1', () => {
   console.log(`编辑器已启动 / Editor running:  http://127.0.0.1:${port}`);
   console.log('仅监听本机回环地址 / Listening on loopback only.');
 });
+
+// admin 退出时连带终止由它 spawn 的 astro dev（Windows 走 taskkill /T 树杀，见 devserver.ts）
+let shuttingDown = false;
+const shutdown = () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  void devManager.stop().finally(() => {
+    server.close();
+    process.exit(0);
+  });
+};
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

@@ -29,8 +29,8 @@ export async function renderThemePicker(container: HTMLElement, state: AppState)
   const preview = el(
     'div',
     { class: 'accent-preview' },
-    el('a', { href: '#', class: 'preview-link' }, 'accent link / 链接示例'),
-    el('button', { class: 'btn btn-primary', type: 'button' }, 'accent button')
+    el('a', { href: '#', class: 'preview-link' }, t('previewLinkSample')),
+    el('button', { class: 'btn btn-primary', type: 'button' }, t('previewButtonSample'))
   );
 
   const applyAccent = (hex: string) => {

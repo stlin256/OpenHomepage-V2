@@ -24,6 +24,17 @@ export interface PageMeta {
 export interface PageContent {
   frontmatter: Record<string, unknown>;
   body: string;
+  /** 页面在 dev server 上的预览路径（如 /、/en/hello） */
+  previewPath?: string;
+}
+
+export interface DevStatus {
+  up: boolean;
+  starting: boolean;
+  managed: boolean;
+  url: string | null;
+  logTail: string[];
+  error: string | null;
 }
 
 export interface AssetInfo {
@@ -69,5 +80,7 @@ export const api = {
   restoreSnapshot: (path: string, ts: string) =>
     req('/api/snapshot/restore', json('POST', { path, ts })),
 
-  devStatus: () => req<{ up: boolean }>('/api/dev-status'),
+  devStatus: () => req<DevStatus>('/api/dev-status'),
+  devStart: () => req<DevStatus>('/api/dev/start', { method: 'POST' }),
+  devStop: () => req<DevStatus>('/api/dev/stop', { method: 'POST' }),
 };

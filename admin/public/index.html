@@ -4,6 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OpenHomepage Admin</title>
+<script>
+// 首帧绘制前确定主题（localStorage 记忆 > 跟随系统），避免暗色闪烁
+(function () {
+  try {
+    var s = localStorage.getItem('oh-admin-theme');
+    document.documentElement.dataset.theme =
+      s === 'light' || s === 'dark'
+        ? s
+        : window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+  } catch (e) {}
+})();
+</script>
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>

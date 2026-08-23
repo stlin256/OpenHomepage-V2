@@ -3,6 +3,7 @@
  * 路由用 location.hash：#/page/<lang>/<file>、#/config/<section>、#/assets。
  */
 import { createT, detectLang, type Lang } from '../shared/i18n.ts';
+import { initialTheme, toggleTheme, type ThemeName } from '../../src/lib/theme.ts';
 import { el, btn } from './dom.ts';
 import { api, type PageMeta } from './api.ts';
 import { renderPageEditor } from './views/pages.ts';
@@ -24,6 +25,22 @@ export interface AppState {
 }
 
 const LANG_KEY = 'oh-admin-lang';
+const THEME_KEY = 'oh-admin-theme';
+
+// ---- 编辑器界面亮/暗主题：localStorage 记忆，默认跟随系统（复用站点主题纯逻辑）----
+function savedTheme(): string | null {
+  try {
+    return localStorage.getItem(THEME_KEY);
+  } catch {
+    return null;
+  }
+}
+function systemDark(): boolean {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function applyAdminTheme(theme: ThemeName): void {
+  document.documentElement.dataset.theme = theme;
+}
 
 let state: AppState;
 let pages: PageMeta[] = [];
@@ -166,6 +183,11 @@ async function renderMain(): Promise<void> {
 async function boot(): Promise<void> {
   const lang = detectLang(navigator.language, localStorage.getItem(LANG_KEY));
   const app = document.getElementById('app')!;
+  applyAdminTheme(initialTheme(savedTheme(), 'system', systemDark()));
+  // 系统主题变化：只在用户未手动选择时跟随
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
+    if (savedTheme() === null) applyAdminTheme(initialTheme(null, 'system', systemDark()));
+  });
 
   state = {
     lang,
@@ -199,6 +221,29 @@ async function boot(): Promise<void> {
     });
   });
 
+  // 主题切换：小方块图标按钮（太阳/月亮，与站点同款）
+  const themeBtn = el('button', {
+    class: 'theme-toggle icon-btn',
+    type: 'button',
+    'aria-label': state.t('themeToggle'),
+    title: state.t('themeToggle'),
+  }) as HTMLButtonElement;
+  themeBtn.innerHTML =
+    '<svg class="icon icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="4" />' +
+    '<path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>' +
+    '<svg class="icon icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" /></svg>';
+  themeBtn.addEventListener('click', () => {
+    const next = toggleTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {
+      /* 存储不可用时仍当页生效 */
+    }
+    applyAdminTheme(next);
+  });
+
   app.append(
     el(
       'header',
@@ -207,6 +252,7 @@ async function boot(): Promise<void> {
       statusEl,
       el('span', { class: 'topbar-spacer' }),
       previewBtn,
+      themeBtn,
       langSel
     ),
     el('div', { class: 'layout' }, el('aside', { class: 'sidebar' }), el('main', { class: 'main' }))

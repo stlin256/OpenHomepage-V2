@@ -158,6 +158,23 @@ const zh = {
   assetSize: '大小',
 
   unsavedChanges: '有未保存内容',
+
+  modeWysiwyg: '所见即所得',
+  modeSource: '源码',
+  modeSplit: '双栏预览',
+  previewStart: '启动预览服务',
+  previewStarting: '预览服务启动中…',
+  previewStop: '停止预览服务',
+  previewRefresh: '刷新预览',
+  previewOpenTab: '新标签页打开',
+  previewDownGuide: '未检测到预览服务（npm run dev）。可自行运行 npm run dev，或点击下方按钮由编辑器代为启动（编辑器退出时会一并停止）。',
+  previewStartFailed: '预览服务启动失败',
+  previewTimeout: '启动超时（45 秒）',
+  previewLog: '服务日志',
+  themeToggle: '切换亮/暗主题',
+  previewLinkSample: '链接示例',
+  previewButtonSample: '按钮示例',
+  streamingIdPlaceholder: '流式块 id',
 } as const;
 
 export type DictKey = keyof typeof zh;
@@ -315,6 +332,23 @@ const en: Record<DictKey, string> = {
   assetSize: 'Size',
 
   unsavedChanges: 'Unsaved changes',
+
+  modeWysiwyg: 'WYSIWYG',
+  modeSource: 'Source',
+  modeSplit: 'Split preview',
+  previewStart: 'Start preview server',
+  previewStarting: 'Starting preview server…',
+  previewStop: 'Stop preview server',
+  previewRefresh: 'Refresh preview',
+  previewOpenTab: 'Open in new tab',
+  previewDownGuide: 'Dev server (npm run dev) not detected. Run it yourself, or let the editor start it below (it is stopped automatically when the editor exits).',
+  previewStartFailed: 'Failed to start preview server',
+  previewTimeout: 'Start timed out (45s)',
+  previewLog: 'Server log',
+  themeToggle: 'Toggle light/dark theme',
+  previewLinkSample: 'Link sample',
+  previewButtonSample: 'Button sample',
+  streamingIdPlaceholder: 'streaming id',
 };
 
 export const dict: Record<Lang, Record<string, string>> = { zh, en };
