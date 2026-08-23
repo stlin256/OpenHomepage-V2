@@ -137,6 +137,7 @@ describe('自定义指令：内嵌播放器', () => {
     );
     expect(html).toContain('<video');
     expect(html).toContain('controls');
+    expect(html).toContain('preload="metadata"');
     expect(html).toContain('src="/assets/demo.mp4"');
     expect(html).toContain('poster="/assets/cover.png"');
   });
@@ -145,6 +146,7 @@ describe('自定义指令：内嵌播放器', () => {
     const html = await renderMarkdown(':::audio{src="assets/podcast.mp3"}\n:::');
     expect(html).toContain('<audio');
     expect(html).toContain('controls');
+    expect(html).toContain('preload="metadata"');
     expect(html).toContain('src="/assets/podcast.mp3"');
   });
 

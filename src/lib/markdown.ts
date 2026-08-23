@@ -237,7 +237,11 @@ function remarkCustomDirectives() {
         case 'video':
         case 'audio': {
           if (!attrs.src) return degradeToText(directive, file);
-          const properties: Properties = { src: attrs.src, controls: true };
+          const properties: Properties = {
+            src: attrs.src,
+            controls: true,
+            preload: attrs.preload ?? 'metadata',
+          };
           if (name === 'video' && attrs.poster) properties.poster = attrs.poster;
           setElement(name, properties);
           break;

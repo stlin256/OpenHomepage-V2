@@ -92,6 +92,15 @@ function initNavToggle(): void {
   });
 }
 
+/** DOMParser 生成后再移入正文的媒体节点需要显式启动资源选择。 */
+function initEmbeddedMedia(): void {
+  for (const media of document.querySelectorAll<HTMLMediaElement>('.markdown-body video, .markdown-body audio')) {
+    if (media.dataset.mediaLoaded === '1') continue;
+    media.dataset.mediaLoaded = '1';
+    media.load();
+  }
+}
+
 function updateNavActive(path: string): void {
   const current = path.replace(/\/+$/, '') || '/';
   for (const a of document.querySelectorAll<HTMLAnchorElement>('.site-nav a')) {
@@ -109,6 +118,7 @@ function initAll(): void {
   initStreamBlocks();
   initMotion();
   initBgm();
+  initEmbeddedMedia();
   initHeatmapTooltips();
 }
 
