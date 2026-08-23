@@ -1,20 +1,27 @@
 /**
- * 背景音乐（site.yaml bgm 段，docs/specs/01 §1）：
+ * 背景音乐（site.yaml bgm 段）：
  * - <audio class="bgm-audio"> 由 BaseLayout 渲染并 transition:persist，站内转场不中断；
- * - 播放/暂停按钮（.bgm-toggle）每页重建，astro:page-load 时重新绑定并按 audio 实际状态同步图标；
- * - 自动播放策略：localStorage 记住上次状态；上次为播放态时，等首次用户交互
- *   （click/keydown）后才开播；用户点过播放按钮（本身是手势）则立即播；
- * - prefers-reduced-motion: 整功能不启用（按钮隐藏、已在播则暂停）。
+ * - 播放/暂停按钮（.bgm-toggle）随 header persist 或每页重建，page-load 时同步图标；
+ * - autoplay 或 localStorage 记忆播放态时，等首次用户交互后开播；
+ * - swap 前保存播放位置，swap 后若被中断则恢复到原位置（无缝衔接）。
+ *
+ * 注意：模块级变量在 Astro ClientRouter 导航间持久（脚本只加载一次），
+ * 不能用 document.documentElement.dataset 存状态（html 元素会被 swap 替换）。
  */
 
 const STORAGE_KEY = 'bgm';
+
+/** 模块级状态（跨 ClientRouter 导航持久） */
+let kickArmed = false;
+let wasPlaying = false;
+let savedTime = 0;
 
 function readSaved(): '1' | '0' | null {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     return v === '1' || v === '0' ? v : null;
   } catch {
-    return null; // 隐私模式等存储不可用场景：视为无记忆
+    return null;
   }
 }
 
@@ -37,7 +44,6 @@ export function initBgm(): void {
   const btn = document.querySelector<HTMLElement>('.bgm-toggle');
   if (!audio || !btn) return;
 
-  // reduced-motion：功能不启用（按钮隐藏，已在播则暂停）
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     btn.hidden = true;
     if (!audio.paused) audio.pause();
@@ -52,16 +58,17 @@ export function initBgm(): void {
     btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
   };
 
-  // audio 元素跨转场常驻（transition:persist），播放态监听只绑一次
   if (!audio.dataset.bgmBound) {
     audio.dataset.bgmBound = '1';
     audio.addEventListener('play', sync);
     audio.addEventListener('pause', sync);
   }
-  // 按钮每页重建，需重新绑定（dataset 标记防同页 page-load 重复绑定）
+
   if (!btn.dataset.bgmInit) {
     btn.dataset.bgmInit = '1';
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      // 阻止 click 冒泡到 document 触发 kick（否则暂停后立即被 kick 恢复播放）
+      e.stopPropagation();
       if (audio.paused) {
         writeSaved('1');
         void audio.play().catch(() => {});
@@ -74,10 +81,11 @@ export function initBgm(): void {
   }
   sync();
 
-  // 自动播放：配置 autoplay 或上次为播放态 → 首次用户交互后开播（只挂一次）
+  // autoplay：首次用户交互后开播。kickArmed 是模块级变量，跨导航持久，
+  // 不会因 html 元素被 swap 替换而丢失（修复每次导航重复挂 kick 的 bug）
   const autoplayEnabled = audio.dataset.autoplay === 'true';
-  if ((autoplayEnabled || readSaved() === '1') && audio.paused && !document.documentElement.dataset.bgmAutoArmed) {
-    document.documentElement.dataset.bgmAutoArmed = '1';
+  if ((autoplayEnabled || readSaved() === '1') && audio.paused && !kickArmed) {
+    kickArmed = true;
     const kick = () => {
       void audio.play().catch(() => {});
       sync();
@@ -87,25 +95,31 @@ export function initBgm(): void {
   }
 }
 
-/** 跨页面转场保护：swap 前记录播放态，swap 后若被中断则从原位置恢复。
-    transition:persist 在多数场景下足够，但部分浏览器在 DOM 移动时会暂停
-    media 元素；此处兜底确保无缝衔接。 */
-let bgmWasPlaying = false;
-let bgmTime = 0;
+// ---- 跨页面转场：保存/恢复播放位置 ----
+// module 级监听在 document 上，ClientRouter 不会移除（脚本只加载一次）
 
 document.addEventListener('astro:before-swap', () => {
   const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio');
   if (!audio) return;
-  bgmWasPlaying = !audio.paused;
-  bgmTime = audio.currentTime;
+  wasPlaying = !audio.paused;
+  savedTime = audio.currentTime;
 });
 
 document.addEventListener('astro:after-swap', () => {
   const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio');
-  if (!audio || !bgmWasPlaying) return;
-  // persist 正常时 audio 仍在播，无需处理；若被 swap 中断则恢复
+  if (!audio || !wasPlaying) return;
   if (audio.paused) {
-    audio.currentTime = bgmTime;
-    void audio.play().catch(() => {});
+    // 等 loadedmetadata 后再设 currentTime（新 audio 未加载时赋值无效）
+    const restore = () => {
+      audio.currentTime = savedTime;
+      void audio.play().catch(() => {});
+      audio.removeEventListener('loadedmetadata', restore);
+    };
+    if (audio.readyState >= 1) {
+      restore();
+    } else {
+      audio.addEventListener('loadedmetadata', restore, { once: true });
+      audio.load();
+    }
   }
 });
