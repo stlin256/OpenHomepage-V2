@@ -77,34 +77,34 @@ const totalFmt = contributions.kind === 'ok' ? formatCount(contributions.total) 
       <p class="heat-total">{L.totalAlt(totalFmt)}</p>
       <div class="heatmap-scroll">
         <div class="heatmap-inner">
-          <div class="heat-main">
-            <div class="heat-weekdays" aria-hidden="true">
-              {weekdays.map((w) => <span>{w ?? ''}</span>)}
-            </div>
             <div class="heat-right">
-              <div class="heat-months" aria-hidden="true">
+              <div class="heat-months" aria-hidden="true" style={`--weeks:${contributions.weeks.length}`}>
                 {months.map((m) => <span style={`--w:${m.weekIndex}`}>{m.label}</span>)}
               </div>
-              <div class="heatmap" role="img" aria-label={L.heatLabel}>
-                {contributions.weeks.map((week, wi) => (
-                  <div class="heat-week">
-                    {week.days.map((day) =>
-                      day ? (
-                        <span
-                          class="heat-cell"
-                          data-level={day.level}
-                          data-tip={heatTooltip(day.date, day.count, L2)}
-                          style={`animation-delay:${wi * 20}ms`}
-                        />
-                      ) : (
-                        <span class="heat-cell heat-empty" />
-                      ),
-                    )}
-                  </div>
-                ))}
+              <div class="heat-main">
+                <div class="heat-weekdays" aria-hidden="true">
+                  {weekdays.map((w) => <span>{w ?? ''}</span>)}
+                </div>
+                <div class="heatmap" role="img" aria-label={L.heatLabel}>
+                  {contributions.weeks.map((week, wi) => (
+                    <div class="heat-week">
+                      {week.days.map((day) =>
+                        day ? (
+                          <span
+                            class="heat-cell"
+                            data-level={day.level}
+                            data-tip={heatTooltip(day.date, day.count, L2)}
+                            style={`animation-delay:${wi * 20}ms`}
+                          />
+                        ) : (
+                          <span class="heat-cell heat-empty" />
+                        ),
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
           <p class="heat-legend" aria-hidden="true">
             <span>{L.less}</span>
             {[0, 1, 2, 3, 4].map((i) => <span class="heat-cell heat-legend-cell" data-level={i} />)}
