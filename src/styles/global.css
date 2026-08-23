@@ -85,7 +85,6 @@ samp {
 
 /* ---- 导航：桌面左上竖排 tab（design.md 5.3） ---- */
 .site-nav {
-  view-transition-name: site-nav;
   position: fixed;
   top: 2.5rem;
   left: 2rem;
@@ -159,7 +158,6 @@ samp {
 /* 右上工具区：语言切换 + 主题切换。页顶静态放置（相对文档绝对定位），
    随页面滚动滚走，不悬浮常驻、不遮挡内容（修正 B） */
 .header-tools {
-  view-transition-name: header-tools;
   position: absolute;
   top: 1rem;
   right: 1.25rem;
@@ -1121,14 +1119,6 @@ html.js .reveal {
 html.js .reveal.revealed {
   opacity: 1;
   transform: none;
-}
-
-/* 页面转场时导航/工具区保持静止（不参与 fade 动画，只有主内容区转场） */
-::view-transition-old(site-nav),
-::view-transition-new(site-nav),
-::view-transition-old(header-tools),
-::view-transition-new(header-tools) {
-  animation: none;
 }
 
 /* 动效：页面转场（View Transitions，spec 09：旧页淡出 + 新页淡入上移） */

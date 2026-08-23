@@ -22,9 +22,23 @@ function initNavToggle(): void {
   });
 }
 
+/** header 使用 transition:persist 跨页面保持 DOM（无转场动画），
+    导航 active 高亮需在每次导航后按 location.pathname 手动更新 */
+function updateNavActive(): void {
+  const current = location.pathname.replace(/\/+$/, '') || '/';
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('.site-nav a')) {
+    const href = (a.getAttribute('href') ?? '').replace(/\/+$/, '') || '/';
+    const active = href === current;
+    a.classList.toggle('active', active);
+    if (active) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  }
+}
+
 function initAll(): void {
   initThemeToggle();
   initNavToggle();
+  updateNavActive();
   initStreamBlocks();
   initMotion();
   initBgm();
