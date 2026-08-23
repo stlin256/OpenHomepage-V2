@@ -75,6 +75,18 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
   ];
   const bgmVolume = typeof bgm.volume === 'number' ? Math.min(1, Math.max(0, bgm.volume)) : 0.4;
 
+  // favicon 候选：素材库中的 svg/png/ico；空值 = 内置默认（public/favicon.svg）
+  const FAVICON_EXT = /\.(svg|png|ico)$/i;
+  const faviconFiles = assets.filter((a) => FAVICON_EXT.test(a.name)).map((a) => `assets/${a.name}`);
+  const curFavicon = String((cfg.site as Obj).favicon ?? '');
+  const faviconOptions = [
+    { value: '', label: t('faviconEmpty') },
+    ...(curFavicon && !faviconFiles.includes(curFavicon)
+      ? [{ value: curFavicon, label: curFavicon }]
+      : []),
+    ...faviconFiles.map((f) => ({ value: f, label: f })),
+  ];
+
   container.replaceChildren(
     sectionTitle(t('siteSection')),
     el(
@@ -89,6 +101,10 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
           String((cfg.site as Obj).language ?? 'zh-CN'),
           (v) => { (cfg.site as Obj).language = v; touch(); }
         )
+      ),
+      field(
+        t('siteFavicon'),
+        select(faviconOptions, curFavicon, (v) => { (cfg.site as Obj).favicon = v || undefined; touch(); })
       )
     ),
     sectionTitle(t('profileSection')),

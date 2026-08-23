@@ -14,6 +14,8 @@ export interface SiteConfig {
     title: string;
     description?: string;
     language?: string;
+    /** 站点图标（favicon），相对 data/ 的路径，如 assets/favicon.svg（svg/png/ico） */
+    favicon?: string;
   };
   profile: {
     name: string;
@@ -217,6 +219,20 @@ export function resolveText(field: LocalizedText, lang: string): string {
 /** profile.avatar_position 归一化：缺省/非法值回退 'side'（默认侧边杂志布局） */
 export function resolveAvatarPosition(profile: SiteConfig['profile']): 'side' | 'top' {
   return profile.avatar_position === 'top' ? 'top' : 'side';
+}
+
+/** favicon 允许的扩展名 */
+export const FAVICON_EXT_RE = /\.(svg|png|ico)$/i;
+
+/**
+ * site.favicon 归一化（宽松校验，与 resolveBgm 同风格）：
+ * 未配置/非法扩展名 → null（构建侧回退内置默认 public/favicon.svg）。
+ */
+export function resolveFavicon(site: SiteConfig): string | null {
+  const favicon = site.site?.favicon;
+  if (typeof favicon !== 'string') return null;
+  const f = favicon.trim();
+  return f && FAVICON_EXT_RE.test(f) ? f : null;
 }
 
 /** BGM 缺省音量（未配置或非法时回退） */

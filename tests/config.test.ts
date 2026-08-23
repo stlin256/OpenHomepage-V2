@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSiteConfig, loadRssConfig, resolveAvatarPosition, resolveBgm, BGM_DEFAULT_VOLUME } from '../src/lib/config.ts';
+import { loadSiteConfig, loadRssConfig, resolveAvatarPosition, resolveBgm, resolveFavicon, BGM_DEFAULT_VOLUME } from '../src/lib/config.ts';
 
 const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/data');
 
@@ -81,6 +81,36 @@ describe('resolveAvatarPosition', () => {
     expect(
       resolveAvatarPosition({ name: 'N', avatar_position: 'left' as 'side' }),
     ).toBe('side');
+  });
+});
+
+describe('resolveFavicon（站点图标归一化，宽松校验）', () => {
+  const base = { site: { title: 't' }, profile: { name: 'n' }, github: { username: 'u' } };
+
+  it('未配置 / 空串 / 非法扩展名 → null（构建侧回退内置默认）', () => {
+    expect(resolveFavicon(base)).toBeNull();
+    expect(resolveFavicon({ ...base, site: { title: 't', favicon: '  ' } })).toBeNull();
+    expect(resolveFavicon({ ...base, site: { title: 't', favicon: 'assets/f.mp4' } })).toBeNull();
+    expect(resolveFavicon({ ...base, site: { title: 't', favicon: 'assets/f' } })).toBeNull();
+  });
+
+  it('svg/png/ico（大小写不敏感）正常返回', () => {
+    expect(resolveFavicon({ ...base, site: { title: 't', favicon: 'assets/favicon.svg' } })).toBe(
+      'assets/favicon.svg',
+    );
+    expect(resolveFavicon({ ...base, site: { title: 't', favicon: 'assets/icon.PNG' } })).toBe(
+      'assets/icon.PNG',
+    );
+    expect(resolveFavicon({ ...base, site: { title: 't', favicon: 'assets/f.ico' } })).toBe(
+      'assets/f.ico',
+    );
+  });
+
+  it('示例配置（夹具）声明了 favicon 且文件存在', () => {
+    const cfg = loadSiteConfig(EXAMPLE);
+    const favicon = resolveFavicon(cfg);
+    expect(favicon).toBe('assets/favicon.svg');
+    expect(existsSync(path.join(EXAMPLE, favicon!))).toBe(true);
   });
 });
 

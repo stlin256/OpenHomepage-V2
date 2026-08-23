@@ -10,6 +10,7 @@ site:
   title: "张三的主页"            # 浏览器标题 / 导航栏站点名
   description: ""               # SEO meta description
   language: zh-CN
+  favicon: "assets/favicon.svg" # 站点图标（svg/png/ico，相对 data/）；缺省/文件缺失用内置默认（public/favicon.svg → /favicon.svg）
   # footer: 暂无字段定义——design.md §4 提到页脚，但 schema 未定；M4a 未实现页脚，待补充字段后实现
 
 # ---- 个人资料（主页头部区块）----

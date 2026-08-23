@@ -19,6 +19,7 @@ import {
   resolveText,
   resolveAvatarPosition,
   resolveBgm,
+  resolveFavicon,
   type SiteConfig,
 } from '../lib/config.ts';
 import {
@@ -54,6 +55,8 @@ interface Props {
   avatarUrl?: string;
   /** 背景音乐（resolveBgm 归一化 + 文件存在性检查后为 undefined 即不渲染） */
   bgm?: { src: string; volume: number };
+  /** favicon URL（site.favicon 指向的真实文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
+  favicon: string;
   blocks: PlannedHomeBlock[];
   /** .cache/github.json 视图（M4b）；null = 缓存缺失（渲染空态） */
   githubView: GithubView | null;
@@ -75,6 +78,9 @@ export function getStaticPaths() {
   // 背景音乐：仅在文件真实存在时输出 <audio>，避免示例数据下 404
   const bgm = resolveBgm(site);
   const bgmSrc = bgm && existsSync(path.join(dataDir, bgm.file)) ? `/${bgm.file}` : undefined;
+  // favicon：配置了且文件真实存在用之；否则回退内置默认（public/favicon.svg → /favicon.svg）
+  const favicon = resolveFavicon(site);
+  const faviconUrl = favicon && existsSync(path.join(dataDir, favicon)) ? `/${favicon}` : '/favicon.svg';
   const rssEnabled = !!site.rss && site.rss.enabled !== false;
   // rss.enabled: false 时整区不渲染（即使 home.layout 引用了 rss 区块）
   const blocks = planHomeBlocks(site.home?.layout).filter((b) => b.block !== 'rss' || rssEnabled);
@@ -98,6 +104,7 @@ export function getStaticPaths() {
       alternates: alternateLinks(pages, route.slug, langs, defaultLang),
       avatarUrl,
       bgm: bgmSrc && bgm ? { src: bgmSrc, volume: bgm.volume } : undefined,
+      favicon: faviconUrl,
       blocks,
       githubView,
       rssView,
@@ -115,6 +122,7 @@ const {
   alternates,
   avatarUrl,
   bgm,
+  favicon,
   blocks,
   githubView,
   rssView,
@@ -158,6 +166,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   i18n={i18n}
   alternates={alternates}
   bgm={bgm}
+  favicon={favicon}
 >
   {route.fallback && (
     <p class="fallback-banner" role="note">

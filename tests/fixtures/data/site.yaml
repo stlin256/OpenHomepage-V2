@@ -3,6 +3,7 @@ site:
   title: "张三的主页"
   description: "张三的个人主页"
   language: zh-CN
+  favicon: "assets/favicon.svg"
 
 profile:
   name: "张三"
