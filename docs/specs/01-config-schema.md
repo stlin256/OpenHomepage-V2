@@ -67,7 +67,19 @@ streaming_blocks:
     content_file: "streaming/welcome.md"   # 预写 markdown
     autoplay: true              # 进入可视区自动播放
     speed: 40                   # 每 token 毫秒数
+
+# ---- 自部署静态服务（npm run serve，整段缺省 = HTTP:8080）----
+serve:
+  port: 8443                    # 端口；HTTPS 缺省 8443，HTTP 缺省 8080
+  ssl:                          # 整段缺省时按约定探测 项目根/certs/cert.pem + key.pem
+    cert: "certs/cert.pem"      # PEM 证书路径（相对项目根）
+    key: "certs/key.pem"        # PEM 私钥路径
 ```
+
+`serve` 段行为（实现：`scripts/serve-lib.ts` 纯函数 + 单测）：
+- 证书缺失、PEM 解析失败、证书与私钥不匹配 → 打印中文警告并**降级 HTTP**；
+- 证书过期/尚未生效 → 仅警告，仍启用 HTTPS；
+- `certs/` 只有单个文件（不成对）→ 警告并降级 HTTP。
 
 任意页面的 markdown 里也可用 `::stream{id="welcome"}` 指令嵌入流式区块（依赖 markdown 指令能力，见细化项 #3）。
 
