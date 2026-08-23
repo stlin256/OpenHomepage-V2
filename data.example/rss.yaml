@@ -34,9 +34,9 @@ sources:
     articles:
       - url: "https://deepmind.google/blog/co-scientist-a-multi-agent-ai-partner-to-accelerate-research/"
         note: "多智能体系统做科研加速，和我的方向直接相关"
-        cover: "assets/cover-1.jpg"
+        cover: "assets/co-scientist-a-multi-agent-ai-partner-to-accelerate-research.webp"
       - url: "https://deepmind.google/blog/10-years-of-alphago/"
         note: "AlphaGo 十年，值得一读的技术史"
-        cover: "assets/cover-2.jpg"
+        cover: "assets/10-years-of-alphago.png"
       - url: "https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/"
         note: "可解释性工具的标杆；这张卡片故意不配图，演示纯文字卡片"

@@ -1,13 +1,19 @@
 # ---- 站点基本信息 ----
 site:
-  title: "林知远 · Zhiyuan Lin"
-  description: "林知远的个人主页：机器学习研究、开源项目与阅读记录"
+  title:
+    zh: "林知远 · Zhiyuan Lin"
+    en: "Zhiyuan Lin"
+  description:
+    zh: "林知远的个人主页：机器学习研究、开源项目与阅读记录"
+    en: "Zhiyuan Lin's homepage: machine learning research, open source, and reading notes"
   language: zh-CN
   favicon: "assets/favicon.svg"     # 站点图标（svg/png/ico）；删除该行则用内置默认
 
 # ---- 个人资料（主页头部区块）----
 profile:
-  name: "林知远"
+  name:
+    zh: "林知远"
+    en: "Zhiyuan Lin"
   tagline:
     zh: "博士研究生 / 机器学习与系统"
     en: "PhD candidate / ML & Systems"
@@ -31,12 +37,12 @@ footer:
     zh: "由 [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2) 驱动"
     en: "Powered by [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2)"
 
-# ---- 背景音乐（缺省整段不启用；enabled: false 强制关闭）----
+# ---- 背景音乐 ----
 bgm:
   autoplay: true
-  file: "assets/bgm.wav"        # 相对 data/ 的音频路径（wav/mp3/ogg/m4a/flac）
-  volume: 0.4                   # 音量 0–1，缺省 0.4
-  enabled: true                 # 页面顶端出现播放/暂停按钮；记住用户选择，站内转场不中断
+  enabled: true
+  file: "assets/bgm.mp3"   # Aria（你提供的音源，已压缩为 160kbps MP3）
+  volume: 0.4
 
 # ---- GitHub 区块 ----
 github:
@@ -44,9 +50,13 @@ github:
   show_contributions: true
   pinned:
     - repo: "huggingface/transformers"
-      note: "State-of-the-art NLP for everyone —— 复现论文时的基础设施"
+      note:
+        zh: "State-of-the-art NLP for everyone —— 复现论文时的基础设施"
+        en: "State-of-the-art NLP for everyone — infrastructure for reproducing papers"
     - repo: "ggml-org/llama.cpp"
-      note: "在笔记本上跑大模型，本地实验的起点"
+      note:
+        zh: "在笔记本上跑大模型，本地实验的起点"
+        en: "Running LLMs on a laptop — where local experiments begin"
     - repo: "openai/whisper"
 
 # ---- RSS 区块 ----

@@ -75,10 +75,10 @@ Players render the official iframe directly in a responsive 16:9 container (`loa
 
 Self-hosted media (native tags):
 
-:::video{src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"}
+:::video{src="assets/feature-flower.mp4"}
 :::
 
-:::audio{src="https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3"}
+:::audio{src="assets/feature-t-rex-roar.mp3"}
 :::
 
 ## Functional directives

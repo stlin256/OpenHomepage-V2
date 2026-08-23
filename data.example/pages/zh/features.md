@@ -75,10 +75,10 @@ $$
 
 自建媒体（原生标签）：
 
-:::video{src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"}
+:::video{src="assets/feature-flower.mp4"}
 :::
 
-:::audio{src="https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3"}
+:::audio{src="assets/feature-t-rex-roar.mp3"}
 :::
 
 ## 功能指令
