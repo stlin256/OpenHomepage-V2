@@ -312,3 +312,7 @@ a { color: var(--accent); text-decoration: none; }
   color: var(--danger);
   padding: 14px 18px;
 }
+
+/* 滑块（BGM 音量等） */
+.range-wrap { display: inline-flex; align-items: center; gap: 10px; }
+.range-value { min-width: 2.5em; color: var(--text-muted); font-size: 13px; }

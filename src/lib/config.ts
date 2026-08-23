@@ -41,6 +41,15 @@ export interface SiteConfig {
   home?: {
     layout?: { block: string; id?: string }[];
   };
+  /** 背景音乐（宽松校验，缺省禁用；归一化见 resolveBgm） */
+  bgm?: {
+    /** 音频文件，相对 data/ 的路径，如 assets/bgm.wav */
+    file?: string;
+    /** 音量 0–1，缺省 0.4 */
+    volume?: number;
+    /** false 强制关闭；缺省（配置了 file）即启用 */
+    enabled?: boolean;
+  };
   streaming_blocks?: {
     id: string;
     title?: LocalizedText;
@@ -208,6 +217,30 @@ export function resolveText(field: LocalizedText, lang: string): string {
 /** profile.avatar_position 归一化：缺省/非法值回退 'side'（默认侧边杂志布局） */
 export function resolveAvatarPosition(profile: SiteConfig['profile']): 'side' | 'top' {
   return profile.avatar_position === 'top' ? 'top' : 'side';
+}
+
+/** BGM 缺省音量（未配置或非法时回退） */
+export const BGM_DEFAULT_VOLUME = 0.4;
+
+export interface ResolvedBgm {
+  file: string;
+  volume: number;
+}
+
+/**
+ * BGM 配置归一化（宽松校验，spec 01 §1）：
+ * 无 bgm 段 / 无 file / 显式 enabled:false → null（禁用）；
+ * volume clamp 到 [0,1]，缺省/非法回退 BGM_DEFAULT_VOLUME。
+ */
+export function resolveBgm(site: SiteConfig): ResolvedBgm | null {
+  const bgm = site.bgm;
+  if (!bgm || typeof bgm !== 'object' || bgm.enabled === false) return null;
+  const file = typeof bgm.file === 'string' ? bgm.file.trim() : '';
+  if (!file) return null;
+  const v = bgm.volume;
+  const volume =
+    typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : BGM_DEFAULT_VOLUME;
+  return { file, volume };
 }
 
 export interface ResolvedPage {

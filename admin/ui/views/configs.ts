@@ -2,7 +2,7 @@
  * 配置表单视图：站点 / GitHub / RSS / 流式块 + home.layout 拖拽排序。
  * 全部 1.5s 停顿自动保存（PUT 整份配置，服务端校验失败不落盘并提示）。
  */
-import { el, btn, textInput, numberInput, checkbox, select, field, listEditor } from '../dom.ts';
+import { el, btn, textInput, numberInput, checkbox, select, field, listEditor, rangeInput } from '../dom.ts';
 import { api } from '../api.ts';
 import { createAutosave, type Autosave } from '../../shared/autosave.ts';
 import type { AppState } from '../main.ts';
@@ -52,14 +52,28 @@ function makeSaver(state: AppState, saveFn: () => Promise<unknown>): Autosave {
 
 export async function renderSiteConfig(container: HTMLElement, state: AppState): Promise<void> {
   const t = state.t;
-  const { data } = await api.site();
+  const [{ data }, { assets }] = await Promise.all([api.site(), api.assets()]);
   const cfg = data as Obj;
   cfg.site ??= {};
   cfg.profile ??= {};
   const profile = cfg.profile as Obj;
   profile.links ??= [];
+  const bgm = (cfg.bgm ??= {}) as Obj;
   const autosave = makeSaver(state, () => api.saveSite(cfg));
   const touch = () => autosave.touch();
+
+  // BGM 音频文件候选：素材库中的音频扩展名；当前值不在库中时保留显示
+  const AUDIO_EXT = /\.(wav|mp3|ogg|m4a|flac)$/i;
+  const audioFiles = assets.filter((a) => AUDIO_EXT.test(a.name)).map((a) => `assets/${a.name}`);
+  const curBgmFile = String(bgm.file ?? '');
+  const bgmFileOptions = [
+    { value: '', label: t('bgmFileEmpty') },
+    ...(curBgmFile && !audioFiles.includes(curBgmFile)
+      ? [{ value: curBgmFile, label: curBgmFile }]
+      : []),
+    ...audioFiles.map((f) => ({ value: f, label: f })),
+  ];
+  const bgmVolume = typeof bgm.volume === 'number' ? Math.min(1, Math.max(0, bgm.volume)) : 0.4;
 
   container.replaceChildren(
     sectionTitle(t('siteSection')),
@@ -100,7 +114,24 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
       makeNew: () => ({ label: '', url: '' }),
       addLabel: t('addLink'),
       t,
-    })
+    }),
+    sectionTitle(t('bgmSection')),
+    el(
+      'div',
+      { class: 'form-grid' },
+      field(
+        t('bgmEnabled'),
+        checkbox(bgm.enabled !== false, (v) => { bgm.enabled = v; touch(); })
+      ),
+      field(
+        t('bgmFile'),
+        select(bgmFileOptions, curBgmFile, (v) => { bgm.file = v || undefined; touch(); })
+      ),
+      field(
+        t('bgmVolume'),
+        rangeInput(bgmVolume, 0, 1, 0.05, (v) => { bgm.volume = v; touch(); })
+      )
+    )
   );
 }
 

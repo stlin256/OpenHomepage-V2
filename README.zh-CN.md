@@ -8,6 +8,8 @@
 
 - **Markdown 优先**——页面就是带 frontmatter 的 markdown 文件；渲染支持 GFM、Shiki 代码高亮、KaTeX 数学公式、自定义指令（`::bilibili`、`::youtube`、`:::video`、`:::audio`、`:::figure`、`::::grid`、`::stream`、`::ghcard`），并允许安全的 HTML 混写。
 - **杂志化布局，科研式克制**——不对称 12 列网格、表现力动效（transform/opacity 实现）、明暗双主题（亮/暗两态切换，默认跟随系统；手动选择会话内保持、离开站点后重置）+ 可配置主题色。
+- **图片灯箱**——正文图片点击放大预览（缩放淡入动画，遵循 reduced-motion），存在同名 `-full` 文件（如 `assets/hero-full.jpg`）时自动加载高清版。
+- **背景音乐（可选）**——`site.yaml` 配置 `bgm` 段后，页顶出现播放/暂停按钮；`transition:persist` 保证站内转场不中断，记住用户选择，遵守浏览器自动播放策略与 reduced-motion。
 - **GitHub 区块**——贡献热力图与 pin 项目卡片，构建时抓取。
 - **RSS 卡片**——多源订阅，分栏/加权混排两种模式，hover 预览浮层，支持精选文章列表与逐篇封面。
 - **LLM 流式区块**——预写 markdown 以拟真流式效果播放。
@@ -35,7 +37,7 @@ npm run admin       # → http://127.0.0.1:4174（仅监听回环地址）
 ```
 
 - **页面**——侧栏按语言目录分组；Milkdown 所见即所得编辑，自定义指令渲染为参数卡片；frontmatter（title/nav/order/slug/description）以表单条呈现；新建向导（标题 → 自动 slug + 模板）、重命名、删除、一键"创建另一语言版"。编辑器内 `Ctrl+V` 粘贴图片自动存入 `data/assets/` 并插入引用。
-- **配置**——站点/资料/链接、GitHub（用户名、贡献图开关、pinned 增删与上移下移排序）、RSS（源的 mode/latest/weight/cover 与精选文章子列表）、流式块定义，以及可拖拽排序的 `home.layout`。
+- **配置**——站点/资料/链接、背景音乐（开关、素材库文件选择、音量滑块）、GitHub（用户名、贡献图开关、pinned 增删与上移下移排序）、RSS（源的 mode/latest/weight/cover 与精选文章子列表）、流式块定义，以及可拖拽排序的 `home.layout`。
 - **主题**——从头像自动提取 4–6 个候选色、点击头像任意像素取色或手动输入 hex；写回 `theme.accent` 并实时预览。
 - **素材**——列表/上传（文件选择或拖拽）/删除/复制引用路径。
 - **自动保存与快照**——编辑停顿 ~1.5s 自动写盘；每次写盘前把旧版本快照到 `data/.snapshots/<路径>/<时间戳>`（保留最近 20 版），界面可查看/回滚。写盘前做 schema 校验，失败不落盘并提示。

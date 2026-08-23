@@ -52,6 +52,29 @@ export function checkbox(value: boolean, onChange: (v: boolean) => void): HTMLIn
   return input;
 }
 
+/** 滑块 + 实时数值显示（如音量 0–1） */
+export function rangeInput(
+  value: number,
+  min: number,
+  max: number,
+  step: number,
+  onInput: (v: number) => void
+): HTMLElement {
+  const input = el('input', {
+    type: 'range',
+    min: String(min),
+    max: String(max),
+    step: String(step),
+  }) as HTMLInputElement;
+  const out = el('span', { class: 'range-value' }, String(value));
+  input.value = String(value);
+  input.addEventListener('input', () => {
+    out.textContent = input.value;
+    onInput(Number(input.value));
+  });
+  return el('span', { class: 'range-wrap' }, input, out);
+}
+
 export function select(
   options: { value: string; label: string }[],
   value: string,

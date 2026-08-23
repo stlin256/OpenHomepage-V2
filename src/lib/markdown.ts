@@ -129,15 +129,30 @@ function toEmbedDiv(
 }
 
 const WIDTH_RE = /^[\d.]+(%|px|em|rem|vw)$/;
+const FIGURE_ALIGNS = ['left', 'center', 'right'] as const;
+type FigureAlign = (typeof FIGURE_ALIGNS)[number];
+
+/** figure 对齐 → margin 内联样式（依赖 figure 为块级且有确定宽度时生效） */
+const FIGURE_ALIGN_STYLE: Record<FigureAlign, string> = {
+  left: 'margin-left:0;margin-right:auto',
+  center: 'margin-left:auto;margin-right:auto',
+  right: 'margin-left:auto;margin-right:0',
+};
 
 function toFigure(attrs: Record<string, string>): { properties: Properties; children: ElementContent[] } | null {
   const src = attrs.src;
   if (!src) return null;
   const caption = attrs.caption ?? '';
   const properties: Properties = {};
+  const styles: string[] = [];
   if (attrs.width && WIDTH_RE.test(attrs.width)) {
-    properties.style = `width:${attrs.width}`;
+    styles.push(`width:${attrs.width}`);
   }
+  const align = attrs.align as FigureAlign | undefined;
+  if (align && (FIGURE_ALIGNS as readonly string[]).includes(align)) {
+    styles.push(FIGURE_ALIGN_STYLE[align]);
+  }
+  if (styles.length > 0) properties.style = styles.join(';');
   const children: ElementContent[] = [
     {
       type: 'element',
@@ -157,9 +172,20 @@ function toFigure(attrs: Record<string, string>): { properties: Properties; chil
   return { properties, children };
 }
 
+/**
+ * 纯冒号段落判定：嵌套容器指令未遵守「外层冒号数多于内层」（spec 03 §2）时，
+ * remark-directive 会把多层闭合合并消费，多余的 `:::` 闭合围栏解析成普通文本段落，
+ * 渲染为网格/正文里的残留 ":::" 文本（曾出现在画廊页图片右上角，形似拖动手柄）。
+ * 这类段落没有合法内容语义，管线容错直接移除。
+ */
+function isStrayFenceParagraph(node: Content): boolean {
+  if (node.type !== 'paragraph' || node.children.length !== 1) return false;
+  const child = node.children[0];
+  return child.type === 'text' && /^:{3,}$/.test(child.value.trim());
+}
+
 /** 未识别/缺参数的指令：按原始源码降级为普通文本，不报错 */
-function degradeToText(node: Directive, file: VFile): void {
-  const { start, end } = node.position ?? {};
+function degradeToText(node: Directive, file: VFile): void {  const { start, end } = node.position ?? {};
   const raw =
     start?.offset != null && end?.offset != null
       ? String(file).slice(start.offset, end.offset)
@@ -249,6 +275,12 @@ function remarkCustomDirectives() {
         default:
           degradeToText(directive, file);
       }
+    });
+    // 误嵌套指令残留的纯冒号闭合围栏段落（见 isStrayFenceParagraph 注释）
+    visit(tree, 'paragraph', (node: Content, index, parent) => {
+      if (parent == null || index == null || !isStrayFenceParagraph(node)) return;
+      parent.children.splice(index, 1);
+      return [SKIP, index];
     });
   };
 }

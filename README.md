@@ -8,6 +8,8 @@ A lightweight, magazine-style personal homepage generator — static, bilingual 
 
 - **Markdown-first content** — pages are plain markdown files with frontmatter; rendered with GFM, Shiki syntax highlighting, KaTeX math, and custom directives (`::bilibili`, `::youtube`, `:::video`, `:::audio`, `:::figure`, `::::grid`, `::stream`, `::ghcard`), plus safe raw-HTML mixing.
 - **Magazine layout, researcher-grade restraint** — asymmetric 12-column grid, expressive yet cheap animations (transform/opacity only), dark/light themes (two-state toggle; follows your system until you pick — the choice sticks for the session and resets once you leave) with a configurable accent color.
+- **Image lightbox** — click any content image to preview it full-screen (scale/fade animation, reduced-motion aware); a same-named `-full` file (e.g. `assets/hero-full.jpg`) is loaded automatically when present.
+- **Background music (optional)** — configure `bgm` in `site.yaml` and a play/pause button appears in the header; `transition:persist` keeps it playing across in-site navigations, remembers the user's choice, and respects autoplay policies and reduced-motion.
 - **GitHub blocks** — contribution heatmap and pinned repo cards, fetched at build time with cache fallback.
 - **RSS cards** — multiple feeds, grouped or weighted-mixed display, hover previews, curated article lists with per-card covers.
 - **LLM-style streaming blocks** — pre-written markdown replayed with a realistic streaming effect.
@@ -35,7 +37,7 @@ npm run admin       # → http://127.0.0.1:4174 (loopback only)
 ```
 
 - **Pages** — sidebar groups pages by language folder; Milkdown WYSIWYG editing with the custom directives rendered as parameter cards; frontmatter (title/nav/order/slug/description) as a form bar; new-page wizard (title → auto slug + template), rename, delete, and one-click "create the other-language version". `Ctrl+V` pastes images straight into `data/assets/` and inserts the reference.
-- **Config** — forms for site/profile/links, GitHub (username, contributions toggle, pinned repos with up/down ordering), RSS (sources with mode/latest/weight/cover and curated article sub-lists), streaming blocks, and a drag-sortable `home.layout`.
+- **Config** — forms for site/profile/links, background music (toggle, asset-library file picker, volume slider), GitHub (username, contributions toggle, pinned repos with up/down ordering), RSS (sources with mode/latest/weight/cover and curated article sub-lists), streaming blocks, and a drag-sortable `home.layout`.
 - **Theme** — palette of 4–6 colors extracted from your avatar, click-anywhere pixel picking on the avatar, or manual hex; writes back `theme.accent` with live preview.
 - **Assets** — list/upload (file picker or drag & drop)/delete/copy reference path.
 - **Autosave & snapshots** — edits are written to disk after ~1.5s idle; every write snapshots the previous version to `data/.snapshots/<path>/<timestamp>` (latest 20 kept), with list/restore in the UI. Writes are schema-validated first and rejected with a message on failure.

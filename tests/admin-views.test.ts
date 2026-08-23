@@ -36,13 +36,21 @@ describe('指令占位卡片', () => {
     await editor.destroy();
   });
 
-  it('figure 卡片带 src/caption/width 三个参数输入', async () => {
+  it('figure 卡片带 src/caption/width 输入与 align 下拉，改 align 可序列化回指令', async () => {
     const { host, editor } = await editorWithViews(
       ':::figure{src="assets/photo.jpg" caption="图 1" width="70%"}\n:::\n'
     );
     const inputs = host.querySelectorAll<HTMLInputElement>('.directive-card .directive-param input');
     expect(inputs.length).toBe(3);
     expect(inputs[1].value).toBe('图 1');
+    const sel = host.querySelector<HTMLSelectElement>('.directive-card .directive-param select')!;
+    expect(sel).toBeTruthy();
+    expect([...sel.options].map((o) => o.value)).toEqual(['', 'left', 'center', 'right']);
+
+    // 模拟用户选择居中：写回 figure 指令的 align 参数
+    sel.value = 'center';
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(editor.action(getMarkdown())).toContain('align="center"');
     await editor.destroy();
   });
 

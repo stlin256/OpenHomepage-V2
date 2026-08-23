@@ -32,6 +32,8 @@ interface Props {
   currentPath: string;
   i18n: boolean;
   alternates: { lang: string; path: string }[];
+  /** 背景音乐（site.yaml bgm 段，缺省不渲染；交互见 src/scripts/bgm.ts） */
+  bgm?: { src: string; volume: number };
 }
 
 const {
@@ -47,6 +49,7 @@ const {
   currentPath,
   i18n,
   alternates,
+  bgm,
 } = Astro.props;
 
 const langLabel = (l: string) => ({ zh: '中', en: 'EN' })[l] ?? l;
@@ -112,6 +115,18 @@ const accentVars = `--accent-light:${accent.light.accent};--accent-light-contras
         </ul>
       </nav>
       <div class="header-tools">
+        {bgm && (
+          <button class="bgm-toggle icon-btn" type="button" aria-pressed="false" aria-label="播放/暂停背景音乐 / Toggle background music">
+            <svg class="icon icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5 6 9H2v6h4l5 4V5z" />
+            </svg>
+            <svg class="icon icon-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5 6 9H2v6h4l5 4V5z" />
+              <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+              <path d="M18.5 5.5a9.5 9.5 0 0 1 0 13" />
+            </svg>
+          </button>
+        )}
         {i18n && alternates.length > 1 && (
           <nav class="lang-switcher icon-btn" aria-label="语言切换 / Language">
             {alternates.map((a, i) => (
@@ -138,8 +153,28 @@ const accentVars = `--accent-light:${accent.light.accent};--accent-light-contras
     <main class="site-main">
       <slot />
     </main>
+    {/* 背景音乐：<audio> 跨页面转场常驻（transition:persist），状态见 src/scripts/bgm.ts */}
+    {bgm && (
+      <audio
+        class="bgm-audio"
+        src={bgm.src}
+        loop
+        preload="none"
+        data-volume={bgm.volume}
+        transition:persist="bgm-audio"
+      />
+    )}
+    {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 global.css */}
+    <div class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览 / Image preview" hidden>
+      <img class="lightbox-img" alt="" />
+      <button class="lightbox-close" type="button" aria-label="关闭 / Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+    </div>
     <script>
-      // 前端交互入口（主题切换 / 导航抽屉 / 流式播放 / RSS 浮层 / 动效），astro:page-load 驱动
+      // 前端交互入口（主题切换 / 导航抽屉 / 流式播放 / RSS 浮层 / 灯箱 / 动效），astro:page-load 驱动
       import '../scripts/interactions.ts';
     </script>
   </body>

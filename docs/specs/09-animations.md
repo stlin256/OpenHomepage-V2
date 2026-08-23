@@ -13,6 +13,7 @@
 | RSS 浮层 | 300ms 延迟浮出 + 缩放淡入 | 纯 CSS/JS 定时器 | 低 |
 | 流式打字 | 见 04 文档 | rAF/定时器 | 低 |
 | 主题切换 | 明暗切换时 200ms 颜色过渡 | CSS transition on colors | 低 |
+| 图片灯箱 | 开/关：淡入淡出 + 缩放（0.92→1）250ms；reduced-motion 只留淡入 | CSS transition（opacity/transform） | 低 |
 | 贡献图 | 格子按周交错淡入（stagger 20ms） | CSS animation-delay | 低 |
 
 可点元素（导航 tab、图标按钮、链接）hover 反馈为**高亮背景块**（`--hover-bg`：

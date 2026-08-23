@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSiteConfig, loadRssConfig, resolveAvatarPosition } from '../src/lib/config.ts';
+import { loadSiteConfig, loadRssConfig, resolveAvatarPosition, resolveBgm, BGM_DEFAULT_VOLUME } from '../src/lib/config.ts';
 
 const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/data');
 
@@ -117,5 +117,40 @@ describe('loadRssConfig', () => {
     withTempData({ 'rss.yaml': 'sources:\n  - name: x\n    url: https://a.com/feed\n    mode: weird\n' }, (dir) => {
       expect(() => loadRssConfig(dir)).toThrowError(/mode/);
     });
+  });
+});
+
+describe('resolveBgm（背景音乐配置归一化，宽松校验）', () => {
+  const base = { site: { title: 't' }, profile: { name: 'n' }, github: { username: 'u' } };
+
+  it('缺省（无 bgm 段）/ 无 file / 显式 enabled:false → 禁用（null）', () => {
+    expect(resolveBgm(base)).toBeNull();
+    expect(resolveBgm({ ...base, bgm: { enabled: true } })).toBeNull();
+    expect(resolveBgm({ ...base, bgm: { file: '  ' } })).toBeNull();
+    expect(
+      resolveBgm({ ...base, bgm: { file: 'assets/bgm.wav', enabled: false } }),
+    ).toBeNull();
+    expect(resolveBgm({ ...base, bgm: null as unknown as undefined })).toBeNull();
+  });
+
+  it('file + 未显式关闭即启用；volume 缺省回退默认值', () => {
+    expect(resolveBgm({ ...base, bgm: { file: 'assets/bgm.wav' } })).toEqual({
+      file: 'assets/bgm.wav',
+      volume: BGM_DEFAULT_VOLUME,
+    });
+    expect(
+      resolveBgm({ ...base, bgm: { file: 'assets/bgm.wav', volume: 0.4, enabled: true } }),
+    ).toEqual({ file: 'assets/bgm.wav', volume: 0.4 });
+  });
+
+  it('volume 非法/越界时回退或 clamp 到 [0,1]', () => {
+    expect(
+      resolveBgm({ ...base, bgm: { file: 'a.mp3', volume: 'loud' as unknown as number } })!.volume,
+    ).toBe(BGM_DEFAULT_VOLUME);
+    expect(resolveBgm({ ...base, bgm: { file: 'a.mp3', volume: 1.8 } })!.volume).toBe(1);
+    expect(resolveBgm({ ...base, bgm: { file: 'a.mp3', volume: -0.5 } })!.volume).toBe(0);
+    expect(resolveBgm({ ...base, bgm: { file: 'a.mp3', volume: NaN } })!.volume).toBe(
+      BGM_DEFAULT_VOLUME,
+    );
   });
 });

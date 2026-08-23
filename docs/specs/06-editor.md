@@ -27,7 +27,7 @@
 | 模块 | 内容 | 交互 |
 |------|------|------|
 | 页面 | data/pages/*.md 列表，新建/重命名/删除 | Milkdown WYSIWYG；frontmatter 以表单条（标题/导航开关/排序）呈现于编辑器顶部 |
-| 站点配置 | site.yaml 的 site/profile/theme 段 | 表单：文本框、链接列表编辑器、模式切换 |
+| 站点配置 | site.yaml 的 site/profile/theme/bgm 段 | 表单：文本框、链接列表编辑器、模式切换；BGM（启用开关、素材库音频选择、音量滑块） |
 | GitHub | username、贡献图开关、pinned 列表 | 表单：repo 列表支持增删、拖拽排序 |
 | RSS | rss.yaml | 源列表编辑器：每个源可展开配 mode/latest/weight/cover；curated 文章子列表 |
 | 流式块 | streaming_blocks + home.layout 排序 | 块定义表单 + 主页布局拖拽排序器 |
@@ -41,7 +41,7 @@
 - API：`GET /api/info`、`GET /api/pages`、`GET/PUT /api/page`、`POST /api/page/create|rename|delete`、`GET/PUT /api/config/site|rss`、`GET /api/assets`、`POST /api/asset`（原始二进制上传）、`POST /api/asset/delete`、`GET /api/asset/file`、`GET /api/snapshots`、`POST /api/snapshot/restore`、`GET /api/dev-status`。REST 直写文件；所有路径参数经 `safeResolve` 规范化并限制在 data/ 内（含 URL 编码伪装防护）。
 - 保存：**自动保存**（编辑停顿 ~1.5s 写盘，debounce 合并）；写盘前校验 schema（复用 `src/lib/config.ts` 的 `validateSiteConfig`/`validateRssConfig`，页面要求 frontmatter.title），失败不落盘并在顶栏提示。
 - 预览站点：按钮先探 `GET /api/dev-status`（探测 127.0.0.1:4321），已启动则打开新标签页，未启动则提示先 `npm run dev`。
-- Milkdown 自定义节点：与 03 文档指令一一对应。叶指令（bilibili/youtube/stream/ghcard）与空容器指令（video/audio/figure）为原子节点；grid/grid_cell 为真嵌套容器（remark-directive 序列化自动让外层冒号多于内层）。编辑器里渲染为参数卡片，序列化回指令语法；往返有 jsdom 测试守护。
+- Milkdown 自定义节点：与 03 文档指令一一对应。叶指令（bilibili/youtube/stream/ghcard）与空容器指令（video/audio/figure）为原子节点；grid/grid_cell 为真嵌套容器（remark-directive 序列化自动让外层冒号多于内层）。编辑器里渲染为参数卡片，序列化回指令语法；往返有 jsdom 测试守护。figure 卡片支持 `src/caption/width` 文本输入与 `align`（left/center/right）下拉选择，写回 figure 指令参数（渲染侧见 spec 03 §2）。
 - 粘贴图片：ProseMirror `handlePaste` 钩子拦截图片文件 → 上传 `POST /api/asset`（自动命名 `pasted-<时间戳>.<ext>`）→ 插入 image 节点引用 `assets/<name>`。
 - 无 data/ 时编辑器启动自动从 data.example/ 初始化（复用 scripts/setup.mjs 逻辑），界面顶部横幅提示。
 

@@ -23,8 +23,8 @@ interface DirectiveDef {
   kind: 'leaf' | 'container';
   /** 展示用图标字符 */
   icon: string;
-  /** 参数说明（界面渲染参数表单用） */
-  params: { key: string; label: string; placeholder?: string }[];
+  /** 参数说明（界面渲染参数表单用；options 存在时渲染为下拉选择而非文本框） */
+  params: { key: string; label: string; placeholder?: string; options?: string[] }[];
 }
 
 export const DIRECTIVE_DEFS: DirectiveDef[] = [
@@ -32,7 +32,7 @@ export const DIRECTIVE_DEFS: DirectiveDef[] = [
   { id: 'youtube', name: 'youtube', kind: 'leaf', icon: '▶️', params: [{ key: 'id', label: '视频 ID', placeholder: 'dQw4w9WgXcQ' }] },
   { id: 'video', name: 'video', kind: 'container', icon: '🎬', params: [{ key: 'src', label: 'src', placeholder: 'assets/demo.mp4' }, { key: 'poster', label: 'poster', placeholder: 'assets/cover.png' }] },
   { id: 'audio', name: 'audio', kind: 'container', icon: '🎵', params: [{ key: 'src', label: 'src', placeholder: 'assets/podcast.mp3' }] },
-  { id: 'figure', name: 'figure', kind: 'container', icon: '🖼️', params: [{ key: 'src', label: 'src', placeholder: 'assets/photo.jpg' }, { key: 'caption', label: 'caption' }, { key: 'width', label: 'width', placeholder: '70%' }] },
+  { id: 'figure', name: 'figure', kind: 'container', icon: '🖼️', params: [{ key: 'src', label: 'src', placeholder: 'assets/photo.jpg' }, { key: 'caption', label: 'caption' }, { key: 'width', label: 'width', placeholder: '70%' }, { key: 'align', label: 'align', options: ['left', 'center', 'right'] }] },
   { id: 'stream', name: 'stream', kind: 'leaf', icon: '💬', params: [{ key: 'id', label: '区块 id', placeholder: 'welcome' }] },
   { id: 'ghcard', name: 'ghcard', kind: 'leaf', icon: '🐙', params: [{ key: 'repo', label: '仓库', placeholder: 'owner/repo' }] },
 ];

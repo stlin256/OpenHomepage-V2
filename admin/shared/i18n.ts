@@ -86,6 +86,12 @@ const zh = {
   linkUrl: '链接',
   addLink: '添加链接',
 
+  bgmSection: '背景音乐',
+  bgmEnabled: '启用背景音乐',
+  bgmFile: '音频文件（素材库）',
+  bgmFileEmpty: '（未选择）',
+  bgmVolume: '音量',
+
   githubUsername: '用户名',
   githubShowContributions: '显示贡献热力图',
   githubPinned: '置顶仓库',
@@ -236,6 +242,12 @@ const en: Record<DictKey, string> = {
   linkLabel: 'Label',
   linkUrl: 'URL',
   addLink: 'Add link',
+
+  bgmSection: 'Background music',
+  bgmEnabled: 'Enable background music',
+  bgmFile: 'Audio file (assets)',
+  bgmFileEmpty: '(none)',
+  bgmVolume: 'Volume',
 
   githubUsername: 'Username',
   githubShowContributions: 'Show contributions graph',

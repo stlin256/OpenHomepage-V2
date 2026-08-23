@@ -13,18 +13,39 @@ function paramInput(
   label: string,
   value: string,
   placeholder: string | undefined,
-  onInput: (v: string) => void
+  onInput: (v: string) => void,
+  options?: string[]
 ): HTMLElement {
   const wrap = document.createElement('label');
   wrap.className = 'directive-param';
   const span = document.createElement('span');
   span.textContent = label;
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.value = value;
-  if (placeholder) input.placeholder = placeholder;
-  input.addEventListener('input', () => onInput(input.value));
-  wrap.append(span, input);
+  let control: HTMLElement;
+  if (options) {
+    // 固定取值集合（如 figure align）用下拉选择，避免手误；空串 = 未设置
+    const sel = document.createElement('select');
+    const empty = document.createElement('option');
+    empty.value = '';
+    empty.textContent = '—';
+    sel.append(empty);
+    for (const o of options) {
+      const opt = document.createElement('option');
+      opt.value = o;
+      opt.textContent = o;
+      sel.append(opt);
+    }
+    sel.value = value;
+    sel.addEventListener('change', () => onInput(sel.value));
+    control = sel;
+  } else {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = value;
+    if (placeholder) input.placeholder = placeholder;
+    input.addEventListener('input', () => onInput(input.value));
+    control = input;
+  }
+  wrap.append(span, control);
   return wrap;
 }
 
@@ -52,8 +73,12 @@ class AtomCardView implements NodeView {
     body.className = 'directive-card-body';
     for (const p of def.params) {
       body.append(
-        paramInput(p.label, String(node.attrs.values[p.key] ?? ''), p.placeholder, (v) =>
-          this.updateParam(p.key, v)
+        paramInput(
+          p.label,
+          String(node.attrs.values[p.key] ?? ''),
+          p.placeholder,
+          (v) => this.updateParam(p.key, v),
+          p.options
         )
       );
     }
@@ -72,19 +97,23 @@ class AtomCardView implements NodeView {
 
   update(node: Node): boolean {
     if (node.type !== this.node.type) return false;
-    // 外部变更（如撤销）：同步输入框，但不打断正在输入的焦点
-    const inputs = this.dom.querySelectorAll<HTMLInputElement>('.directive-param input');
+    // 外部变更（如撤销）：同步输入框/下拉框，但不打断正在输入的焦点
+    const controls = this.dom.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+      '.directive-param input, .directive-param select'
+    );
     const def = DIRECTIVE_DEFS.find((d) => d.id === node.type.name)!;
-    inputs.forEach((input, i) => {
+    controls.forEach((control, i) => {
       const v = String(node.attrs.values[def.params[i].key] ?? '');
-      if (document.activeElement !== input && input.value !== v) input.value = v;
+      if (document.activeElement !== control && control.value !== v) control.value = v;
     });
     this.node = node;
     return true;
   }
 
   stopEvent(event: Event): boolean {
-    return event.target instanceof HTMLInputElement;
+    return (
+      event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement
+    );
   }
 
   ignoreMutation(): boolean {

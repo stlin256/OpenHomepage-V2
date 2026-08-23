@@ -45,6 +45,14 @@ describe('空容器指令往返（video/audio/figure）', () => {
     const out = await serialize(':::figure{src="assets/photo.jpg" caption="图 1" width="70%"}\n:::\n');
     expect(out).toContain(':::figure{src="assets/photo.jpg" caption="图 1" width="70%"}');
   });
+
+  it('figure 往返保留 align 对齐参数', async () => {
+    const out = await serialize(
+      ':::figure{src="assets/photo.jpg" width="72%" align="center"}\n:::\n'
+    );
+    expect(out).toContain('align="center"');
+    expect(out).toContain('width="72%"');
+  });
 });
 
 describe('grid 嵌套容器往返', () => {

@@ -18,6 +18,7 @@ import {
   isI18nEnabled,
   resolveText,
   resolveAvatarPosition,
+  resolveBgm,
   type SiteConfig,
 } from '../lib/config.ts';
 import {
@@ -51,6 +52,8 @@ interface Props {
   nav: NavItem[];
   alternates: { lang: string; path: string }[];
   avatarUrl?: string;
+  /** 背景音乐（resolveBgm 归一化 + 文件存在性检查后为 undefined 即不渲染） */
+  bgm?: { src: string; volume: number };
   blocks: PlannedHomeBlock[];
   /** .cache/github.json 视图（M4b）；null = 缓存缺失（渲染空态） */
   githubView: GithubView | null;
@@ -69,6 +72,9 @@ export function getStaticPaths() {
   // 头像：仅在文件真实存在时输出 <img>，避免示例数据下 404
   const avatar = site.profile.avatar;
   const avatarUrl = avatar && existsSync(path.join(dataDir, avatar)) ? `/${avatar}` : undefined;
+  // 背景音乐：仅在文件真实存在时输出 <audio>，避免示例数据下 404
+  const bgm = resolveBgm(site);
+  const bgmSrc = bgm && existsSync(path.join(dataDir, bgm.file)) ? `/${bgm.file}` : undefined;
   const rssEnabled = !!site.rss && site.rss.enabled !== false;
   // rss.enabled: false 时整区不渲染（即使 home.layout 引用了 rss 区块）
   const blocks = planHomeBlocks(site.home?.layout).filter((b) => b.block !== 'rss' || rssEnabled);
@@ -91,6 +97,7 @@ export function getStaticPaths() {
       nav: navPagesForLang(pages, route.lang, defaultLang),
       alternates: alternateLinks(pages, route.slug, langs, defaultLang),
       avatarUrl,
+      bgm: bgmSrc && bgm ? { src: bgmSrc, volume: bgm.volume } : undefined,
       blocks,
       githubView,
       rssView,
@@ -107,6 +114,7 @@ const {
   nav,
   alternates,
   avatarUrl,
+  bgm,
   blocks,
   githubView,
   rssView,
@@ -149,6 +157,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   currentPath={route.path}
   i18n={i18n}
   alternates={alternates}
+  bgm={bgm}
 >
   {route.fallback && (
     <p class="fallback-banner" role="note">

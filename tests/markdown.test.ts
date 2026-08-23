@@ -168,6 +168,28 @@ describe('自定义指令：图文排版', () => {
     expect(html).toContain('<figcaption>图 1：实验装置</figcaption>');
   });
 
+  it(':::figure 支持 align 对齐参数', async () => {
+    const center = await renderMarkdown(
+      ':::figure{src="assets/photo.jpg" width="72%" align="center"}\n:::'
+    );
+    expect(center).toContain('margin-left:auto;margin-right:auto');
+    const right = await renderMarkdown(':::figure{src="assets/photo.jpg" align="right"}\n:::');
+    expect(right).toContain('margin-left:auto;margin-right:0');
+    const left = await renderMarkdown(':::figure{src="assets/photo.jpg" align="left"}\n:::');
+    expect(left).toContain('margin-left:0;margin-right:auto');
+  });
+
+  it(':::figure 的 align 非法值被忽略，且 align 可与 width 组合', async () => {
+    const bad = await renderMarkdown(':::figure{src="assets/photo.jpg" align="middle"}\n:::');
+    expect(bad).toContain('<figure>');
+    expect(bad).not.toContain('margin');
+    const combo = await renderMarkdown(
+      ':::figure{src="assets/photo.jpg" width="50%" align="right"}\n:::'
+    );
+    expect(combo).toContain('width:50%');
+    expect(combo).toContain('margin-left:auto');
+  });
+
   it('::::grid + :::cell 渲染网格结构，栏内 markdown 正常解析', async () => {
     const md = [
       '::::grid{cols=2}',
@@ -186,6 +208,33 @@ describe('自定义指令：图文排版', () => {
     expect(cells).toHaveLength(2);
     expect(html).toContain('<strong>重点</strong>');
     expect(html).toContain('右栏内容');
+  });
+
+  it('误嵌套（内层冒号数 ≥ 外层）残留的纯冒号闭合围栏被清除，不渲染为文本', async () => {
+    // cell 与 figure 同为 ::: 时，remark-directive 会把多余的闭合 ::: 解析成文本段落
+    // （参见 spec 03 §2 的嵌套规则）；管线容错直接移除这类纯冒号段落
+    const md = [
+      '::::grid{cols=2}',
+      ':::cell',
+      ':::figure{src="assets/a.jpg" width="100%"}',
+      ':::',
+      ':::',
+      ':::cell',
+      ':::figure{src="assets/b.jpg" width="100%"}',
+      ':::',
+      ':::',
+      '::::',
+    ].join('\n');
+    const html = await renderMarkdown(md);
+    expect(html).toContain('class="md-grid"');
+    expect(html.match(/class="md-grid-cell"/g)).toHaveLength(2);
+    expect(html.match(/<figure/g)).toHaveLength(2);
+    expect(html).not.toContain(':::');
+  });
+
+  it('正文中的代码块内 ::: 文本不受影响', async () => {
+    const html = await renderMarkdown('```\n:::\n```');
+    expect(html).toContain(':::');
   });
 });
 

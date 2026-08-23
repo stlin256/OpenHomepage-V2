@@ -29,6 +29,12 @@ theme:
   accent: "#3a7bd5"             # 主题色（编辑器取色器写回这里）
   default_mode: "system"        # system | light | dark
 
+# ---- 背景音乐（整段缺省 = 不启用；宽松校验，非法字段不报错只回退）----
+bgm:
+  file: "assets/bgm.wav"        # 音频文件，相对 data/ 的路径（wav/mp3/ogg/m4a/flac 等）
+  volume: 0.4                   # 音量 0–1，缺省/非法回退 0.4，越界 clamp
+  enabled: true                 # false 强制关闭；配置了 file 且未显式 false 即启用
+
 # ---- GitHub 区块 ----
 github:
   username: "your-username"
@@ -64,6 +70,13 @@ streaming_blocks:
 ```
 
 任意页面的 markdown 里也可用 `::stream{id="welcome"}` 指令嵌入流式区块（依赖 markdown 指令能力，见细化项 #3）。
+
+### 1.1 背景音乐（bgm）行为
+
+- 启用且文件真实存在时：页顶静态区出现播放/暂停小图标按钮（与语言/主题按钮同排同风格），页面底部渲染 `<audio loop transition:persist>`——ClientRouter 站内转场播放不中断。
+- 自动播放策略：localStorage 记住用户上次播放/暂停；上次为播放态时，等首次用户交互（click/keydown）后才恢复播放；用户点过播放按钮（本身是手势）立即开播。
+- `prefers-reduced-motion: reduce`：整功能不启用（按钮隐藏、不自动播放）。
+- 归一化逻辑在 `src/lib/config.ts` 的 `resolveBgm`（纯函数，有单测）。
 
 ## 2. data/rss.yaml
 

@@ -13,6 +13,12 @@ const MIME = {
   '.webp': 'image/webp',
   '.avif': 'image/avif',
   '.ico': 'image/x-icon',
+  // 音频（背景音乐等，spec 01 bgm 段）
+  '.wav': 'audio/wav',
+  '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg',
+  '.m4a': 'audio/mp4',
+  '.flac': 'audio/flac',
 };
 
 /**

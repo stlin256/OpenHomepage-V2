@@ -224,6 +224,30 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   display: block;
 }
 
+/* BGM 播放/暂停：与主题按钮同款方块按钮，按播放态切换图标 */
+.bgm-toggle {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  justify-content: center;
+}
+.bgm-toggle .icon {
+  width: 1rem;
+  height: 1rem;
+}
+.bgm-toggle .icon-pause {
+  display: none;
+}
+.bgm-toggle.playing .icon-pause {
+  display: block;
+}
+.bgm-toggle.playing .icon-play {
+  display: none;
+}
+.bgm-toggle.playing {
+  color: var(--accent);
+}
+
 /* ---- 主体 ---- */
 .site-main {
   max-width: var(--content-width);
@@ -370,9 +394,8 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 }
 
 /* ---- markdown 正文 ---- */
-.page-content {
-  max-width: 46rem;
-}
+/* 页宽由 .site-main（var(--content-width)）约束；正文文字块另有 ≤72ch 行宽收敛，
+   媒体块（图/网格/代码/表格/嵌入）保留全宽，形成杂志版式的宽窄对比 */
 .page-content > h1 {
   margin-top: 0;
   letter-spacing: -0.01em;
@@ -397,6 +420,16 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 .markdown-body > ol,
 .markdown-body > blockquote {
   max-width: 72ch;
+}
+/* 独占一段的图片（![alt](src)）视为媒体块：不受 72ch 限制，占满栏宽 */
+.markdown-body > p:has(> img:only-child) {
+  max-width: none;
+}
+/* 图片占满所在栏宽：figure 的显式 width 约束外框（如 72%），img 充满外框 */
+.markdown-body figure img,
+.markdown-body p > img:only-child {
+  display: block;
+  width: 100%;
 }
 .markdown-body blockquote {
   margin: 1.5em 0;
@@ -829,6 +862,67 @@ html.js .block-github.revealed .heat-cell:not(.heat-empty) {
   max-width: 26rem;
 }
 
+/* ---- 图片灯箱（spec 03 §5） ---- */
+.markdown-body img {
+  cursor: zoom-in;
+}
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.85);
+  opacity: 0;
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lightbox[hidden] {
+  display: none;
+}
+.lightbox.open {
+  opacity: 1;
+}
+.lightbox-img {
+  max-width: min(92vw, 100%);
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.4rem;
+  cursor: zoom-out;
+  transform: scale(0.92);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lightbox.open .lightbox-img {
+  transform: scale(1);
+}
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.lightbox-close svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
 /* ---- 动效：滚动显现 ---- */
 html.js .reveal {
   opacity: 0;
@@ -886,5 +980,13 @@ html.js .reveal.revealed {
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none;
+  }
+  /* 灯箱：去掉缩放，只留简单淡入淡出 */
+  .lightbox-img {
+    transform: none;
+    transition: none;
+  }
+  .lightbox {
+    transition: opacity 0.15s ease;
   }
 }
