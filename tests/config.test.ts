@@ -167,10 +167,11 @@ describe('resolveBgm（背景音乐配置归一化，宽松校验）', () => {
     expect(resolveBgm({ ...base, bgm: { file: 'assets/bgm.wav' } })).toEqual({
       file: 'assets/bgm.wav',
       volume: BGM_DEFAULT_VOLUME,
+      autoplay: false,
     });
     expect(
       resolveBgm({ ...base, bgm: { file: 'assets/bgm.wav', volume: 0.4, enabled: true } }),
-    ).toEqual({ file: 'assets/bgm.wav', volume: 0.4 });
+    ).toEqual({ file: 'assets/bgm.wav', volume: 0.4, autoplay: false });
   });
 
   it('volume 非法/越界时回退或 clamp 到 [0,1]', () => {

@@ -98,6 +98,7 @@ const zh = {
 
   bgmSection: '背景音乐',
   bgmEnabled: '启用背景音乐',
+  bgmAutoplay: '自动播放（首次交互后）',
   bgmFile: '音频文件（素材库）',
   bgmFileEmpty: '（未选择）',
   bgmVolume: '音量',
@@ -293,6 +294,7 @@ const en: Record<DictKey, string> = {
 
   bgmSection: 'Background music',
   bgmEnabled: 'Enable background music',
+  bgmAutoplay: 'Autoplay (after first interaction)',
   bgmFile: 'Audio file (assets)',
   bgmFileEmpty: '(none)',
   bgmVolume: 'Volume',

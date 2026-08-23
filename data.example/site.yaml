@@ -33,6 +33,7 @@ footer:
 
 # ---- 背景音乐（缺省整段不启用；enabled: false 强制关闭）----
 bgm:
+  autoplay: true
   file: "assets/bgm.wav"        # 相对 data/ 的音频路径（wav/mp3/ogg/m4a/flac）
   volume: 0.4                   # 音量 0–1，缺省 0.4
   enabled: true                 # 页面顶端出现播放/暂停按钮；记住用户选择，站内转场不中断

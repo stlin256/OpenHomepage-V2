@@ -53,6 +53,8 @@ export interface SiteConfig {
     volume?: number;
     /** false 强制关闭；缺省（配置了 file）即启用 */
     enabled?: boolean;
+    /** 自动播放（首次用户交互后开播，绕浏览器策略）；缺省 false */
+    autoplay?: boolean;
   };
   /** 页脚（默认开启；显式 enabled:false 关闭；text 支持内联 [label](url) 链接） */
   footer?: {
@@ -239,6 +241,7 @@ export const BGM_DEFAULT_VOLUME = 0.4;
 export interface ResolvedBgm {
   file: string;
   volume: number;
+  autoplay: boolean;
 }
 
 /**
@@ -254,7 +257,7 @@ export function resolveBgm(site: SiteConfig): ResolvedBgm | null {
   const v = bgm.volume;
   const volume =
     typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : BGM_DEFAULT_VOLUME;
-  return { file, volume };
+  return { file, volume, autoplay: bgm.autoplay === true };
 }
 
 export interface ResolvedPage {

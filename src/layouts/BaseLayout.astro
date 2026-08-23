@@ -33,7 +33,7 @@ interface Props {
   i18n: boolean;
   alternates: { lang: string; path: string }[];
   /** 背景音乐（site.yaml bgm 段，缺省不渲染；交互见 src/scripts/bgm.ts） */
-  bgm?: { src: string; volume: number };
+  bgm?: { src: string; volume: number; autoplay: boolean };
   /** favicon URL（路由层已决定：配置的文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
   favicon: string;
   /** 页脚 HTML（路由层 resolveFooter + footerTextToHtml 渲染；null = 关闭） */
@@ -187,8 +187,9 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
         class="bgm-audio"
         src={bgm.src}
         loop
-        preload="none"
+        preload={bgm.autoplay ? 'auto' : 'none'}
         data-volume={bgm.volume}
+        data-autoplay={bgm.autoplay ? 'true' : 'false'}
         transition:persist="bgm-audio"
       />
     )}

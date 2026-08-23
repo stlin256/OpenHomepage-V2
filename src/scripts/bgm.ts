@@ -74,8 +74,9 @@ export function initBgm(): void {
   }
   sync();
 
-  // 自动恢复：上次为播放态且当前暂停 → 首次用户交互后开播（只挂一次）
-  if (readSaved() === '1' && audio.paused && !document.documentElement.dataset.bgmAutoArmed) {
+  // 自动播放：配置 autoplay 或上次为播放态 → 首次用户交互后开播（只挂一次）
+  const autoplayEnabled = audio.dataset.autoplay === 'true';
+  if ((autoplayEnabled || readSaved() === '1') && audio.paused && !document.documentElement.dataset.bgmAutoArmed) {
     document.documentElement.dataset.bgmAutoArmed = '1';
     const kick = () => {
       void audio.play().catch(() => {});
@@ -85,3 +86,26 @@ export function initBgm(): void {
     document.addEventListener('keydown', kick, { once: true });
   }
 }
+
+/** 跨页面转场保护：swap 前记录播放态，swap 后若被中断则从原位置恢复。
+    transition:persist 在多数场景下足够，但部分浏览器在 DOM 移动时会暂停
+    media 元素；此处兜底确保无缝衔接。 */
+let bgmWasPlaying = false;
+let bgmTime = 0;
+
+document.addEventListener('astro:before-swap', () => {
+  const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio');
+  if (!audio) return;
+  bgmWasPlaying = !audio.paused;
+  bgmTime = audio.currentTime;
+});
+
+document.addEventListener('astro:after-swap', () => {
+  const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio');
+  if (!audio || !bgmWasPlaying) return;
+  // persist 正常时 audio 仍在播，无需处理；若被 swap 中断则恢复
+  if (audio.paused) {
+    audio.currentTime = bgmTime;
+    void audio.play().catch(() => {});
+  }
+});
