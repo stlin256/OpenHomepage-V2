@@ -19,6 +19,7 @@ interface PlayerCtx {
   /** 播放代际：重播时自增，旧循环自然终止 */
   generation: number;
   stack: Element[];
+  heightTimer?: number;
 }
 
 function sleep(ms: number): Promise<void> {
@@ -35,8 +36,24 @@ function fullHtml(root: HTMLElement): string {
 }
 
 function renderFull(root: HTMLElement, content: HTMLElement): void {
+  content.style.height = '';
   content.innerHTML = fullHtml(root);
   root.classList.add('stream-done');
+}
+
+/** 逐 token 增长时把内容高度从当前值过渡到新值，避免容器瞬间跳高。 */
+function animateContentGrowth(ctx: PlayerCtx, previousHeight: number, generation: number): void {
+  const nextHeight = ctx.content.scrollHeight;
+  if (nextHeight <= previousHeight + 0.5) return;
+
+  ctx.content.style.height = `${previousHeight}px`;
+  void ctx.content.offsetHeight;
+  ctx.content.style.height = `${nextHeight}px`;
+
+  if (ctx.heightTimer !== undefined) window.clearTimeout(ctx.heightTimer);
+  ctx.heightTimer = window.setTimeout(() => {
+    if (ctx.generation === generation) ctx.content.style.height = '';
+  }, 140);
 }
 
 /** 在当前栈顶、光标之前插入节点 */
@@ -94,7 +111,9 @@ async function play(ctx: PlayerCtx): Promise<void> {
   ctx.root.classList.add('stream-playing');
   for (const token of ctx.tokens) {
     if (ctx.generation !== gen) return; // 已有新一轮播放接管
+    const previousHeight = ctx.content.getBoundingClientRect().height;
     applyToken(ctx, token);
+    animateContentGrowth(ctx, previousHeight, gen);
     // open/close 零停顿；node（链接/图片/代码行）给一个小停顿；text 按节奏函数
     const d =
       token.t === 'text'

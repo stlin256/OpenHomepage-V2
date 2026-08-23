@@ -1082,6 +1082,8 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
 }
 .stream-block .stream-content {
   margin-top: 0.5rem;
+  overflow: hidden;
+  transition: height 0.12s ease-out;
 }
 /* 播放中光标：主题色闪烁方块，跟随插入点 */
 .stream-cursor {
@@ -1227,6 +1229,9 @@ html.js .reveal.revealed {
   }
   .stream-cursor {
     animation: none;
+  }
+  .stream-block .stream-content {
+    transition: none;
   }
   .stream-replay,
   .gh-repo,
