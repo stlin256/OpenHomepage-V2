@@ -189,6 +189,15 @@ samp {
 .lang-switcher {
   position: relative;
 }
+/* 桥接按钮与菜单之间的 6px 间隙，防止 hover 断开导致菜单消失 */
+.lang-switcher::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 6px;
+}
 .lang-toggle {
   width: 2rem;
   height: 2rem;

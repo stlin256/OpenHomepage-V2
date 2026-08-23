@@ -105,6 +105,9 @@ async function swapContent(path: string): Promise<void> {
       oldFooter.remove();
     }
     updateNavActive(path);
+    // 更新 html lang 属性（从新页面的 <html> 提取）
+    const newLang = doc.documentElement.getAttribute('lang');
+    if (newLang) document.documentElement.setAttribute('lang', newLang);
     document.body.classList.remove('nav-open');
     document.querySelector('.nav-toggle')?.setAttribute('aria-expanded', 'false');
     // 淡入新内容
@@ -131,8 +134,7 @@ document.addEventListener('click', (e) => {
   const link = e.target instanceof Element ? e.target.closest('a') : null;
   if (!link) return;
   const href = link.getAttribute('href') ?? '';
-  // 语言切换器走整页导航（需更新 <html lang>、head 等）
-  if (link.closest('.lang-switcher')) return;
+  // 语言切换器也走内容交换（保留当前页面）
   // 外链 / 锚点不动
   if (!isInternalLink(href) || href.includes('#')) return;
   // 修饰键点击不动
