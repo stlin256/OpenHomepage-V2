@@ -1172,23 +1172,38 @@ html.js .reveal.revealed {
   transform: none;
 }
 
-/* 动效：页面转场（View Transitions，spec 09：旧页淡出 + 新页淡入上移） */
-::view-transition-old(root) {
-  animation: vt-fade-out 0.2s ease both;
+
+/* ---- 客户端内容交换：加载遮罩 + 主内容淡入淡出 ---- */
+.site-main {
+  transition: opacity 0.12s ease;
 }
-::view-transition-new(root) {
-  animation: vt-fade-in-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+.page-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
-@keyframes vt-fade-out {
-  to {
-    opacity: 0;
-  }
+.page-loading.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
-@keyframes vt-fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
+.page-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: page-loading-spin 0.7s linear infinite;
+}
+@keyframes page-loading-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ---- 全局降级（spec 09 §2）：仅 transform/opacity；reduced-motion 只留简单淡入 ---- */
@@ -1212,10 +1227,6 @@ html.js .reveal.revealed {
   .gh-repo:hover,
   .rss-card:hover {
     transform: none;
-  }
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
   }
   /* 灯箱：去掉缩放，只留简单淡入淡出 */
   .lightbox-img {

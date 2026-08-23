@@ -1,8 +1,9 @@
 /**
- * 前端交互入口：BaseLayout 以模块脚本引入（打包一次），
- * 依赖 Astro ClientRouter 的 astro:page-load 事件在首屏与每次转场后初始化。
- * 纯决策逻辑全部在 src/lib/interactive.ts（可单测），这里只做 DOM/事件。
- * 主题切换（src/scripts/theme.ts）在模块加载时即注册 astro:after-swap 重放（#4）。
+ * 前端交互入口：首屏加载 + 客户端内容交换后初始化。
+ *
+ * 导航策略：拦截站内链接点击 → 显示加载遮罩 → fetch 目标页 →
+ * 替换 <main> 内容 → 重新初始化动效/交互 → 移除遮罩。
+ * URL 不变、header/audio/nav 不动 → BGM 连续播放、无转场动画。
  */
 import { initStreamBlocks } from './stream-player.ts';
 import { initMotion } from './motion.ts';
@@ -11,7 +12,30 @@ import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
 import './lightbox.ts';
 
-/** 移动端汉堡按钮：切换 body.nav-open 抽屉（转场后 DOM 重建，需重新绑定） */
+// ---- 加载遮罩 ----
+
+function ensureLoadingOverlay(): HTMLElement {
+  let el = document.querySelector<HTMLElement>('.page-loading');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'page-loading';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<div class="page-loading-spinner"></div>';
+    document.body.append(el);
+  }
+  return el;
+}
+
+function showLoading(): void {
+  ensureLoadingOverlay().classList.add('visible');
+}
+
+function hideLoading(): void {
+  document.querySelector('.page-loading')?.classList.remove('visible');
+}
+
+// ---- 初始化 ----
+
 function initNavToggle(): void {
   const btn = document.querySelector<HTMLElement>('.nav-toggle');
   if (!btn || btn.dataset.navInit) return;
@@ -22,10 +46,8 @@ function initNavToggle(): void {
   });
 }
 
-/** header 使用 transition:persist 跨页面保持 DOM（无转场动画），
-    导航 active 高亮需在每次导航后按 location.pathname 手动更新 */
-function updateNavActive(): void {
-  const current = location.pathname.replace(/\/+$/, '') || '/';
+function updateNavActive(path: string): void {
+  const current = path.replace(/\/+$/, '') || '/';
   for (const a of document.querySelectorAll<HTMLAnchorElement>('.site-nav a')) {
     const href = (a.getAttribute('href') ?? '').replace(/\/+$/, '') || '/';
     const active = href === current;
@@ -38,17 +60,89 @@ function updateNavActive(): void {
 function initAll(): void {
   initThemeToggle();
   initNavToggle();
-  updateNavActive();
   initStreamBlocks();
   initMotion();
   initBgm();
   initHeatmapTooltips();
 }
 
-document.addEventListener('astro:page-load', initAll);
+// ---- 客户端内容交换 ----
 
-// 语言切换器菜单开合：点击按钮切换；点别处 / Esc 关闭（事件委托注册一次，
-// ClientRouter 转场后新 DOM 仍被覆盖；hover 展开由 CSS 承担）
+let swapping = false;
+
+async function swapContent(path: string): Promise<void> {
+  if (swapping) return;
+  swapping = true;
+  showLoading();
+  try {
+    const r = await fetch(path);
+    if (!r.ok) {
+      hideLoading();
+      location.href = path;
+      return;
+    }
+    const html = await r.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const newMain = doc.querySelector('main.site-main');
+    const newFooter = doc.querySelector('footer.site-footer');
+    const oldMain = document.querySelector('main.site-main');
+    const oldFooter = document.querySelector('footer.site-footer');
+    if (!newMain || !oldMain) {
+      hideLoading();
+      location.href = path;
+      return;
+    }
+    // 淡出旧内容
+    oldMain.style.opacity = '0';
+    await new Promise((r2) => setTimeout(r2, 120));
+    // 替换内容
+    oldMain.replaceChildren(...newMain.children);
+    if (newFooter && oldFooter) {
+      oldFooter.replaceChildren(...newFooter.children);
+    } else if (newFooter && !oldFooter) {
+      oldMain.after(newFooter);
+    } else if (!newFooter && oldFooter) {
+      oldFooter.remove();
+    }
+    updateNavActive(path);
+    document.body.classList.remove('nav-open');
+    document.querySelector('.nav-toggle')?.setAttribute('aria-expanded', 'false');
+    // 淡入新内容
+    oldMain.style.opacity = '';
+    // 重新初始化（动效、流式、灯箱等）
+    initAll();
+    window.scrollTo({ top: 0 });
+  } catch {
+    location.href = path;
+  } finally {
+    hideLoading();
+    swapping = false;
+  }
+}
+
+function isInternalLink(href: string): boolean {
+  if (!href.startsWith('/') || href.startsWith('//')) return false;
+  return true;
+}
+
+// ---- 导航拦截 ----
+
+document.addEventListener('click', (e) => {
+  const link = e.target instanceof Element ? e.target.closest('a') : null;
+  if (!link) return;
+  const href = link.getAttribute('href') ?? '';
+  // 语言切换器走整页导航（需更新 <html lang>、head 等）
+  if (link.closest('.lang-switcher')) return;
+  // 外链 / 锚点不动
+  if (!isInternalLink(href) || href.includes('#')) return;
+  // 修饰键点击不动
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  void swapContent(href);
+});
+
+// ---- 语言切换器菜单 ----
+
 function setLangMenu(menu: Element, open: boolean): void {
   menu.classList.toggle('open', open);
   menu
@@ -69,8 +163,8 @@ document.addEventListener('keydown', (e) => {
   for (const menu of document.querySelectorAll('.lang-menu.open')) setLangMenu(menu, false);
 });
 
-// RSS 封面（多为外链 og:image，见 spec 05）加载失败时隐藏图位：
-// 资源 error 事件不冒泡，用捕获阶段委托；ClientRouter 转场后新 DOM 仍被覆盖
+// ---- RSS 封面加载失败 ----
+
 document.addEventListener(
   'error',
   (e) => {
@@ -81,3 +175,6 @@ document.addEventListener(
   },
   true
 );
+
+// 首屏初始化
+initAll();

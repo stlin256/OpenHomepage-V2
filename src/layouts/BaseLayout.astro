@@ -12,7 +12,6 @@ import '@fontsource-variable/noto-sans-sc';
 import '@fontsource-variable/jetbrains-mono';
 import 'katex/dist/katex.min.css';
 import '../styles/global.css';
-import { ClientRouter } from 'astro:transitions';
 import type { AccentTheme } from '../lib/theme.ts';
 import type { NavItem } from '../lib/routes.ts';
 
@@ -80,8 +79,7 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
     <script is:inline define:vars={{ defaultMode }}>
       // 首帧绘制前确定主题，避免闪烁：sessionStorage 用户选择 > site.yaml default_mode > 跟随系统。
       // 与 src/scripts/theme.ts 的 currentTheme 同一套规则（is:inline 无法 import，此处内联镜像）。
-      // 注意：本脚本只在首次加载/整页刷新时执行；ClientRouter 转场后由 theme.ts 的
-      // astro:after-swap 监听重放（#4）。
+      // 首帧绘制前确定主题，避免闪烁。
       // html.js 标记：滚动显现等动效的初始隐藏态只在有 JS 时生效（无 JS 不隐藏内容）
       (function () {
         document.documentElement.classList.add('js');
@@ -100,12 +98,11 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
         document.documentElement.dataset.theme = theme;
       })();
     </script>
-    <ClientRouter />
     {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={new URL(a.path, Astro.site)} />)}
     {i18n && xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault.path, Astro.site)} />}
   </head>
   <body>
-    <header class="site-header" transition:persist="site-header">
+    <header class="site-header">
       <button class="nav-toggle" type="button" aria-label="打开导航菜单 / Menu" aria-expanded="false" aria-controls="site-nav">
         <span class="bar"></span>
         <span class="bar"></span>
@@ -181,7 +178,7 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
     </main>
     {/* 页脚（默认开启，site.yaml footer.enabled:false 关闭；文本支持内联链接，见 src/lib/footer.ts） */}
     {footer && <footer class="site-footer" set:html={footer} />}
-    {/* 背景音乐：<audio> 跨页面转场常驻（transition:persist），状态见 src/scripts/bgm.ts */}
+    {/* 背景音乐：audio 不参与内容交换，天然连续播放 */}
     {bgm && (
       <audio
         class="bgm-audio"
@@ -190,7 +187,6 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
         preload={bgm.autoplay ? 'auto' : 'none'}
         data-volume={bgm.volume}
         data-autoplay={bgm.autoplay ? 'true' : 'false'}
-        transition:persist="bgm-audio"
       />
     )}
     {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 global.css */}
@@ -203,7 +199,7 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
       </button>
     </div>
     <script>
-      // 前端交互入口（主题切换 / 导航抽屉 / 流式播放 / RSS 浮层 / 灯箱 / 动效），astro:page-load 驱动
+      // 前端交互入口：首屏 + 客户端内容交换后初始化
       import '../scripts/interactions.ts';
     </script>
   </body>
