@@ -56,11 +56,26 @@ function animateContentGrowth(ctx: PlayerCtx, previousHeight: number, generation
   }, 140);
 }
 
-/** 在当前栈顶、光标之前插入节点 */
+/** 在当前栈顶、光标之前插入节点。 */
 function insertNode(ctx: PlayerCtx, node: Node): void {
   const top = ctx.stack[ctx.stack.length - 1];
   if (ctx.cursor.parentNode === top) top.insertBefore(node, ctx.cursor);
   else top.appendChild(node);
+}
+
+/** 打开元素后把光标带入元素，保证文本与光标处于同一行流中。 */
+function enterElement(ctx: PlayerCtx, element: Element): void {
+  ctx.stack.push(element);
+  element.appendChild(ctx.cursor);
+}
+
+/** 闭合元素后把光标移到元素之后，等待下一个兄弟节点。 */
+function leaveElement(ctx: PlayerCtx): void {
+  if (ctx.stack.length <= 1) return;
+  const element = ctx.stack.pop()!;
+  const parent = ctx.stack[ctx.stack.length - 1];
+  if (element.parentNode === parent) parent.insertBefore(ctx.cursor, element.nextSibling);
+  else parent.appendChild(ctx.cursor);
 }
 
 function appendText(ctx: PlayerCtx, w: string): void {
@@ -84,7 +99,7 @@ function applyToken(ctx: PlayerCtx, token: StreamToken): void {
       const el = tpl.content.firstElementChild;
       if (!el) return;
       insertNode(ctx, el);
-      ctx.stack.push(el);
+      enterElement(ctx, el);
       return;
     }
     case 'text':
@@ -97,7 +112,7 @@ function applyToken(ctx: PlayerCtx, token: StreamToken): void {
       return;
     }
     case 'close':
-      if (ctx.stack.length > 1) ctx.stack.pop();
+      leaveElement(ctx);
       return;
   }
 }
