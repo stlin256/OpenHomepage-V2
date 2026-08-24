@@ -93,7 +93,18 @@ export async function renderPageEditor(
       saving = false;
     }
   };
-  const autosave = createAutosave(AUTOSAVE_DELAY, () => void save());
+  const autosaveImpl = createAutosave(AUTOSAVE_DELAY, () => void save());
+  const autosave = {
+    touch() {
+      state.setStatus(t('unsavedChanges'));
+      autosaveImpl.touch();
+    },
+    flush: () => autosaveImpl.flush(),
+    cancel: () => autosaveImpl.cancel(),
+    get pending() {
+      return autosaveImpl.pending;
+    },
+  };
 
   // ---- 工具栏 ----
   const insertSel = el('select', { class: 'input' }) as HTMLSelectElement;
