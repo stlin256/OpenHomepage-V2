@@ -89,9 +89,12 @@ describe('页面编辑器三模式', () => {
     expect(seg.textContent).toContain('所见即所得');
     expect(seg.textContent).toContain('源码');
     expect(seg.textContent).toContain('双栏预览');
+    expect((container.querySelector('.editor-host') as HTMLElement).style.display).toBe('');
+    expect((container.querySelector('.source-editor') as HTMLElement).style.display).toBe('none');
 
     // WYSIWYG → 源码：textarea 出现且内容一致
     const segBtns = [...seg.querySelectorAll('button')];
+    expect(segBtns[0].classList.contains('active')).toBe(true);
     segBtns[1].click();
     const source = container.querySelector<HTMLTextAreaElement>('.source-editor')!;
     expect(source.style.display).toBe('');

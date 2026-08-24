@@ -263,15 +263,23 @@ export async function renderPageEditor(
     seg.append(segBtns[id]);
   }
 
-  const toolbar = el(
+  const modeGroup = el('div', { class: 'toolbar-group toolbar-mode' }, seg);
+  const insertGroup = el('div', { class: 'toolbar-group toolbar-insert' }, insertSel);
+  const pageOps = el(
     'div',
-    { class: 'editor-toolbar' },
-    seg,
-    insertSel,
+    { class: 'toolbar-group toolbar-page-ops' },
     btn(t('snapshots'), () => void openSnapshots()),
     btn(t('renamePage'), doRename),
     btn(t('createOtherLang'), doTranslate),
-    btn(t('deletePage'), doDelete, 'btn-danger'),
+    btn(t('deletePage'), doDelete, 'btn-danger')
+  );
+
+  const toolbar = el(
+    'div',
+    { class: 'editor-toolbar' },
+    modeGroup,
+    insertGroup,
+    pageOps,
     el('span', { class: 'muted toolbar-hint' }, t('pasteImageHint'))
   );
 

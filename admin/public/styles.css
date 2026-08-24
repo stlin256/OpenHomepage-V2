@@ -153,6 +153,23 @@ a { color: var(--accent); text-decoration: none; }
   margin-bottom: 10px;
   flex-wrap: wrap;
 }
+.editor-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  padding: 8px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.toolbar-page-ops {
+  margin-left: auto;
+}
 .toolbar-hint { font-size: 12px; }
 
 .editor-host {
