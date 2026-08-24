@@ -44,6 +44,16 @@ export function writeSiteConfig(dataDir: string, cfg: SiteConfig): void {
   if (accent !== undefined && !HEX_COLOR_RE.test(accent)) {
     throw new Error(`theme.accent 必须是 #rgb 或 #rrggbb 形式的 hex 色值，当前为：${accent}`);
   }
+  const background = cfg.theme?.background;
+  if (background !== undefined && !HEX_COLOR_RE.test(background)) {
+    throw new Error(`theme.background 必须是 #rgb 或 #rrggbb 形式的 hex 色值，当前为：${background}`);
+  }
+  const backgroundDark = cfg.theme?.background_dark;
+  if (backgroundDark !== undefined && !HEX_COLOR_RE.test(backgroundDark)) {
+    throw new Error(
+      `theme.background_dark 必须是 #rgb 或 #rrggbb 形式的 hex 色值，当前为：${backgroundDark}`
+    );
+  }
   writeConfig(dataDir, 'site.yaml', cfg);
 }
 

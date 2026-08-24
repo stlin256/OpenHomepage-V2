@@ -3,7 +3,15 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSiteConfig, loadRssConfig, resolveAvatarPosition, resolveBgm, resolveFavicon, BGM_DEFAULT_VOLUME } from '../src/lib/config.ts';
+import {
+  loadSiteConfig,
+  loadRssConfig,
+  resolveAvatarPosition,
+  resolveBgm,
+  resolveFavicon,
+  resolveIntroCard,
+  BGM_DEFAULT_VOLUME,
+} from '../src/lib/config.ts';
 
 const EXAMPLE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/data');
 
@@ -31,6 +39,8 @@ describe('loadSiteConfig', () => {
     expect(cfg.github.pinned!).toHaveLength(2);
     expect(cfg.github.pinned![0].repo).toBe('zhangsan/awesome-project');
     expect(cfg.theme!.accent).toBe('#3a7bd5');
+    expect(cfg.theme!.background).toBe('#f8f7f2');
+    expect(cfg.theme!.background_dark).toBe('#141311');
     expect(cfg.rss!.sources_file).toBe('rss.yaml');
     expect(cfg.home!.layout!.map((b: { block: string }) => b.block)).toEqual([
       'profile', 'markdown', 'streaming', 'github', 'rss',
@@ -111,6 +121,43 @@ describe('resolveFavicon（站点图标归一化，宽松校验）', () => {
     const favicon = resolveFavicon(cfg);
     expect(favicon).toBe('assets/favicon.svg');
     expect(existsSync(path.join(EXAMPLE, favicon!))).toBe(true);
+  });
+});
+
+describe('resolveIntroCard', () => {
+  const base = { site: { title: 't' }, profile: { name: 'n' }, github: { username: 'u' } };
+
+  it('缺省、显式关闭或缺图片时禁用', () => {
+    expect(resolveIntroCard(base, 'zh')).toBeNull();
+    expect(
+      resolveIntroCard({
+        ...base,
+        contact: { intro_card: { enabled: false, title: 'T', image: 'assets/qr.svg' } },
+      }, 'zh')
+    ).toBeNull();
+  });
+
+  it('解析双语字段并限制延迟范围', () => {
+    const card = resolveIntroCard({
+      ...base,
+      contact: {
+        intro_card: {
+          enabled: true,
+          delay: -10,
+          label: 'Hello',
+          title: { zh: '交个朋友', en: 'Say Hello' },
+          description: { zh: '扫码', en: 'Scan' },
+          image: ' assets/qr.svg ',
+        },
+      },
+    }, 'en');
+    expect(card).toEqual({
+      delay: 1000,
+      label: 'Hello',
+      title: 'Say Hello',
+      description: 'Scan',
+      image: 'assets/qr.svg',
+    });
   });
 });
 

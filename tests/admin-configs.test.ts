@@ -90,6 +90,14 @@ describe('writeSiteConfig', () => {
       expect(() => writeSiteConfig(dir, site)).toThrowError(/accent/);
     });
   });
+
+  it('theme.background 非法 hex 拒绝写盘', () => {
+    withTempData((dir) => {
+      const site = readSiteConfig(dir);
+      site.theme = { ...site.theme, background: 'beige' };
+      expect(() => writeSiteConfig(dir, site)).toThrowError(/theme\.background/);
+    });
+  });
 });
 
 describe('writeRssConfig', () => {

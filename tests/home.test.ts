@@ -7,13 +7,20 @@ describe('planHomeBlocks', () => {
       { block: 'markdown' },
       { block: 'profile' },
       { block: 'github' },
+      { block: 'editorial', id: 'work' },
     ]);
-    expect(blocks.map((b) => b.block)).toEqual(['markdown', 'profile', 'github']);
+    expect(blocks.map((b) => b.block)).toEqual(['markdown', 'profile', 'github', 'editorial']);
   });
 
   it('streaming 区块保留 id', () => {
     const blocks = planHomeBlocks([{ block: 'streaming', id: 'welcome' }]);
     expect(blocks).toEqual([{ block: 'streaming', id: 'welcome' }]);
+  });
+
+  it('editorial 区块保留 id', () => {
+    expect(planHomeBlocks([{ block: 'editorial', id: 'studio' }])).toEqual([
+      { block: 'editorial', id: 'studio' },
+    ]);
   });
 
   it('未知区块跳过并 warning', () => {

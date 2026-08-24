@@ -19,6 +19,8 @@ profile:
 theme:
   accent: "#3a7bd5"
   default_mode: "system"
+  background: "#f8f7f2"
+  background_dark: "#141311"
 
 github:
   username: "zhangsan"

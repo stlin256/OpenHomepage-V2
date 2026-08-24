@@ -154,6 +154,8 @@ const zh = {
   addLayoutBlock: '添加区块到布局',
 
   themeAccent: '主题色 accent',
+  themeBackgroundLight: '浅色底色',
+  themeBackgroundDark: '暗色底色',
   themeDefaultMode: '默认模式',
   modeSystem: '跟随系统',
   modeLight: '浅色',
@@ -350,6 +352,8 @@ const en: Record<DictKey, string> = {
   addLayoutBlock: 'Add block to layout',
 
   themeAccent: 'Accent color',
+  themeBackgroundLight: 'Light background',
+  themeBackgroundDark: 'Dark background',
   themeDefaultMode: 'Default mode',
   modeSystem: 'System',
   modeLight: 'Light',

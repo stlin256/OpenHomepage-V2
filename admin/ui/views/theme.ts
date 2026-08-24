@@ -45,12 +45,52 @@ export async function renderThemePicker(container: HTMLElement, state: AppState)
     autosave.touch();
   };
 
+  const applyBackground = (kind: 'light' | 'dark', input: HTMLInputElement) => {
+    const n = normalizeHex(input.value);
+    if (!n) {
+      state.setStatus(t('invalidHex'), 'err');
+      return;
+    }
+    if (kind === 'light') theme.background = n;
+    else theme.background_dark = n;
+    document.documentElement.style.setProperty(
+      kind === 'light' ? '--site-bg-light' : '--site-bg-dark',
+      n
+    );
+    input.value = n;
+    autosave.touch();
+  };
+
   const hexInput = textInput(String(theme.accent ?? ''), () => undefined, '#3a7bd5');
   const manualRow = el(
     'div',
     { class: 'row-fields' },
     field(t('manualHex'), hexInput),
     btn(t('applyColor'), () => applyAccent(hexInput.value), 'btn-primary')
+  );
+  const lightBgInput = textInput(String(theme.background ?? ''), () => undefined, '#f8f7f2');
+  const darkBgInput = textInput(String(theme.background_dark ?? ''), () => undefined, '#141311');
+  const backgroundRow = el(
+    'div',
+    { class: 'row-fields' },
+    field(
+      t('themeBackgroundLight'),
+      el(
+        'span',
+        { class: 'row-fields' },
+        lightBgInput,
+        btn(t('applyColor'), () => applyBackground('light', lightBgInput), 'btn-primary')
+      )
+    ),
+    field(
+      t('themeBackgroundDark'),
+      el(
+        'span',
+        { class: 'row-fields' },
+        darkBgInput,
+        btn(t('applyColor'), () => applyBackground('dark', darkBgInput), 'btn-primary')
+      )
+    )
   );
 
   const paletteWrap = el('div', { class: 'palette' });
@@ -131,6 +171,7 @@ export async function renderThemePicker(container: HTMLElement, state: AppState)
         )
       )
     ),
+    backgroundRow,
     el('h3', {}, t('themeAccent')),
     manualRow,
     paletteWrap,

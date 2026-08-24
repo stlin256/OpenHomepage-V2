@@ -7,6 +7,9 @@ import {
   pickContrastText,
   correctAccentForDark,
   buildAccentTheme,
+  buildBackgroundTheme,
+  PAGE_DARK_BG,
+  PAGE_LIGHT_BG,
   initialTheme,
   toggleTheme,
   carryThemeAttrs,
@@ -116,6 +119,22 @@ describe('initialTheme（亮/暗两态，见 spec 10）', () => {
   it('非法存储值视为未选择', () => {
     expect(initialTheme('system', 'system', true)).toBe('dark');
     expect(initialTheme('', 'light', false)).toBe('light');
+  });
+});
+
+describe('buildBackgroundTheme', () => {
+  it('缺省返回米黄和暖黑页面底色', () => {
+    expect(buildBackgroundTheme(undefined, undefined)).toEqual({
+      light: PAGE_LIGHT_BG,
+      dark: PAGE_DARK_BG,
+    });
+  });
+
+  it('使用配置底色并忽略首尾空白', () => {
+    expect(buildBackgroundTheme(' #fffefa ', ' #100f0e ')).toEqual({
+      light: '#fffefa',
+      dark: '#100f0e',
+    });
   });
 });
 
