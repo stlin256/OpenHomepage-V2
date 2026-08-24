@@ -1,6 +1,6 @@
 # 配置 Schema 草案（细化项 #1）
 
-> 状态：待讨论确认。确认后回填 design.md 第 4 节。
+> 状态：✅ 已实现。本文件随 schema 变更同步更新。
 
 ## 1. data/site.yaml
 
@@ -35,6 +35,8 @@ profile:
 theme:
   accent: "#3a7bd5"             # 主题色（编辑器取色器写回这里）
   default_mode: "system"        # system | light | dark
+  background: "#f8f7f2"         # 浅色页面底色；#rgb/#rrggbb，缺省米黄
+  background_dark: "#141311"    # 暗色页面底色；#rgb/#rrggbb，缺省暖黑
 
 # ---- 背景音乐（整段缺省 = 不启用；宽松校验，非法字段不报错只回退）----
 bgm:
@@ -61,11 +63,53 @@ rss:
 home:
   layout:                       # 自上而下渲染，顺序即页面顺序
     - block: profile            # 头像 + 简介头部
-    - block: markdown           # index.md 正文
-    - block: streaming          # 流式区块，id 引用下方定义
+    - block: streaming          # LLM 流式区块，id 引用下方定义
       id: "welcome"
+    - block: editorial          # 编辑风展示区块，id 引用下方 editorial_blocks
+      id: "work"
+    - block: markdown           # index.md 正文
     - block: github             # 贡献图 + pin 项目
     - block: rss                # RSS 卡片流
+
+# ---- 右下角联系卡 ----
+contact:
+  intro_card:
+    enabled: true               # 显式 false 关闭；缺 image 时也不渲染
+    delay: 4500                 # 出现延迟 ms；运行时 clamp 到 1000–20000，缺省 6000
+    label: { zh: "Hello", en: "Hello" }
+    title: { zh: "交个朋友", en: "Say Hello" }       # 必填
+    description: { zh: "扫码交流", en: "Scan to say hello" }
+    image: "assets/contact-qr.svg"                   # 必填；相对 data/
+
+# ---- 编辑风展示区块：通过 home.layout 的 editorial + id 挂载 ----
+editorial_blocks:
+  - id: "work"                  # 必填且建议唯一
+    tag: { zh: "01 · Work", en: "01 · Work" }
+    title: { zh: "RESEARCH INDEX", en: "RESEARCH INDEX" } # 必填
+    description: { zh: "...", en: "..." }
+    color: "#7b9aac"            # 区块强调色；缺省继承 accent
+    actions:                    # 按钮组，可选
+      - label: { zh: "查看研究", en: "View research" }
+        url: "/research"
+        variant: primary        # primary | outline | ghost
+    list:                       # 横向列表卡片，可选
+      - title: { zh: "...", en: "..." }
+        meta: { zh: "...", en: "..." }
+        description: { zh: "...", en: "..." }
+        image: "assets/cover.jpg"
+        url: "/research"
+    tiles:                      # 磁贴，可选
+      - title: { zh: "...", en: "..." }
+        kicker: { zh: "...", en: "..." }
+        image: "assets/tile.jpg"
+        url: "/gallery"
+        size: wide              # small | wide | tall
+    archive:                    # 归档效果卡片，可选
+      - title: { zh: "...", en: "..." }
+        status: { zh: "已归档", en: "Archived" }
+        description: { zh: "...", en: "..." }
+        image: "assets/archive.jpg"
+    divider: true               # 区块末尾插入分割线
 
 # ---- LLM 流式区块定义（可多个，被 home.layout 或其他页面引用）----
 streaming_blocks:
@@ -102,6 +146,12 @@ serve:
 - **默认开启**：`footer` 段整段缺省、`enabled` 未写都视为开启；只有显式 `enabled: false` 才不渲染。
 - `text` 缺省用默认内容（zh/en 双语文本，OpenHomepage-V2 链到项目仓库）；支持内联 markdown 链接 `[文字](url)`，轻量解析 + sanitize（仅 http/https/mailto 协议，危险协议与不完整语法原样输出转义文本），实现见 `src/lib/footer.ts`（纯函数，有单测）。
 - 渲染在 `BaseLayout` 底部（页面底部小字 muted、细分割线，样式类 `.site-footer`）。
+
+### 1.3 主题底色与联系卡
+
+- `theme.background` / `theme.background_dark` 写盘前由 admin 校验 hex；构建侧非法值不覆盖内置默认色板。
+- `resolveIntroCard()` 归一化右下联系卡：关闭、缺标题或缺图片时不渲染；延迟限制到 1–20 秒。
+- `editorial_blocks` 是结构化数据，不是 Markdown 指令；后台在“编辑区块”页编辑它，在“流式块”页把它挂进主页布局。
 
 ## 2. data/rss.yaml
 

@@ -1,6 +1,6 @@
 # OpenHomepage V2 设计文档
 
-> 本文档是项目的权威设计依据，随讨论逐项细化更新。最后更新：2026-08-22（初版定稿）
+> 本文档是项目的权威设计依据，随讨论逐项细化更新。最后更新：2026-08-25（编辑区块、联系卡与 M10 编辑器交互）
 
 ## 1. 项目定位
 
@@ -54,6 +54,7 @@
 
 ### 5.1 主页区块
 - 头像 + 个人简介：图文并茂，markdown 渲染。
+- 编辑风展示区块：结构化列表、磁贴、归档卡、按钮组和分割线，由 `editorial_blocks` 定义并按 id 挂载。
 - GitHub 贡献热力图：自绘组件，构建时经 GraphQL 拉取（需 PAT）。
 - Pin 项目卡片：`site.yaml` 配置 `owner/repo` 列表，构建时拉取 star 数、描述、语言渲染。
 - RSS 卡片流：多源混排；hover 浮层展示标题 + 摘要 + 发布时间；点击跳转原文。
@@ -67,13 +68,15 @@
 - 桌面端：左上竖排 tab；移动端：折叠为汉堡（三横线）按钮。
 - 明暗双主题，默认跟随系统。
 - 主题色：`site.yaml` 指定；编辑器提供取色器——自动从头像提取若干候选色，也支持在头像上手动点取。
+- 页面底色：浅色默认米黄，暗色默认暖黑；两者可通过 `theme.background` / `theme.background_dark` 覆盖。
 - 动效：表现力型（视差滚动、磁吸按钮、页面转场、滚动显现、流式打字），注意性能预算。
 
 ## 6. 可视化编辑器（仅 PC）
 
 - `npm run admin` 启动本地 Web 服务，浏览器打开，直接读写 `data/` 文件。
 - markdown 页面：所见即所得编辑（Milkdown 内核），存盘转回 markdown。
-- data 配置：表单化界面（RSS 源、pin 项目、流式区块、导航、站点信息等）。
+- data 配置：表单化界面（站点信息、编辑区块与右下联系卡、RSS 源、pin 项目、流式区块、主页布局、主题底色等）。
+- 反馈优先：不做装饰性动效；用当前导航态、保存状态、焦点样式和键盘可达控件表达界面变化。
 - 主题色取色器：头像候选色 + 手动点取。
 
 ## 7. 数据获取与缓存（prefetch）
@@ -115,12 +118,12 @@
 
 以下各项将逐项与用户讨论细化，结论回填本文档对应章节：
 
-1. [x] `site.yaml` / `rss.yaml` / frontmatter 的完整字段定义 → [docs/specs/01-config-schema.md](specs/01-config-schema.md)（主页布局为可配置区块列表；RSS 支持 grouped/mixed 两种模式切换）
-2. [x] 主页布局线框（区块顺序、杂志化网格） → [docs/specs/02-home-layout.md](specs/02-home-layout.md)（B 杂志网格；Inter + 思源黑体子集）
+1. [x] `site.yaml` / `rss.yaml` / frontmatter 的完整字段定义 → [docs/specs/01-config-schema.md](specs/01-config-schema.md)（主页布局为可配置区块列表；支持主题底色、编辑区块和右下联系卡；RSS 支持 grouped/mixed 两种模式切换）
+2. [x] 主页布局线框（区块顺序、杂志化网格） → [docs/specs/02-home-layout.md](specs/02-home-layout.md)（B 杂志网格；系统字体栈 + JetBrains Mono）
 3. [x] markdown 自定义指令语法清单 → [docs/specs/03-markdown-directives.md](specs/03-markdown-directives.md)（播放器/figure/grid/stream/ghcard 全套；播放器点击加载；支持 KaTeX）
 4. [x] 流式区块配置字段与播放行为细节 → [docs/specs/04-streaming-block.md](specs/04-streaming-block.md)（增量渲染 markdown；拟真抖动；进入可视区自动播 + 重播按钮）
 5. [x] RSS 卡片字段与"指定文章编排格式"的具体形态 → [docs/specs/05-rss-cards.md](specs/05-rss-cards.md)（hover 浮层；封面由用户声明，curated 可逐篇声明）
-6. [x] 编辑器信息架构（页面/功能划分） → [docs/specs/06-editor.md](specs/06-editor.md)（侧栏模块化；新建向导；粘贴图片入库；自动保存+版本快照）
+6. [x] 编辑器信息架构（页面/功能划分） → [docs/specs/06-editor.md](specs/06-editor.md)（侧栏模块化；新建向导；粘贴图片入库；自动保存+版本快照；M10 导航反馈与长表单整理）
 7. [x] prefetch 缓存文件结构与失败降级细节 → [docs/specs/07-prefetch.md](specs/07-prefetch.md)（3 个 JSON；TTL 1h/失败 15min；无缓存即构建报错，本地无 PAT 贡献图除外）
 8. [x] workflow 文件细节（触发条件、快照恢复、失败标记实现） → [docs/specs/08-workflow.md](specs/08-workflow.md)（每 8h 半点；快照含版本历史；回退后标红触发邮件）
 9. [x] 动效清单与性能预算 → [docs/specs/09-animations.md](specs/09-animations.md)（九项动效按清单；性能预算为软目标）

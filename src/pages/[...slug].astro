@@ -2,7 +2,7 @@
 /**
  * 全站动态路由：getStaticPaths 从 data/（缺失时回退 data.example/，见 src/lib/data-dir.ts）
  * 的 pages/<lang>/*.md 生成。默认语言无前缀，其他语言带 /lang/ 前缀；
- * 缺失译文按回退链渲染并显示提示条（docs/specs/11）。
+ * 缺失译文按回退链静默渲染（docs/specs/11）。
  * 主页（slug 为 /）按 site.yaml home.layout 顺序渲染区块：profile / markdown /
  * streaming / github / rss（M4b 实体区块，数据来自 .cache 与 streaming/ 内容文件）。
  */
