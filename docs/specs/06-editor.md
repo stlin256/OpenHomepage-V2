@@ -2,6 +2,7 @@
 
 > 状态：✅ 已实现（M5）。形态：`npm run admin` 本地 Web 服务，仅 PC，WYSIWYG（Milkdown），读写本地 data/。
 > M7 增补：三种编辑模式（WYSIWYG / 源码 / 双栏预览）、预览服务一键启动、编辑器明暗主题。
+> M10 增补：导航当前态、保存状态反馈、常驻工具栏、长表单折叠和主页布局键盘排序。
 
 ## 1. 界面布局
 
@@ -15,6 +16,7 @@
 │   - 研究   │  页面 → Milkdown WYSIWYG 编辑器     │
 │ ▸ 配置    │  （frontmatter 表单条置顶）          │
 │   - 站点  │  配置 → 对应表单                    │
+│   - 编辑区块│                                     │
 │   - GitHub│                                     │
 │   - RSS   │                                     │
 │   - 流式块 │                                     │
@@ -31,7 +33,8 @@
 | 站点配置 | site.yaml 的 site/profile/theme/bgm/footer 段 | 表单：文本框、链接列表编辑器、模式切换；favicon（素材库 svg/png/ico 下拉选择 + 上传任意图片自动居中裁方转 180/32 PNG，空 = 内置默认）；BGM（启用开关、素材库音频选择、音量滑块）；页脚（开关 + 双语文本，默认开启） |
 | GitHub | username、贡献图开关、pinned 列表 | 表单：repo 列表支持增删、拖拽排序 |
 | RSS | rss.yaml | 源列表编辑器：每个源可展开配 mode/latest/weight/cover；curated 文章子列表 |
-| 流式块 | streaming_blocks + home.layout 排序 | 块定义表单 + 主页布局拖拽排序器 |
+| 编辑区块 | site.yaml `editorial_blocks` + 右下联系卡 | 区块用原生 `<details>` 分组；按钮/列表/磁贴/归档卡为嵌套列表；空组收起，有内容组展开 |
+| 流式块 | streaming_blocks + home.layout 排序 | 块定义表单 + 主页布局拖拽排序；每行另有上移/下移按钮，键盘可达 |
 | 主题 | accent 取色器 | 头像候选色条（自动提取 4-6 色）+ 在头像上点取 + 手动色值输入 |
 | 素材 | data/assets/ | 上传/删除/复制引用路径 |
 
@@ -53,6 +56,12 @@
 - 无 data/ 时编辑器启动自动从 data.example/ 初始化（复用 scripts/setup.mjs 逻辑），界面顶部横幅提示。
 
 ## 4. 已定细节
+
+- ✅ 交互反馈原则（M10）：不做装饰性动效；状态变化必须可见。侧栏标记 `aria-current="page"`；顶栏保存状态是 polite live region；输入后显示“有未保存内容”，落盘时显示“保存中”，成功或失败显示明确结果。全局使用 `:focus-visible`。
+- ✅ 页面工具栏（M10）：默认进入 WYSIWYG；模式切换、插入区块、页面操作分成稳定工具组。长文滚动时工具栏吸顶，避免切模式/插区块时回滚到顶部。
+- ✅ 长配置表单（M10）：编辑区块用原生折叠面板，不引入动画依赖；首块展开便于发现，空子组收起、非空子组展开并显示条目数。
+- ✅ 主页布局（M10）：HTML5 drag & drop 保留，同时提供上移/下移按钮；排序不是鼠标专属能力。
+- ✅ 流程测试（M10）：jsdom 渲染层覆盖“编辑区块配置自动保存 → 打开页面 → 切源码修改正文 → 自动保存”的跨视图链路；HTTP/API 行为由现有 admin API 测试覆盖。项目未引入浏览器 E2E 依赖，避免为本地管理器增加安装和运行负担。
 
 - ✅ 新建页面向导：输入标题自动生成 slug + frontmatter 模板。
 - ✅ 粘贴图片直接入 data/assets/ 并插入 markdown 引用。
