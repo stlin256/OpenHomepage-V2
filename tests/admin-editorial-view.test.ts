@@ -68,12 +68,13 @@ describe('编辑区块配置', () => {
   async function open(render: (c: HTMLElement, s: AppState) => Promise<void>) {
     const container = document.createElement('div');
     document.body.append(container);
-    await render(container, makeState());
-    return container;
+    const state = makeState();
+    await render(container, state);
+    return { container, state };
   }
 
   it('展示列表、按钮、磁贴与联系卡，并保存修改后的区块 id', async () => {
-    const container = await open(renderEditorialConfig);
+    const { container, state } = await open(renderEditorialConfig);
     expect(container.textContent).toContain('按钮组');
     expect(container.textContent).toContain('磁贴');
     expect(container.textContent).toContain('右下联系卡');
@@ -82,14 +83,17 @@ describe('编辑区块配置', () => {
     expect(idInput.value).toBe('work');
     idInput.value = 'research';
     idInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(state.setStatus).toHaveBeenCalledWith('有未保存内容');
 
     await tick(1600);
+    expect(state.setStatus).toHaveBeenCalledWith('保存中…');
+    expect(state.setStatus).toHaveBeenCalledWith('已保存', 'ok');
     expect(saved).toHaveLength(1);
     expect((saved[0]?.editorial_blocks as { id: string }[])[0].id).toBe('research');
   });
 
   it('主页布局可选择并保存 editorial 挂载点', async () => {
-    const container = await open(renderStreamingConfig);
+    const { container } = await open(renderStreamingConfig);
     const select = container.querySelector<HTMLSelectElement>('.layout-add select')!;
     select.value = 'editorial';
     select.dispatchEvent(new Event('change', { bubbles: true }));

@@ -6,6 +6,7 @@ import { createT, detectLang, type Lang } from '../shared/i18n.ts';
 import { initialTheme, toggleTheme, type ThemeName } from '../../src/lib/theme.ts';
 import { el, btn } from './dom.ts';
 import { api, type PageMeta } from './api.ts';
+import { updateSideNav } from './navigation.ts';
 import { renderPageEditor } from './views/pages.ts';
 import {
   renderSiteConfig,
@@ -97,6 +98,7 @@ function renderSidebar(): void {
 
   sidebar.append(el('div', { class: 'side-title' }, t('navAssets')));
   sidebar.append(el('a', { class: 'side-item', href: '#/assets' }, t('navAssets')));
+  updateSideNav(sidebar);
 }
 
 /** 新建页面向导 */
@@ -208,7 +210,11 @@ async function boot(): Promise<void> {
 
   const info = await api.info();
 
-  const statusEl = el('span', { class: 'status' });
+  const statusEl = el('span', {
+    class: 'status',
+    role: 'status',
+    'aria-live': 'polite',
+  });
   const langSel = el('select', { class: 'input lang-switch' }) as HTMLSelectElement;
   langSel.append(el('option', { value: 'zh' }, '中文'), el('option', { value: 'en' }, 'English'));
   langSel.value = lang;
@@ -313,7 +319,10 @@ async function boot(): Promise<void> {
   }
 
   await refreshSidebar();
-  window.addEventListener('hashchange', () => void renderMain());
+  window.addEventListener('hashchange', () => {
+    updateSideNav();
+    void renderMain();
+  });
   await renderMain();
 }
 

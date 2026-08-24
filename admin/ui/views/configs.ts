@@ -38,12 +38,23 @@ function localizedField(
 }
 
 function makeSaver(state: AppState, saveFn: () => Promise<unknown>): Autosave {
-  return createAutosave(1500, () => {
+  const autosave = createAutosave(1500, () => {
     state.setStatus(state.t('saving'));
     void saveFn()
       .then(() => state.setStatus(state.t('saved'), 'ok'))
       .catch((e: Error) => state.setStatus(`${state.t('saveFailed')}: ${e.message}`, 'err'));
   });
+  return {
+    touch() {
+      state.setStatus(state.t('unsavedChanges'));
+      autosave.touch();
+    },
+    flush: () => autosave.flush(),
+    cancel: () => autosave.cancel(),
+    get pending() {
+      return autosave.pending;
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
