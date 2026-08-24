@@ -57,6 +57,13 @@ function makeSaver(state: AppState, saveFn: () => Promise<unknown>): Autosave {
   };
 }
 
+/** 折叠面板摘要里的短文本：兼容 string 与 {zh,en} */
+function shortText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  const obj = value as Obj | undefined;
+  return String(obj?.zh ?? obj?.en ?? '').trim();
+}
+
 // ---------------------------------------------------------------------------
 // 站点
 // ---------------------------------------------------------------------------
@@ -251,7 +258,7 @@ export async function renderEditorialConfig(container: HTMLElement, state: AppSt
     return `editorial-${n}`;
   };
 
-  const renderBlock = (block: Obj) => {
+  const renderBlock = (block: Obj, index: number) => {
     const groups = [
       ['actions', t('editorialActions'), () => ({
         label: '',
@@ -281,11 +288,32 @@ export async function renderEditorialConfig(container: HTMLElement, state: AppSt
       localizedField(block.description, t('descriptionZh'), t('descriptionEn'), (v) => { block.description = v; touch(); })
     );
 
+    const blockPanel = el('details', { class: 'config-panel' }) as HTMLDetailsElement;
+    if (index === 0) blockPanel.open = true;
+    blockPanel.append(
+      el(
+        'summary',
+        { class: 'panel-summary' },
+        el('span', { class: 'panel-title' }, String(block.id ?? '')),
+        el('span', { class: 'muted panel-meta' }, shortText(block.title))
+      )
+    );
+    const panelBody = el('div', { class: 'config-panel-body' }, content);
+
     for (const [key, heading, makeNew] of groups) {
       block[key] ??= [];
       const rows = block[key] as List;
-      content.append(
-        el('h4', {}, heading),
+      const groupPanel = el('details', { class: 'config-subpanel' }) as HTMLDetailsElement;
+      groupPanel.open = rows.length > 0;
+      groupPanel.append(
+        el(
+          'summary',
+          { class: 'panel-summary' },
+          el('span', {}, heading),
+          el('span', { class: 'muted panel-count' }, String(rows.length))
+        )
+      );
+      groupPanel.append(
         listEditor({
           items: rows,
           renderRow: (item) => {
@@ -336,8 +364,10 @@ export async function renderEditorialConfig(container: HTMLElement, state: AppSt
           t,
         })
       );
+      content.append(groupPanel);
     }
-    return content;
+    blockPanel.append(panelBody);
+    return blockPanel;
   };
 
   container.replaceChildren(
@@ -536,12 +566,29 @@ export async function renderStreamingConfig(container: HTMLElement, state: AppSt
         { class: 'layout-row', draggable: 'true' },
         el('span', { class: 'drag-handle' }, '⋮⋮'),
         el('span', {}, blk.id ? `${label} (${String(blk.id)})` : label),
-        btn(t('remove'), () => {
-          layout.splice(i, 1);
-          touch();
-          renderLayout();
-        }, 'btn-danger')
       );
+      const moveUpBtn = btn('↑', () => {
+        if (i === 0) return;
+        [layout[i - 1], layout[i]] = [layout[i], layout[i - 1]];
+        touch();
+        renderLayout();
+      });
+      moveUpBtn.title = t('moveUp');
+      moveUpBtn.setAttribute('aria-label', t('moveUp'));
+      const moveDownBtn = btn('↓', () => {
+        if (i === layout.length - 1) return;
+        [layout[i + 1], layout[i]] = [layout[i], layout[i + 1]];
+        touch();
+        renderLayout();
+      });
+      moveDownBtn.title = t('moveDown');
+      moveDownBtn.setAttribute('aria-label', t('moveDown'));
+      const removeBtn = btn(t('remove'), () => {
+        layout.splice(i, 1);
+        touch();
+        renderLayout();
+      }, 'btn-danger');
+      row.append(el('div', { class: 'layout-ops' }, moveUpBtn, moveDownBtn, removeBtn));
       row.addEventListener('dragstart', (e) => {
         e.dataTransfer?.setData('text/plain', String(i));
         row.classList.add('dragging');

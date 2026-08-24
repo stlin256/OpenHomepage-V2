@@ -78,6 +78,12 @@ describe('编辑区块配置', () => {
     expect(container.textContent).toContain('按钮组');
     expect(container.textContent).toContain('磁贴');
     expect(container.textContent).toContain('右下联系卡');
+    const [workPanel] = [...container.querySelectorAll<HTMLDetailsElement>('details.config-panel')];
+    const groupPanels = [...workPanel.querySelectorAll<HTMLDetailsElement>('details.config-subpanel')];
+    expect(workPanel.open).toBe(true);
+    expect(workPanel.querySelector('.panel-summary')!.textContent).toContain('work');
+    expect(groupPanels[0].open).toBe(true);
+    expect(groupPanels[3].open).toBe(false);
 
     const idInput = container.querySelector<HTMLInputElement>('.list-row input')!;
     expect(idInput.value).toBe('work');
@@ -101,11 +107,15 @@ describe('编辑区块配置', () => {
     idInput.value = 'studio';
     const addBtn = [...container.querySelectorAll<HTMLButtonElement>('.layout-add button')].at(-1)!;
     addBtn.click();
+    const moveDown = container.querySelector<HTMLButtonElement>('.layout-row .layout-ops button:nth-child(2)')!;
+    moveDown.click();
+    expect(container.querySelector('.layout-row')!.textContent).toContain('editorial (studio)');
+
     await tick(1600);
     expect(saved.at(-1)?.home).toEqual({
       layout: [
-        { block: 'editorial', id: 'work' },
         { block: 'editorial', id: 'studio' },
+        { block: 'editorial', id: 'work' },
       ],
     });
   });

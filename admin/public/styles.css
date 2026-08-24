@@ -167,6 +167,8 @@ a { color: var(--accent); text-decoration: none; }
   gap: 8px;
   min-width: 0;
 }
+.toolbar-mode { flex: none; }
+.toolbar-insert { min-width: 220px; }
 .toolbar-page-ops {
   margin-left: auto;
 }
@@ -377,6 +379,35 @@ a { color: var(--accent); text-decoration: none; }
   font-size: 13px;
   color: var(--text-muted);
 }
+.config-panel,
+.config-subpanel {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.config-panel > .panel-summary,
+.config-subpanel > .panel-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+.config-subpanel > .panel-summary {
+  padding: 7px 9px;
+  color: var(--text-muted);
+}
+.config-subpanel > .panel-summary:hover,
+.config-panel > .panel-summary:hover {
+  color: var(--text);
+}
+.panel-title { font-weight: 600; }
+.panel-meta,
+.panel-count { margin-left: auto; font-size: 12px; }
+.config-panel-body { padding: 4px 11px 12px; }
 
 /* 布局拖拽排序 */
 .layout-sorter { max-width: 480px; }
@@ -392,8 +423,12 @@ a { color: var(--accent); text-decoration: none; }
   cursor: grab;
 }
 .layout-row.dragging { opacity: 0.5; }
-.layout-row .btn { margin-left: auto; }
 .drag-handle { color: var(--text-muted); cursor: grab; }
+.layout-ops {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
 .layout-add { display: flex; gap: 8px; margin-top: 8px; }
 
 /* 取色器 */
