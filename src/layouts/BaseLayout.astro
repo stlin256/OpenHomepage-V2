@@ -7,12 +7,11 @@
  * 决策：KaTeX CSS 全站加载（katex.min.css，字体按需下载），避免逐页检测公式的复杂度。
  * 页脚：site.yaml footer 段（默认开启，显式 false 关闭；内联链接见 src/lib/footer.ts）。
  */
-import '@fontsource-variable/inter';
-import '@fontsource-variable/noto-sans-sc';
 import '@fontsource-variable/jetbrains-mono';
 import 'katex/dist/katex.min.css';
 import '../styles/global.css';
 import type { AccentTheme } from '../lib/theme.ts';
+import type { BackgroundTheme } from '../lib/theme.ts';
 import type { NavItem } from '../lib/routes.ts';
 
 interface Props {
@@ -26,6 +25,7 @@ interface Props {
   lang: string;
   defaultLang: string;
   accent: AccentTheme;
+  background: BackgroundTheme;
   defaultMode: 'system' | 'light' | 'dark';
   nav: NavItem[];
   currentPath: string;
@@ -47,6 +47,7 @@ const {
   lang,
   defaultLang,
   accent,
+  background,
   defaultMode,
   nav,
   currentPath,
@@ -60,7 +61,7 @@ const {
 const langLabel = (l: string) => ({ zh: '中文', en: 'English' })[l] ?? l;
 const xDefault = alternates.find((a) => a.lang === defaultLang) ?? alternates[0];
 /** 构建期注入的 accent 变量（global.css 中 --accent 引用这四个值） */
-const accentVars = `--accent-light:${accent.light.accent};--accent-light-contrast:${accent.light.contrast};--accent-dark:${accent.dark.accent};--accent-dark-contrast:${accent.dark.contrast};`;
+const themeVars = `--accent-light:${accent.light.accent};--accent-light-contrast:${accent.light.contrast};--accent-dark:${accent.dark.accent};--accent-dark-contrast:${accent.dark.contrast};--site-bg-light:${background.light};--site-bg-dark:${background.dark};`;
 const FAVICON_MIME: Record<string, string> = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
@@ -74,7 +75,7 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
   data-theme="light"
   data-default-mode={defaultMode}
   data-default-lang={defaultLang}
-  style={accentVars}
+  style={themeVars}
 >
   <head>
     <meta charset="utf-8" />

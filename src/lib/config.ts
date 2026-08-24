@@ -31,6 +31,10 @@ export interface SiteConfig {
   theme?: {
     accent?: string;
     default_mode?: 'system' | 'light' | 'dark';
+    /** 浅色页面底色；缺省使用米黄编辑风默认值 */
+    background?: string;
+    /** 暗色页面底色；缺省使用暖黑默认值 */
+    background_dark?: string;
   };
   github: {
     username: string;

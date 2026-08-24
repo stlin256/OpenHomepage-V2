@@ -30,7 +30,12 @@ import {
   type RouteEntry,
   type NavItem,
 } from '../lib/routes.ts';
-import { buildAccentTheme, type AccentTheme } from '../lib/theme.ts';
+import {
+  buildAccentTheme,
+  buildBackgroundTheme,
+  type AccentTheme,
+  type BackgroundTheme,
+} from '../lib/theme.ts';
 import { planHomeBlocks, type PlannedHomeBlock } from '../lib/home.ts';
 import { resolveFooter, footerTextToHtml } from '../lib/footer.ts';
 import { resolveDataDir } from '../lib/data-dir.ts';
@@ -51,6 +56,7 @@ interface Props {
   i18n: boolean;
   defaultLang: string;
   accent: AccentTheme;
+  background: BackgroundTheme;
   nav: NavItem[];
   alternates: { lang: string; path: string }[];
   avatarUrl?: string;
@@ -73,6 +79,7 @@ export function getStaticPaths() {
   const i18n = isI18nEnabled(langs);
   const defaultLang = normalizeLang(site.site.language) ?? langs[0] ?? 'zh';
   const accent = buildAccentTheme(site.theme?.accent);
+  const background = buildBackgroundTheme(site.theme?.background, site.theme?.background_dark);
   // 头像：仅在文件真实存在时输出 <img>，避免示例数据下 404
   const avatar = site.profile.avatar;
   const avatarUrl = avatar && existsSync(path.join(dataDir, avatar)) ? `/${avatar}` : undefined;
@@ -101,6 +108,7 @@ export function getStaticPaths() {
       i18n,
       defaultLang,
       accent,
+      background,
       nav: navPagesForLang(pages, route.lang, defaultLang),
       alternates: alternateLinks(pages, route.slug, langs, defaultLang),
       avatarUrl,
@@ -119,6 +127,7 @@ const {
   i18n,
   defaultLang,
   accent,
+  background,
   nav,
   alternates,
   avatarUrl,
@@ -169,6 +178,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   lang={route.lang}
   defaultLang={defaultLang}
   accent={accent}
+  background={background}
   defaultMode={site.theme?.default_mode ?? 'system'}
   nav={nav}
   currentPath={route.path}

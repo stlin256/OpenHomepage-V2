@@ -8,6 +8,10 @@
 
 /** 深色主题页面底色（与 src/styles/global.css 中 --bg 深色值一致） */
 export const DARK_BG = '#121417';
+/** 新编辑风格的默认暗色页面底色；GitHub 区块仍用 DARK_BG 保持旧观感。 */
+export const PAGE_DARK_BG = '#141311';
+/** 新编辑风格的默认米黄页面底色。 */
+export const PAGE_LIGHT_BG = '#f8f7f2';
 /** 对比文字候选：深色 / 浅色（与 --text 浅色值一致） */
 export const CONTRAST_DARK_TEXT = '#1a1d21';
 export const CONTRAST_LIGHT_TEXT = '#ffffff';
@@ -95,12 +99,28 @@ export interface AccentTheme {
   dark: { accent: string; contrast: string };
 }
 
+export interface BackgroundTheme {
+  light: string;
+  dark: string;
+}
+
 /** 构建期一次算出明暗两套 accent 值，注入为 CSS 变量 */
 export function buildAccentTheme(accent: string = DEFAULT_ACCENT): AccentTheme {
   const darkAccent = correctAccentForDark(accent);
   return {
     light: { accent, contrast: pickContrastText(accent) },
     dark: { accent: darkAccent, contrast: pickContrastText(darkAccent) },
+  };
+}
+
+/** 构建期归一化页面底色；非法值由上层校验，这里只做空值回退。 */
+export function buildBackgroundTheme(
+  light: string | undefined,
+  dark: string | undefined
+): BackgroundTheme {
+  return {
+    light: light?.trim() || PAGE_LIGHT_BG,
+    dark: dark?.trim() || PAGE_DARK_BG,
   };
 }
 
