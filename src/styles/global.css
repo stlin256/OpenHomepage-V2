@@ -99,7 +99,6 @@ body,
 .icon-btn,
 .home-block,
 .markdown-body pre,
-.fallback-banner,
 .site-footer {
   transition:
     background-color 0.2s ease,
@@ -978,21 +977,6 @@ a.editorial-item:focus-visible .editorial-item-title {
     width: 96px;
   }
 }
-/* 回退提示条（spec 11）：中英双语两行（该提示恰恰出现在没有译文的页面上） */
-.fallback-banner {
-  margin: 0 0 2rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-.fallback-banner .fallback-line {
-  display: block;
-}
-
 /* ---- 页脚（默认开启，spec 01 footer 段）：页面底部小字 muted，细分割线 ---- */
 .site-footer {
   max-width: var(--content-width);

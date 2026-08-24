@@ -29,6 +29,8 @@ profile:
 theme:
   accent: "#3a7bd5"
   default_mode: "system"
+  background: "#f8f7f2"
+  background_dark: "#141311"
 
 # ---- 页脚（默认开启；显式 enabled: false 关闭；text 支持 [文字](链接) 内联链接）----
 footer:
@@ -36,6 +38,22 @@ footer:
   text:
     zh: "由 [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2) 驱动"
     en: "Powered by [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2)"
+
+# ---- 右下角联系卡 ----
+contact:
+  intro_card:
+    enabled: true
+    delay: 4500
+    label:
+      zh: "Hello"
+      en: "Hello"
+    title:
+      zh: "交个朋友"
+      en: "Say Hello"
+    description:
+      zh: "扫码交流机器学习与系统"
+      en: "Scan to discuss ML and systems"
+    image: "assets/contact-qr.svg"
 
 # ---- 背景音乐 ----
 bgm:
@@ -73,9 +91,142 @@ home:
     - block: profile
     - block: streaming
       id: "welcome"
+    - block: editorial
+      id: "work"
     - block: markdown
+    - block: editorial
+      id: "studio"
     - block: github
     - block: rss
+
+# ---- 编辑风展示区块 ----
+editorial_blocks:
+  - id: "work"
+    tag:
+      zh: "01 · Work"
+      en: "01 · Work"
+    title:
+      zh: "RESEARCH INDEX"
+      en: "RESEARCH INDEX"
+    description:
+      zh: "把论文、工具与实验记录放进同一条索引。每一项都保留可复现的入口。"
+      en: "Papers, tools, and experiments share one index. Every entry keeps a reproducible entry point."
+    color: "#7b9aac"
+    actions:
+      - label:
+          zh: "查看研究"
+          en: "View research"
+        url: "/research"
+        variant: "primary"
+      - label:
+          zh: "特性演示"
+          en: "Feature tour"
+        url: "/features"
+        variant: "outline"
+    list:
+      - title:
+          zh: "高效推理流水线"
+          en: "Efficient inference pipeline"
+        meta:
+          zh: "系统 · 2026"
+          en: "Systems · 2026"
+        description:
+          zh: "围绕投机解码、KV cache 与调度策略做可测量优化。"
+          en: "Measurable work on speculative decoding, KV cache, and scheduling."
+        image: "assets/cover-2.jpg"
+        url: "/research"
+      - title:
+          zh: "可复现评测集"
+          en: "Reproducible evaluation"
+        meta:
+          zh: "评测 · 2026"
+          en: "Evaluation · 2026"
+        description:
+          zh: "滚动更新样本，报告分布而不是单次分数。"
+          en: "Rolling samples and distribution reports instead of single scores."
+        image: "assets/figure-1.jpg"
+        url: "/research"
+      - title:
+          zh: "开源实验工具"
+          en: "Open-source tooling"
+        meta:
+          zh: "工具 · 2026"
+          en: "Tools · 2026"
+        description:
+          zh: "小而可读，能在一个下午被另一个人接住。"
+          en: "Small, readable, and easy for someone else to pick up."
+        image: "assets/figure-2.jpg"
+        url: "https://github.com/octocat"
+    divider: true
+
+  - id: "studio"
+    tag:
+      zh: "02 · Studio"
+      en: "02 · Studio"
+    title:
+      zh: "VISUAL LAB"
+      en: "VISUAL LAB"
+    description:
+      zh: "磁贴用来快速扫描，归档卡保留停运项目与旧实验的痕迹。"
+      en: "Tiles support fast scanning; archive cards preserve retired experiments."
+    color: "#a87ca5"
+    tiles:
+      - title:
+          zh: "光影档案"
+          en: "Visual archive"
+        kicker:
+          zh: "Gallery"
+          en: "Gallery"
+        image: "assets/hero.jpg"
+        url: "/gallery"
+        size: "wide"
+      - title:
+          zh: "field notes"
+          en: "Field notes"
+        kicker:
+          zh: "Photo"
+          en: "Photo"
+        image: "assets/cover-1.jpg"
+        url: "/gallery"
+        size: "tall"
+      - title:
+          zh: "城市线路"
+          en: "City lines"
+        kicker:
+          zh: "Travel"
+          en: "Travel"
+        image: "assets/gallery-bus.jpg"
+        url: "/gallery"
+      - title:
+          zh: "夜间片段"
+          en: "Night fragments"
+        kicker:
+          zh: "Archive"
+          en: "Archive"
+        image: "assets/gallery-hk.jpg"
+        url: "/gallery"
+    archive:
+      - title:
+          zh: "旧实验 A"
+          en: "Old experiment A"
+        status:
+          zh: "已归档"
+          en: "Archived"
+        description:
+          zh: "服务停了，结论和配置仍然值得保留。"
+          en: "The service stopped, but the conclusions and config remain useful."
+        image: "assets/cover-2.jpg"
+      - title:
+          zh: "Travel Log 2025"
+          en: "Travel Log 2025"
+        status:
+          zh: "已归档"
+          en: "Archived"
+        description:
+          zh: "旧内容仍可作为研究索引的一部分。"
+          en: "Old material still belongs in a research index."
+        image: "assets/gallery-bus.jpg"
+    divider: true
 
 # ---- LLM 流式区块定义 ----
 streaming_blocks:
