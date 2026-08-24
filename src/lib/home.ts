@@ -4,7 +4,14 @@
  * 此处仅按配置顺序保留挂载点。
  */
 
-export const KNOWN_HOME_BLOCKS = ['profile', 'markdown', 'streaming', 'github', 'rss'] as const;
+export const KNOWN_HOME_BLOCKS = [
+  'profile',
+  'markdown',
+  'streaming',
+  'github',
+  'rss',
+  'editorial',
+] as const;
 export type KnownHomeBlock = (typeof KNOWN_HOME_BLOCKS)[number];
 
 export interface PlannedHomeBlock {

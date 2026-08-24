@@ -20,6 +20,7 @@ import {
   resolveAvatarPosition,
   resolveBgm,
   resolveFavicon,
+  resolveIntroCard,
   type SiteConfig,
 } from '../lib/config.ts';
 import {
@@ -49,6 +50,7 @@ import {
 import GithubBlock from '../components/blocks/GithubBlock.astro';
 import RssBlock from '../components/blocks/RssBlock.astro';
 import StreamBlock from '../components/blocks/StreamBlock.astro';
+import EditorialBlock from '../components/EditorialBlock.astro';
 
 interface Props {
   route: RouteEntry;
@@ -144,6 +146,7 @@ const footerCfg = resolveFooter(site);
 const footerHtml = footerCfg
   ? footerTextToHtml(resolveText(footerCfg.text, contentLang))
   : null;
+const introCard = resolveIntroCard(site, contentLang);
 // 头像布局：side=侧边杂志分栏（默认）；top=头像在姓名/简介上方居顶
 const avatarTop = resolveAvatarPosition(site.profile) === 'top';
 
@@ -157,6 +160,7 @@ for (const def of site.streaming_blocks ?? []) {
 }
 const streamById = new Map(streamBlocks.map((b) => [b.id, b]));
 const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b)]));
+const editorialById = new Map((site.editorial_blocks ?? []).map((block) => [block.id, block]));
 // ::ghcard{repo} 占位 ← pinned 缓存数据（大小写不敏感匹配；1:1 官网仓库卡，随页面语言）
 const ghHtmlByRepo = Object.fromEntries(
   (githubView?.pinned?.repos ?? []).map((r) => [
@@ -187,6 +191,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   bgm={bgm}
   favicon={favicon}
   footer={footerHtml}
+  introCard={introCard}
 >
   {route.fallback && (
     <p class="fallback-banner" role="note">
@@ -248,6 +253,13 @@ const bodyHtml = await renderMarkdown(route.page.body, {
               title={resolveText(site.rss?.block_title ?? 'RSS', contentLang)}
               lang={contentLang}
             />
+          ) : b.block === 'editorial' ? (
+            editorialById.has(b.id ?? '') ? (
+              <EditorialBlock
+                block={editorialById.get(b.id ?? '')!}
+                lang={contentLang}
+              />
+            ) : null
           ) : null,
         )}
       </div>

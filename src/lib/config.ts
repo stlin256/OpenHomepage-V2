@@ -49,6 +49,8 @@ export interface SiteConfig {
   home?: {
     layout?: { block: string; id?: string }[];
   };
+  /** 编辑风格展示区块：列表 / 磁贴 / 归档卡 / 按钮组 / 分割线 */
+  editorial_blocks?: EditorialBlock[];
   /** 背景音乐（宽松校验，缺省禁用；归一化见 resolveBgm） */
   bgm?: {
     /** 音频文件，相对 data/ 的路径，如 assets/bgm.wav */
@@ -65,6 +67,18 @@ export interface SiteConfig {
     enabled?: boolean;
     text?: LocalizedText;
   };
+  /** 右下角联系卡与二维码弹层 */
+  contact?: {
+    intro_card?: {
+      enabled?: boolean;
+      /** 出现延迟毫秒数，缺省 6000 */
+      delay?: number;
+      label?: LocalizedText;
+      title: LocalizedText;
+      description?: LocalizedText;
+      image: string;
+    };
+  };
   streaming_blocks?: {
     id: string;
     title?: LocalizedText;
@@ -72,6 +86,51 @@ export interface SiteConfig {
     autoplay?: boolean;
     speed?: number;
   }[];
+}
+
+export interface EditorialAction {
+  label: LocalizedText;
+  url?: string;
+  variant?: 'primary' | 'outline' | 'ghost';
+}
+
+export interface EditorialListItem {
+  title: LocalizedText;
+  meta?: LocalizedText;
+  description?: LocalizedText;
+  image?: string;
+  url?: string;
+}
+
+export interface EditorialTile {
+  title: LocalizedText;
+  kicker?: LocalizedText;
+  image?: string;
+  url?: string;
+  size?: 'small' | 'wide' | 'tall';
+}
+
+export interface EditorialArchiveCard {
+  title: LocalizedText;
+  status?: LocalizedText;
+  description?: LocalizedText;
+  image?: string;
+  url?: string;
+}
+
+export interface EditorialBlock {
+  id: string;
+  tag?: LocalizedText;
+  title: LocalizedText;
+  description?: LocalizedText;
+  /** 区块强调色；缺省继承主题 accent */
+  color?: string;
+  actions?: EditorialAction[];
+  list?: EditorialListItem[];
+  tiles?: EditorialTile[];
+  archive?: EditorialArchiveCard[];
+  /** 在区块末尾插入一条编辑感分割线 */
+  divider?: boolean;
 }
 
 export interface RssSource {
@@ -223,6 +282,34 @@ export function isI18nEnabled(langs: string[]): boolean {
 /** profile.avatar_position 归一化：缺省/非法值回退 'side'（默认侧边杂志布局） */
 export function resolveAvatarPosition(profile: SiteConfig['profile']): 'side' | 'top' {
   return profile.avatar_position === 'top' ? 'top' : 'side';
+}
+
+export interface ResolvedIntroCard {
+  delay: number;
+  label: string;
+  title: string;
+  description: string;
+  image: string;
+}
+
+/**
+ * 右下角联系卡归一化：缺省/显式关闭/缺图片时禁用；
+ * delay 限制在 1–20 秒，防止配置错误导致闪烁或长期不出现。
+ */
+export function resolveIntroCard(
+  site: SiteConfig,
+  lang: string
+): ResolvedIntroCard | null {
+  const cfg = site.contact?.intro_card;
+  if (!cfg || cfg.enabled === false || !cfg.image?.trim()) return null;
+  const delay = Number.isFinite(cfg.delay) ? Math.min(20000, Math.max(1000, cfg.delay!)) : 6000;
+  return {
+    delay,
+    label: resolveText(cfg.label ?? 'Hello', lang),
+    title: resolveText(cfg.title, lang),
+    description: resolveText(cfg.description ?? '', lang),
+    image: cfg.image.trim(),
+  };
 }
 
 /** favicon 允许的扩展名 */

@@ -12,6 +12,8 @@ import 'katex/dist/katex.min.css';
 import '../styles/global.css';
 import type { AccentTheme } from '../lib/theme.ts';
 import type { BackgroundTheme } from '../lib/theme.ts';
+import type { ResolvedIntroCard } from '../lib/config.ts';
+import ContactCard from '../components/ContactCard.astro';
 import type { NavItem } from '../lib/routes.ts';
 
 interface Props {
@@ -37,6 +39,7 @@ interface Props {
   favicon: string;
   /** 页脚 HTML（路由层 resolveFooter + footerTextToHtml 渲染；null = 关闭） */
   footer?: string | null;
+  introCard?: ResolvedIntroCard | null;
 }
 
 const {
@@ -56,6 +59,7 @@ const {
   bgm,
   favicon,
   footer,
+  introCard,
 } = Astro.props;
 
 const langLabel = (l: string) => ({ zh: '中文', en: 'English' })[l] ?? l;
@@ -197,6 +201,7 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
       />
     )}
     {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 global.css */}
+    {introCard && <ContactCard card={introCard} />}
     <div class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览 / Image preview" hidden>
       <img class="lightbox-img" alt="" />
       <button class="lightbox-close" type="button" aria-label="关闭 / Close">
