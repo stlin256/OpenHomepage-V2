@@ -344,6 +344,11 @@ a { color: var(--accent); text-decoration: none; }
 .list-ops { display: flex; gap: 4px; }
 .row-fields { display: flex; flex-wrap: wrap; gap: 8px 14px; }
 .source-card { display: flex; flex-direction: column; gap: 8px; }
+.source-card h4 {
+  margin: 10px 0 -2px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
 
 /* 布局拖拽排序 */
 .layout-sorter { max-width: 480px; }

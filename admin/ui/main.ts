@@ -9,6 +9,7 @@ import { api, type PageMeta } from './api.ts';
 import { renderPageEditor } from './views/pages.ts';
 import {
   renderSiteConfig,
+  renderEditorialConfig,
   renderGithubConfig,
   renderRssConfig,
   renderStreamingConfig,
@@ -85,6 +86,7 @@ function renderSidebar(): void {
   sidebar.append(el('div', { class: 'side-title' }, t('navConfig')));
   for (const [key, label] of [
     ['site', t('configSite')],
+    ['editorial', t('configEditorial')],
     ['github', t('configGithub')],
     ['rss', t('configRss')],
     ['streaming', t('configStreaming')],
@@ -157,6 +159,7 @@ async function renderMain(): Promise<void> {
       const section = parts[1] ?? 'site';
       const renderers: Record<string, (c: HTMLElement, s: AppState) => Promise<void> | void> = {
         site: renderSiteConfig,
+        editorial: renderEditorialConfig,
         github: renderGithubConfig,
         rss: renderRssConfig,
         streaming: renderStreamingConfig,

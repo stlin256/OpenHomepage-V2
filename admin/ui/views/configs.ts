@@ -195,6 +195,166 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
 }
 
 // ---------------------------------------------------------------------------
+// 编辑区块 + 右下联系卡
+// ---------------------------------------------------------------------------
+
+function variantSelect(value: unknown, onChange: (v: string) => void, t: (k: string) => string) {
+  return select(
+    [
+      { value: 'primary', label: t('buttonPrimary') },
+      { value: 'outline', label: t('buttonOutline') },
+      { value: 'ghost', label: t('buttonGhost') },
+    ],
+    String(value ?? 'primary'),
+    onChange
+  );
+}
+
+function sizeSelect(value: unknown, onChange: (v: string) => void, t: (k: string) => string) {
+  return select(
+    [
+      { value: 'small', label: t('tileSmall') },
+      { value: 'wide', label: t('tileWide') },
+      { value: 'tall', label: t('tileTall') },
+    ],
+    String(value ?? 'small'),
+    onChange
+  );
+}
+
+export async function renderEditorialConfig(container: HTMLElement, state: AppState): Promise<void> {
+  const t = state.t;
+  const { data } = await api.site();
+  const cfg = data as Obj;
+  cfg.editorial_blocks ??= [];
+  const contact = (cfg.contact ??= {}) as Obj;
+  const card = (contact.intro_card ??= {}) as Obj;
+  const autosave = makeSaver(state, () => api.saveSite(cfg));
+  const touch = () => autosave.touch();
+  const blocks = cfg.editorial_blocks as List;
+
+  const nextId = () => {
+    const used = new Set(blocks.map((item) => String(item.id ?? '')));
+    let n = blocks.length + 1;
+    while (used.has(`editorial-${n}`)) n += 1;
+    return `editorial-${n}`;
+  };
+
+  const renderBlock = (block: Obj) => {
+    const groups = [
+      ['actions', t('editorialActions'), () => ({
+        label: '',
+        url: '',
+        variant: 'primary',
+      })],
+      ['list', t('editorialList'), () => ({ title: '', url: '', image: '' })],
+      ['tiles', t('editorialTiles'), () => ({ title: '', image: '', size: 'small' })],
+      ['archive', t('editorialArchive'), () => ({ title: '', status: '', image: '' })],
+    ] as const;
+
+    const content = el(
+      'div',
+      { class: 'source-card' },
+      el(
+        'div',
+        { class: 'row-fields' },
+        field(t('blockId'), textInput(String(block.id ?? ''), (v) => { block.id = v; touch(); })),
+        field(t('editorialColor'), textInput(String(block.color ?? ''), (v) => {
+          block.color = v || undefined;
+          touch();
+        }, '#7b9aac')),
+        field(t('editorialDivider'), checkbox(Boolean(block.divider), (v) => { block.divider = v; touch(); }))
+      ),
+      localizedField(block.tag, t('tagZh'), t('tagEn'), (v) => { block.tag = v; touch(); }),
+      localizedField(block.title, t('titleZh'), t('titleEn'), (v) => { block.title = v; touch(); }),
+      localizedField(block.description, t('descriptionZh'), t('descriptionEn'), (v) => { block.description = v; touch(); })
+    );
+
+    for (const [key, heading, makeNew] of groups) {
+      block[key] ??= [];
+      const rows = block[key] as List;
+      content.append(
+        el('h4', {}, heading),
+        listEditor({
+          items: rows,
+          renderRow: (item) => {
+            if (key === 'actions') {
+              return el(
+                'div',
+                { class: 'row-fields' },
+                localizedField(item.label, t('linkLabel'), t('labelEn'), (v) => { item.label = v; touch(); }),
+                field(t('linkUrl'), textInput(String(item.url ?? ''), (v) => { item.url = v; touch(); })),
+                field(t('buttonVariant'), variantSelect(item.variant, (v) => { item.variant = v; touch(); }, t))
+              );
+            }
+            if (key === 'list') {
+              return el(
+                'div',
+                { class: 'row-fields' },
+                localizedField(item.title, t('titleZh'), t('titleEn'), (v) => { item.title = v; touch(); }),
+                localizedField(item.meta, t('metaZh'), t('metaEn'), (v) => { item.meta = v; touch(); }),
+                localizedField(item.description, t('descriptionZh'), t('descriptionEn'), (v) => { item.description = v; touch(); }),
+                field(t('imagePath'), textInput(String(item.image ?? ''), (v) => { item.image = v || undefined; touch(); })),
+                field(t('linkUrl'), textInput(String(item.url ?? ''), (v) => { item.url = v || undefined; touch(); }))
+              );
+            }
+            if (key === 'tiles') {
+              return el(
+                'div',
+                { class: 'row-fields' },
+                localizedField(item.title, t('titleZh'), t('titleEn'), (v) => { item.title = v; touch(); }),
+                localizedField(item.kicker, t('kickerZh'), t('kickerEn'), (v) => { item.kicker = v || undefined; touch(); }),
+                field(t('imagePath'), textInput(String(item.image ?? ''), (v) => { item.image = v || undefined; touch(); })),
+                field(t('linkUrl'), textInput(String(item.url ?? ''), (v) => { item.url = v || undefined; touch(); })),
+                field(t('tileSize'), sizeSelect(item.size, (v) => { item.size = v; touch(); }, t))
+              );
+            }
+            return el(
+              'div',
+              { class: 'row-fields' },
+              localizedField(item.title, t('titleZh'), t('titleEn'), (v) => { item.title = v; touch(); }),
+              localizedField(item.status, t('statusZh'), t('statusEn'), (v) => { item.status = v || undefined; touch(); }),
+              localizedField(item.description, t('descriptionZh'), t('descriptionEn'), (v) => { item.description = v; touch(); }),
+              field(t('imagePath'), textInput(String(item.image ?? ''), (v) => { item.image = v || undefined; touch(); })),
+              field(t('linkUrl'), textInput(String(item.url ?? ''), (v) => { item.url = v || undefined; touch(); }))
+            );
+          },
+          onChange: touch,
+          makeNew,
+          addLabel: t('addItem'),
+          t,
+        })
+      );
+    }
+    return content;
+  };
+
+  container.replaceChildren(
+    sectionTitle(t('configEditorial')),
+    el('p', { class: 'muted' }, t('editorialHint')),
+    listEditor({
+      items: blocks,
+      renderRow: renderBlock,
+      onChange: touch,
+      makeNew: () => ({ id: nextId(), title: '', actions: [], list: [], tiles: [], archive: [] }),
+      addLabel: t('addEditorialBlock'),
+      t,
+    }),
+    sectionTitle(t('contactCardSection')),
+    el(
+      'div',
+      { class: 'form-grid' },
+      field(t('contactEnabled'), checkbox(card.enabled !== false, (v) => { card.enabled = v; touch(); })),
+      field(t('contactDelay'), numberInput(card.delay as number | undefined, (v) => { card.delay = v; touch(); })),
+      field(t('imagePath'), textInput(String(card.image ?? ''), (v) => { card.image = v; touch(); }))
+    ),
+    localizedField(card.label, t('contactLabelZh'), t('contactLabelEn'), (v) => { card.label = v || undefined; touch(); }),
+    localizedField(card.title, t('contactTitleZh'), t('contactTitleEn'), (v) => { card.title = v; touch(); }),
+    localizedField(card.description, t('contactDescriptionZh'), t('contactDescriptionEn'), (v) => { card.description = v || undefined; touch(); })
+  );
+}
+
+// ---------------------------------------------------------------------------
 // GitHub
 // ---------------------------------------------------------------------------
 
@@ -341,6 +501,7 @@ const LAYOUT_BLOCK_LABELS: Record<string, string> = {
   streaming: '💬 streaming',
   github: '🐙 github',
   rss: '📰 rss',
+  editorial: '🧩 editorial',
 };
 
 export async function renderStreamingConfig(container: HTMLElement, state: AppState): Promise<void> {
@@ -363,7 +524,7 @@ export async function renderStreamingConfig(container: HTMLElement, state: AppSt
         'div',
         { class: 'layout-row', draggable: 'true' },
         el('span', { class: 'drag-handle' }, '⋮⋮'),
-        el('span', {}, blk.block === 'streaming' ? `${label} (${String(blk.id ?? '')})` : label),
+        el('span', {}, blk.id ? `${label} (${String(blk.id)})` : label),
         btn(t('remove'), () => {
           layout.splice(i, 1);
           touch();
@@ -403,6 +564,7 @@ export async function renderStreamingConfig(container: HTMLElement, state: AppSt
         btn(t('addLayoutBlock'), () => {
           const blk: Obj = { block: addSel.value };
           if (addSel.value === 'streaming') blk.id = idInput.value || 'welcome';
+          if (addSel.value === 'editorial') blk.id = idInput.value || `editorial-${(home.layout as List).length + 1}`;
           layout.push(blk);
           touch();
           renderLayout();
