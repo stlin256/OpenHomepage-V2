@@ -83,13 +83,38 @@ $$
 
 ## 功能指令
 
-正文任意位置插入 GitHub 仓库卡片：
+| 组件名称 | 说明 |
+|---------|------|
+| GitHub Repo Card | 单个仓库卡片，读取 pinned 缓存 |
+| Streaming Block | LLM 流式输出效果，支持重播 |
+| Editorial Block | 按钮、列表卡、磁贴、归档卡、分割线组合 |
+
+**GitHub Repo Card**：正文任意位置插入仓库卡片：
 
 ::ghcard{repo="ggml-org/llama.cpp"}
 
-插入一个流式区块（定义在 `site.yaml` 的 `streaming_blocks`）：
+**Streaming Block**：插入一个流式区块（定义在 `site.yaml` 的 `streaming_blocks`）：
 
 ::stream{id="welcome"}
+
+## 编辑风组件
+
+下面的完整组件套件由 `::editorial{id="features"}` 从 `site.yaml` 的 `editorial_blocks` 嵌入，覆盖按钮组、编号列表、磁贴、归档卡和分割线：
+
+::editorial{id="features"}
+
+右下角联系卡、二维码弹层、亮/暗主题、语言切换、背景音乐、图片灯箱和滚动显现是全局组件；在本页直接交互就能看到。
+
+| 全局组件名称 | 入口 |
+|-------------|------|
+| Contact Card / QR Modal | 右下角联系卡，点击打开二维码弹层 |
+| Theme Toggle | 右上角太阳 / 月亮按钮 |
+| Language Switcher | 右上角语言按钮 |
+| BGM Toggle | 右上角播放 / 暂停按钮 |
+| Lightbox | 点击正文中的图片 |
+| Scroll Reveal | 滚动页面时区块显现 |
+
+主页专属组件也在下方完整渲染，不依赖主页是否启用：Profile Block、GitHub Block、RSS Block。
 
 ## HTML 混写
 

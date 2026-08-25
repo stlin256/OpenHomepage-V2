@@ -83,13 +83,38 @@ Self-hosted media (native tags):
 
 ## Functional directives
 
-Drop a GitHub repo card anywhere in the body:
+| Component | Purpose |
+|-----------|---------|
+| GitHub Repo Card | Single repository card from the pinned cache |
+| Streaming Block | LLM streaming output with replay |
+| Editorial Block | Actions, list cards, tiles, archive cards, and dividers |
+
+**GitHub Repo Card**:
 
 ::ghcard{repo="ggml-org/llama.cpp"}
 
-Embed a streaming block (defined under `streaming_blocks` in `site.yaml`):
+**Streaming Block**:
 
 ::stream{id="welcome"}
+
+## Editorial components
+
+The complete kit below is embedded by `::editorial{id="features"}` from `editorial_blocks` in `site.yaml`. It covers actions, numbered list cards, tiles, archive cards, and a divider:
+
+::editorial{id="features"}
+
+The contact card, QR modal, light/dark theme, language switcher, background music, image lightbox, and scroll reveal are global components; interact with this page to see them.
+
+| Global component | Entry point |
+|------------------|-------------|
+| Contact Card / QR Modal | Bottom-right card; click for the QR modal |
+| Theme Toggle | Sun / moon button in the top-right |
+| Language Switcher | Language button in the top-right |
+| BGM Toggle | Play / pause button in the top-right |
+| Lightbox | Click an image in the body |
+| Scroll Reveal | Blocks reveal as the page scrolls |
+
+The homepage-specific Profile Block, GitHub Block, and RSS Block are also rendered in full below; they do not depend on the homepage layout.
 
 ## Raw HTML mixing
 
