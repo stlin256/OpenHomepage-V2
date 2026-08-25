@@ -3,22 +3,18 @@
  *
  * 导航策略：拦截站内链接点击 → 显示加载遮罩 → fetch 目标页 →
  * 替换 <main> 内容 → 重新初始化动效/交互 → 移除遮罩。
- * URL 不变、header/audio/nav 不动 → BGM 连续播放、无转场动画。
+ * URL 同步更新、header/audio/nav 不动 → BGM 连续播放、刷新/前进后退状态一致。
  */
 import { initStreamBlocks } from './stream-player.ts';
 import { initMotion } from './motion.ts';
 import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
+import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
 import './lightbox.ts';
 
 const LANGUAGE_STORAGE_KEY = 'oh-language';
-type SiteLanguage = 'zh' | 'en';
-
-function normalizeLanguage(value: string | null | undefined): SiteLanguage | null {
-  const lang = value?.toLowerCase().split(/[-_]/)[0];
-  return lang === 'zh' || lang === 'en' ? lang : null;
-}
+const normalizeLanguage = normalizeSiteLanguage;
 
 function readPreferredLanguage(): SiteLanguage | null {
   try {
@@ -40,22 +36,17 @@ function browserLanguage(): SiteLanguage | null {
   return normalizeLanguage(navigator.language);
 }
 
-function currentLanguage(): SiteLanguage | null {
-  return normalizeLanguage(document.documentElement.lang);
+function currentRouteLanguage(): SiteLanguage | null {
+  return normalizeLanguage(document.documentElement.dataset.routeLang ?? document.documentElement.lang);
 }
 
-function languagePath(lang: SiteLanguage, pathname = location.pathname): string {
+function languagePath(lang: SiteLanguage): string {
   const defaultLang = normalizeLanguage(document.documentElement.dataset.defaultLang) ?? 'zh';
-  const currentLang = currentLanguage();
-  let rest = pathname || '/';
-  if (currentLang) {
-    const prefix = `/${currentLang}`;
-    if (rest === prefix || rest.startsWith(`${prefix}/`)) {
-      rest = rest.slice(prefix.length) || '/';
-    }
-  }
-  if (lang === defaultLang) return rest || '/';
-  return rest === '/' ? `/${lang}/` : `/${lang}${rest}`;
+  return (
+    localizedPathname(lang, location.pathname, currentRouteLanguage(), defaultLang) +
+    location.search +
+    location.hash
+  );
 }
 
 // ---- 加载遮罩 ----
@@ -102,7 +93,7 @@ function initEmbeddedMedia(): void {
 }
 
 function updateNavActive(path: string): void {
-  const current = path.replace(/\/+$/, '') || '/';
+  const current = new URL(path, location.href).pathname.replace(/\/+$/, '') || '/';
   for (const a of document.querySelectorAll<HTMLAnchorElement>('.site-nav a')) {
     const href = (a.getAttribute('href') ?? '').replace(/\/+$/, '') || '/';
     const active = href === current;
@@ -126,7 +117,7 @@ function initAll(): void {
 
 let swapping = false;
 
-async function swapContent(path: string): Promise<void> {
+async function swapContent(path: string, { push = true }: { push?: boolean } = {}): Promise<void> {
   if (swapping) return;
   swapping = true;
   showLoading();
@@ -181,12 +172,15 @@ async function swapContent(path: string): Promise<void> {
         ...Array.from(newLangMenu.children, (node) => node.cloneNode(true)),
       );
     }
-    // 更新 html lang 属性（从新页面的 <html> 提取）
-    const newLang = doc.documentElement.getAttribute('lang');
-    const nextLanguage = normalizeLanguage(newLang);
+    // 更新 URL 语言与实际内容语言（回退页两者可以不同）
+    document.title = doc.title;
+    const nextLanguage = normalizeLanguage(doc.documentElement.dataset.routeLang);
+    const nextContentLanguage = normalizeLanguage(doc.documentElement.getAttribute('lang'));
+    if (nextLanguage) document.documentElement.dataset.routeLang = nextLanguage;
+    if (nextContentLanguage) document.documentElement.setAttribute('lang', nextContentLanguage);
     if (nextLanguage) {
-      document.documentElement.setAttribute('lang', nextLanguage);
       writePreferredLanguage(nextLanguage);
+      if (push) history.pushState(null, '', path);
     }
     document.body.classList.remove('nav-open');
     document.querySelector('.nav-toggle')?.setAttribute('aria-expanded', 'false');
@@ -261,7 +255,7 @@ document.addEventListener(
 );
 
 async function bootstrapLanguage(): Promise<void> {
-  const current = currentLanguage();
+  const current = currentRouteLanguage();
   const preferred = readPreferredLanguage() ?? browserLanguage() ?? current;
   if (!preferred) return;
   if (!readPreferredLanguage()) writePreferredLanguage(preferred);
@@ -269,6 +263,10 @@ async function bootstrapLanguage(): Promise<void> {
   await swapContent(languagePath(preferred));
 }
 
-// 首屏初始化；语言偏好不匹配时在遮罩下加载对应语言页面。
+// 兜底：内联引导脚本不可用时，语言偏好不匹配仍在遮罩下切换。
 initAll();
 void bootstrapLanguage();
+
+window.addEventListener('popstate', () => {
+  void swapContent(location.pathname + location.search, { push: false });
+});
