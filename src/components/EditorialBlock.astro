@@ -3,13 +3,14 @@
  * 编辑风格区块：编号列表、磁贴、归档卡、按钮组与分割线的统一容器。
  * 数据来自 site.yaml editorial_blocks，通过 home.layout 的 editorial id 挂载。
  */
-import { resolveText } from '../lib/config.ts';
+import { resolveText } from '../lib/localize.ts';
 
 const { block, lang } = Astro.props;
 const title = resolveText(block.title, lang);
 const tag = block.tag ? resolveText(block.tag, lang) : '';
 const description = block.description ? resolveText(block.description, lang) : '';
 const assetUrl = (path: string) => (path.startsWith('/') ? path : `/${path}`);
+---
 
 <section class="home-block block-editorial reveal" style={`--section-color:${block.color || 'var(--accent)'}`}>
   <header class="section-header reveal">
