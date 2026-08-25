@@ -390,18 +390,24 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   }
 }
 
-/* 主页区块：大留白 + 细分割线 */
+/* 主页区块：细分割线；相邻区块由前一块提供底部间距，避免上下 padding 叠加 */
 .home-block {
-  padding: 4rem 0;
+  padding: 3rem 0;
   border-top: 1px solid var(--border);
 }
 .home-block:first-child {
   border-top: 0;
   padding-top: 0;
 }
+.home-block + .home-block {
+  padding-top: 0;
+}
+.home-block:has(+ .component-demo-title) {
+  padding-bottom: 0;
+}
 .component-demo-title {
-  margin: 4rem 0 1rem;
-  padding-top: 2rem;
+  margin: 1.5rem 0 1rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border);
   font-size: 1.15rem;
   letter-spacing: 0.02em;
@@ -409,6 +415,9 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 .component-demo-title + .home-block {
   border-top: 0;
   padding-top: 0;
+}
+.block-editorial:has(> .editorial-divider) {
+  padding-bottom: 2rem;
 }
 .block-editorial:has(> .editorial-divider) + .home-block {
   border-top: 0;
@@ -419,7 +428,7 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 }
 .section-tag {
   padding: 0.35rem 0.65rem;
@@ -442,7 +451,7 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
   gap: 2rem;
   align-items: end;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 .editorial-heading h2 {
   margin: 0;
@@ -460,7 +469,7 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin: 0 0 2.5rem;
+  margin: 0 0 2rem;
 }
 .editorial-button {
   position: relative;
@@ -531,7 +540,7 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 .editorial-list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 .editorial-item {
   position: relative;
@@ -640,7 +649,7 @@ a.editorial-item:focus-visible .editorial-item-title {
   grid-template-columns: repeat(12, 1fr);
   grid-auto-rows: 9.5rem;
   gap: 0.75rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 .editorial-tile {
   position: relative;
@@ -767,7 +776,7 @@ a.editorial-item:focus-visible .editorial-item-title {
 .editorial-divider {
   width: 100%;
   height: 1px;
-  margin: 3.5rem 0 0;
+  margin: 2.25rem 0 0;
   border: 0;
   background:
     linear-gradient(90deg, var(--border) 0 72px, transparent 72px) 0 0 / 100% 1px no-repeat,
