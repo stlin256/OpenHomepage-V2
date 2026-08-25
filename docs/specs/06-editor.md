@@ -2,13 +2,14 @@
 
 > 状态：✅ 已实现（M5）。形态：`npm run admin` 本地 Web 服务，仅 PC，WYSIWYG（Milkdown），读写本地 data/。
 > M7 增补：三种编辑模式（WYSIWYG / 源码 / 双栏预览）、预览服务一键启动、编辑器明暗主题。
+> M11 增补：页面编辑区改为固定高度工作区，正文/源码/预览内部滚动；侧栏可折叠并记忆状态。
 > M10 增补：导航当前态、保存状态反馈、常驻工具栏、长表单折叠和主页布局键盘排序。项目内 AI 规范见 `skills/editing-data/SKILL.md`。
 
 ## 1. 界面布局
 
 ```
 ┌────────────────────────────────────────────────┐
-│ 顶栏: Logo  保存状态  [预览站点]  [中/EN]        │
+│ 顶栏: Logo  [侧栏]  保存状态  [预览站点]  [中/EN] │
 ├──────────┬─────────────────────────────────────┤
 │ 侧栏      │  主编辑区                            │
 │ ▸ 页面    │  （随侧栏选中项切换）                │
@@ -29,7 +30,7 @@
 
 | 模块 | 内容 | 交互 |
 |------|------|------|
-| 页面 | data/pages/*.md 列表，新建/重命名/删除 | Milkdown WYSIWYG；frontmatter 以表单条（标题/导航开关/排序）呈现于编辑器顶部 |
+| 页面 | data/pages/*.md 列表，新建/重命名/删除 | Milkdown WYSIWYG；frontmatter 以表单条（标题/导航开关/排序）呈现于编辑器顶部；页面工作区占满剩余高度并由编辑面内部滚动 |
 | 站点配置 | site.yaml 的 site/profile/theme/bgm/footer 段 | 表单：文本框、链接列表编辑器、模式切换；favicon（素材库 svg/png/ico 下拉选择 + 上传任意图片自动居中裁方转 180/32 PNG，空 = 内置默认）；BGM（启用开关、素材库音频选择、音量滑块）；页脚（开关 + 双语文本，默认开启） |
 | GitHub | username、贡献图开关、pinned 列表 | 表单：repo 列表支持增删、拖拽排序 |
 | RSS | rss.yaml | 源列表编辑器：每个源可展开配 mode/latest/weight/cover；curated 文章子列表 |
@@ -47,7 +48,7 @@
 - 编辑模式（顶部分段控件，M7）：
   - **所见即所得**：Milkdown 现状；
   - **源码**：等宽 textarea 直写 markdown（选型：CodeMirror 一套依赖 ~500KB 起步，对本工具过重，故用原生 textarea）；与 WYSIWYG 互切时内容经 Milkdown 序列化/解析保持同步（WYSIWYG→源码取 `getMarkdown()`，源码→WYSIWYG 用 `replaceAll()` 重建文档）；源码模式下"插入区块"改为插入到光标处；
-  - **双栏预览**：一侧编辑（WYSIWYG 或源码，编辑面顶部有小切换）、一侧 iframe 指向 dev server 对应页面（`GET /api/page` 附 `previewPath`，URL 前缀规则与站点路由一致）；自动保存成功后刷新 iframe（Astro dev 按请求重新渲染）。M9 布局修正：整窗 app-shell flex（body 100vh 列布局、主区内部滚动），iframe 填满面板剩余高度，消除面板外双重滚动条与面板内横向滚动条。
+  - **双栏预览**：一侧编辑（WYSIWYG 或源码，编辑面顶部有小切换）、一侧 iframe 指向 dev server 对应页面（`GET /api/page` 附 `previewPath`，URL 前缀规则与站点路由一致）；自动保存成功后刷新 iframe（Astro dev 按请求重新渲染）。M9 布局修正：整窗 app-shell flex。M11 进一步收敛为固定高度页面工作区：frontmatter 与工具栏固定，WYSIWYG、源码和预览分别占用剩余高度并内部滚动，避免视口高度最小值把整页撑出窗口或造成双重滚动。
 - 预览服务管理（M7；M9 一键全启动）：`npm run admin` 启动时自动拉起 astro dev 预览（已在跑则探测接管不重复 spawn；端口被占由 astro 自动递增并从日志解析真实 URL）；顶栏有状态指示灯（绿=运行/黄=启动中/灰=未运行，5s 轮询），点击可手动停止/再启动。预览面板在 dev server 未运行时给引导 + "启动预览服务"按钮 → `POST /api/dev/start` 由 admin server spawn `node node_modules/astro/bin/astro.mjs dev --port 4321`（直跑 CLI 避开 Windows .cmd 壳），`POST /api/dev/stop` 停止；admin 退出（SIGINT/SIGTERM）时连带终止它 spawn 的子进程（Windows 走 `taskkill /T /F` 树杀，POSIX 杀进程组）。外部手动启动的 dev server 只探测不接管（stop 不动它）。进程/日志/端口逻辑在 `admin/server/devserver.ts`，spawn/probe/platform 全注入，有单测。
 - 预览 URL 构造（M8 修正，ERR_CONNECTION_REFUSED）：探测返回**实际可连通的回环 host**（`probePortHost`：127.0.0.1 / ::1 都试），`status.url` 按它构造（IPv6 加方括号 `http://[::1]:port/`）；日志解析出的 `localhost` 归一化为 127.0.0.1（spawn 固定 `--host 127.0.0.1`，浏览器把 localhost 解析到 ::1 会拒连）。iframe 与"预览站点"按钮统一用 `status.url`，不再硬编码 127.0.0.1。
 - 预览站点：按钮先探 `GET /api/dev-status`（探测 127.0.0.1:4321），已启动则打开新标签页，未启动则提示先 `npm run dev`。
@@ -58,7 +59,8 @@
 ## 4. 已定细节
 
 - ✅ 交互反馈原则（M10）：不做装饰性动效；状态变化必须可见。侧栏标记 `aria-current="page"`；顶栏保存状态是 polite live region；输入后显示“有未保存内容”，落盘时显示“保存中”，成功或失败显示明确结果。全局使用 `:focus-visible`。
-- ✅ 页面工具栏（M10）：默认进入 WYSIWYG；模式切换、插入区块、页面操作分成稳定工具组。长文滚动时工具栏吸顶，避免切模式/插区块时回滚到顶部。
+- ✅ 页面工具栏（M10）：默认进入 WYSIWYG；模式切换、插入区块、页面操作分成稳定工具组。M11 后表单条与工具栏固定在工作区顶部，长文滚动不会把它们移出视野。
+- ✅ 页面工作区与侧栏折叠（M11）：页面视图不再依赖主区外层滚动；长文在编辑面内滚动，表单条和工具栏保持可见。顶栏按钮可折叠侧栏，状态存入 `oh-admin-sidebar`，带 `aria-expanded` / `aria-controls`；存储不可用时只影响当前页。
 - ✅ 长配置表单（M10）：编辑区块用原生折叠面板，不引入动画依赖；首块展开便于发现，空子组收起、非空子组展开并显示条目数。
 - ✅ 主页布局（M10）：HTML5 drag & drop 保留，同时提供上移/下移按钮；排序不是鼠标专属能力。
 - ✅ 流程测试（M10）：jsdom 渲染层覆盖“编辑区块配置自动保存 → 打开页面 → 切源码修改正文 → 自动保存”的跨视图链路；HTTP/API 行为由现有 admin API 测试覆盖。项目未引入浏览器 E2E 依赖，避免为本地管理器增加安装和运行负担。
