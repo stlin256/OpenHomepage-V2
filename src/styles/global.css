@@ -601,6 +601,7 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
   font-family: var(--font-mono);
   font-size: 1.35rem;
   font-weight: 250;
+  transform-origin: left center;
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease;
 }
 .editorial-item-content {
@@ -608,11 +609,12 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
   min-width: 0;
   display: grid;
   gap: 0.2rem;
+  transform-origin: left center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .editorial-item-title {
   font-size: 1.15rem;
   font-weight: 600;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .editorial-item-meta {
   color: var(--text-muted);
@@ -636,11 +638,11 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
 a.editorial-item:hover .editorial-item-index,
 a.editorial-item:focus-visible .editorial-item-index {
   color: var(--section-color, var(--accent));
-  transform: translateX(5px);
+  transform: translateX(6px) scale(1.02);
 }
-a.editorial-item:hover .editorial-item-title,
-a.editorial-item:focus-visible .editorial-item-title {
-  transform: translateX(7px);
+a.editorial-item:hover .editorial-item-content,
+a.editorial-item:focus-visible .editorial-item-content {
+  transform: translateX(6px) scale(1.02);
 }
 
 /* 磁贴：图片独立层缩放，内容不受布局抖动影响 */
