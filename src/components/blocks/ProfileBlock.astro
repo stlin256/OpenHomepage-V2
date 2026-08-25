@@ -1,0 +1,36 @@
+---
+import type { SiteConfig } from '../../lib/config.ts';
+import { resolveText } from '../../lib/localize.ts';
+
+interface Props {
+  site: SiteConfig;
+  lang: string;
+  avatarUrl?: string;
+  avatarTop: boolean;
+}
+
+const { site, lang, avatarUrl, avatarTop } = Astro.props;
+const showAvatar = Boolean(avatarUrl);
+---
+
+<section class:list={['home-block block-profile reveal', avatarTop ? 'profile-top' : 'mag-grid']}>
+  <div class:list={['profile-intro', { 'span-7': showAvatar && !avatarTop, 'span-12': !showAvatar && !avatarTop }]}>
+    <h1 class="profile-name">{resolveText(site.profile.name, lang)}</h1>
+    {site.profile.tagline && <p class="profile-tagline">{resolveText(site.profile.tagline, lang)}</p>}
+    {site.profile.links && site.profile.links.length > 0 && (
+      <ul class="profile-links">
+        {site.profile.links.map((link) => (
+          <li><a href={link.url}>{link.label}</a></li>
+        ))}
+      </ul>
+    )}
+  </div>
+  {showAvatar && (
+    <div
+      class:list={['profile-avatar', { 'span-5': !avatarTop }]}
+      {...(avatarTop ? {} : { 'data-parallax': true })}
+    >
+      <img src={avatarUrl} alt={resolveText(site.profile.name, lang)} loading="lazy" />
+    </div>
+  )}
+</section>

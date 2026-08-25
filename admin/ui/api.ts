@@ -51,6 +51,16 @@ export interface DirectivePreviewData {
     updated_at?: string;
   }[];
   streams: { id: string; title: string; excerpt: string }[];
+  editorials: {
+    id: string;
+    title: string;
+    description: string;
+    actions: number;
+    list: number;
+    tiles: number;
+    archive: number;
+    divider: boolean;
+  }[];
 }
 
 export interface AssetInfo {

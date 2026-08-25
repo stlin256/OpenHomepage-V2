@@ -132,7 +132,7 @@ serve:
 - 证书过期/尚未生效 → 仅警告，仍启用 HTTPS；
 - `certs/` 只有单个文件（不成对）→ 警告并降级 HTTP。
 
-任意页面的 markdown 里也可用 `::stream{id="welcome"}` 指令嵌入流式区块（依赖 markdown 指令能力，见细化项 #3）。
+任意页面的 markdown 里也可用 `::stream{id="welcome"}` / `::editorial{id="work"}` 指令嵌入流式或编辑风区块（依赖 markdown 指令能力，见细化项 #3）。
 
 ### 1.1 背景音乐（bgm）行为
 
@@ -151,7 +151,7 @@ serve:
 
 - `theme.background` / `theme.background_dark` 写盘前由 admin 校验 hex；构建侧非法值不覆盖内置默认色板。
 - `resolveIntroCard()` 归一化右下联系卡：关闭、缺标题或缺图片时不渲染；延迟限制到 1–20 秒。
-- `editorial_blocks` 是结构化数据，不是 Markdown 指令；后台在“编辑区块”页编辑它，在“流式块”页把它挂进主页布局。
+- `editorial_blocks` 的权威定义是结构化数据；后台在“编辑区块”页编辑它，在“流式块”页把它挂进主页布局。正文也能用 `::editorial{id}` 引用同一份定义，不复制内容。
 
 ## 2. data/rss.yaml
 

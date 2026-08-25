@@ -334,6 +334,22 @@ describe('构建期占位替换（M4b）', () => {
     expect(html).toContain('class="gh-card"');
   });
 
+  it('::editorial 占位被构建片段替换，且未知 id 会移除', async () => {
+    const hit = await renderMarkdown('::editorial{id="kit"}', {
+      editorialEmbeds: { kit: '<section class="block-editorial">EDITORIAL</section>' },
+    });
+    expect(hit).toContain('<section class="block-editorial">EDITORIAL</section>');
+    expect(hit).not.toContain('editorial-embed');
+
+    const miss = await renderMarkdown('::editorial{id="nope"}', {
+      editorialEmbeds: {},
+    });
+    expect(miss).not.toContain('editorial-embed');
+
+    const passthrough = await renderMarkdown('::editorial{id="kit"}');
+    expect(passthrough).toContain('class="editorial-embed"');
+  });
+
   // 回归 #8：特性页"功能指令"场景——ghcard/stream 相邻出现且后续还有正文，
   // 替换产物必须直出为真实 HTML，后续内容不受影响
   const FEATURES_MD = [

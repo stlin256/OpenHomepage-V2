@@ -28,6 +28,9 @@ describe('叶指令往返（::name{attrs}）', () => {
     expect(await serialize('::ghcard{repo="owner/repo"}\n')).toContain(
       '::ghcard{repo="owner/repo"}'
     );
+    expect(await serialize('::editorial{id="features"}\n')).toMatch(
+      /::editorial\{(?:#features|id="features")\}/
+    );
   });
 });
 

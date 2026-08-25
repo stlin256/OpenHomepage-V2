@@ -19,7 +19,7 @@ type Attrs = Record<string, string>;
 /** 预览数据加载器（测试可注入替身；真实环境走 admin server API） */
 export type PreviewLoader = () => Promise<DirectivePreviewData>;
 
-const EMPTY_PREVIEW: DirectivePreviewData = { pinned: [], streams: [] };
+const EMPTY_PREVIEW: DirectivePreviewData = { pinned: [], streams: [], editorials: [] };
 
 const defaultLoader: PreviewLoader = async () => {
   try {
@@ -176,6 +176,27 @@ export function renderDirectivePreview(
       container.append(card);
       return;
     }
+    case 'editorial': {
+      const block = data.editorials.find((item) => item.id === values.id);
+      const card = el('div', 'dp-editorial');
+      card.append(el('div', 'dp-editorial-head', `🧩 ${block?.title || values.id || 'editorial'}`));
+      if (block?.description) card.append(el('div', 'dp-editorial-desc', block.description));
+      if (block) {
+        const meta = el('div', 'dp-editorial-meta');
+        const parts = [
+          block.actions ? `${t('editorialActions')} ${block.actions}` : '',
+          block.list ? `${t('editorialList')} ${block.list}` : '',
+          block.tiles ? `${t('editorialTiles')} ${block.tiles}` : '',
+          block.archive ? `${t('editorialArchive')} ${block.archive}` : '',
+        ].filter(Boolean);
+        meta.textContent = parts.join(' · ');
+        if (parts.length > 0) card.append(meta);
+      } else {
+        card.append(el('div', 'dp-editorial-desc', t('editorialUnknown')));
+      }
+      container.append(card);
+      return;
+    }
     default:
       container.append(el('div', 'dp-meta', name));
   }
@@ -260,7 +281,7 @@ class AtomCardView implements NodeView {
     this.preview.className = 'directive-preview';
     this.dom.append(this.preview);
     this.renderPreview();
-    if (def.name === 'ghcard' || def.name === 'stream') {
+    if (def.name === 'ghcard' || def.name === 'stream' || def.name === 'editorial') {
       void load().then((data) => {
         this.previewData = data;
         this.renderPreview();

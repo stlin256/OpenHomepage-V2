@@ -42,10 +42,12 @@
 ```markdown
 ::stream{id="welcome"}
 ::ghcard{repo="owner/repo"}
+::editorial{id="features"}
 ```
 
 - `stream`：在任意页面嵌入已定义的流式区块（引用 site.yaml 的 streaming_blocks）。
 - `ghcard`：在正文任意位置嵌入单个 GitHub 仓库卡片。
+- `editorial`：在正文任意位置嵌入完整编辑风区块（引用 site.yaml 的 editorial_blocks），覆盖按钮组、编号列表、磁贴、归档卡和分割线。未知 id 会在构建时移除占位。
 
 ## 4. 图片灯箱
 
@@ -56,6 +58,6 @@
 ## 5. 注意事项
 
 - 指令参数一律用 `key="value"` 形式；未识别指令按普通文本段落降级渲染，不报错。
-- 编辑器（Milkdown）为这些指令提供自定义节点，保持所见即所得。
+- 编辑器（Milkdown）为这些指令提供自定义节点，保持所见即所得；`::editorial` 显示标题、描述和组件数量预览。
 - 所有指令渲染结果在明暗双主题下均需成立。
 - 数学公式：KaTeX 渲染，`$...$` 行内与 `$$...$$` 块级；KaTeX CSS 仅按需加载。

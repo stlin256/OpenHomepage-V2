@@ -27,6 +27,16 @@ const fakeLoader: PreviewLoader = async () => ({
     },
   ],
   streams: [{ id: 'welcome', title: 'AI 助理致辞', excerpt: '你好，我是这个站点的 AI 助理。' }],
+  editorials: [{
+    id: 'features',
+    title: 'Editorial kit',
+    description: 'Actions, list cards, tiles, archive cards, and divider.',
+    actions: 1,
+    list: 1,
+    tiles: 1,
+    archive: 1,
+    divider: true,
+  }],
 });
 
 async function editorWithViews(markdown: string, load: PreviewLoader = fakeLoader) {
@@ -108,6 +118,17 @@ describe('指令预览卡（所见即所得）', () => {
     const card = host.querySelector('.dp-stream')!;
     expect(card.textContent).toContain('AI 助理致辞');
     expect(card.textContent).toContain('你好，我是这个站点的 AI 助理。');
+    await editor.destroy();
+  });
+
+  it('editorial 渲染编辑区块卡片（标题、描述和组件计数）', async () => {
+    const { host, editor } = await editorWithViews('::editorial{id="features"}\n');
+    await tick();
+    const card = host.querySelector('.dp-editorial')!;
+    expect(card.textContent).toContain('Editorial kit');
+    expect(card.textContent).toContain('Actions, list cards, tiles, archive cards, and divider.');
+    expect(card.textContent).toContain('按钮组 1');
+    expect(editor.action(getMarkdown())).toMatch(/::editorial\{(?:#features|id="features")\}/);
     await editor.destroy();
   });
 

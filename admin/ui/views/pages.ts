@@ -118,6 +118,7 @@ export async function renderPageEditor(
     grid: t('dirGrid'),
     stream: t('dirStream'),
     ghcard: t('dirGhcard'),
+    editorial: t('dirEditorial'),
   };
   for (const def of DIRECTIVE_DEFS) {
     insertSel.append(el('option', { value: def.id }, dirLabels[def.id] ?? def.name));

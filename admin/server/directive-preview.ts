@@ -28,9 +28,21 @@ export interface StreamPreview {
   excerpt: string;
 }
 
+export interface EditorialPreview {
+  id: string;
+  title: string;
+  description: string;
+  actions: number;
+  list: number;
+  tiles: number;
+  archive: number;
+  divider: boolean;
+}
+
 export interface DirectivePreview {
   pinned: GhPinnedPreview[];
   streams: StreamPreview[];
+  editorials: EditorialPreview[];
 }
 
 /** 流式内容文件解析（与 src/lib/stream.ts resolveStreamingFile 同规则的轻量版，避免引入渲染管线） */
@@ -89,5 +101,22 @@ export function readDirectivePreview(rootDir: string, dataDir: string): Directiv
     /* 配置读不出：空列表 */
   }
 
-  return { pinned, streams };
+  let editorials: EditorialPreview[] = [];
+  try {
+    const site = loadSiteConfig(dataDir);
+    editorials = (site.editorial_blocks ?? []).map((block) => ({
+      id: block.id,
+      title: resolveText(block.title, 'zh'),
+      description: block.description === undefined ? '' : resolveText(block.description, 'zh'),
+      actions: block.actions?.length ?? 0,
+      list: block.list?.length ?? 0,
+      tiles: block.tiles?.length ?? 0,
+      archive: block.archive?.length ?? 0,
+      divider: block.divider ?? false,
+    }));
+  } catch {
+    /* 配置读不出：空列表 */
+  }
+
+  return { pinned, streams, editorials };
 }

@@ -34,6 +34,15 @@ streaming_blocks:
     content_file: "streaming/welcome.md"
   - id: missing
     content_file: "streaming/nope.md"
+editorial_blocks:
+  - id: features
+    title: { zh: "组件套件", en: "Editorial kit" }
+    description: { zh: "完整组件", en: "Full kit" }
+    actions: [{ label: { zh: "按钮", en: "Action" }, url: "/features" }]
+    list: [{ title: { zh: "列表", en: "List" } }]
+    tiles: [{ title: { zh: "磁贴", en: "Tile" }, size: wide }]
+    archive: [{ title: { zh: "归档", en: "Archive" } }]
+    divider: true
 `;
 
 describe('readDirectivePreview', () => {
@@ -82,6 +91,18 @@ describe('readDirectivePreview', () => {
       { id: 'welcome', title: '致辞', excerpt: '标题 你好，世界。' },
       { id: 'missing', title: '', excerpt: '' },
     ]);
+    expect(preview.editorials).toEqual([
+      {
+        id: 'features',
+        title: '组件套件',
+        description: '完整组件',
+        actions: 1,
+        list: 1,
+        tiles: 1,
+        archive: 1,
+        divider: true,
+      },
+    ]);
   });
 
   it('.cache 或 site.yaml 缺失/损坏时对应部分降级为空，不抛错', () => {
@@ -93,6 +114,7 @@ describe('readDirectivePreview', () => {
     const preview = readDirectivePreview(rootDir, dataDir);
     expect(preview.pinned).toEqual([]);
     expect(preview.streams).toHaveLength(2);
+    expect(preview.editorials).toHaveLength(1);
   });
 
   it('流式内容按语言目录回退（zh 缺失时读 en，再退原路径）', () => {

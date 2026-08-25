@@ -48,9 +48,11 @@ import {
   type LoadedStreamBlock,
 } from '../lib/stream.ts';
 import GithubBlock from '../components/blocks/GithubBlock.astro';
+import ProfileBlock from '../components/blocks/ProfileBlock.astro';
 import RssBlock from '../components/blocks/RssBlock.astro';
 import StreamBlock from '../components/blocks/StreamBlock.astro';
 import EditorialBlock from '../components/EditorialBlock.astro';
+import { renderEditorialBlock } from '../lib/editorial-block.ts';
 
 interface Props {
   route: RouteEntry;
@@ -161,6 +163,9 @@ for (const def of site.streaming_blocks ?? []) {
 const streamById = new Map(streamBlocks.map((b) => [b.id, b]));
 const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b)]));
 const editorialById = new Map((site.editorial_blocks ?? []).map((block) => [block.id, block]));
+const editorialEmbeds = Object.fromEntries(
+  (site.editorial_blocks ?? []).map((block) => [block.id, renderEditorialBlock(block, contentLang)]),
+);
 // ::ghcard{repo} 占位 ← pinned 缓存数据（大小写不敏感匹配；1:1 官网仓库卡，随页面语言）
 const ghHtmlByRepo = Object.fromEntries(
   (githubView?.pinned?.repos ?? []).map((r) => [
@@ -171,7 +176,14 @@ const ghHtmlByRepo = Object.fromEntries(
 const bodyHtml = await renderMarkdown(route.page.body, {
   streamEmbeds,
   ghCards: { htmlByRepo: ghHtmlByRepo },
+  editorialEmbeds,
 });
+const isFeaturesPage = route.page.slug === 'features';
+const componentLabels = {
+  profile: contentLang === 'zh' ? 'Profile Block · 资料区' : 'Profile Block',
+  github: contentLang === 'zh' ? 'GitHub Block · 贡献热力图 + 仓库卡' : 'GitHub Block: heatmap + repo cards',
+  rss: contentLang === 'zh' ? 'RSS Block · 内容卡片流' : 'RSS Block: content cards',
+};
 ---
 
 <BaseLayout
@@ -197,34 +209,12 @@ const bodyHtml = await renderMarkdown(route.page.body, {
       <div class="home">
         {blocks.map((b) =>
           b.block === 'profile' ? (
-            <section
-              class:list={[
-                'home-block block-profile reveal',
-                avatarTop ? 'profile-top' : 'mag-grid',
-              ]}
-            >
-              <div class:list={['profile-intro', { 'span-7': !avatarTop }]}>
-                <h1 class="profile-name">{resolveText(site.profile.name, contentLang)}</h1>
-                {site.profile.tagline && (
-                  <p class="profile-tagline">{resolveText(site.profile.tagline, contentLang)}</p>
-                )}
-                {site.profile.links && site.profile.links.length > 0 && (
-                  <ul class="profile-links">
-                    {site.profile.links.map((l) => (
-                      <li>
-                        <a href={l.url}>{l.label}</a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div
-                class:list={['profile-avatar', { 'span-5': !avatarTop }]}
-                {...(avatarTop ? {} : { 'data-parallax': true })}
-              >
-                {avatarUrl && <img src={avatarUrl} alt={resolveText(site.profile.name, contentLang)} loading="lazy" />}
-              </div>
-            </section>
+            <ProfileBlock
+              site={site}
+              lang={contentLang}
+              avatarUrl={avatarUrl}
+              avatarTop={avatarTop}
+            />
           ) : b.block === 'markdown' ? (
             <section class="home-block block-markdown reveal">
               <div class="markdown-body" set:html={bodyHtml} />
@@ -259,6 +249,30 @@ const bodyHtml = await renderMarkdown(route.page.body, {
       <article class="page-content">
         <h1>{route.page.title}</h1>
         <div class="markdown-body" set:html={bodyHtml} />
+        {isFeaturesPage && (
+          <>
+            <h2 class="component-demo-title">{componentLabels.profile}</h2>
+            <ProfileBlock
+              site={site}
+              lang={contentLang}
+              avatarUrl={avatarUrl}
+              avatarTop={avatarTop}
+            />
+            <h2 class="component-demo-title">{componentLabels.github}</h2>
+            <GithubBlock
+              view={githubView}
+              lang={contentLang}
+              accent={accent}
+              showContributions={site.github.show_contributions !== false}
+            />
+            <h2 class="component-demo-title">{componentLabels.rss}</h2>
+            <RssBlock
+              view={rssView}
+              title={resolveText(site.rss?.block_title ?? 'RSS', contentLang)}
+              lang={contentLang}
+            />
+          </>
+        )}
       </article>
   )}
 </BaseLayout>

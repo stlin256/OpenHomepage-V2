@@ -1,6 +1,6 @@
 /**
  * Milkdown 自定义指令节点（与 docs/specs/03 一一对应）：
- * bilibili/youtube/stream/ghcard 为叶指令（::name{attrs}），
+ * bilibili/youtube/stream/ghcard/editorial 为叶指令（::name{attrs}），
  * video/audio/figure 为空容器指令（:::name{attrs}:::），
  * grid/grid_cell 为嵌套容器（::::grid 包 :::cell，外层冒号数自动多于内层）。
  * 节点只存参数（attrs.values），序列化经 remark-directive 还原为指令语法。
@@ -96,6 +96,7 @@ export const DIRECTIVE_DEFS: DirectiveDef[] = [
   { id: 'figure', name: 'figure', kind: 'container', icon: '🖼️', params: [{ key: 'src', label: 'src', placeholder: 'assets/photo.jpg' }, { key: 'caption', label: 'caption' }, { key: 'width', label: 'width', placeholder: '70%' }, { key: 'align', label: 'align', options: ['left', 'center', 'right'] }] },
   { id: 'stream', name: 'stream', kind: 'leaf', icon: '💬', params: [{ key: 'id', label: '区块 id', placeholder: 'welcome' }] },
   { id: 'ghcard', name: 'ghcard', kind: 'leaf', icon: '🐙', params: [{ key: 'repo', label: '仓库', placeholder: 'owner/repo' }] },
+  { id: 'editorial', name: 'editorial', kind: 'leaf', icon: '🧩', params: [{ key: 'id', label: '区块 id', placeholder: 'features' }] },
 ];
 
 /** 生成原子指令节点 schema（叶 / 空容器共用：参数即全部状态） */
@@ -230,4 +231,5 @@ export const INSERT_SNIPPETS: Record<string, string> = {
   grid: '::::grid{cols=2}\n:::cell\n\n:::\n:::cell\n\n:::\n::::\n',
   stream: '::stream{id=""}\n',
   ghcard: '::ghcard{repo=""}\n',
+  editorial: '::editorial{id=""}\n',
 };

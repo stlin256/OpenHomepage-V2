@@ -42,6 +42,8 @@ export interface MarkdownOptions {
    * markdown 中 `::ghcard{repo}` 占位（.gh-card div）被替换；匹配不到移除并 warning。
    */
   ghCards?: { htmlByRepo: Record<string, string>; warn?: (msg: string) => void };
+  /** 编辑区块 id → 构建好的完整 HTML 片段（src/lib/editorial-block.ts） */
+  editorialEmbeds?: Record<string, string>;
 }
 
 const DEFAULT_SHIKI_THEMES = { light: 'github-light', dark: 'github-dark' };
@@ -276,6 +278,11 @@ function remarkCustomDirectives() {
           setElement('div', { className: ['gh-card'], dataRepo: attrs.repo });
           break;
         }
+        case 'editorial': {
+          if (!attrs.id) return degradeToText(directive, file);
+          setElement('div', { className: ['editorial-embed'], dataEditorialId: attrs.id });
+          break;
+        }
         default:
           degradeToText(directive, file);
       }
@@ -403,6 +410,21 @@ function rehypeGhCards(ghCards: { htmlByRepo: Record<string, string>; warn?: War
   };
 }
 
+function rehypeEditorialEmbeds(embeds: Record<string, string>, warn: WarnFn) {
+  return (tree: HastRoot) => {
+    replacePlaceholder(
+      tree,
+      'editorial-embed',
+      (node) => String(node.properties?.dataEditorialId ?? node.properties?.['data-editorial-id'] ?? ''),
+      embeds,
+      warn,
+      (id) =>
+        `::editorial 引用了未定义的编辑区块 "${id}"（site.yaml editorial_blocks 中没有），已移除占位。/` +
+        ` Editorial block "${id}" not found in editorial_blocks; placeholder removed.`,
+    );
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 管线
 // ---------------------------------------------------------------------------
@@ -431,6 +453,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   // 未提供对应选项时占位原样保留（如纯渲染场景）；提供后未匹配的占位移除并 warning。
   if (options.streamEmbeds) processor.use(() => rehypeStreamEmbeds(options.streamEmbeds!, warn));
   if (options.ghCards) processor.use(() => rehypeGhCards(options.ghCards!));
+  if (options.editorialEmbeds) processor.use(() => rehypeEditorialEmbeds(options.editorialEmbeds!, warn));
   // allowDangerousHtml：sanitize 之后用户内容的 raw 节点已被 rehypeRaw 全部解析，
   // 树中仅剩上面替换进来的可信构建片段（stream/ghcard），须直出而非转义（回归 #8）
   return processor.use(rehypeStringify, { allowDangerousHtml: true });

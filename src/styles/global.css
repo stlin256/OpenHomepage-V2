@@ -399,6 +399,20 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   border-top: 0;
   padding-top: 0;
 }
+.component-demo-title {
+  margin: 4rem 0 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+.component-demo-title + .home-block {
+  border-top: 0;
+  padding-top: 0;
+}
+.block-editorial:has(> .editorial-divider) + .home-block {
+  border-top: 0;
+}
 
 /* ---- 编辑风通用控件与区块 ---- */
 .section-header {
@@ -516,14 +530,18 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 /* 编号列表：进入视口后保留 masked 图片，hover 提升透明度并轻微缩小图片 */
 .editorial-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   margin-bottom: 2.5rem;
 }
 .editorial-item {
   position: relative;
   display: grid;
   grid-template-columns: 3.25rem minmax(0, 1fr);
-  gap: 1rem;
+  width: 100%;
+  column-gap: 1rem;
   align-items: center;
+  justify-items: start;
+  min-width: 0;
   min-height: 6.5rem;
   padding: 1.75rem 0;
   border-bottom: 1px solid var(--border);
@@ -563,11 +581,13 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
   opacity: 0.88;
   transform: scale(0.97);
 }
-.editorial-item > * {
+.editorial-item > *:not(.editorial-item-mask) {
   position: relative;
   z-index: 1;
 }
 .editorial-item-index {
+  flex: 0 0 3.25rem;
+  min-width: 0;
   color: var(--section-color, var(--accent));
   font-family: var(--font-mono);
   font-size: 1.35rem;
@@ -575,6 +595,8 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
   transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease;
 }
 .editorial-item-content {
+  width: 100%;
+  min-width: 0;
   display: grid;
   gap: 0.2rem;
 }
@@ -592,6 +614,15 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
 .editorial-item-description {
   color: var(--text-muted);
   font-size: 0.88rem;
+}
+
+.markdown-body .katex {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 a.editorial-item:hover .editorial-item-index,
 a.editorial-item:focus-visible .editorial-item-index {
@@ -613,7 +644,7 @@ a.editorial-item:focus-visible .editorial-item-title {
 }
 .editorial-tile {
   position: relative;
-  grid-column: span 3;
+  grid-column: span 4;
   min-height: 8.5rem;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -622,10 +653,10 @@ a.editorial-item:focus-visible .editorial-item-title {
   text-decoration: none;
 }
 .editorial-tile.tile-wide {
-  grid-column: span 6;
+  grid-column: span 8;
 }
 .editorial-tile.tile-tall {
-  grid-column: span 3;
+  grid-column: span 4;
   grid-row: span 2;
 }
 .editorial-tile::before {
@@ -707,7 +738,7 @@ a.editorial-item:focus-visible .editorial-item-title {
   background-size: cover;
   background-position: center;
   filter: grayscale(1) contrast(0.92);
-  transition: filter 0.35s ease;
+  transition: filter 0.525s ease;
 }
 .archive-card:hover .archive-media,
 .archive-card:focus-visible .archive-media {
