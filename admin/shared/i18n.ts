@@ -26,6 +26,9 @@ const zh = {
   actions: '操作',
 
   navPages: '页面',
+  toggleSidebar: '切换侧栏',
+  expandSidebar: '展开侧栏',
+  collapseSidebar: '折叠侧栏',
   navConfig: '配置',
   navAssets: '素材',
   configSite: '站点',
@@ -269,6 +272,9 @@ const en: Record<DictKey, string> = {
   actions: 'Actions',
 
   navPages: 'Pages',
+  toggleSidebar: 'Toggle sidebar',
+  expandSidebar: 'Expand sidebar',
+  collapseSidebar: 'Collapse sidebar',
   navConfig: 'Config',
   navAssets: 'Assets',
   configSite: 'Site',

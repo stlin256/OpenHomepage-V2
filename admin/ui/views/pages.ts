@@ -401,7 +401,14 @@ export async function renderPageEditor(
 
   const previewPane = el('div', { class: 'preview-pane', style: 'display:none' }, previewBar, previewBody);
   const editorWrap = el('div', { class: 'editor-wrap' }, editPane, previewPane);
-  container.replaceChildren(formBar, toolbar, editorWrap);
+  const pageEditor = el(
+    'div',
+    { class: 'page-editor' },
+    formBar,
+    toolbar,
+    editorWrap
+  );
+  container.replaceChildren(pageEditor);
   updateSeg();
 
   editor = await buildEditor(

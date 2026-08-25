@@ -45,6 +45,7 @@ a { color: var(--accent); text-decoration: none; }
 }
 .logo { font-weight: 600; }
 .topbar-spacer { flex: 1; }
+.sidebar-toggle { flex: none; }
 .status { font-size: 13px; color: var(--text-muted); }
 .status.ok { color: #2e7d32; }
 .status.err { color: var(--danger); }
@@ -91,6 +92,13 @@ a { color: var(--accent); text-decoration: none; }
 
 .main { flex: 1; padding: 20px 28px; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; }
 .main > * { flex: none; }
+.main[data-view='page'] {
+  padding: 16px 20px;
+  overflow: hidden;
+}
+.main[data-view='page'] > * { flex: 1; min-height: 0; }
+
+.layout.sidebar-collapsed .sidebar { display: none; }
 
 .btn {
   border: 1px solid var(--border);
@@ -546,33 +554,40 @@ a { color: var(--accent); text-decoration: none; }
 .seg-mini .seg-item { padding: 3px 10px; font-size: 12px; }
 
 /* ---- 编辑/预览双栏：填满主区剩余高度，编辑/预览各自内部滚动 ---- */
-.editor-wrap.split {
+.editor-wrap {
   display: flex;
   gap: 14px;
   align-items: stretch;
   flex: 1;
   min-height: 0;
 }
-.editor-wrap.split .edit-pane {
+.edit-pane {
   flex: 1;
   min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-.editor-wrap.split .edit-pane .editor-host,
-.editor-wrap.split .edit-pane .source-editor {
+.editor-host,
+.source-editor {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
-.editor-wrap.split .preview-pane {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
+.editor-wrap.split { flex-direction: row; }
+
+/* 页面编辑工作区：表单和工具栏固定，正文区域占用并内部滚动剩余高度 */
+.page-editor {
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
+.page-editor .fm-bar,
+.page-editor .editor-toolbar {
+  flex: none;
+}
+.page-editor .editor-host .ProseMirror { min-height: calc(100% - 32px); }
+.page-editor .source-editor { min-height: 0; height: auto; resize: none; }
 
 /* 源码编辑器（等宽） */
 .source-editor {

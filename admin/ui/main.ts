@@ -5,6 +5,11 @@
 import { createT, detectLang, type Lang } from '../shared/i18n.ts';
 import { initialTheme, toggleTheme, type ThemeName } from '../../src/lib/theme.ts';
 import { el, btn } from './dom.ts';
+import {
+  applySidebarState,
+  readSidebarCollapsed,
+  writeSidebarCollapsed,
+} from './layout-state.ts';
 import { api, type PageMeta } from './api.ts';
 import { updateSideNav } from './navigation.ts';
 import { renderPageEditor } from './views/pages.ts';
@@ -154,6 +159,7 @@ async function renderMain(): Promise<void> {
   currentCleanup = null;
   main.replaceChildren();
   const { name, parts } = route();
+  main.dataset.view = name === 'page' ? 'page' : 'form';
   try {
     if (name === 'page' && parts.length >= 3) {
       currentCleanup = await renderPageEditor(main, state, parts[1], parts[2]);
@@ -296,11 +302,39 @@ async function boot(): Promise<void> {
     applyAdminTheme(next);
   });
 
+  // 侧栏折叠：状态记忆在本地，折叠后保留顶栏入口，不隐藏当前页面内容。
+  let sidebarCollapsed = readSidebarCollapsed(window.localStorage);
+  const layout = el('div', { class: 'layout' });
+  const sidebar = el('aside', { class: 'sidebar', id: 'admin-sidebar' });
+  layout.append(sidebar, el('main', { class: 'main' }));
+  const sidebarToggle = el('button', {
+    class: 'icon-btn sidebar-toggle',
+    type: 'button',
+    'aria-controls': 'admin-sidebar',
+  }) as HTMLButtonElement;
+  sidebarToggle.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
+    '<rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></svg>';
+  const paintSidebar = () => {
+    applySidebarState(layout, sidebarCollapsed);
+    const label = state.t(sidebarCollapsed ? 'expandSidebar' : 'collapseSidebar');
+    sidebarToggle.title = label;
+    sidebarToggle.setAttribute('aria-label', label);
+    sidebarToggle.setAttribute('aria-expanded', String(!sidebarCollapsed));
+  };
+  sidebarToggle.addEventListener('click', () => {
+    sidebarCollapsed = !sidebarCollapsed;
+    writeSidebarCollapsed(window.localStorage, sidebarCollapsed);
+    paintSidebar();
+  });
+  paintSidebar();
+
   app.append(
     el(
       'header',
       { class: 'topbar' },
       el('span', { class: 'logo' }, state.t('appTitle')),
+      sidebarToggle,
       statusEl,
       el('span', { class: 'topbar-spacer' }),
       exportBtn,
@@ -309,7 +343,7 @@ async function boot(): Promise<void> {
       themeBtn,
       langSel
     ),
-    el('div', { class: 'layout' }, el('aside', { class: 'sidebar' }), el('main', { class: 'main' }))
+    layout
   );
 
   if (info.initialized) {

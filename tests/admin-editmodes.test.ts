@@ -83,6 +83,14 @@ describe('页面编辑器三模式', () => {
     return { container, cleanup };
   }
 
+  it('页面正文放在固定高度工作区内，由编辑面内部滚动', async () => {
+    const { container, cleanup } = await openEditor();
+    const workspace = container.querySelector('.page-editor')!;
+    expect(workspace).toBeTruthy();
+    expect(workspace.children[1]).toBe(container.querySelector('.editor-toolbar'));
+    cleanup();
+  });
+
   it('分段控件：源码 ↔ WYSIWYG 互切内容同步，保存取当前编辑面', async () => {
     const { container, cleanup } = await openEditor();
     const seg = container.querySelector('.seg')!;
