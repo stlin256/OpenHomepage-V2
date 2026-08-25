@@ -72,6 +72,7 @@ const FAVICON_MIME: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLowerCase()];
+const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
 ---
 
 <html
@@ -120,7 +121,7 @@ const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLower
         <span class="bar"></span>
       </button>
       <nav class="site-nav" id="site-nav" aria-label="站点导航">
-        <p class="site-title"><a href="/">{siteTitle}</a></p>
+        <p class="site-title"><a href={homeHref}>{siteTitle}</a></p>
         <ul>
           {nav.map((item) => (
             <li>

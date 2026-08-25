@@ -1,7 +1,7 @@
 ---
 import { renderEditorialBlock } from '../lib/editorial-block.ts';
 
-const { block, lang } = Astro.props;
+  const { block, lang, localizeHref } = Astro.props;
 ---
 
-<Fragment set:html={renderEditorialBlock(block, lang)} />
+<Fragment set:html={renderEditorialBlock(block, lang, localizeHref)} />

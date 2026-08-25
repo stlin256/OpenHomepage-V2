@@ -53,6 +53,7 @@ import RssBlock from '../components/blocks/RssBlock.astro';
 import StreamBlock from '../components/blocks/StreamBlock.astro';
 import EditorialBlock from '../components/EditorialBlock.astro';
 import { renderEditorialBlock } from '../lib/editorial-block.ts';
+import { localizeInternalHref } from '../lib/routes.ts';
 
 interface Props {
   route: RouteEntry;
@@ -69,6 +70,8 @@ interface Props {
   /** favicon URL（site.favicon 指向的真实文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
   favicon: string;
   blocks: PlannedHomeBlock[];
+  /** 全站 slug 集合，用于把内容里的无语言链接改写成当前路由语言 */
+  slugs: string[];
   /** .cache/github.json 视图（M4b）；null = 缓存缺失（渲染空态） */
   githubView: GithubView | null;
   /** .cache/rss.json 视图；null = 缓存缺失或 rss 未启用 */
@@ -119,6 +122,7 @@ export function getStaticPaths() {
       bgm: bgmSrc && bgm ? { src: bgmSrc, volume: bgm.volume, autoplay: bgm.autoplay } : undefined,
       favicon: faviconUrl,
       blocks,
+      slugs: [...new Set(pages.map((page) => page.slug))],
       githubView,
       rssView,
     } satisfies Props,
@@ -138,6 +142,7 @@ const {
   bgm,
   favicon,
   blocks,
+  slugs,
   githubView,
   rssView,
 } = Astro.props;
@@ -155,16 +160,18 @@ const avatarTop = resolveAvatarPosition(site.profile) === 'top';
 // 流式区块：按内容语言沿回退链加载全部定义（页面语言 → en → 默认语言）；
 // 主页 streaming 区块与正文 ::stream{id} 占位共用同一份加载结果
 const dataDir = resolveDataDir(process.cwd());
+const slugSet = new Set(slugs);
+const localizeHref = (href: string) => localizeInternalHref(href, route.lang, defaultLang, slugSet);
 const streamBlocks: LoadedStreamBlock[] = [];
 for (const def of site.streaming_blocks ?? []) {
-  const b = await loadStreamingBlock(dataDir, def, contentLang, defaultLang);
+  const b = await loadStreamingBlock(dataDir, def, contentLang, defaultLang, console.warn, slugSet);
   if (b) streamBlocks.push(b);
 }
 const streamById = new Map(streamBlocks.map((b) => [b.id, b]));
 const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b)]));
 const editorialById = new Map((site.editorial_blocks ?? []).map((block) => [block.id, block]));
 const editorialEmbeds = Object.fromEntries(
-  (site.editorial_blocks ?? []).map((block) => [block.id, renderEditorialBlock(block, contentLang)]),
+  (site.editorial_blocks ?? []).map((block) => [block.id, renderEditorialBlock(block, contentLang, localizeHref)]),
 );
 // ::ghcard{repo} 占位 ← pinned 缓存数据（大小写不敏感匹配；1:1 官网仓库卡，随页面语言）
 const ghHtmlByRepo = Object.fromEntries(
@@ -177,6 +184,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   streamEmbeds,
   ghCards: { htmlByRepo: ghHtmlByRepo },
   editorialEmbeds,
+  localizeHrefs: { lang: route.lang, defaultLang, slugs },
 });
 const isFeaturesPage = route.page.slug === 'features';
 const componentLabels = {
@@ -240,6 +248,7 @@ const componentLabels = {
               <EditorialBlock
                 block={editorialById.get(b.id ?? '')!}
                 lang={contentLang}
+                localizeHref={localizeHref}
               />
             ) : null
           ) : null,

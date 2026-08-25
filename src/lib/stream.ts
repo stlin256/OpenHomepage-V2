@@ -185,6 +185,7 @@ export async function loadStreamingBlock(
   lang: string,
   defaultLang: string,
   warn: (msg: string) => void = console.warn,
+  slugs?: ReadonlySet<string>,
 ): Promise<LoadedStreamBlock | null> {
   const file = resolveStreamingFile(dataDir, def.content_file, lang, defaultLang);
   if (!file) {
@@ -194,7 +195,9 @@ export async function loadStreamingBlock(
     );
     return null;
   }
-  const { html, tokens } = await markdownToStream(readFileSync(file, 'utf8'));
+  const { html, tokens } = await markdownToStream(readFileSync(file, 'utf8'), slugs ? {
+    localizeHrefs: { lang, defaultLang, slugs: [...slugs] },
+  } : {});
   return {
     id: def.id,
     title: def.title === undefined ? '' : resolveText(def.title, lang),

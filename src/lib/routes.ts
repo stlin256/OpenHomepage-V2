@@ -120,3 +120,33 @@ export function alternateLinks(
     .filter((lang) => realLangs.has(lang))
     .map((lang) => ({ lang, path: pageUrlPath(slug, lang, effectiveDefault) }));
 }
+
+/**
+ * 把内容里声明的无语言站内链接（如 /research）改写为当前路由语言。
+ * 只改写已知页面 slug：静态资源、外链、锚点、未识别路径保持原样；
+ * 已带语言前缀的链接不重复改写。
+ */
+export function localizeInternalHref(
+  href: string,
+  lang: string,
+  defaultLang: string,
+  slugs: ReadonlySet<string>
+): string {
+  if (lang === defaultLang || !href || !href.startsWith('/') || href.startsWith('//')) return href;
+  const base = 'https://openhomepage.local';
+  let url: URL;
+  try {
+    url = new URL(href, base);
+  } catch {
+    return href;
+  }
+  if (url.origin !== base) return href;
+
+  const trailingSlash = url.pathname.length > 1 && url.pathname.endsWith('/');
+  const cleanPath = url.pathname.replace(/\/+$/, '');
+  const slug = cleanPath === '' ? '/' : cleanPath.slice(1);
+  if (!slugs.has(slug)) return href;
+
+  const pathname = slug === '/' ? `/${lang}/` : `/${lang}/${slug}${trailingSlash ? '/' : ''}`;
+  return `${pathname}${url.search}${url.hash}`;
+}

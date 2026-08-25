@@ -26,6 +26,7 @@ import type {
 } from 'mdast-util-directive';
 import type { Root as HastRoot, Element, ElementContent, Properties } from 'hast';
 import type { VFile } from 'vfile';
+import { localizeInternalHref } from './routes.ts';
 
 export interface MarkdownOptions {
   /** Shiki 明暗双主题（CSS 变量双写方案，前端按主题切换 var） */
@@ -44,6 +45,12 @@ export interface MarkdownOptions {
   ghCards?: { htmlByRepo: Record<string, string>; warn?: (msg: string) => void };
   /** 编辑区块 id → 构建好的完整 HTML 片段（src/lib/editorial-block.ts） */
   editorialEmbeds?: Record<string, string>;
+  /** 当前路由语言下的站内链接改写参数；缺省时保留作者写的链接 */
+  localizeHrefs?: {
+    lang: string;
+    defaultLang: string;
+    slugs: string[];
+  };
 }
 
 const DEFAULT_SHIKI_THEMES = { light: 'github-light', dark: 'github-dark' };
@@ -425,6 +432,21 @@ function rehypeEditorialEmbeds(embeds: Record<string, string>, warn: WarnFn) {
   };
 }
 
+function rehypeLocalizeHrefs(options: NonNullable<MarkdownOptions['localizeHrefs']>) {
+  const slugs = new Set(options.slugs);
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node: Element) => {
+      if (node.tagName !== 'a' || typeof node.properties?.href !== 'string') return;
+      node.properties.href = localizeInternalHref(
+        node.properties.href,
+        options.lang,
+        options.defaultLang,
+        slugs
+      );
+    });
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 管线
 // ---------------------------------------------------------------------------
@@ -454,6 +476,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   if (options.streamEmbeds) processor.use(() => rehypeStreamEmbeds(options.streamEmbeds!, warn));
   if (options.ghCards) processor.use(() => rehypeGhCards(options.ghCards!));
   if (options.editorialEmbeds) processor.use(() => rehypeEditorialEmbeds(options.editorialEmbeds!, warn));
+  if (options.localizeHrefs) processor.use(() => rehypeLocalizeHrefs(options.localizeHrefs!));
   // allowDangerousHtml：sanitize 之后用户内容的 raw 节点已被 rehypeRaw 全部解析，
   // 树中仅剩上面替换进来的可信构建片段（stream/ghcard），须直出而非转义（回归 #8）
   return processor.use(rehypeStringify, { allowDangerousHtml: true });
