@@ -186,7 +186,7 @@ editorial_blocks:
         kicker:
           zh: "Photo"
           en: "Photo"
-        image: "assets/cover-1.jpg"
+        image: "assets/gallery-kingfisher.jpg"
         url: "/gallery"
         size: "tall"
       - title:
@@ -195,7 +195,7 @@ editorial_blocks:
         kicker:
           zh: "Travel"
           en: "Travel"
-        image: "assets/gallery-bus.jpg"
+        image: "assets/gallery-transit-station.jpg"
         url: "/gallery"
       - title:
           zh: "夜间片段"
@@ -203,7 +203,7 @@ editorial_blocks:
         kicker:
           zh: "Archive"
           en: "Archive"
-        image: "assets/gallery-hk.jpg"
+        image: "assets/gallery-victoria-harbour-night.jpg"
         url: "/gallery"
     archive:
       - title:
@@ -215,7 +215,7 @@ editorial_blocks:
         description:
           zh: "服务停了，结论和配置仍然值得保留。"
           en: "The service stopped, but the conclusions and config remain useful."
-        image: "assets/cover-2.jpg"
+        image: "assets/gallery-shantou-university.jpg"
       - title:
           zh: "Travel Log 2025"
           en: "Travel Log 2025"
@@ -225,7 +225,7 @@ editorial_blocks:
         description:
           zh: "旧内容仍可作为研究索引的一部分。"
           en: "Old material still belongs in a research index."
-        image: "assets/gallery-bus.jpg"
+        image: "assets/gallery-airshow.jpg"
     divider: true
 
   - id: "features"
@@ -264,7 +264,7 @@ editorial_blocks:
         description:
           zh: "鼠标悬停时遮罩提升透明度，图片轻微缩小。"
           en: "Hover raises mask opacity and scales the image down slightly."
-        image: "assets/cover-1.jpg"
+        image: "assets/gallery-red-whiskered-bulbul.jpg"
         url: "/gallery"
       - title:
           zh: "无图列表卡"
@@ -282,7 +282,7 @@ editorial_blocks:
         kicker:
           zh: "Wide"
           en: "Wide"
-        image: "assets/hero.jpg"
+        image: "assets/gallery-sunset-clouds.jpg"
         url: "/gallery"
         size: "wide"
       - title:
@@ -291,7 +291,7 @@ editorial_blocks:
         kicker:
           zh: "Tall"
           en: "Tall"
-        image: "assets/gallery-hk.jpg"
+        image: "assets/gallery-iron-sparks.jpg"
         url: "/gallery"
         size: "tall"
       - title:
@@ -300,7 +300,7 @@ editorial_blocks:
         kicker:
           zh: "Small"
           en: "Small"
-        image: "assets/gallery-bus.jpg"
+        image: "assets/gallery-maritime-patrol-aircraft.jpg"
         url: "/gallery"
       - title:
           zh: "标准磁贴 B"
@@ -308,7 +308,7 @@ editorial_blocks:
         kicker:
           zh: "Small"
           en: "Small"
-        image: "assets/cover-1.jpg"
+        image: "assets/gallery-botanical-garden.jpg"
         url: "/gallery"
     archive:
       - title:
@@ -320,7 +320,7 @@ editorial_blocks:
         description:
           zh: "灰度媒体在悬停时恢复部分色彩。"
           en: "Grayscale media regains some color on hover."
-        image: "assets/cover-2.jpg"
+        image: "assets/gallery-beishan-bay.jpg"
       - title:
           zh: "归档卡 B"
           en: "Archive card B"
@@ -330,7 +330,7 @@ editorial_blocks:
         description:
           zh: "适合保留停运项目和旧实验记录。"
           en: "Useful for retired projects and old experiments."
-        image: "assets/figure-2.jpg"
+        image: "assets/gallery-yingge-dance.jpg"
     divider: true
 
 # ---- LLM 流式区块定义 ----
