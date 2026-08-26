@@ -225,7 +225,7 @@ editorial_blocks:
         description:
           zh: "旧内容仍可作为研究索引的一部分。"
           en: "Old material still belongs in a research index."
-        image: "assets/gallery-airshow.jpg"
+        image: "assets/gallery-travel-log.jpg"
     divider: true
 
   - id: "features"
@@ -300,7 +300,7 @@ editorial_blocks:
         kicker:
           zh: "Small"
           en: "Small"
-        image: "assets/gallery-maritime-patrol-aircraft.jpg"
+        image: "assets/gallery-wind-turbine.jpg"
         url: "/gallery"
       - title:
           zh: "标准磁贴 B"

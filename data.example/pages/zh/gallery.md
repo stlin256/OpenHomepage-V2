@@ -58,7 +58,7 @@ description: "研究之外：快门里的世界"
 :::
 :::
 :::cell
-:::figure{src="assets/gallery-maritime-patrol-aircraft.jpg" caption="反潜机掠过市区，2025 年 2 月" width="100%"}
+:::figure{src="assets/gallery-j20-pilot.jpg" caption="歼-20飞行员挥手致意" width="100%"}
 :::
 :::
 ::::

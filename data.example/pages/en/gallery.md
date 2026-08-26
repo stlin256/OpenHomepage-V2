@@ -58,7 +58,7 @@ Beyond research, I record the world with a shutter. This page also demonstrates 
 :::
 :::
 :::cell
-:::figure{src="assets/gallery-maritime-patrol-aircraft.jpg" caption="A maritime patrol aircraft over the city, February 2025" width="100%"}
+:::figure{src="assets/gallery-j20-pilot.jpg" caption="J-20 pilot waving" width="100%"}
 :::
 :::
 ::::
