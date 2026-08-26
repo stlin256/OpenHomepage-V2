@@ -7,6 +7,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runPrefetch, type BlockStatus } from '../src/lib/prefetch.ts';
+import { resolveDataDir } from '../src/lib/data-dir.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const force = process.argv.slice(2).includes('--force');
@@ -21,8 +22,9 @@ const ICONS: Record<BlockStatus, string> = {
 };
 
 try {
+  const dataDir = resolveDataDir(root, (msg) => console.log(msg));
   const result = await runPrefetch({
-    dataDir: path.join(root, 'data'),
+    dataDir,
     cacheDir: path.join(root, '.cache'),
     force,
   });

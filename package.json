@@ -1,8 +1,16 @@
 {
   "name": "openhomepage-v2",
   "version": "0.1.0",
-  "description": "",
+  "description": "A lightweight, magazine-style personal homepage generator",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stlin256/OpenHomepage-V2.git"
+  },
+  "homepage": "https://github.com/stlin256/OpenHomepage-V2#readme",
+  "bugs": {
+    "url": "https://github.com/stlin256/OpenHomepage-V2/issues"
+  },
   "directories": {
     "doc": "docs"
   },
@@ -16,8 +24,13 @@
     "preview": "astro preview",
     "serve": "tsx scripts/serve.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "astro",
+    "homepage",
+    "portfolio",
+    "static-site-generator"
+  ],
+  "author": "stlin256",
   "license": "ISC",
   "type": "module",
   "private": "true",

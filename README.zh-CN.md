@@ -1,6 +1,10 @@
 # OpenHomepage V2
 
-[English](README.md)
+[![演示](https://img.shields.io/badge/演示-在线预览-blue?style=flat-square&logo=github)](https://stlin256.github.io/OpenHomepage-V2/)
+[![Deploy](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg)](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml)
+[![License: ISC](https://img.shields.io/badge/License-ISC-green.svg?style=flat-square)](https://github.com/stlin256/OpenHomepage-V2/blob/master/LICENSE)
+
+[English](README.md) · [在线演示 / Live Demo](https://stlin256.github.io/OpenHomepage-V2/)
 
 轻量、杂志化排版的个人主页生成器——纯静态、中英双语，一切内容由本地 `data/` 文件夹（markdown + YAML）驱动。基于 Astro，经 GitHub Actions 部署到 GitHub Pages。
 
@@ -118,10 +122,11 @@ GitHub Actions 在 push 与定时（每 8 小时）触发，构建并发布到 G
 
 | Secret | 用途 |
 |--------|------|
+| `ENABLE_EXAMPLE` | 设为 `true` 时启用示例模式，直接使用内置 `data.example/` 进行正式生产构建部署 |
 | `DATA_SOURCE_URL` | `data/` 文件夹 zip 包的直链 |
 | `GH_PAT` | GitHub PAT（`read:user`），用于贡献图 |
 
-在线源失效时，CI 从上次部署产物中的快照恢复 `data/`，只刷新 GitHub/RSS 动态区块并完成部署，随后将该次运行标记为失败，以便你收到邮件提醒。详见 [docs/specs/08-workflow.md](docs/specs/08-workflow.md)。
+在线源失效时，CI 从上次部署产物中的快照恢复 `data/`，只刷新 GitHub/RSS 动态区块并完成部署，随后将该次运行标记为失败，以便你收到邮件提醒。若配置了 `ENABLE_EXAMPLE` 则直接构建演示站点并正常成功结束。详见 [docs/specs/08-workflow.md](docs/specs/08-workflow.md)。
 
 ### 托管 data.zip 获取直链的常见途径
 

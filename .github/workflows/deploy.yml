@@ -4,7 +4,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   schedule:
     - cron: '30 */8 * * *'   # 每 8 小时的半点（00:30 / 08:30 / 16:30 UTC）
   workflow_dispatch:
@@ -30,10 +30,14 @@ jobs:
           path: prev
         continue-on-error: true
 
-      - name: 获取 data（在线源优先，快照兜底）/ Acquire data (online source first, snapshot fallback)
+      - name: 获取 data（在线源 / 示例数据 / 快照兜底）/ Acquire data (online source / example data / snapshot fallback)
         id: data
         run: |
-          if [ -n "$DATA_SOURCE_URL" ] && curl -fsSL --max-time 120 "$DATA_SOURCE_URL" -o data.zip \
+          if [ "$ENABLE_EXAMPLE" = "true" ] || [ "$ENABLE_EXAMPLE" = "1" ] || [ "$USE_EXAMPLE_DATA" = "true" ] || [ "$USE_EXAMPLE_DATA" = "1" ]; then
+            echo "mode=example" >> "$GITHUB_OUTPUT"
+            echo "启用示例模式：使用内置 data.example/ 数据进行正式部署 / Example mode enabled: deploying with data.example/ sample data"
+            rm -rf data && cp -r data.example data
+          elif [ -n "$DATA_SOURCE_URL" ] && curl -fsSL --max-time 120 "$DATA_SOURCE_URL" -o data.zip \
              && unzip -q -o data.zip && [ -f data/site.yaml ]; then
             echo "mode=online" >> "$GITHUB_OUTPUT"
             echo "在线 data 源获取成功 / Online data source OK"
@@ -42,10 +46,12 @@ jobs:
             echo "mode=snapshot" >> "$GITHUB_OUTPUT"
             echo "::warning::在线 data 源失效，使用上次部署的快照（仅动态数据将更新）/ Online data source failed; restored from last snapshot (only dynamic data refreshed)."
           else
-            echo "::error::在线 data 源失效且无历史快照，无法构建 / Online data source failed and no snapshot available; build aborted."
+            echo "::error::在线 data 源失效且无历史快照/示例配置，无法构建 / Online data source failed and no snapshot/example available; build aborted."
             exit 1
           fi
         env:
+          ENABLE_EXAMPLE: ${{ secrets.ENABLE_EXAMPLE }}
+          USE_EXAMPLE_DATA: ${{ secrets.USE_EXAMPLE_DATA }}
           DATA_SOURCE_URL: ${{ secrets.DATA_SOURCE_URL }}
 
       - uses: actions/setup-node@v4
@@ -58,8 +64,9 @@ jobs:
       - name: 预取 GitHub / RSS 数据 / Prefetch GitHub & RSS data
         run: npm run prefetch -- --force
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_PAT: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 构建 / Build
         run: npm run build

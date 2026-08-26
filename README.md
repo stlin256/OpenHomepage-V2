@@ -1,6 +1,10 @@
 # OpenHomepage V2
 
-[中文](README.zh-CN.md)
+[![Demo](https://img.shields.io/badge/Demo-Live%20Preview-blue?style=flat-square&logo=github)](https://stlin256.github.io/OpenHomepage-V2/)
+[![Deploy](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg)](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml)
+[![License: ISC](https://img.shields.io/badge/License-ISC-green.svg?style=flat-square)](https://github.com/stlin256/OpenHomepage-V2/blob/master/LICENSE)
+
+[中文](README.zh-CN.md) · [Live Demo](https://stlin256.github.io/OpenHomepage-V2/)
 
 A lightweight, magazine-style personal homepage generator — static, bilingual (zh/en), and driven entirely by a local `data/` folder of markdown and YAML. Built with Astro; deployed to GitHub Pages via GitHub Actions.
 
@@ -119,10 +123,11 @@ GitHub Actions builds and deploys to GitHub Pages on push and on a schedule (eve
 
 | Secret | Purpose |
 |--------|---------|
+| `ENABLE_EXAMPLE` | Set to `true` to deploy the demo showcase page using `data.example/` in production mode |
 | `DATA_SOURCE_URL` | Direct URL to a zip of your `data/` folder |
 | `GH_PAT` | GitHub PAT (`read:user`) for the contribution graph |
 
-If the online source fails, CI restores `data/` from the snapshot embedded in the last deployment, refreshes only the dynamic blocks (GitHub/RSS), deploys, then marks the run as failed so you get an e-mail reminder. Details: [docs/specs/08-workflow.md](docs/specs/08-workflow.md).
+If the online source fails, CI restores `data/` from the snapshot embedded in the last deployment, refreshes only the dynamic blocks (GitHub/RSS), deploys, then marks the run as failed so you get an e-mail reminder. When `ENABLE_EXAMPLE` is configured, it builds and publishes the demo site directly without triggering snapshot fallback alerts. Details: [docs/specs/08-workflow.md](docs/specs/08-workflow.md).
 
 ### Hosting data.zip for a direct link
 

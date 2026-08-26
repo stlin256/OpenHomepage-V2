@@ -3,7 +3,6 @@ import { cpSync, createReadStream, existsSync, readFileSync, statSync } from 'no
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// 站点 URL 占位，部署前替换为真实域名
 const MIME = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -91,6 +90,6 @@ function dataAssets() {
 
 export default defineConfig({
   output: 'static',
-  site: 'https://example.com',
+  site: 'https://stlin256.github.io',
   integrations: [dataAssets()],
 });
