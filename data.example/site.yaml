@@ -22,7 +22,7 @@ profile:
   bio_page: "index"
   links:
     - { label: "Email", url: "mailto:zhiyuan@example.com" }
-    - { label: "GitHub", url: "https://github.com/octocat" }
+    - { label: "GitHub", url: "https://github.com/stlin256" }
     - { label: "Google Scholar", url: "https://scholar.google.com/" }
 
 # ---- 主题 ----
@@ -64,9 +64,13 @@ bgm:
 
 # ---- GitHub 区块 ----
 github:
-  username: "octocat"
+  username: "stlin256"
   show_contributions: true
   pinned:
+    - repo: "stlin256/OpenHomepage-V2"
+      note:
+        zh: "杂志化排版、纯静态、中英双语的个人主页生成器"
+        en: "Lightweight, magazine-style static personal homepage generator"
     - repo: "huggingface/transformers"
       note:
         zh: "State-of-the-art NLP for everyone —— 复现论文时的基础设施"
@@ -156,7 +160,7 @@ editorial_blocks:
           zh: "小而可读，能在一个下午被另一个人接住。"
           en: "Small, readable, and easy for someone else to pick up."
         image: "assets/research-tooling.jpg"
-        url: "https://github.com/octocat"
+        url: "https://github.com/stlin256"
     divider: true
 
   - id: "studio"
