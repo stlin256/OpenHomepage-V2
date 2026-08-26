@@ -116,6 +116,16 @@ The contact card, QR modal, light/dark theme, language switcher, background musi
 
 The homepage-specific Profile Block, GitHub Block, and RSS Block are also rendered in full below; they do not depend on the homepage layout.
 
+## Page controls
+
+Page controls are page-level widgets configured on a per-page basis (non-global). Each page can define them independently in its frontmatter; they reappear whenever the page is reopened or revisited, providing page-specific announcements and controls.
+
+| Page control | Configuration | Description |
+|--------------|---------------|-------------|
+| Notice Banner | Set `notice: "..."` or `notice: { text: "...", color: "yellow" }` in frontmatter | Pops in 0.5s after page load; supports 4 color modes (`accent`, `yellow`, `red`, `custom`); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting |
+
+> 💡 Example: The [homepage](/en/) of this site features a prominent yellow Notice Banner (`notice: { text: "This is a demo page. Content is for displaying project features only.", color: "yellow" }`) that appears 0.5s after load.
+
 ## Raw HTML mixing
 
 <mark>This line uses the native HTML mark tag</mark>. Dangerous tags like `<script>` are filtered by a whitelist.

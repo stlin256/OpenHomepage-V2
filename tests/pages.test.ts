@@ -72,6 +72,22 @@ describe('loadPages', () => {
     expect(pages.every((p) => p.nav === true)).toBe(true);
   });
 
+  it("支持解析 frontmatter 的 notice 字段（字符串或结构化对象），缺省为 undefined", () => {
+    withTempData({
+      "pages/zh/with-notice.md": "---\ntitle: 通知页\nnotice: 本页面为示例页面\n---\n正文\n",
+      "pages/zh/with-yellow.md": "---\ntitle: 黄色通知\nnotice:\n  text: 示例黄色声明\n  color: yellow\n---\n正文\n",
+      "pages/zh/no-notice.md": "---\ntitle: 无通知页\n---\n正文\n",
+    }, (dir) => {
+      const pages = loadPages(dir);
+      const withN = pages.find((p) => p.slug === "with-notice")!;
+      expect(withN.notice).toEqual({ text: "本页面为示例页面", color: "accent", delay: 500 });
+      const withY = pages.find((p) => p.slug === "with-yellow")!;
+      expect(withY.notice).toEqual({ text: "示例黄色声明", color: "yellow", delay: 500, customColor: undefined });
+      const noN = pages.find((p) => p.slug === "no-notice")!;
+      expect(noN.notice).toBeUndefined();
+    });
+  });
+
   it('缺 title 时报中文错误并指出文件', () => {
     withTempData({ 'pages/zh/bad.md': '---\norder: 1\n---\n正文\n' }, (dir) => {
       expect(() => loadPages(dir)).toThrowError(/title.*bad\.md|bad\.md.*title/);

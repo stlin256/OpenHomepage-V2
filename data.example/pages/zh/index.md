@@ -3,6 +3,9 @@ title: "主页"
 nav: true
 order: 0
 description: "林知远的个人主页"
+notice:
+  text: "本页面为示例页面，内容仅为展现项目特性使用。"
+  color: "yellow"
 ---
 
 :::figure{src="assets/hero.jpg" caption="我的工作台：一半论文，一半 GPU 风扇声" width="100%"}

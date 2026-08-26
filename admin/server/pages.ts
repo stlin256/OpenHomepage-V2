@@ -17,6 +17,7 @@ export interface PageMeta {
   nav: boolean;
   order?: number;
   description?: string;
+  notice?: string;
 }
 
 export interface PageContent {
@@ -84,6 +85,7 @@ export function listPages(dataDir: string): PageMeta[] {
         nav: (fm.nav as boolean | undefined) ?? true,
         order: fm.order as number | undefined,
         description: fm.description as string | undefined,
+        notice: (fm.notice as string | undefined) ?? undefined,
       });
     }
   }

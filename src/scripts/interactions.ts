@@ -92,6 +92,19 @@ function initEmbeddedMedia(): void {
   }
 }
 
+function initNoticeBanners(): void {
+  for (const banner of document.querySelectorAll<HTMLElement>(".notice-banner")) {
+    if (banner.dataset.bannerInit === "1") continue;
+    banner.dataset.bannerInit = "1";
+    const delay = Number(banner.dataset.delay || "500");
+    setTimeout(() => {
+      if (banner.parentElement && !banner.classList.contains("dismissing")) {
+        banner.classList.add("visible");
+      }
+    }, Math.max(0, delay));
+  }
+}
+
 function updateNavActive(path: string): void {
   const current = new URL(path, location.href).pathname.replace(/\/+$/, '') || '/';
   for (const a of document.querySelectorAll<HTMLAnchorElement>('.site-nav a')) {
@@ -111,6 +124,7 @@ function initAll(): void {
   initBgm();
   initEmbeddedMedia();
   initHeatmapTooltips();
+  initNoticeBanners();
 }
 
 // ---- 客户端内容交换 ----
@@ -227,6 +241,28 @@ function isInternalLink(href: string): boolean {
   if (!href.startsWith('/') || href.startsWith('//')) return false;
   return true;
 }
+
+
+// ---- 页面通知横幅关闭 ----
+
+document.addEventListener("click", (e) => {
+  const btn = e.target instanceof Element ? e.target.closest<HTMLButtonElement>(".notice-banner-close") : null;
+  if (!btn) return;
+  const banner = btn.closest<HTMLElement>(".notice-banner");
+  if (!banner || banner.classList.contains("dismissing")) return;
+  banner.classList.add("dismissing");
+  banner.classList.remove("visible");
+  banner.addEventListener(
+    "transitionend",
+    () => {
+      banner.remove();
+    },
+    { once: true }
+  );
+  setTimeout(() => {
+    if (banner.parentElement) banner.remove();
+  }, 350);
+});
 
 // ---- 导航拦截 ----
 

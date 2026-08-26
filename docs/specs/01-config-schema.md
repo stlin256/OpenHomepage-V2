@@ -189,6 +189,7 @@ nav: true              # false 则可通过链接访问但不进导航
 order: 2               # 导航排序，小的在前；主页固定 order: 0
 slug: "research"       # 路由 /research；缺省用文件名
 description: ""        # 可选，SEO
+notice: ""             # 可选，顶端通知横幅（字符串或 {text, color, delay}；支持 accent/yellow/red/custom 4种颜色，页面加载0.5s后延迟弹出，手动点击 ✕ 关闭）
 ---
 正文 markdown……
 ```

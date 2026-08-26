@@ -1,0 +1,55 @@
+---
+/**
+ * 顶端通知横幅部件（Notice Banner）：页面控件之一。
+ * 针对单页独立配置（frontmatter notice），页面加载完成后延迟 0.5s（500ms）弹出，
+ * 用户点击右侧 ✕ 按钮手动关闭。
+ * 支持主题色（accent）、黄色（yellow）、红色（red）、自定义（custom/#hex）四种颜色。
+ */
+import {
+  noticeTextToHtml,
+  resolveNoticeColorClass,
+  type PageNotice,
+} from "../lib/notice.ts";
+
+interface Props {
+  notice: PageNotice | string;
+  lang?: string;
+}
+
+const { notice: rawNotice, lang = "zh" } = Astro.props;
+const notice = typeof rawNotice === "string" ? { text: rawNotice, color: "accent", delay: 500 } : rawNotice;
+const html = notice ? noticeTextToHtml(notice.text) : "";
+const delay = typeof notice?.delay === "number" && notice.delay >= 0 ? notice.delay : 500;
+const { colorClass, customStyle } = resolveNoticeColorClass(notice?.color, notice?.customColor);
+const ariaLabels = {
+  region: lang === "zh" ? "页面通知" : "Page notice",
+  close: lang === "zh" ? "关闭通知" : "Dismiss notice",
+};
+---
+
+{notice?.text && (
+  <aside
+    class:list={["notice-banner", colorClass]}
+    role="status"
+    aria-label={ariaLabels.region}
+    data-delay={delay}
+    style={customStyle}
+  >
+    <div class="notice-banner-body">
+      <span class="notice-banner-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      </span>
+      <div class="notice-banner-text" set:html={html} />
+    </div>
+    <button class="notice-banner-close" type="button" aria-label={ariaLabels.close} title={ariaLabels.close}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </aside>
+)}

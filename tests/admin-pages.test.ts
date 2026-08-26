@@ -47,6 +47,14 @@ describe('listPages', () => {
     });
   });
 
+  it('读取 frontmatter 中的 notice 字段', () => {
+    withTempData((dir) => {
+      writeFileSync(path.join(dir, 'pages/zh/index.md'), '---\ntitle: 主页\nnotice: 示例声明\n---\n');
+      const pages = listPages(dir);
+      expect(pages[0].notice).toBe('示例声明');
+    });
+  });
+
   it('frontmatter 缺 title 的页面不导致整个列表崩溃', () => {
     withTempData((dir) => {
       writeFileSync(path.join(dir, 'pages/zh/index.md'), INDEX);

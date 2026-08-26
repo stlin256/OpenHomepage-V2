@@ -7,7 +7,7 @@
  */
 import type { Editor } from '@milkdown/core';
 import { getMarkdown, insert, replaceAll } from '@milkdown/utils';
-import { el, btn, textInput, numberInput, checkbox } from '../dom.ts';
+import { el, btn, textInput, numberInput, checkbox, select } from '../dom.ts';
 import { api } from '../api.ts';
 import { createAutosave } from '../../shared/autosave.ts';
 import { buildEditor } from '../editor/create-editor.ts';
@@ -63,6 +63,43 @@ export async function renderPageEditor(
     fm.description = v;
     autosave.touch();
   });
+  let initialNoticeText = '';
+  let initialNoticeColor = 'accent';
+  if (typeof fm.notice === 'string') {
+    initialNoticeText = fm.notice;
+  } else if (typeof fm.notice === 'object' && fm.notice !== null) {
+    const no = fm.notice as Record<string, unknown>;
+    initialNoticeText = String(no.text ?? no.content ?? '');
+    initialNoticeColor = String(no.color ?? 'accent');
+  }
+
+  let noticeTextInput: HTMLInputElement;
+  let noticeColorSelect: HTMLSelectElement;
+
+  const syncNotice = () => {
+    const text = noticeTextInput.value.trim();
+    const color = noticeColorSelect.value;
+    if (!text) {
+      delete fm.notice;
+    } else if (color === 'accent' || !color) {
+      fm.notice = text;
+    } else {
+      fm.notice = { text, color };
+    }
+    autosave.touch();
+  };
+
+  noticeTextInput = textInput(initialNoticeText, () => syncNotice());
+  noticeColorSelect = select(
+    [
+      { value: 'accent', label: t('noticeColorAccent') },
+      { value: 'yellow', label: t('noticeColorYellow') },
+      { value: 'red', label: t('noticeColorRed') },
+      { value: 'custom', label: t('noticeColorCustom') },
+    ],
+    initialNoticeColor,
+    () => syncNotice()
+  );
 
   const formBar = el(
     'div',
@@ -71,7 +108,9 @@ export async function renderPageEditor(
     el('label', { class: 'fm-field' }, el('span', {}, t('frontmatterSlug')), slugInput),
     el('label', { class: 'fm-field fm-check' }, el('span', {}, t('frontmatterNav')), navInput),
     el('label', { class: 'fm-field fm-num' }, el('span', {}, t('frontmatterOrder')), orderInput),
-    el('label', { class: 'fm-field fm-grow' }, el('span', {}, t('frontmatterDescription')), descInput)
+    el('label', { class: 'fm-field fm-grow' }, el('span', {}, t('frontmatterDescription')), descInput),
+    el('label', { class: 'fm-field fm-grow' }, el('span', {}, t('frontmatterNotice')), noticeTextInput),
+    el('label', { class: 'fm-field' }, el('span', {}, t('frontmatterNoticeColor')), noticeColorSelect)
   );
 
   // ---- 保存（正文取当前编辑面的内容）----

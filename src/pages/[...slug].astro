@@ -52,6 +52,7 @@ import ProfileBlock from '../components/blocks/ProfileBlock.astro';
 import RssBlock from '../components/blocks/RssBlock.astro';
 import StreamBlock from '../components/blocks/StreamBlock.astro';
 import EditorialBlock from '../components/EditorialBlock.astro';
+import NoticeBanner from '../components/NoticeBanner.astro';
 import { renderEditorialBlock } from '../lib/editorial-block.ts';
 import { localizeInternalHref } from '../lib/routes.ts';
 
@@ -215,6 +216,7 @@ const componentLabels = {
 >
   {isHome ? (
       <div class="home">
+        {route.page.notice && <NoticeBanner notice={route.page.notice} lang={contentLang} />}
         {blocks.map((b) =>
           b.block === 'profile' ? (
             <ProfileBlock
@@ -256,6 +258,7 @@ const componentLabels = {
       </div>
     ) : (
       <article class="page-content">
+        {route.page.notice && <NoticeBanner notice={route.page.notice} lang={contentLang} />}
         <h1>{route.page.title}</h1>
         <div class="markdown-body" set:html={bodyHtml} />
         {isFeaturesPage && (

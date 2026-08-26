@@ -7,9 +7,11 @@ import path from 'node:path';
 import { load as loadYaml } from 'js-yaml';
 
 import { type LocalizedText, resolveText } from './localize.ts';
+import { normalizeNotice, type PageNotice } from './notice.ts';
 
 export type { LocalizedText };
-export { resolveText };
+export { resolveText, normalizeNotice };
+export type { PageNotice };
 
 export interface SiteConfig {
   site: {
@@ -155,6 +157,8 @@ export interface PageEntry {
   nav: boolean;
   order?: number;
   description?: string;
+  /** 顶端通知横幅（页面控件，仅该页面有效） */
+  notice?: PageNotice;
   body: string;
   filePath: string;
 }
@@ -248,8 +252,9 @@ export function loadPages(dataDir: string): PageEntry[] {
       if (!data.title) {
         throw new Error(`页面缺少必需 frontmatter 字段 title（${filePath}）`);
       }
-      const base = file.replace(/\.md$/, '');
-      const slug = (data.slug as string | undefined) ?? (base === 'index' ? '/' : base);
+      const base = file.replace(/\.md$/, "");
+      const slug = (data.slug as string | undefined) ?? (base === "index" ? "/" : base);
+      const notice = normalizeNotice(data.notice ?? data.banner);
       pages.push({
         lang,
         slug,
@@ -257,6 +262,7 @@ export function loadPages(dataDir: string): PageEntry[] {
         nav: (data.nav as boolean | undefined) ?? true,
         order: data.order as number | undefined,
         description: data.description as string | undefined,
+        notice: notice ?? undefined,
         body,
         filePath,
       });

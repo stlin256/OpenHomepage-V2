@@ -3,6 +3,9 @@ title: "Home"
 nav: true
 order: 0
 description: "Zhiyuan Lin's homepage"
+notice:
+  text: "This is a demo page. Content is for displaying project features only."
+  color: "yellow"
 ---
 
 :::figure{src="assets/hero.jpg" caption="My desk: half papers, half GPU fan noise" width="100%"}

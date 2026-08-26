@@ -423,6 +423,247 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   border-top: 0;
 }
 
+
+/* ---- 页面通知横幅（Notice Banner） ---- */
+.notice-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: 0.925rem;
+  line-height: 1.5;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+/* JS 启用时，初始收起隐藏，0.5s 后展开滑入 */
+html.js .notice-banner {
+  opacity: 0;
+  max-height: 0;
+  padding: 0 1rem;
+  margin-bottom: 0;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              padding 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              border-width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.js .notice-banner.visible {
+  opacity: 1;
+  max-height: 200px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+html.js .notice-banner.dismissing {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+
+/* 无 JS 降级直接展示 */
+html:not(.js) .notice-banner {
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+}
+
+/* 1. 主题色 (accent) */
+.notice-banner.notice-color-accent {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  color: var(--text);
+}
+.notice-banner.notice-color-accent .notice-banner-icon {
+  color: var(--accent);
+}
+
+/* 2. 黄色 (yellow / warning) - 高醒目度暖黄/琥珀色 */
+.notice-banner.notice-color-yellow {
+  background: #fffdf5;
+  border: 1px solid #f3d887;
+  border-left: 3px solid #d97706;
+  color: #452b04;
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.08);
+}
+.notice-banner.notice-color-yellow .notice-banner-icon {
+  color: #d97706;
+}
+.notice-banner.notice-color-yellow .notice-banner-close {
+  color: #8c631a;
+}
+.notice-banner.notice-color-yellow .notice-banner-close:hover {
+  background: #f8ecc4;
+  color: #452b04;
+}
+
+html[data-theme="dark"] .notice-banner.notice-color-yellow {
+  background: #231c0e;
+  border: 1px solid #5a4515;
+  border-left: 3px solid #f59e0b;
+  color: #fef3c7;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.06);
+}
+html[data-theme="dark"] .notice-banner.notice-color-yellow .notice-banner-icon {
+  color: #fbbf24;
+}
+html[data-theme="dark"] .notice-banner.notice-color-yellow .notice-banner-close {
+  color: #d5a54c;
+}
+html[data-theme="dark"] .notice-banner.notice-color-yellow .notice-banner-close:hover {
+  background: #382c13;
+  color: #fffbeb;
+}
+
+/* 3. 红色 (red / danger) - 强警示红 */
+.notice-banner.notice-color-red {
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-left: 3px solid #dc2626;
+  color: #4c0505;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.08);
+}
+.notice-banner.notice-color-red .notice-banner-icon {
+  color: #dc2626;
+}
+.notice-banner.notice-color-red .notice-banner-close {
+  color: #991b1b;
+}
+.notice-banner.notice-color-red .notice-banner-close:hover {
+  background: #fee2e2;
+  color: #450a0a;
+}
+
+html[data-theme="dark"] .notice-banner.notice-color-red {
+  background: #271212;
+  border: 1px solid #5c1d1d;
+  border-left: 3px solid #ef4444;
+  color: #fee2e2;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.06);
+}
+html[data-theme="dark"] .notice-banner.notice-color-red .notice-banner-icon {
+  color: #f87171;
+}
+html[data-theme="dark"] .notice-banner.notice-color-red .notice-banner-close {
+  color: #fca5a5;
+}
+html[data-theme="dark"] .notice-banner.notice-color-red .notice-banner-close:hover {
+  background: #3f1919;
+  color: #fff1f2;
+}
+
+/* 4. 自定义颜色 (custom) */
+.notice-banner.notice-color-custom {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--banner-custom-color, var(--accent));
+  color: var(--text);
+}
+.notice-banner.notice-color-custom .notice-banner-icon {
+  color: var(--banner-custom-color, var(--accent));
+}
+
+.notice-banner-body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.notice-banner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.notice-banner-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.notice-banner-text {
+  min-width: 0;
+  flex: 1;
+  word-break: break-word;
+}
+
+.notice-banner-text a {
+  color: currentColor;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.notice-banner-text a:hover {
+  opacity: 0.85;
+}
+
+.notice-banner-text code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  padding: 0.15em 0.35em;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="dark"] .notice-banner-text code {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.notice-banner-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.notice-banner-close:hover,
+.notice-banner-close:focus-visible {
+  color: var(--text);
+  background: var(--hover-bg);
+  outline: none;
+}
+
+.notice-banner-close svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.notice-banner + .home-block {
+  border-top: 0;
+  padding-top: 0;
+}
+
 /* ---- 编辑风通用控件与区块 ---- */
 .section-header {
   display: flex;
@@ -1816,6 +2057,14 @@ html.js .reveal.revealed {
 
 /* ---- 全局降级（spec 09 §2）：仅 transform/opacity；reduced-motion 只留简单淡入 ---- */
 @media (prefers-reduced-motion: reduce) {
+  .notice-banner {
+    animation: none;
+    transition: opacity 0.15s ease;
+  }
+  .notice-banner.dismissing {
+    transform: none;
+    transition: opacity 0.15s ease;
+  }
   html.js .reveal {
     transform: none;
     transition: opacity 0.2s ease;
