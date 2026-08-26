@@ -40,10 +40,12 @@ export function loadRssCache(
 }
 
 /** 封面声明值 → 可用 URL：外部 URL 原样；data/ 内本地路径（assets/...）补 / 前缀 */
-export function coverUrl(cover: string | null): string | null {
+export function coverUrl(cover: string | null | undefined): string | null {
   if (!cover) return null;
-  if (/^https?:\/\//i.test(cover)) return cover;
-  return `/${cover.replace(/^\/+/, '')}`;
+  const trimmed = cover.trim();
+  if (!trimmed || trimmed === 'none' || trimmed === 'null' || trimmed === 'false') return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `/${trimmed.replace(/^\/+/, '')}`;
 }
 
 /** ISO 时间 → 卡片日期 'YYYY-MM-DD'；无法解析/为空返回 null */

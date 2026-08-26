@@ -456,19 +456,21 @@ async function fetchRssSource(ctx: Ctx, src: RssSource): Promise<{ data: RssEntr
   const entries: RssEntry[] = [];
   const failures: string[] = [];
   for (const art of articles) {
-    const declaredCover = art.cover ?? src.cover ?? null;
+    const isExplicitNoCover =
+      art.cover === 'none' || art.cover === '' || art.cover === null || art.cover === false;
+    const declaredCover = isExplicitNoCover ? null : (art.cover ?? src.cover ?? null);
     const note = art.note ?? null;
     const hit = items.find((it) => it.link && sameLink(it.link, art.url));
-    // feed 命中且封面已显式声明：无需抓文章页
-    if (hit && declaredCover) {
+    // feed 命中且封面已显式声明或显式关闭封面：无需抓文章页
+    if (hit && (declaredCover || isExplicitNoCover)) {
       entries.push({ ...feedItemToEntry(hit, declaredCover, note), link: art.url });
       continue;
     }
-    // 其余情况抓文章页：feed 未命中（补标题/摘要），或未声明封面（提取 og:image，spec 05）
+    // 其余情况抓文章页：feed 未命中（补标题/摘要），或未声明封面且未显式关闭封面（提取 og:image，spec 05）
     try {
       const html = await fetchText(ctx.fetchFn, art.url, { headers: { 'User-Agent': USER_AGENT } }, ctx.requestTimeoutMs);
       const scraped = scrapeArticleHtml(html, art.url);
-      const cover = declaredCover ?? scraped.cover;
+      const cover = isExplicitNoCover ? null : (declaredCover ?? scraped.cover);
       if (hit) {
         entries.push({ ...feedItemToEntry(hit, cover, note), link: art.url });
         continue;

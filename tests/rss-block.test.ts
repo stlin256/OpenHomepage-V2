@@ -61,11 +61,15 @@ describe('loadRssCache', () => {
 });
 
 describe('coverUrl / formatDay', () => {
-  it('外部 URL 原样；本地 assets 路径补 / 前缀', () => {
+  it('外部 URL 原样；本地 assets 路径补 / 前缀；none/空值返回 null', () => {
     expect(coverUrl('https://a.b/c.png')).toBe('https://a.b/c.png');
     expect(coverUrl('assets/rss/x.png')).toBe('/assets/rss/x.png');
     expect(coverUrl('/assets/x.png')).toBe('/assets/x.png');
     expect(coverUrl(null)).toBeNull();
+    expect(coverUrl('')).toBeNull();
+    expect(coverUrl('none')).toBeNull();
+    expect(coverUrl('  none  ')).toBeNull();
+    expect(coverUrl('false')).toBeNull();
   });
 
   it('ISO → YYYY-MM-DD；非法/空 → null', () => {

@@ -40,3 +40,4 @@ sources:
         cover: "assets/10-years-of-alphago.png"
       - url: "https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/"
         note: "可解释性工具的标杆；这张卡片故意不配图，演示纯文字卡片"
+        cover: "none"
