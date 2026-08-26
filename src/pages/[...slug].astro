@@ -55,6 +55,7 @@ import EditorialBlock from '../components/EditorialBlock.astro';
 import NoticeBanner from '../components/NoticeBanner.astro';
 import { renderEditorialBlock } from '../lib/editorial-block.ts';
 import { localizeInternalHref } from '../lib/routes.ts';
+import { withBase, getBaseUrl } from '../lib/base-url.ts';
 
 interface Props {
   route: RouteEntry;
@@ -67,7 +68,7 @@ interface Props {
   alternates: { lang: string; path: string }[];
   avatarUrl?: string;
   /** 背景音乐（resolveBgm 归一化 + 文件存在性检查后为 undefined 即不渲染） */
-  bgm?: { src: string; volume: number };
+  bgm?: { src: string; volume: number; autoplay: boolean };
   /** favicon URL（site.favicon 指向的真实文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
   favicon: string;
   blocks: PlannedHomeBlock[];
@@ -119,9 +120,9 @@ export function getStaticPaths() {
       background,
       nav: navPagesForLang(pages, route.lang, defaultLang),
       alternates: alternateLinks(pages, route.slug, langs, defaultLang),
-      avatarUrl,
-      bgm: bgmSrc && bgm ? { src: bgmSrc, volume: bgm.volume, autoplay: bgm.autoplay } : undefined,
-      favicon: faviconUrl,
+      avatarUrl: avatarUrl ? withBase(avatarUrl) : undefined,
+      bgm: bgmSrc && bgm ? { src: withBase(bgmSrc), volume: bgm.volume, autoplay: bgm.autoplay } : undefined,
+      favicon: withBase(faviconUrl),
       blocks,
       slugs: [...new Set(pages.map((page) => page.slug))],
       githubView,
@@ -162,7 +163,8 @@ const avatarTop = resolveAvatarPosition(site.profile) === 'top';
 // 主页 streaming 区块与正文 ::stream{id} 占位共用同一份加载结果
 const dataDir = resolveDataDir(process.cwd());
 const slugSet = new Set(slugs);
-const localizeHref = (href: string) => localizeInternalHref(href, route.lang, defaultLang, slugSet);
+const baseUrl = getBaseUrl();
+const localizeHref = (href: string) => withBase(localizeInternalHref(href, route.lang, defaultLang, slugSet), baseUrl);
 const streamBlocks: LoadedStreamBlock[] = [];
 for (const def of site.streaming_blocks ?? []) {
   const b = await loadStreamingBlock(dataDir, def, contentLang, defaultLang, console.warn, slugSet);
@@ -182,10 +184,11 @@ const ghHtmlByRepo = Object.fromEntries(
   ]),
 );
 const bodyHtml = await renderMarkdown(route.page.body, {
+  baseUrl,
   streamEmbeds,
   ghCards: { htmlByRepo: ghHtmlByRepo },
   editorialEmbeds,
-  localizeHrefs: { lang: route.lang, defaultLang, slugs },
+  localizeHrefs: { lang: route.lang, defaultLang, slugs, baseUrl },
 });
 const isFeaturesPage = route.page.slug === 'features';
 const componentLabels = {

@@ -88,8 +88,11 @@ function dataAssets() {
   };
 }
 
+const base = process.env.ASTRO_BASE || (process.env.GITHUB_ACTIONS && process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}` : undefined);
+
 export default defineConfig({
   output: 'static',
   site: 'https://stlin256.github.io',
+  base,
   integrations: [dataAssets()],
 });

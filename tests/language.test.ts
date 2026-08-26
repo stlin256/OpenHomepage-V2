@@ -15,4 +15,10 @@ describe('localizedPathname', () => {
     expect(localizedPathname('en', '/features/', 'zh', 'zh')).toBe('/en/features/');
     expect(localizedPathname('zh', '/en/features', 'en', 'zh')).toBe('/features');
   });
+
+  it('handles base path correctly', () => {
+    expect(localizedPathname('en', '/OpenHomepage-V2/', 'zh', 'zh', '/OpenHomepage-V2/')).toBe('/OpenHomepage-V2/en/');
+    expect(localizedPathname('en', '/OpenHomepage-V2/features/', 'zh', 'zh', '/OpenHomepage-V2/')).toBe('/OpenHomepage-V2/en/features/');
+    expect(localizedPathname('zh', '/OpenHomepage-V2/en/features', 'en', 'zh', '/OpenHomepage-V2/')).toBe('/OpenHomepage-V2/features');
+  });
 });

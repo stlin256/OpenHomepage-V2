@@ -1,4 +1,6 @@
 ---
+import { withBase } from '../lib/base-url.ts';
+
 interface Props {
   card: {
     delay: number;
@@ -10,7 +12,7 @@ interface Props {
 }
 
 const { card } = Astro.props;
-const image = card.image.startsWith('/') ? card.image : `/${card.image}`;
+const image = withBase(card.image);
 ---
 
 <aside class="intro-card" data-delay={card.delay} aria-live="polite">

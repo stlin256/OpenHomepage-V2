@@ -15,6 +15,7 @@ import type { BackgroundTheme } from '../lib/theme.ts';
 import type { ResolvedIntroCard } from '../lib/config.ts';
 import ContactCard from '../components/ContactCard.astro';
 import type { NavItem } from '../lib/routes.ts';
+import { withBase, getBaseUrl } from '../lib/base-url.ts';
 
 interface Props {
   /** 页面标题（<title> 为 `${title} · ${siteTitle}`） */
@@ -62,6 +63,7 @@ const {
   introCard,
 } = Astro.props;
 
+const baseUrl = getBaseUrl();
 const langLabel = (l: string) => ({ zh: '中文', en: 'English' })[l] ?? l;
 const xDefault = alternates.find((a) => a.lang === defaultLang) ?? alternates[0];
 /** 构建期注入的 accent 变量（global.css 中 --accent 引用这四个值） */
@@ -72,7 +74,7 @@ const FAVICON_MIME: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLowerCase()];
-const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
+const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
 ---
 
 <html
@@ -81,18 +83,18 @@ const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
   data-theme="light"
   data-default-mode={defaultMode}
   data-default-lang={defaultLang}
+  data-base={baseUrl}
   style={themeVars}
 >
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{`${title} · ${siteTitle}`}</title>
-    <link rel="icon" href={favicon} type={faviconType} />
+    <link rel="icon" href={withBase(favicon)} type={faviconType} />
     {description && <meta name="description" content={description} />}
     <script is:inline define:vars={{ defaultMode }}>
       // 首帧绘制前确定主题，避免闪烁：sessionStorage 用户选择 > site.yaml default_mode > 跟随系统。
       // 与 src/scripts/theme.ts 的 currentTheme 同一套规则（is:inline 无法 import，此处内联镜像）。
-      // 首帧绘制前确定主题，避免闪烁。
       // html.js 标记：滚动显现等动效的初始隐藏态只在有 JS 时生效（无 JS 不隐藏内容）
       (function () {
         document.documentElement.classList.add('js');
@@ -112,7 +114,7 @@ const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
       })();
     </script>
     {i18n && (
-      <script is:inline define:vars={{ defaultLang }}>
+      <script is:inline define:vars={{ defaultLang, baseUrl }}>
         // 语言偏好在首帧绘制前解析：已保存选择 > 浏览器语言。URL 语言不一致时直接
         // replace 到目标路由，避免先渲染默认语言再被模块脚本换内容造成闪动。
         (function () {
@@ -130,20 +132,27 @@ const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
             : null;
           if (!preferred || !current || preferred === current) return;
 
-          var rest = location.pathname || '/';
+          var cleanBase = (baseUrl || '/').replace(/\/+$/, '');
+          var fullPath = location.pathname || '/';
+          var unbased = fullPath;
+          if (cleanBase && (fullPath === cleanBase || fullPath.indexOf(cleanBase + '/') === 0)) {
+            unbased = fullPath.slice(cleanBase.length) || '/';
+          }
+          var rest = unbased;
           var prefix = '/' + current;
           if (rest === prefix || rest.indexOf(prefix + '/') === 0) {
             rest = rest.slice(prefix.length) || '/';
           }
-          var pathname = preferred === defaultLang
+          var targetPath = preferred === defaultLang
             ? (rest || '/')
             : (rest === '/' ? '/' + preferred + '/' : '/' + preferred + rest);
-          location.replace(pathname + location.search + location.hash);
+          var newPath = (cleanBase ? cleanBase : '') + (targetPath.charAt(0) === '/' ? targetPath : '/' + targetPath);
+          location.replace(newPath + location.search + location.hash);
         })();
       </script>
     )}
-    {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={new URL(a.path, Astro.site)} />)}
-    {i18n && xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault.path, Astro.site)} />}
+    {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={new URL(withBase(a.path), Astro.site)} />)}
+    {i18n && xDefault && <link rel="alternate" hreflang="x-default" href={new URL(withBase(xDefault.path), Astro.site)} />}
   </head>
   <body>
     <header class="site-header">
@@ -158,7 +167,7 @@ const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
           {nav.map((item) => (
             <li>
               <a
-                href={item.path}
+                href={withBase(item.path)}
                 class:list={[{ active: item.path === currentPath }]}
                 aria-current={item.path === currentPath ? 'page' : undefined}
               >
@@ -193,7 +202,7 @@ const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
               {alternates.map((a) => (
                 <li role="none">
                   <a
-                    href={a.path}
+                    href={withBase(a.path)}
                     hreflang={a.lang}
                     role="menuitem"
                     class:list={[{ active: a.lang === lang }]}
@@ -226,7 +235,7 @@ const homeHref = nav.find((item) => item.slug === '/')?.path ?? '/';
     {bgm && (
       <audio
         class="bgm-audio"
-        src={bgm.src}
+        src={withBase(bgm.src)}
         loop
         preload={bgm.autoplay ? 'auto' : 'none'}
         data-volume={bgm.volume}

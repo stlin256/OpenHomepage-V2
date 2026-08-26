@@ -1,4 +1,6 @@
 /** 站点当前支持的语言（页面目录名 / URL 前缀） */
+import { stripBase, withBase } from './base-url.ts';
+
 export type SiteLanguage = 'zh' | 'en';
 
 /** 归一化主语言子标签；只接受站点当前支持的 zh/en */
@@ -12,15 +14,17 @@ export function localizedPathname(
   lang: SiteLanguage,
   pathname: string,
   currentLang: SiteLanguage | null,
-  defaultLang: string
+  defaultLang: string,
+  base?: string
 ): string {
-  let rest = pathname || '/';
+  const unbased = base ? stripBase(pathname, base) : pathname;
+  let rest = unbased || '/';
   if (currentLang) {
     const prefix = `/${currentLang}`;
     if (rest === prefix || rest.startsWith(`${prefix}/`)) {
       rest = rest.slice(prefix.length) || '/';
     }
   }
-  if (lang === defaultLang) return rest || '/';
-  return rest === '/' ? `/${lang}/` : `/${lang}${rest}`;
+  const target = lang === defaultLang ? (rest || '/') : (rest === '/' ? `/${lang}/` : `/${lang}${rest}`);
+  return base ? withBase(target, base) : target;
 }

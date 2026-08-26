@@ -1,5 +1,6 @@
 import type { EditorialBlock } from './config.ts';
 import { resolveText } from './localize.ts';
+import { withBase } from './base-url.ts';
 
 function escapeHtml(value: string): string {
   return value
@@ -15,7 +16,7 @@ function attribute(name: string, value: string | undefined): string {
 }
 
 function assetUrl(path: string): string {
-  return path.startsWith('/') ? path : `/${path}`;
+  return withBase(path.startsWith('/') ? path : `/${path}`);
 }
 
 function actionHtml(
@@ -29,7 +30,7 @@ function actionHtml(
   const inner = `<span>${label}</span>${icon}`;
   const url = action.url ? (localizeHref?.(action.url) ?? action.url) : undefined;
   if (!url) return `<button class="editorial-button ${variant}" type="button">${inner}</button>`;
-  const external = !url.startsWith('/');
+  const external = !url.startsWith('/') && !url.startsWith('#');
   return `<a class="editorial-button ${variant}" href="${escapeHtml(url)}"${attribute('target', external ? '_blank' : undefined)}${attribute('rel', external ? 'noopener noreferrer' : undefined)}>${inner}</a>`;
 }
 

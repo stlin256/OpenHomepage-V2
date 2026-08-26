@@ -27,8 +27,11 @@ import type {
 import type { Root as HastRoot, Element, ElementContent, Properties } from 'hast';
 import type { VFile } from 'vfile';
 import { localizeInternalHref } from './routes.ts';
+import { withBase, getBaseUrl } from './base-url.ts';
 
 export interface MarkdownOptions {
+  /** 站点 base URL，用于静态资源与链接补齐前缀（缺省自动读取或为 /） */
+  baseUrl?: string;
   /** Shiki 明暗双主题（CSS 变量双写方案，前端按主题切换 var） */
   shikiThemes?: { light: string; dark: string };
   /**
@@ -50,6 +53,7 @@ export interface MarkdownOptions {
     lang: string;
     defaultLang: string;
     slugs: string[];
+    baseUrl?: string;
   };
 }
 
@@ -148,9 +152,10 @@ const FIGURE_ALIGN_STYLE: Record<FigureAlign, string> = {
   right: 'margin-left:auto;margin-right:0',
 };
 
-function toFigure(attrs: Record<string, string>): { properties: Properties; children: ElementContent[] } | null {
-  const src = attrs.src;
-  if (!src) return null;
+function toFigure(attrs: Record<string, string>, baseUrl?: string): { properties: Properties; children: ElementContent[] } | null {
+  const rawSrc = attrs.src;
+  if (!rawSrc) return null;
+  const src = withBase(rawSrc, baseUrl);
   const caption = attrs.caption ?? '';
   const properties: Properties = {};
   const styles: string[] = [];
@@ -194,7 +199,8 @@ function isStrayFenceParagraph(node: Content): boolean {
 }
 
 /** 未识别/缺参数的指令：按原始源码降级为普通文本，不报错 */
-function degradeToText(node: Directive, file: VFile): void {  const { start, end } = node.position ?? {};
+function degradeToText(node: Directive, file: VFile): void {
+  const { start, end } = node.position ?? {};
   const raw =
     start?.offset != null && end?.offset != null
       ? String(file).slice(start.offset, end.offset)
@@ -214,7 +220,7 @@ function degradeToText(node: Directive, file: VFile): void {  const { start, end
   }
 }
 
-function remarkCustomDirectives() {
+function remarkCustomDirectives(baseUrl?: string) {
   return (tree: Root, file: VFile) => {
     visit(tree, (node) => {
       if (
@@ -247,16 +253,16 @@ function remarkCustomDirectives() {
         case 'audio': {
           if (!attrs.src) return degradeToText(directive, file);
           const properties: Properties = {
-            src: attrs.src,
+            src: withBase(attrs.src, baseUrl),
             controls: true,
             preload: attrs.preload ?? 'metadata',
           };
-          if (name === 'video' && attrs.poster) properties.poster = attrs.poster;
+          if (name === 'video' && attrs.poster) properties.poster = withBase(attrs.poster, baseUrl);
           setElement(name, properties);
           break;
         }
         case 'figure': {
-          const figure = toFigure(attrs);
+          const figure = toFigure(attrs, baseUrl);
           if (!figure) return degradeToText(directive, file);
           setElement('figure', figure.properties);
           data.hChildren = figure.children;
@@ -304,23 +310,22 @@ function remarkCustomDirectives() {
 }
 
 // ---------------------------------------------------------------------------
-// rehype 插件：图片懒加载、iframe 域名白名单
+// rehype 插件：图片懒加载、iframe 域名白名单、资产路径归一化
 // ---------------------------------------------------------------------------
 
-/**
- * 归一化 data/assets 相对路径：src="assets/..." → "/assets/..."。
- * 中文页在根路径下相对路径恰好可用，但 /en/ 等语言前缀页会解析为
- * /en/assets/... 导致 404；渲染时统一补前导 / 保证任意路由深度可用。
- */
-function rehypeNormalizeAssetPaths() {
+function rehypeNormalizeAssetPaths(baseUrl?: string) {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element) => {
       const tag = node.tagName;
       if (tag !== 'img' && tag !== 'video' && tag !== 'audio' && tag !== 'source') return;
       for (const attr of ['src', 'poster'] as const) {
         const v = node.properties?.[attr];
-        if (typeof v === 'string' && v.startsWith('assets/')) {
-          node.properties[attr] = `/${v}`;
+        if (typeof v === 'string') {
+          if (v.startsWith('assets/')) {
+            node.properties[attr] = withBase(`/${v}`, baseUrl);
+          } else if (v.startsWith('/assets/')) {
+            node.properties[attr] = withBase(v, baseUrl);
+          }
         }
       }
     });
@@ -351,8 +356,7 @@ function rehypeFilterIframes() {
 }
 
 // ---------------------------------------------------------------------------
-// rehype 插件：stream/ghcard 占位 → 构建好的 HTML 片段（须在 sanitize 之后运行，
-// 产物为 raw 节点直出；片段本身来自可信构建数据，见 src/lib/stream.ts、github-block.ts）
+// rehype 插件：stream/ghcard 占位 → 构建好的 HTML 片段
 // ---------------------------------------------------------------------------
 
 type WarnFn = (msg: string) => void;
@@ -434,15 +438,17 @@ function rehypeEditorialEmbeds(embeds: Record<string, string>, warn: WarnFn) {
 
 function rehypeLocalizeHrefs(options: NonNullable<MarkdownOptions['localizeHrefs']>) {
   const slugs = new Set(options.slugs);
+  const base = options.baseUrl ?? '/';
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element) => {
       if (node.tagName !== 'a' || typeof node.properties?.href !== 'string') return;
-      node.properties.href = localizeInternalHref(
+      const localized = localizeInternalHref(
         node.properties.href,
         options.lang,
         options.defaultLang,
         slugs
       );
+      node.properties.href = withBase(localized, base);
     });
   };
 }
@@ -454,31 +460,30 @@ function rehypeLocalizeHrefs(options: NonNullable<MarkdownOptions['localizeHrefs
 /** 构建一条 markdown → HTML 渲染管线（processor 可复用，内部已缓存 Shiki 实例） */
 export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   const themes = options.shikiThemes ?? DEFAULT_SHIKI_THEMES;
+  const baseUrl = options.baseUrl ?? getBaseUrl();
   const warn = console.warn;
   const processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkDirective)
     .use(remarkMath)
-    .use(remarkCustomDirectives)
+    .use(() => remarkCustomDirectives(baseUrl))
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
-    // rehype-katex 内部强制 throwOnError: false，公式语法错误渲染为红色文本而非抛错
     .use(rehypeKatex)
-    // defaultColor: false → 双主题全部走 CSS 变量（--shiki-light/--shiki-dark），前端切换 var 即可
     .use(rehypeShiki, { themes, defaultColor: false })
-    .use(rehypeNormalizeAssetPaths)
+    .use(() => rehypeNormalizeAssetPaths(baseUrl))
     .use(rehypeLazyImages)
     .use(rehypeSanitize, buildSanitizeSchema())
     .use(rehypeFilterIframes);
-  // stream/ghcard 占位替换在 sanitize 之后：产物为可信构建片段，raw 直出。
-  // 未提供对应选项时占位原样保留（如纯渲染场景）；提供后未匹配的占位移除并 warning。
+
   if (options.streamEmbeds) processor.use(() => rehypeStreamEmbeds(options.streamEmbeds!, warn));
   if (options.ghCards) processor.use(() => rehypeGhCards(options.ghCards!));
   if (options.editorialEmbeds) processor.use(() => rehypeEditorialEmbeds(options.editorialEmbeds!, warn));
-  if (options.localizeHrefs) processor.use(() => rehypeLocalizeHrefs(options.localizeHrefs!));
-  // allowDangerousHtml：sanitize 之后用户内容的 raw 节点已被 rehypeRaw 全部解析，
-  // 树中仅剩上面替换进来的可信构建片段（stream/ghcard），须直出而非转义（回归 #8）
+  if (options.localizeHrefs) {
+    const localizeOpts = { ...options.localizeHrefs, baseUrl: options.localizeHrefs.baseUrl ?? baseUrl };
+    processor.use(() => rehypeLocalizeHrefs(localizeOpts));
+  }
   return processor.use(rehypeStringify, { allowDangerousHtml: true });
 }
 
