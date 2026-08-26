@@ -153,6 +153,7 @@ async function swapContent(path: string, { push = true }: { push?: boolean } = {
     } else if (!newFooter && oldFooter) {
       oldFooter.remove();
     }
+    replaceContactCard(doc);
     updateNavActive(path);
     // 同步 header 中的导航和语言菜单到新语言（header 不整体替换，保留按钮监听）
     const newNav = doc.querySelector('nav.site-nav');
@@ -188,12 +189,37 @@ async function swapContent(path: string, { push = true }: { push?: boolean } = {
     oldMain.style.opacity = '';
     // 重新初始化（动效、流式、灯箱等）
     initAll();
+    // 客户端内容交换等价于一次页面加载；联系卡等全局组件依赖此事件重绑。
+    window.dispatchEvent(new Event('astro:page-load'));
     window.scrollTo({ top: 0 });
   } catch {
     location.href = path;
   } finally {
     hideLoading();
     swapping = false;
+  }
+}
+
+function replaceContactCard(doc: Document): void {
+  const nextCard = doc.querySelector('.intro-card');
+  const currentCard = document.querySelector('.intro-card');
+  const nextModal = doc.querySelector('dialog.qr-modal');
+  const currentModal = document.querySelector('dialog.qr-modal');
+
+  if (nextCard) {
+    const card = nextCard.cloneNode(true);
+    if (currentCard) currentCard.replaceWith(card);
+    else document.body.insertBefore(card, document.querySelector('.lightbox'));
+  } else {
+    currentCard?.remove();
+  }
+
+  if (nextModal) {
+    const modal = nextModal.cloneNode(true);
+    if (currentModal) currentModal.replaceWith(modal);
+    else document.querySelector('.intro-card')?.after(modal);
+  } else {
+    currentModal?.remove();
   }
 }
 

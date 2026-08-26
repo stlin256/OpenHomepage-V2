@@ -47,29 +47,11 @@ const image = card.image.startsWith('/') ? card.image : `/${card.image}`;
     for (const root of document.querySelectorAll<HTMLElement>('.intro-card:not([data-card-init])')) {
       root.dataset.cardInit = '1';
       const modal = root.nextElementSibling instanceof HTMLDialogElement ? root.nextElementSibling : null;
-      const storageKey = 'oh-intro-card-closed';
-      let closed = false;
-      try {
-        closed = sessionStorage.getItem(storageKey) === '1';
-      } catch {
-        closed = false;
-      }
-      if (closed) {
-        root.remove();
-        modal?.remove();
-        continue;
-      }
-
       const show = () => root.classList.add('visible');
       const timer = window.setTimeout(show, Number(root.dataset.delay) || 6000);
       root.querySelector<HTMLButtonElement>('.intro-close')?.addEventListener('click', () => {
         window.clearTimeout(timer);
         root.classList.remove('visible');
-        try {
-          sessionStorage.setItem(storageKey, '1');
-        } catch {
-          /* storage unavailable */
-        }
         window.setTimeout(() => {
           root.remove();
           modal?.remove();
