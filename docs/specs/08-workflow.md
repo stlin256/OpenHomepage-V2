@@ -50,7 +50,7 @@ steps:
       DATA_SOURCE_URL: ${{ secrets.DATA_SOURCE_URL }}
 
   - uses: actions/setup-node@v4
-    with: { node-version: 20, cache: npm }
+    with: { node-version: 22, cache: npm }
 
   - run: npm ci
   - run: npm run prefetch -- --force          # scripts/prefetch.ts（tsx 运行）
