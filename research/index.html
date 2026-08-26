@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="zh" data-route-lang="zh" data-theme="light" data-default-mode="system" data-default-lang="zh" style="--accent-light:#3a7bd5;--accent-light-contrast:#ffffff;--accent-dark:#528bda;--accent-dark-contrast:#1a1d21;--site-bg-light:#f8f7f2;--site-bg-dark:#141311;"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>研究方向 · 林知远</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><meta name="description" content="研究方向与代表工作"><script>(function(){const defaultMode = "system";
+
+      // 首帧绘制前确定主题，避免闪烁：sessionStorage 用户选择 > site.yaml default_mode > 跟随系统。
+      // 与 src/scripts/theme.ts 的 currentTheme 同一套规则（is:inline 无法 import，此处内联镜像）。
+      // 首帧绘制前确定主题，避免闪烁。
+      // html.js 标记：滚动显现等动效的初始隐藏态只在有 JS 时生效（无 JS 不隐藏内容）
+      (function () {
+        document.documentElement.classList.add('js');
+        var saved = null;
+        try {
+          saved = sessionStorage.getItem('theme');
+        } catch (e) {}
+        var theme =
+          saved === 'light' || saved === 'dark'
+            ? saved
+            : defaultMode === 'light' || defaultMode === 'dark'
+              ? defaultMode
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+        document.documentElement.dataset.theme = theme;
+      })();
+    })();</script><script>(function(){const defaultLang = "zh";
+
+        // 语言偏好在首帧绘制前解析：已保存选择 > 浏览器语言。URL 语言不一致时直接
+        // replace 到目标路由，避免先渲染默认语言再被模块脚本换内容造成闪动。
+        (function () {
+          var normalize = function (value) {
+            var lang = (value || '').toLowerCase().split(/[-_]/)[0];
+            return lang === 'zh' || lang === 'en' ? lang : null;
+          };
+          var preferred = null;
+          try {
+            preferred = normalize(localStorage.getItem('oh-language'));
+          } catch (e) {}
+          if (!preferred) preferred = normalize(navigator.language);
+          var current = document.documentElement.dataset.routeLang
+            ? normalize(document.documentElement.dataset.routeLang)
+            : null;
+          if (!preferred || !current || preferred === current) return;
+
+          var rest = location.pathname || '/';
+          var prefix = '/' + current;
+          if (rest === prefix || rest.indexOf(prefix + '/') === 0) {
+            rest = rest.slice(prefix.length) || '/';
+          }
+          var pathname = preferred === defaultLang
+            ? (rest || '/')
+            : (rest === '/' ? '/' + preferred + '/' : '/' + preferred + rest);
+          location.replace(pathname + location.search + location.hash);
+        })();
+      })();</script><link rel="alternate" hreflang="en" href="https://stlin256.github.io/en/research"><link rel="alternate" hreflang="zh" href="https://stlin256.github.io/research"><link rel="alternate" hreflang="x-default" href="https://stlin256.github.io/research"><link rel="stylesheet" href="/_astro/_.._VbhM4Ck.css"></head><body><header class="site-header"><button class="nav-toggle" type="button" aria-label="打开导航菜单 / Menu" aria-expanded="false" aria-controls="site-nav"><span class="bar"></span><span class="bar"></span><span class="bar"></span></button><nav class="site-nav" id="site-nav" aria-label="站点导航"><p class="site-title"><a href="/">林知远</a></p><ul><li><a href="/">主页</a></li><li><a href="/research" class="active" aria-current="page">研究方向</a></li><li><a href="/features">特性</a></li><li><a href="/gallery">光影</a></li></ul></nav><div class="header-tools"><button class="bgm-toggle icon-btn" type="button" aria-pressed="false" aria-label="播放/暂停背景音乐 / Toggle background music"><svg class="icon icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"></path></svg><svg class="icon icon-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9.5 9.5 0 0 1 0 13"></path></svg></button><div class="lang-switcher"><button class="lang-toggle icon-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="语言切换 / Switch language"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"></path></svg></button><ul class="lang-menu" role="menu"><li role="none"><a href="/en/research" hreflang="en" role="menuitem">English</a></li><li role="none"><a href="/research" hreflang="zh" role="menuitem" class="active" aria-current="true">中文</a></li></ul></div><button class="theme-toggle icon-btn" type="button" aria-label="切换亮色/暗色主题 / Toggle theme"><svg class="icon icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg><svg class="icon icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg></button></div></header><main class="site-main"><article class="page-content"><h1>研究方向</h1><div class="markdown-body"><blockquote>
+<p>研究记录保持简短：只留下还能被复现、被检验的部分。</p>
+</blockquote>
+<h2>方向一：高效推理</h2>
+<p>大模型推理的瓶颈在显存带宽而非算力。我关注：</p>
+<ul>
+<li><strong>投机解码</strong>（speculative decoding）的系统侧优化</li>
+<li>KV cache 的压缩与分页调度</li>
+<li>单机多卡的流水并行切分</li>
+</ul>
+<p>一个典型的权衡：batch size 翻倍带来的吞吐提升，会被 KV cache 占用反噬——<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>B</mi><mo>⋅</mo><mi>L</mi><mo>⋅</mo><mi>d</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(B \cdot L \cdot d)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">O</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0502em;">B</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">d</span><span class="mclose">)</span></span></span></span> 的显存增长不是闹着玩的。</p>
+<h2>方向二：可复现的评测</h2>
+<p>评测集污染是这个时代的慢性病。我在做一套"活"的评测流水线：</p>
+<div class="md-grid" style="grid-template-columns:repeat(2,1fr)"><div class="md-grid-cell"><p><strong>问题</strong></p><ul>
+<li>静态评测集被爬进训练语料</li>
+<li>单次 run 的方差被当成结论</li>
+</ul></div><div class="md-grid-cell"><p><strong>做法</strong></p><ul>
+<li>按周滚动生成新题</li>
+<li>报告分布而非点估计</li>
+</ul></div></div>
+<h2>代表工作</h2>
+<div class="gh-repo"><span class="gh-repo-head"><svg class="gh-octicon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25v3.25a.25.25 0 0 0 .4.2l1.45-1.087a.249.249 0 0 1 .3 0L8.6 15.7a.25.25 0 0 0 .4-.2v-3.25a.25.25 0 0 0-.25-.25h-3.5a.25.25 0 0 0-.25.25Z"/></svg><a class="gh-repo-link" href="https://github.com/huggingface/transformers" target="_blank" rel="noopener"><span class="gh-repo-owner">huggingface</span><span class="gh-repo-sep">/</span><span class="gh-repo-name">transformers</span></a></span><span class="gh-repo-desc">State-of-the-art NLP for everyone —— 复现论文时的基础设施</span><span class="gh-repo-topics"><a class="gh-topic" href="https://github.com/topics/audio" target="_blank" rel="noopener">audio</a><a class="gh-topic" href="https://github.com/topics/deep-learning" target="_blank" rel="noopener">deep-learning</a><a class="gh-topic" href="https://github.com/topics/deepseek" target="_blank" rel="noopener">deepseek</a><a class="gh-topic" href="https://github.com/topics/gemma" target="_blank" rel="noopener">gemma</a><a class="gh-topic" href="https://github.com/topics/glm" target="_blank" rel="noopener">glm</a><a class="gh-topic" href="https://github.com/topics/hacktoberfest" target="_blank" rel="noopener">hacktoberfest</a></span><span class="gh-repo-meta"><span class="gh-meta gh-lang"><i class="gh-lang-dot" style="background-color:#3572A5"></i>Python</span><span class="gh-meta gh-stars"><svg class="gh-octicon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>164.4k</span><span class="gh-meta gh-forks"><svg class="gh-octicon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 1.5 0Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z"/></svg>34.3k</span><span class="gh-meta gh-updated">更新于 7 分钟前</span></span></div>
+<p>示例站点中，这里展示的是日常依赖的基础设施；换成你自己的项目即可。</p></div></article></main><footer class="site-footer">由 <a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener">OpenHomepage-V2</a> 驱动</footer><audio class="bgm-audio" src="/assets/bgm.mp3" loop preload="auto" data-volume="0.4" data-autoplay="true"></audio><aside class="intro-card" data-delay="4500" aria-live="polite"><button class="intro-close" type="button" aria-label="关闭联系卡 / Close contact card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button><button class="intro-content" type="button" aria-haspopup="dialog"><span class="intro-text"><span class="intro-label">Hello</span><span class="intro-title">交个朋友</span><span class="intro-description">扫码交流机器学习与系统</span></span><span class="intro-qr"><img src="/assets/contact-qr.svg" alt="" loading="lazy"></span></button></aside><dialog class="qr-modal" aria-labelledby="qr-modal-title"><div class="qr-modal-card"><h2 id="qr-modal-title">交个朋友</h2><img class="qr-modal-image" src="/assets/contact-qr.svg" alt=""><p>扫码交流机器学习与系统</p><button class="editorial-button outline" type="button" data-qr-close><span>关闭 / Close</span></button></div></dialog><script type="module">function e(){for(let e of document.querySelectorAll(`.intro-card:not([data-card-init])`)){e.dataset.cardInit=`1`;let t=e.nextElementSibling instanceof HTMLDialogElement?e.nextElementSibling:null,n=window.setTimeout(()=>e.classList.add(`visible`),Number(e.dataset.delay)||6e3);e.querySelector(`.intro-close`)?.addEventListener(`click`,()=>{window.clearTimeout(n),e.classList.remove(`visible`),window.setTimeout(()=>{e.remove(),t?.remove()},450)}),e.querySelector(`.intro-content`)?.addEventListener(`click`,()=>{t?.showModal()}),t?.querySelector(`[data-qr-close]`)?.addEventListener(`click`,()=>{t.close()}),t?.addEventListener(`click`,e=>{e.target===t&&t.close()})}}e(),document.addEventListener(`astro:page-load`,e);</script><div class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览 / Image preview" hidden><img class="lightbox-img" alt=""><button class="lightbox-close" type="button" aria-label="关闭 / Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div><script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_0_lang.w8ZNtFpP.js"></script></body></html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="zh" data-route-lang="zh" data-theme="light" data-default-mode="system" data-default-lang="zh" style="--accent-light:#3a7bd5;--accent-light-contrast:#ffffff;--accent-dark:#528bda;--accent-dark-contrast:#1a1d21;--site-bg-light:#f8f7f2;--site-bg-dark:#141311;"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>光影 · 林知远</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><meta name="description" content="研究之外：快门里的世界"><script>(function(){const defaultMode = "system";
+
+      // 首帧绘制前确定主题，避免闪烁：sessionStorage 用户选择 > site.yaml default_mode > 跟随系统。
+      // 与 src/scripts/theme.ts 的 currentTheme 同一套规则（is:inline 无法 import，此处内联镜像）。
+      // 首帧绘制前确定主题，避免闪烁。
+      // html.js 标记：滚动显现等动效的初始隐藏态只在有 JS 时生效（无 JS 不隐藏内容）
+      (function () {
+        document.documentElement.classList.add('js');
+        var saved = null;
+        try {
+          saved = sessionStorage.getItem('theme');
+        } catch (e) {}
+        var theme =
+          saved === 'light' || saved === 'dark'
+            ? saved
+            : defaultMode === 'light' || defaultMode === 'dark'
+              ? defaultMode
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+        document.documentElement.dataset.theme = theme;
+      })();
+    })();</script><script>(function(){const defaultLang = "zh";
+
+        // 语言偏好在首帧绘制前解析：已保存选择 > 浏览器语言。URL 语言不一致时直接
+        // replace 到目标路由，避免先渲染默认语言再被模块脚本换内容造成闪动。
+        (function () {
+          var normalize = function (value) {
+            var lang = (value || '').toLowerCase().split(/[-_]/)[0];
+            return lang === 'zh' || lang === 'en' ? lang : null;
+          };
+          var preferred = null;
+          try {
+            preferred = normalize(localStorage.getItem('oh-language'));
+          } catch (e) {}
+          if (!preferred) preferred = normalize(navigator.language);
+          var current = document.documentElement.dataset.routeLang
+            ? normalize(document.documentElement.dataset.routeLang)
+            : null;
+          if (!preferred || !current || preferred === current) return;
+
+          var rest = location.pathname || '/';
+          var prefix = '/' + current;
+          if (rest === prefix || rest.indexOf(prefix + '/') === 0) {
+            rest = rest.slice(prefix.length) || '/';
+          }
+          var pathname = preferred === defaultLang
+            ? (rest || '/')
+            : (rest === '/' ? '/' + preferred + '/' : '/' + preferred + rest);
+          location.replace(pathname + location.search + location.hash);
+        })();
+      })();</script><link rel="alternate" hreflang="en" href="https://stlin256.github.io/en/gallery"><link rel="alternate" hreflang="zh" href="https://stlin256.github.io/gallery"><link rel="alternate" hreflang="x-default" href="https://stlin256.github.io/gallery"><link rel="stylesheet" href="/_astro/_.._VbhM4Ck.css"></head><body><header class="site-header"><button class="nav-toggle" type="button" aria-label="打开导航菜单 / Menu" aria-expanded="false" aria-controls="site-nav"><span class="bar"></span><span class="bar"></span><span class="bar"></span></button><nav class="site-nav" id="site-nav" aria-label="站点导航"><p class="site-title"><a href="/">林知远</a></p><ul><li><a href="/">主页</a></li><li><a href="/research">研究方向</a></li><li><a href="/features">特性</a></li><li><a href="/gallery" class="active" aria-current="page">光影</a></li></ul></nav><div class="header-tools"><button class="bgm-toggle icon-btn" type="button" aria-pressed="false" aria-label="播放/暂停背景音乐 / Toggle background music"><svg class="icon icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"></path></svg><svg class="icon icon-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M18.5 5.5a9.5 9.5 0 0 1 0 13"></path></svg></button><div class="lang-switcher"><button class="lang-toggle icon-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="语言切换 / Switch language"><svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"></path></svg></button><ul class="lang-menu" role="menu"><li role="none"><a href="/en/gallery" hreflang="en" role="menuitem">English</a></li><li role="none"><a href="/gallery" hreflang="zh" role="menuitem" class="active" aria-current="true">中文</a></li></ul></div><button class="theme-toggle icon-btn" type="button" aria-label="切换亮色/暗色主题 / Toggle theme"><svg class="icon icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg><svg class="icon icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"></path></svg></button></div></header><main class="site-main"><article class="page-content"><h1>光影</h1><div class="markdown-body"><p>研究之外，我用快门记录世界。这一页顺便演示 <code>grid</code> 画廊排版。</p>
+<div class="md-grid" style="grid-template-columns:repeat(2,1fr)"><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/hero.jpg" alt="服役中的主力机，RGB 拉满" loading="lazy"><figcaption>服役中的主力机，RGB 拉满</figcaption></figure></div><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/figure-1.jpg" alt="C909，摄于航展公众日" loading="lazy"><figcaption>C909，摄于航展公众日</figcaption></figure></div></div>
+<div class="md-grid" style="grid-template-columns:repeat(2,1fr)"><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-sunset-clouds.jpg" alt="汕头金中的晚霞云层，2023 年 11 月" loading="lazy"><figcaption>汕头金中的晚霞云层，2023 年 11 月</figcaption></figure></div><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-botanical-garden.jpg" alt="华南植物园，2025 年 4 月" loading="lazy"><figcaption>华南植物园，2025 年 4 月</figcaption></figure></div></div>
+<div class="md-grid" style="grid-template-columns:repeat(2,1fr)"><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-kingfisher.jpg" alt="普通翠鸟，华农西湖，2024 年 11 月" loading="lazy"><figcaption>普通翠鸟，华农西湖，2024 年 11 月</figcaption></figure></div><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-transit-station.jpg" alt="新中山八路站，2024 年 12 月" loading="lazy"><figcaption>新中山八路站，2024 年 12 月</figcaption></figure></div></div>
+<div class="md-grid" style="grid-template-columns:repeat(2,1fr)"><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-victoria-harbour-night.jpg" alt="太平山顶看维港夜景，2025 年 8 月" loading="lazy"><figcaption>太平山顶看维港夜景，2025 年 8 月</figcaption></figure></div><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-iron-sparks.jpg" alt="华农西湖打铁花，2025 年 3 月" loading="lazy"><figcaption>华农西湖打铁花，2025 年 3 月</figcaption></figure></div></div>
+<div class="md-grid" style="grid-template-columns:repeat(2,1fr)"><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-yingge-dance.jpg" alt="潮博馆英歌舞展演，2023 年 5 月" loading="lazy"><figcaption>潮博馆英歌舞展演，2023 年 5 月</figcaption></figure></div><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-j20-pilot.jpg" alt="歼-20飞行员挥手致意" loading="lazy"><figcaption>歼-20飞行员挥手致意</figcaption></figure></div></div>
+<div class="md-grid" style="grid-template-columns:repeat(2,1fr)"><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-shantou-university.jpg" alt="汕头大学东海岸校区，2023 年 10 月" loading="lazy"><figcaption>汕头大学东海岸校区，2023 年 10 月</figcaption></figure></div><div class="md-grid-cell"><figure style="width:100%"><img src="/assets/gallery-beishan-bay.jpg" alt="北山湾，2024 年 7 月" loading="lazy"><figcaption>北山湾，2024 年 7 月</figcaption></figure></div></div></div></article></main><footer class="site-footer">由 <a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener">OpenHomepage-V2</a> 驱动</footer><audio class="bgm-audio" src="/assets/bgm.mp3" loop preload="auto" data-volume="0.4" data-autoplay="true"></audio><aside class="intro-card" data-delay="4500" aria-live="polite"><button class="intro-close" type="button" aria-label="关闭联系卡 / Close contact card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button><button class="intro-content" type="button" aria-haspopup="dialog"><span class="intro-text"><span class="intro-label">Hello</span><span class="intro-title">交个朋友</span><span class="intro-description">扫码交流机器学习与系统</span></span><span class="intro-qr"><img src="/assets/contact-qr.svg" alt="" loading="lazy"></span></button></aside><dialog class="qr-modal" aria-labelledby="qr-modal-title"><div class="qr-modal-card"><h2 id="qr-modal-title">交个朋友</h2><img class="qr-modal-image" src="/assets/contact-qr.svg" alt=""><p>扫码交流机器学习与系统</p><button class="editorial-button outline" type="button" data-qr-close><span>关闭 / Close</span></button></div></dialog><script type="module">function e(){for(let e of document.querySelectorAll(`.intro-card:not([data-card-init])`)){e.dataset.cardInit=`1`;let t=e.nextElementSibling instanceof HTMLDialogElement?e.nextElementSibling:null,n=window.setTimeout(()=>e.classList.add(`visible`),Number(e.dataset.delay)||6e3);e.querySelector(`.intro-close`)?.addEventListener(`click`,()=>{window.clearTimeout(n),e.classList.remove(`visible`),window.setTimeout(()=>{e.remove(),t?.remove()},450)}),e.querySelector(`.intro-content`)?.addEventListener(`click`,()=>{t?.showModal()}),t?.querySelector(`[data-qr-close]`)?.addEventListener(`click`,()=>{t.close()}),t?.addEventListener(`click`,e=>{e.target===t&&t.close()})}}e(),document.addEventListener(`astro:page-load`,e);</script><div class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览 / Image preview" hidden><img class="lightbox-img" alt=""><button class="lightbox-close" type="button" aria-label="关闭 / Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div><script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_0_lang.w8ZNtFpP.js"></script></body></html>
