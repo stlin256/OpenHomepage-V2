@@ -92,7 +92,7 @@ describe('cfgpanel：profile 表单', () => {
     saveBtn(body).click();
     await tick();
     expect(deps.runSave).toHaveBeenCalledTimes(1);
-    const saved = deps.saveSite.mock.calls[0][0] as typeof SITE;
+    const saved = vi.mocked(deps.saveSite).mock.calls[0][0] as typeof SITE;
     expect((saved.profile.name as Record<string, string>).zh).toBe('李四');
     expect((saved.profile.name as Record<string, string>).en).toBe('Zhang');
   });
@@ -116,7 +116,7 @@ describe('cfgpanel：github 表单', () => {
     username.dispatchEvent(new Event('input', { bubbles: true }));
     saveBtn(body).click();
     await tick();
-    const saved = deps.saveSite.mock.calls[0][0] as typeof SITE;
+    const saved = vi.mocked(deps.saveSite).mock.calls[0][0] as typeof SITE;
     expect(saved.github.username).toBe('lisi');
   });
 });
@@ -150,7 +150,7 @@ describe('cfgpanel：streaming / editorial 表单', () => {
     idInput.dispatchEvent(new Event('input', { bubbles: true }));
     saveBtn(body).click();
     await tick();
-    const saved = deps.saveSite.mock.calls[0][0] as typeof SITE;
+    const saved = vi.mocked(deps.saveSite).mock.calls[0][0] as typeof SITE;
     expect(saved.streaming_blocks[0].id).toBe('news');
 
     const body2 = document.createElement('div');

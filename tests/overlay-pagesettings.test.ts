@@ -9,7 +9,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderPageSettings } from '../admin/ui/overlay/pagesettings.ts';
+import { renderPageSettings, type PageSettingsDeps } from '../admin/ui/overlay/pagesettings.ts';
 import { createPageSwitcher } from '../admin/ui/overlay/pageswitcher.ts';
 import { initOverlay } from '../admin/ui/overlay/main.ts';
 import { createT } from '../admin/shared/i18n.ts';
@@ -39,7 +39,7 @@ describe('页面设置表单', () => {
     return {
       t,
       loadPage: vi.fn(async () => structuredClone(PAGE)),
-      onSave: vi.fn(async () => {}),
+      onSave: vi.fn<PageSettingsDeps['onSave']>(async () => {}),
       onCancel: vi.fn(),
       ...overrides,
     };
@@ -74,7 +74,7 @@ describe('页面设置表单', () => {
     (body.querySelector('.oh-inspector-ops .oh-primary') as HTMLButtonElement).click();
     await tick();
     expect(deps.onSave).toHaveBeenCalledTimes(1);
-    const [fm, savedBody] = deps.onSave.mock.calls[0] as [Record<string, unknown>, string];
+    const [fm, savedBody] = deps.onSave.mock.calls[0];
     expect(savedBody).toBe('# 正文\n'); // 正文不动
     expect(fm.title).toBe('研究成果');
     expect(fm.custom_key).toBe('保留');
@@ -91,7 +91,7 @@ describe('页面设置表单', () => {
     noticeInput.dispatchEvent(new Event('input', { bubbles: true }));
     (body.querySelector('.oh-inspector-ops .oh-primary') as HTMLButtonElement).click();
     await tick();
-    const [fm] = deps.onSave.mock.calls[0] as [Record<string, unknown>];
+    const [fm] = deps.onSave.mock.calls[0];
     expect('notice' in fm).toBe(false);
 
     // accent 色 notice 存纯字符串
@@ -106,7 +106,7 @@ describe('页面设置表单', () => {
     (c2[6] as HTMLSelectElement).value = 'accent';
     (body2.querySelector('.oh-inspector-ops .oh-primary') as HTMLButtonElement).click();
     await tick();
-    const [fm2] = deps2.onSave.mock.calls[0] as [Record<string, unknown>];
+    const [fm2] = deps2.onSave.mock.calls[0];
     expect(fm2.notice).toBe('公告');
 
     // 取消
@@ -155,16 +155,16 @@ describe('main 集成：页面设置按钮', () => {
     document.documentElement.classList.remove('oh-editing');
     sessionStorage.clear();
     localStorage.setItem('oh-admin-lang', 'zh');
-    delete (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
-    delete (window as Record<string, unknown>).__OH_PAGE_SOURCE__;
+    delete (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
+    delete (window as unknown as Record<string, unknown>).__OH_PAGE_SOURCE__;
   });
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
   it('顶栏含页面下拉与「页面设置」；点击打开检查器，保存走 PUT /api/page（body 不动）', async () => {
-    (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
-    (window as Record<string, unknown>).__OH_PAGE_SOURCE__ = 'pages/zh/index.md';
+    (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
+    (window as unknown as Record<string, unknown>).__OH_PAGE_SOURCE__ = 'pages/zh/index.md';
     const calls: { url: string; method?: string; body?: unknown }[] = [];
     vi.stubGlobal(
       'fetch',

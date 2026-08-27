@@ -456,8 +456,10 @@ async function fetchRssSource(ctx: Ctx, src: RssSource): Promise<{ data: RssEntr
   const entries: RssEntry[] = [];
   const failures: string[] = [];
   for (const art of articles) {
+    // rss.yaml 为手写 YAML，运行时 cover 可能被写成布尔 false（显式关闭封面），此处按实际值防御
+    const coverRaw = art.cover as string | false | null | undefined;
     const isExplicitNoCover =
-      art.cover === 'none' || art.cover === '' || art.cover === null || art.cover === false;
+      coverRaw === 'none' || coverRaw === '' || coverRaw === null || coverRaw === false;
     const declaredCover = isExplicitNoCover ? null : (art.cover ?? src.cover ?? null);
     const note = art.note ?? null;
     const hit = items.find((it) => it.link && sameLink(it.link, art.url));

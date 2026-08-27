@@ -6,7 +6,7 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 import {
   createToolbar,
   computeToolbarState,
@@ -103,10 +103,10 @@ describe('computeToolbarState：按钮可用性', () => {
 
 describe('createToolbar：DOM 与回调', () => {
   let deps: ToolbarDeps & {
-    onEdit: ReturnType<typeof vi.fn>;
-    onMove: ReturnType<typeof vi.fn>;
-    onDelete: ReturnType<typeof vi.fn>;
-    onInsertBelow: ReturnType<typeof vi.fn>;
+    onEdit: Mock<ToolbarDeps['onEdit']>;
+    onMove: Mock<ToolbarDeps['onMove']>;
+    onDelete: Mock<ToolbarDeps['onDelete']>;
+    onInsertBelow: Mock<ToolbarDeps['onInsertBelow']>;
   };
 
   beforeEach(() => {
@@ -114,10 +114,10 @@ describe('createToolbar：DOM 与回调', () => {
     deps = {
       t,
       siblingsOf: () => SIBS,
-      onEdit: vi.fn(),
-      onMove: vi.fn(),
-      onDelete: vi.fn(),
-      onInsertBelow: vi.fn(),
+      onEdit: vi.fn<ToolbarDeps['onEdit']>(),
+      onMove: vi.fn<ToolbarDeps['onMove']>(),
+      onDelete: vi.fn<ToolbarDeps['onDelete']>(),
+      onInsertBelow: vi.fn<ToolbarDeps['onInsertBelow']>(),
     };
   });
 

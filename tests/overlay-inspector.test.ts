@@ -49,16 +49,12 @@ function cellBlock(start: number): ServerBlock {
   };
 }
 
-function makeDeps(overrides: Partial<InspectorDeps> = {}): InspectorDeps & {
-  onSaveAttrs: ReturnType<typeof vi.fn>;
-  onDeleteCell: ReturnType<typeof vi.fn>;
-  onAddCell: ReturnType<typeof vi.fn>;
-} {
+function makeDeps(overrides: Partial<InspectorDeps> = {}) {
   return {
     t,
-    onSaveAttrs: vi.fn(async () => {}),
-    onDeleteCell: vi.fn(),
-    onAddCell: vi.fn(),
+    onSaveAttrs: vi.fn<InspectorDeps['onSaveAttrs']>(async () => {}),
+    onDeleteCell: vi.fn<InspectorDeps['onDeleteCell']>(() => {}),
+    onAddCell: vi.fn<InspectorDeps['onAddCell']>(() => {}),
     ...overrides,
   };
 }

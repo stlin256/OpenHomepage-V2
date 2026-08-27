@@ -128,10 +128,11 @@ export async function markdownToStream(
   options: MarkdownOptions = {},
 ): Promise<{ html: string; tokens: StreamToken[] }> {
   const processor = createMarkdownProcessor(options);
-  const tree = await processor.run(processor.parse(markdown));
+  // 管线经 remarkRehype 转 hast，run 出的树实为 hast Root（processor 类型停在 unist Node）
+  const tree = (await processor.run(processor.parse(markdown))) as Root;
   return {
     html: processor.stringify(tree),
-    tokens: hastToStreamTokens(tree.children as ElementContent[]),
+    tokens: hastToStreamTokens(tree.children),
   };
 }
 

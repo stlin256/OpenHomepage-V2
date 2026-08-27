@@ -177,8 +177,8 @@ describe('main：cfg 集成（hover 描边 / 点击改字 / POST 写回）', () 
     document.documentElement.classList.remove('oh-editing');
     sessionStorage.clear();
     localStorage.setItem('oh-admin-lang', 'zh');
-    delete (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
-    delete (window as Record<string, unknown>).__OH_PAGE_SOURCE__;
+    delete (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
+    delete (window as unknown as Record<string, unknown>).__OH_PAGE_SOURCE__;
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -204,8 +204,8 @@ describe('main：cfg 集成（hover 描边 / 点击改字 / POST 写回）', () 
   });
 
   it('点击 cfg 元素 → 原位输入框（初值取服务端配置）；Enter → POST /api/config/field', async () => {
-    (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
-    (window as Record<string, unknown>).__OH_PAGE_SOURCE__ = 'pages/zh/index.md';
+    (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
+    (window as unknown as Record<string, unknown>).__OH_PAGE_SOURCE__ = 'pages/zh/index.md';
     const calls: { url: string; body?: unknown }[] = [];
     vi.stubGlobal(
       'fetch',

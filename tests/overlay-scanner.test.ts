@@ -105,14 +105,14 @@ describe('main：顶栏与 hover 描边', () => {
 
     document.body.innerHTML = '<p data-oh-src="pages/zh/index.md:0,5">甲</p>';
     document.documentElement.classList.remove('oh-editing');
-    (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
+    (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
     // 注入 origin 后 overlay 会拉取块数据/页面列表：断网 mock，断言只关心顶栏
     vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new Error('offline'))));
     initOverlay(document);
     const back = document.querySelector<HTMLAnchorElement>('.oh-back')!;
     expect(back.getAttribute('href')).toBe('http://127.0.0.1:4174');
     expect(back.textContent).toBe(t('backToAdmin'));
-    delete (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
+    delete (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
     vi.unstubAllGlobals();
   });
 });
@@ -168,8 +168,8 @@ describe('main：块数据加载（M12b）', () => {
     document.documentElement.classList.remove('oh-editing');
     sessionStorage.clear();
     localStorage.setItem('oh-admin-lang', 'zh');
-    delete (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
-    delete (window as Record<string, unknown>).__OH_PAGE_SOURCE__;
+    delete (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__;
+    delete (window as unknown as Record<string, unknown>).__OH_PAGE_SOURCE__;
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -177,8 +177,8 @@ describe('main：块数据加载（M12b）', () => {
   });
 
   it('启动时按 fileRef 拉取服务端块数据并合并进注册表；顶栏带状态区与＋插入按钮', async () => {
-    (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174/';
-    (window as Record<string, unknown>).__OH_PAGE_SOURCE__ = 'pages/zh/index.md';
+    (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174/';
+    (window as unknown as Record<string, unknown>).__OH_PAGE_SOURCE__ = 'pages/zh/index.md';
     const serverBlocks: ServerBlock[] = [
       { start: 0, end: 5, kind: 'paragraph', parent: 'root', hash: 'h1', markdown: '甲' },
     ];
@@ -206,7 +206,7 @@ describe('main：块数据加载（M12b）', () => {
   });
 
   it('块数据拉取失败：顶栏显示错误，注册表保持仅坐标（不中断 overlay）', async () => {
-    (window as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
+    (window as unknown as Record<string, unknown>).__OH_ADMIN_ORIGIN__ = 'http://127.0.0.1:4174';
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => ({ ok: false, status: 500, json: async () => ({ error: 'boom' }) }))

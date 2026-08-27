@@ -7,7 +7,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeAll, vi } from 'vitest';
-import { openTextEditor } from '../admin/ui/overlay/textedit.ts';
+import { openTextEditor, type TextEditDeps } from '../admin/ui/overlay/textedit.ts';
 import type { BlockEntry } from '../admin/ui/overlay/scanner.ts';
 import { createT } from '../admin/shared/i18n.ts';
 
@@ -60,12 +60,12 @@ describe('textedit：打开与保存', () => {
 
   it('完成按钮 → 序列化交给 onSave；成功后清理并还原块显示', async () => {
     const entry = makeEntry('你好 **世界**');
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn<TextEditDeps['onSave']>(async () => {});
     const session = await openTextEditor(entry, { t, onSave });
     (session.root.querySelector('.oh-textedit-ops .oh-primary') as HTMLButtonElement).click();
     await tick();
     expect(onSave).toHaveBeenCalledTimes(1);
-    const md = onSave.mock.calls[0][0] as string;
+    const md = onSave.mock.calls[0][0];
     expect(md).toContain('你好');
     expect(md).toContain('**世界**');
     expect(session.root.isConnected).toBe(false);
@@ -74,7 +74,7 @@ describe('textedit：打开与保存', () => {
 
   it('Ctrl+Enter 保存（Mod 键兼容 metaKey）', async () => {
     const entry = makeEntry('甲');
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn<TextEditDeps['onSave']>(async () => {});
     const session = await openTextEditor(entry, { t, onSave });
     session.root.dispatchEvent(
       new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, bubbles: true, cancelable: true })
@@ -103,7 +103,7 @@ describe('textedit：打开与保存', () => {
 describe('textedit：取消', () => {
   it('Esc 取消：不保存、还原 DOM、触发 onCancel', async () => {
     const entry = makeEntry('甲');
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn<TextEditDeps['onSave']>(async () => {});
     const onCancel = vi.fn();
     const session = await openTextEditor(entry, { t, onSave, onCancel });
     session.root.dispatchEvent(
@@ -118,7 +118,7 @@ describe('textedit：取消', () => {
 
   it('取消按钮：不保存、还原 DOM', async () => {
     const entry = makeEntry('甲');
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn<TextEditDeps['onSave']>(async () => {});
     const session = await openTextEditor(entry, { t, onSave });
     const ops = session.root.querySelectorAll('.oh-textedit-ops button');
     (ops[1] as HTMLButtonElement).click(); // 第二个为取消
@@ -132,7 +132,7 @@ describe('textedit：粘贴图片', () => {
   it('clipboardData 含图片时走上传钩子并插入 assets 引用', async () => {
     const entry = makeEntry('甲');
     const onPasteImage = vi.fn(async () => 'assets/pasted-x.png');
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn<TextEditDeps['onSave']>(async () => {});
     const session = await openTextEditor(entry, { t, onSave, onPasteImage });
     const pm = session.root.querySelector('.ProseMirror')!;
     // jsdom 无 DataTransfer：构造最小可用的 clipboardData（与 admin-views 测试同款做法）
