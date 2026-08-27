@@ -11,6 +11,8 @@
  * 每次写操作成功后整页刷新（§2.6 既定流程；sessionStorage 保持编辑模式）。
  * M12f：插入成功后按返回的最新块列表写 sessionStorage 回跳标记（oh-open-block），
  * reload 后自动打开新块的检查器（指令）/微编辑器（文本块）；hover 委托实现见 toolbar.ts。
+ * 块拖拽排序（v2 落地）：工具条拖拽手柄发起，落点指示/合法性判定在 dnd.ts，
+ * 落下 = move op（跨容器，服务端围栏重归一化），随后整页刷新。
  * 由渲染页 bootstrap（BaseLayout，OH_EDIT=1 时输出）以经典脚本跨 origin 动态加载；
  * 界面文案走 admin/shared/i18n.ts 字典（与 admin 同一语言记忆）。
  */
@@ -48,6 +50,7 @@ import {
   type BlockOpPayload,
 } from './api.ts';
 import { createToolbar, isTextEditable, isInspectable, bindHover } from './toolbar.ts';
+import { bindBlockDrag } from './dnd.ts';
 import { openTextEditor, type TextEditSession } from './textedit.ts';
 import { createInserter, resolveInsertTarget, locateInsertedBlock } from './inserter.ts';
 import { createInspector, gridCellSnippet } from './inspector.ts';
@@ -508,6 +511,22 @@ export function initOverlay(doc: Document): OverlayHandle {
       });
     },
     onInsertBelow: (entry) => inserter.open(entry),
+  });
+
+  // 块拖拽（docs/specs/12 §3 v2 项）：手柄在工具条上，落下 = move op（跨容器，随后整页刷新）
+  bindBlockDrag(doc, {
+    handle: toolbar.dragHandle,
+    currentEntry: () => toolbar.current(),
+    entryOf: (el) => entryByEl.get(el),
+    onDrop: (entry, to) =>
+      runOpQuiet({
+        path: entry.span.source,
+        op: 'move',
+        start: entry.span.start,
+        end: entry.span.end,
+        hash: entry.hash ?? '',
+        to,
+      }),
   });
 
   async function openEditor(entry: BlockEntry): Promise<void> {

@@ -3,6 +3,9 @@
  * 各类块/指令/grid 嵌套/误嵌套残留围栏的坐标枚举；replace/insert/delete/move 拼接往返；
  * M12c：指令属性表枚举、serializeAttrs 序列化（与 mdast-util-directive 解析往返）、
  * rewriteDirectiveAttrs 起始行属性段重写、containerCloseLineStart 容器内插入点。
+ * 块拖拽跨容器移动：legalMoveBoundaries 落点集合、moveBlockCrossContainer
+ * （跨 grid 移 cell / 移入空容器 / 围栏冒号重归一化——提升祖先链或缩减被移动内容外层）、
+ * assertMoveStructurePreserved 结构守恒校验。
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -13,6 +16,9 @@ import {
   insertBlock,
   deleteBlock,
   moveBlock,
+  moveBlockCrossContainer,
+  legalMoveBoundaries,
+  assertMoveStructurePreserved,
   serializeAttrs,
   rewriteDirectiveAttrs,
   containerCloseLineStart,
@@ -414,5 +420,200 @@ describe('containerCloseLineStart：容器闭围栏行首（M12c into 插入点�
   it('非法坐标抛错', () => {
     expect(() => containerCloseLineStart('甲\n', 5, 3)).toThrow(/非法的块坐标/);
     expect(() => containerCloseLineStart('甲\n', 0, 99)).toThrow(/非法的块坐标/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 块拖拽跨容器移动（docs/specs/12 §3 v2 落地项）
+// ---------------------------------------------------------------------------
+
+/** 按 name 找第 index 个指令块（测试定位辅助） */
+const byName = (body: string, name: string, index = 0) =>
+  listEditableBlocks(body).filter((b) => b.name === name)[index];
+
+const paragraphs = (body: string) => listEditableBlocks(body).filter((b) => b.kind === 'paragraph');
+
+describe('legalMoveBoundaries：跨容器落点集合', () => {
+  it('全部块行首/行尾边界 + grid/cell 闭围栏行首（空容器唯一内部落点），值归一化为行首', () => {
+    const md = '::::grid\n:::cell\n甲\n:::\n::::\n\n乙\n';
+    const map = legalMoveBoundaries(md);
+    // 值一律是行首 offset
+    for (const v of map.values()) {
+      expect(v === 0 || md[v - 1] === '\n').toBe(true);
+    }
+    const cell = byName(md, 'cell');
+    // 非空 cell：闭围栏行首 = 末子块行尾边界（与「甲 之后」同一 offset，语义为容器内末尾）
+    const close = containerCloseLineStart(md, cell.start, cell.end);
+    expect(map.get(close)).toBe(close);
+    const inner = paragraphs(md)[0];
+    expect(map.get(inner.end)).toBe(close);
+    // 块原始 start/end 与归一化边界都可作键
+    const grid = byName(md, 'grid');
+    const [gls, gee] = blockLineSpan(md, grid.start, grid.end);
+    expect(map.get(grid.start)).toBe(gls);
+    expect(map.get(grid.end)).toBe(gee);
+    expect(map.get(gee)).toBe(gee);
+  });
+
+  it('空容器的闭围栏行首是唯一内部落点；非边界 offset 不在集合内', () => {
+    const md = '甲\n\n::::grid\n:::cell\n:::\n::::\n';
+    const map = legalMoveBoundaries(md);
+    const cell = byName(md, 'cell');
+    const close = containerCloseLineStart(md, cell.start, cell.end);
+    expect(map.get(close)).toBe(close);
+    expect(map.has(5)).toBe(false); // grid 围栏行内的偏移不是边界（3 恰为 grid 行首，在集合内）
+  });
+});
+
+describe('moveBlockCrossContainer：跨容器移动', () => {
+  it('同容器内移动退化为原 move 行为（坐标递归块同样可拼接）', () => {
+    const md = '甲。\n\n乙。\n\n丙。\n';
+    const b = listEditableBlocks(md);
+    expect(moveBlockCrossContainer(md, b[2].start, b[2].end, 0)).toBe('丙。\n\n甲。\n\n乙。\n');
+    expect(moveBlockCrossContainer(md, b[0].start, b[0].end, b[0].end)).toBe(md); // 自身边界空操作
+  });
+
+  it('cell 内段落移到顶层末尾；顶层段落移入 cell（跨容器进出）', () => {
+    const md = '::::grid\n:::cell\n甲\n:::\n::::\n\n乙\n';
+    const inner = paragraphs(md)[0];
+    const tail = paragraphs(md)[1];
+    expect(moveBlockCrossContainer(md, inner.start, inner.end, tail.end)).toBe(
+      '::::grid\n:::cell\n:::\n::::\n\n乙\n\n甲\n'
+    );
+    const md2 = '甲\n\n::::grid\n:::cell\n乙\n:::\n::::\n';
+    const p = paragraphs(md2)[0];
+    const inner2 = paragraphs(md2)[1];
+    const out = moveBlockCrossContainer(md2, p.start, p.end, inner2.end);
+    expect(out).toBe('::::grid\n:::cell\n乙\n\n甲\n\n:::\n::::\n');
+    // 重解析：甲 的 parent 指向 cell（进容器成功）
+    const moved = paragraphs(out).find((x) => out.slice(x.start, x.end) === '甲')!;
+    expect(moved.parent).toBe(`${byName(out, 'cell').start}:${byName(out, 'cell').end}`);
+  });
+
+  it('cell 跨 grid 移动（同为 3 冒号无冲突，直接拼接）', () => {
+    const md = '::::grid\n:::cell\nA\n:::\n::::\n\n::::grid\n:::cell\nB\n:::\n::::\n';
+    const cellA = byName(md, 'cell', 0);
+    const cellB = byName(md, 'cell', 1);
+    const out = moveBlockCrossContainer(md, cellA.start, cellA.end, cellB.end);
+    expect(out).toBe('::::grid\n::::\n\n::::grid\n:::cell\nB\n:::\n\n:::cell\nA\n:::\n\n::::\n');
+    // cellA 落在第二个 grid 内
+    const cells = listEditableBlocks(out).filter((b) => b.name === 'cell');
+    const grids = listEditableBlocks(out).filter((b) => b.name === 'grid');
+    expect(cells[1].parent).toBe(`${grids[1].start}:${grids[1].end}`);
+    expect(out.slice(cells[1].start, cells[1].end)).toBe(':::cell\nA\n:::');
+  });
+
+  it('块移入空 cell / 空 grid（闭围栏行首落点，into 语义复用）', () => {
+    const md = '甲\n\n::::grid\n:::cell\n:::\n::::\n';
+    const p = paragraphs(md)[0];
+    const cell = byName(md, 'cell');
+    const intoCell = containerCloseLineStart(md, cell.start, cell.end);
+    const out = moveBlockCrossContainer(md, p.start, p.end, intoCell);
+    expect(out).toBe('::::grid\n:::cell\n\n甲\n\n:::\n::::\n');
+    expect(byName(out, 'cell')).toBeTruthy();
+    const moved = paragraphs(out)[0];
+    expect(moved.parent).toBe(`${byName(out, 'cell').start}:${byName(out, 'cell').end}`);
+
+    const md2 = '甲\n\n::::grid\n::::\n';
+    const p2 = paragraphs(md2)[0];
+    const grid = byName(md2, 'grid');
+    const intoGrid = containerCloseLineStart(md2, grid.start, grid.end);
+    const out2 = moveBlockCrossContainer(md2, p2.start, p2.end, intoGrid);
+    expect(out2).toBe('::::grid\n\n甲\n\n::::\n');
+    expect(paragraphs(out2)[0].parent).toBe(`${byName(out2, 'grid').start}:${byName(out2, 'grid').end}`);
+  });
+
+  it('围栏冲突：:::figure 移入 :::cell → 提升祖先链（cell 3→4、grid 4→5，只改围栏行）', () => {
+    const md = '::::grid\n:::cell\n乙\n:::\n::::\n\n:::figure{src="assets/a.jpg"}\n:::\n';
+    const fig = byName(md, 'figure');
+    const inner = paragraphs(md)[0];
+    const out = moveBlockCrossContainer(md, fig.start, fig.end, inner.end);
+    expect(out).toBe(':::::grid\n::::cell\n乙\n\n:::figure{src="assets/a.jpg"}\n:::\n\n::::\n:::::\n');
+    // 重解析结构合法：figure 在 cell 内，无残留
+    assertMoveStructurePreserved(md, out);
+    const cell = byName(out, 'cell');
+    const figAfter = byName(out, 'figure');
+    expect(figAfter.parent).toBe(`${cell.start}:${cell.end}`);
+    expect(figAfter.attrs).toEqual({ src: 'assets/a.jpg' });
+  });
+
+  it('围栏冲突：:::::figure(5) 移入 ::::cell(4) → 缩减被移动内容外层（5→3，改动更小）', () => {
+    const md = ':::::grid\n::::cell\n乙\n::::\n:::::\n\n:::::figure{src="assets/a.jpg"}\n:::::\n';
+    const fig = byName(md, 'figure');
+    const inner = paragraphs(md)[0];
+    const out = moveBlockCrossContainer(md, fig.start, fig.end, inner.end);
+    // 祖先链不动，figure 降到 3 冒号
+    expect(out).toBe(':::::grid\n::::cell\n乙\n\n:::figure{src="assets/a.jpg"}\n:::\n\n::::\n:::::\n');
+    assertMoveStructurePreserved(md, out);
+  });
+
+  it('grid 整体移入更深 cell：内部相对嵌套不变（4/3 保留），提升目标祖先链（4→5、5→6）', () => {
+    const md = '::::grid\n:::cell\nA\n:::\n::::\n\n:::::grid\n::::cell\nB\n::::\n:::::\n';
+    const grid1 = byName(md, 'grid', 0);
+    const innerB = paragraphs(md)[1];
+    const out = moveBlockCrossContainer(md, grid1.start, grid1.end, innerB.end);
+    expect(out).toBe('::::::grid\n:::::cell\nB\n\n::::grid\n:::cell\nA\n:::\n::::\n\n:::::\n::::::\n');
+    assertMoveStructurePreserved(md, out);
+    // 被移动 grid 的内部结构不变：其 cell 围栏仍为 3
+    const movedGrid = byName(out, 'grid', 1);
+    const out2 = out.slice(movedGrid.start, movedGrid.end);
+    expect(out2).toBe('::::grid\n:::cell\nA\n:::\n::::');
+  });
+
+  it('移到顶层不做无谓缩减：grid 围栏保留 4/3；cell 移到顶层合法（渲染退化为普通 div）', () => {
+    const md = '::::grid\n:::cell\n甲\n:::\n::::\n\n乙\n';
+    const grid = byName(md, 'grid');
+    const tail = paragraphs(md).find((p) => p.parent === 'root')!;
+    const out = moveBlockCrossContainer(md, grid.start, grid.end, tail.end);
+    expect(out).toBe('乙\n\n::::grid\n:::cell\n甲\n:::\n::::\n');
+    assertMoveStructurePreserved(md, out);
+
+    const md2 = '::::grid\n:::cell\nA\n:::\n:::cell\nB\n:::\n::::\n';
+    const cellA = byName(md2, 'cell', 0);
+    const out2 = moveBlockCrossContainer(md2, cellA.start, cellA.end, 0);
+    expect(out2).toBe(':::cell\nA\n:::\n\n::::grid\n:::cell\nB\n:::\n::::\n');
+    assertMoveStructurePreserved(md2, out2);
+    expect(listEditableBlocks(out2)[0].parent).toBe('root');
+  });
+
+  it('嵌套 grid 从 cell 内移到顶层（无祖先不冲突，围栏保留）', () => {
+    const md = ':::::grid\n::::cell\n:::grid\n内\n:::\n::::\n:::::\n\n尾\n';
+    const inner = byName(md, 'grid', 1);
+    const tail = paragraphs(md).find((p) => p.parent === 'root')!;
+    const out = moveBlockCrossContainer(md, inner.start, inner.end, tail.end);
+    expect(out).toBe(':::::grid\n::::cell\n::::\n:::::\n\n尾\n\n:::grid\n内\n:::\n');
+    assertMoveStructurePreserved(md, out);
+  });
+
+  it('非法目标：落在被移动块内部 / 非边界 offset → 抛错', () => {
+    const md = '::::grid\n:::cell\nA\n:::\n::::\n\n乙\n';
+    const grid = byName(md, 'grid');
+    const cell = byName(md, 'cell');
+    // grid 移到自身 cell 的边界（落在被移动块内部）
+    expect(() => moveBlockCrossContainer(md, grid.start, grid.end, cell.start)).toThrow(/被移动块内部/);
+    // 非边界 offset
+    expect(() => moveBlockCrossContainer(md, grid.start, grid.end, 3)).toThrow(/块边界/);
+  });
+});
+
+describe('assertMoveStructurePreserved：移动结构守恒校验', () => {
+  const before = '::::grid\n:::cell\nA\n:::\n::::\n';
+
+  it('指令数不变且残留不新增 → 通过（含移动修复误嵌套使残留减少的情形）', () => {
+    expect(() => assertMoveStructurePreserved(before, before)).not.toThrow();
+    // 残留减少（修复）允许
+    const broken = '::::grid\n:::cell\n:::figure{src="assets/a.jpg"}\n:::\n:::\n::::\n';
+    const fixed = '::::grid\n:::cell\n:::figure{src="assets/a.jpg"}\n:::\n::::\n';
+    expect(() => assertMoveStructurePreserved(broken, fixed)).not.toThrow();
+  });
+
+  it('新增纯冒号残留段落 → 抛错', () => {
+    const after = '::::grid\n:::cell\nA\n:::\n:::\n::::\n';
+    expect(() => assertMoveStructurePreserved(before, after)).toThrow(/残留/);
+  });
+
+  it('指令节点数变化（围栏被破坏导致指令降级）→ 抛错', () => {
+    const after = '::::grid\n:::cell\nA\n:::\n::::\n\n:::figure\n:::\n';
+    expect(() => assertMoveStructurePreserved(before, after)).toThrow(/指令节点数/);
   });
 });

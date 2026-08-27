@@ -2,7 +2,7 @@
  * 浮动工具条（admin/ui/overlay/toolbar.ts，M12b/M12c）jsdom 测试：
  * 按钮可用性逻辑（文本块/指令块（除 cell）编辑可用——后者为检查器语义，cell 禁编辑、
  * 首/末兄弟块禁上移/下移、无 hash 全禁）、点击回调（编辑/移动目标坐标/删除/下方插入）
- * 与 showFor/hide 显隐。
+ * 与 showFor/hide 显隐；拖拽手柄（⠿ draggable，事件绑定在 dnd.ts 另有测试）。
  *
  * @vitest-environment jsdom
  */
@@ -88,6 +88,7 @@ describe('computeToolbarState：按钮可用性', () => {
       canMoveDown: false,
       canDelete: false,
       canInsert: false,
+      canDrag: false,
     });
   });
 
@@ -131,30 +132,31 @@ describe('createToolbar：DOM 与回调', () => {
     tb.showFor(mid);
     expect(tb.el.hidden).toBe(false);
     expect(tb.current()).toBe(mid);
-    const [edit, up, down, del, ins] = buttons(tb.el);
-    expect([edit.disabled, up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
-      false, false, false, false, false,
+    const [drag, edit, up, down, del, ins] = buttons(tb.el);
+    expect([drag.disabled, edit.disabled, up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
+      false, false, false, false, false, false,
     ]);
     tb.hide();
     expect(tb.el.hidden).toBe(true);
     expect(tb.current()).toBeNull();
   });
 
-  it('指令块：编辑可用（检查器语义）；cell 编辑禁用（带提示），移动/删除/下方插入可用', () => {
+  it('指令块：编辑可用（检查器语义）；cell 编辑禁用（带提示），拖拽/移动/删除/下方插入可用', () => {
     const tb = createToolbar(document, deps);
     tb.showFor(entry(7, 10, { kind: 'containerDirective', name: 'grid' }));
-    let [edit, up, down, del, ins] = buttons(tb.el);
+    let [drag, edit, up, down, del, ins] = buttons(tb.el);
     expect(edit.disabled).toBe(false);
-    expect([up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
-      false, false, false, false,
+    expect([drag.disabled, up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
+      false, false, false, false, false,
     ]);
     tb.hide();
     tb.showFor(entry(7, 10, { kind: 'containerDirective', name: 'cell' }));
-    [edit, up, down, del, ins] = buttons(tb.el);
+    [drag, edit, up, down, del, ins] = buttons(tb.el);
     expect(edit.disabled).toBe(true);
     expect(edit.title).toBe(t('editUnsupported'));
-    expect([up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
-      false, false, false, false,
+    // cell 同样可拖（同 grid 重排 / 跨 grid 移动）
+    expect([drag.disabled, up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
+      false, false, false, false, false,
     ]);
   });
 
@@ -162,7 +164,7 @@ describe('createToolbar：DOM 与回调', () => {
     const tb = createToolbar(document, deps);
     const mid = entry(7, 10);
     tb.showFor(mid);
-    const [edit, up, down, del, ins] = buttons(tb.el);
+    const [, edit, up, down, del, ins] = buttons(tb.el);
     edit.click();
     expect(deps.onEdit).toHaveBeenCalledWith(mid);
     up.click();
@@ -178,8 +180,18 @@ describe('createToolbar：DOM 与回调', () => {
   it('禁用按钮点击不触发回调（首块上移）', () => {
     const tb = createToolbar(document, deps);
     tb.showFor(entry(0, 5));
-    buttons(tb.el)[1].click(); // 上移（禁用）
+    buttons(tb.el)[2].click(); // 上移（禁用）
     expect(deps.onMove).not.toHaveBeenCalled();
+  });
+
+  it('拖拽手柄：draggable + 字典 title；无服务端数据（hash 缺失）禁用', () => {
+    const tb = createToolbar(document, deps);
+    expect(tb.dragHandle.draggable).toBe(true);
+    expect(tb.dragHandle.title).toBe(t('dragMove'));
+    tb.showFor(entry(7, 10));
+    expect(tb.dragHandle.disabled).toBe(false);
+    tb.showFor(entry(7, 10, { hash: undefined, kind: undefined, parent: undefined }));
+    expect(tb.dragHandle.disabled).toBe(true);
   });
 });
 
@@ -195,7 +207,9 @@ describe('bindHover：document 级事件委托（M12f）', () => {
     document.body.append(bar);
     const showFor = vi.fn();
     const hide = vi.fn();
-    return { tb: { el: bar, showFor, hide, current: () => null }, showFor, hide };
+    const dragHandle = document.createElement('button');
+    bar.append(dragHandle);
+    return { tb: { el: bar, dragHandle, showFor, hide, current: () => null }, showFor, hide };
   }
 
   /** 建一个带坐标的块元素（tag/属性可定制）并登记到 entryByEl */

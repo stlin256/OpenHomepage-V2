@@ -266,6 +266,9 @@ const zh = {
   blockDataFailed: '块数据加载失败',
   editUnsupported: '该块无参数可编辑',
 
+  // 可视化编辑 overlay：块拖拽排序（拖拽手柄；键盘可达由上移/下移按钮保证）
+  dragMove: '拖拽移动（Esc 取消）',
+
   // 可视化编辑 overlay（M12c）：右侧检查器（指令参数表单 + grid 列设置/单元格增删）
   gridCols: '列数 (cols)',
   gridCells: '单元格',
@@ -555,6 +558,9 @@ const en: Record<DictKey, string> = {
   opFailed: 'Operation failed',
   blockDataFailed: 'Failed to load block data',
   editUnsupported: 'This block has no parameters to edit',
+
+  // 可视化编辑 overlay：块拖拽排序（拖拽手柄；键盘可达由上移/下移按钮保证）
+  dragMove: 'Drag to move (Esc to cancel)',
 
   // 可视化编辑 overlay（M12c）：右侧检查器（指令参数表单 + grid 列设置/单元格增删）
   gridCols: 'Columns (cols)',

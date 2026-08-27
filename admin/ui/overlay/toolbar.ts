@@ -9,6 +9,7 @@
  * resolveHitTarget（cfg 字段 > markdown 块 > cfg-block，最内层命中），嵌套块只亮内层；
  * 隐藏延迟 400ms + 工具条与块边缘重叠 1px（消除指针跨隙死区），
  * 指针离开窗口（mouseout 无 relatedTarget）时清理描边并计划隐藏。
+ * 块拖拽：工具条首个按钮为拖拽手柄（⠿，draggable），drag 事件绑定与落点解析在 dnd.ts。
  */
 import { el } from '../dom.ts';
 import { resolveHitTarget, type BlockEntry, type ServerBlock } from './scanner.ts';
@@ -34,6 +35,8 @@ export interface ToolbarState {
   canMoveDown: boolean;
   canDelete: boolean;
   canInsert: boolean;
+  /** 拖拽手柄可用（有服务端数据即可拖；cell 同样可拖——同 grid 重排或跨容器移动） */
+  canDrag: boolean;
   /** move 的 to 目标：上移 = 前一兄弟块 start，下移 = 后一兄弟块 end（服务端归一化为行边界） */
   moveUpTo?: number;
   moveDownTo?: number;
@@ -56,6 +59,7 @@ export function computeToolbarState(entry: BlockEntry, siblings: ServerBlock[]):
     canMoveDown: !!entry.hash && !!next,
     canDelete: !!entry.hash,
     canInsert: !!entry.hash,
+    canDrag: !!entry.hash,
     moveUpTo: prev?.start,
     moveDownTo: next?.end,
   };
@@ -73,6 +77,8 @@ export interface ToolbarDeps {
 
 export interface Toolbar {
   el: HTMLElement;
+  /** 拖拽手柄（块拖拽的 dragstart 源；绑定在 dnd.ts，draggable 已设置） */
+  dragHandle: HTMLButtonElement;
   /** 锚定到指定块并显示（刷新按钮可用性；重复调用即重锚定） */
   showFor(entry: BlockEntry): void;
   hide(): void;
@@ -91,9 +97,16 @@ export function createToolbar(doc: Document, deps: ToolbarDeps): Toolbar {
   const downBtn = el('button', { type: 'button' }, t('moveDown')) as HTMLButtonElement;
   const delBtn = el('button', { type: 'button', class: 'oh-danger' }, t('remove')) as HTMLButtonElement;
   const insBtn = el('button', { type: 'button' }, t('insertBelow')) as HTMLButtonElement;
+  // 拖拽手柄（块拖拽）：draggable 源，事件绑定在 dnd.ts；键盘等价操作 = 上移/下移按钮（M10）
+  const dragHandle = el(
+    'button',
+    { type: 'button', class: 'oh-drag-handle', draggable: 'true', title: t('dragMove') },
+    '⠿'
+  ) as HTMLButtonElement;
   const bar = el(
     'div',
     { class: 'oh-toolbar', role: 'toolbar', 'aria-label': t('actions') },
+    dragHandle,
     editBtn,
     upBtn,
     downBtn,
@@ -150,6 +163,7 @@ export function createToolbar(doc: Document, deps: ToolbarDeps): Toolbar {
     downBtn.disabled = !s.canMoveDown;
     delBtn.disabled = !s.canDelete;
     insBtn.disabled = !s.canInsert;
+    dragHandle.disabled = !s.canDrag;
     if (bar.hidden) {
       bar.hidden = false;
       win?.addEventListener('scroll', reanchor, true);
@@ -165,7 +179,7 @@ export function createToolbar(doc: Document, deps: ToolbarDeps): Toolbar {
     win?.removeEventListener('resize', reanchor);
   };
 
-  return { el: bar, showFor, hide, current: () => current };
+  return { el: bar, dragHandle, showFor, hide, current: () => current };
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +207,8 @@ export function bindHover(doc: Document, entryByEl: Map<Element, BlockEntry>, to
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
   const clearTimer = () => clearTimeout(hideTimer);
   const scheduleHide = () => {
+    // 拖拽进行中不隐藏工具条：手柄是拖拽源，display:none 可能中断浏览器的拖拽会话
+    if (doc.querySelector('.oh-drag-source')) return;
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => toolbar.hide(), HIDE_DELAY_MS);
   };

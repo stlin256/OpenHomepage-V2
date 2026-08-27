@@ -5,9 +5,12 @@
  *   （attrs 字段，M12c：检查器表单初值，服务端 mdast 解析保证与序列化往返一致），
  *   供 overlay/客户端做陈旧检测（hash 不一致即 409）；
  * - applyBlockOp：replace/insert/delete/move/attrs 单块操作——重解析校验坐标处块 hash、
- *   replace/insert 的 markdown 必须恰好解析为一个顶层块、move 目标限同一父容器内
- *   块边界（防跨容器结构破坏）、attrs 只重写指令块起始行属性段（M12c）、insert into
- *   支持插为 grid/cell 容器最后一个子块（M12c 检查器「添加单元格」）；
+ *   replace/insert 的 markdown 必须恰好解析为一个顶层块、attrs 只重写指令块起始行
+ *   属性段（M12c）、insert into 支持插为 grid/cell 容器最后一个子块（M12c 检查器
+ *   「添加单元格」）；move 已放开同父限制（块拖拽）：to 可为任意合法插入边界
+ *   （跨容器/空容器内部，legalMoveBoundaries），围栏冒号冲突自动重归一化
+ *   （moveBlockCrossContainer），拼接后整篇结构守恒校验
+ *   （assertMoveStructurePreserved，非法不落盘）；
  *   沿用现有设施：safeResolve 路径限制、写前校验、写前快照（.snapshots）。
  *   落盘保留 frontmatter 原文（正文是原文切片，按长度回推头部）。
  * 坐标枚举与渲染页 data-oh-src 共用 src/lib/edit-blocks.ts 的 listEditableBlocks。
@@ -24,7 +27,8 @@ import {
   replaceBlock,
   insertBlock,
   deleteBlock,
-  moveBlock,
+  moveBlockCrossContainer,
+  assertMoveStructurePreserved,
   rewriteDirectiveAttrs,
   containerCloseLineStart,
   EDITABLE_CONTAINERS,
@@ -154,7 +158,9 @@ function boundaryMap(body: string, blocks: EditableBlock[]): Map<number, number>
  *   （零宽坐标，必须是某块行首/行尾边界，免 hash，用于文首等无锚块位置）；
  *   into:true 时锚块必须是 grid/cell 容器，插入点改为容器闭围栏行首
  *   （插为该容器最后一个子块，M12c 检查器「添加单元格」；空容器同样适用）；
- * - move 的 to：同一父容器内兄弟块（含自身）的边界坐标；
+ * - move 的 to：任意合法插入边界（跨容器，块拖拽落地）——兄弟块行首/行尾边界或
+ *   grid/cell 容器闭围栏行首（容器内末尾落点，空容器唯一内部落点）；
+ *   围栏冒号冲突由 moveBlockCrossContainer 重归一化，拼接后结构守恒校验，非法 400 不落盘；
  * - attrs（M12c）：只重写指令块起始行的属性段（{...}），指令名/围栏/容器内容不动。
  */
 export function applyBlockOp(dataDir: string, payload: Record<string, unknown>): BlockOpResult {
@@ -227,13 +233,11 @@ export function applyBlockOp(dataDir: string, payload: Record<string, unknown>):
     case 'move': {
       const to = Number(payload.to);
       if (!Number.isInteger(to) || to < 0) throw new Error('move 缺少合法的 to 坐标');
-      // 同容器约束：to 必须落在锚块同一父容器内兄弟块（含自身）的边界上
-      const siblings = blocks.filter((b) => b.parent === anchor!.parent);
-      const at = boundaryMap(body, siblings).get(to);
-      if (at === undefined) {
-        throw new Error(`move 的 to 必须落在同一父容器内的块边界上：${to}`);
-      }
-      newBody = moveBlock(body, start, end, at);
+      // 跨容器放开（块拖拽）：to 可为任意合法插入边界（legalMoveBoundaries），
+      // 非法落点（非边界/落在被移动块内部）与围栏冲突的重归一化都在函数内处理
+      newBody = moveBlockCrossContainer(body, start, end, to);
+      // 结构守恒校验：指令节点数不变、纯冒号残留段落不新增，违反即 400 不落盘
+      assertMoveStructurePreserved(body, newBody);
       break;
     }
     default:

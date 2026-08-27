@@ -627,3 +627,38 @@ textarea.oh-cfgedit-input {
 .oh-inspector .oh-admin-link:hover {
   text-decoration: underline;
 }
+
+/* ---------------------------------------------------------------------------
+ * 块拖拽（v2 落地）：拖拽手柄 / 源块半透明 / 插入位置指示线 / into 容器高亮
+ * ------------------------------------------------------------------------- */
+
+/* 拖拽手柄：grab 光标提示可拖（disabled 时回落默认光标） */
+.oh-toolbar .oh-drag-handle:not(:disabled) {
+  cursor: grab;
+}
+
+/* 拖拽中的源块：半透明（不动布局，指示线位置不跳动） */
+.oh-drag-source {
+  opacity: 0.4 !important;
+}
+
+/* 插入位置指示线：fixed 水平线锚定目标块上/下沿；不拦截指针（dragover 命中穿透） */
+.oh-drop-line {
+  position: fixed;
+  z-index: 99999;
+  height: 3px;
+  margin-top: -1px;
+  border-radius: 2px;
+  background: #f59e0b;
+  pointer-events: none;
+}
+
+.oh-drop-line[hidden] {
+  display: none;
+}
+
+/* into 落点（空 grid/cell 内部）：虚线高亮容器边框 */
+.oh-drop-into {
+  outline: 2px dashed #f59e0b !important;
+  outline-offset: 2px;
+}

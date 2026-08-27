@@ -16,6 +16,11 @@
  * M12c 增补：指令属性段工具——serializeAttrs（属性表 → `{key="v"}`，实体编码与
  * mdast-util-directive 解析严格往返）、rewriteDirectiveAttrs（只重写指令块起始行的
  * 属性段，容器内容不动）、containerCloseLineStart（容器闭围栏行首，into 插入点）。
+ *
+ * 拖拽跨容器移动增补：moveBlockCrossContainer（落点集合 legalMoveBoundaries =
+ * 全部块行首/行尾边界 + grid/cell 容器闭围栏行首；围栏冒号冲突按「改动最小」
+ * 重归一化——优先提升祖先链，可缩减时缩减被移动内容外层）、
+ * assertMoveStructurePreserved（移动前后指令节点数守恒、纯冒号残留段落不新增）。
  */
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
@@ -23,6 +28,7 @@ import remarkGfm from 'remark-gfm';
 import remarkDirective from 'remark-directive';
 import remarkMath from 'remark-math';
 import type { Root, RootContent } from 'mdast';
+import type { ContainerDirective } from 'mdast-util-directive';
 
 export interface EditableBlock {
   /** 块在 body 中的起始 offset（含） */
@@ -261,4 +267,280 @@ export function containerCloseLineStart(body: string, start: number, end: number
     throw new Error(`非法的块坐标：${start},${end}`);
   }
   return body.lastIndexOf('\n', end - 1) + 1; // 无换行时 -1+1=0（文首）
+}
+
+// ---------------------------------------------------------------------------
+// 跨容器移动（块拖拽落地，docs/specs/12 §3 v2 项）：
+// 合法落点集合、围栏冒号重归一化、移动前后结构守恒校验
+// ---------------------------------------------------------------------------
+
+/**
+ * 可插入边界的完整集合（跨容器放开后的 move 落点）：
+ * 全部可编辑块的行首/行尾边界（兄弟块之前/之后）+ grid/cell 容器闭围栏行首
+ * （= 容器内末尾落点；空容器唯一的内部落点，非空容器该点与末子块行尾边界重合）。
+ * 键接受块的原始 start/end 与归一化行边界，值一律为归一化行首 offset。
+ * 注意边界语义由 offset 唯一确定：某行行首落在哪个容器内部由解析树决定，
+ * 闭围栏行首是「容器内」，闭围栏之后才是「容器外」。
+ */
+export function legalMoveBoundaries(body: string): Map<number, number> {
+  const map = new Map<number, number>();
+  for (const b of listEditableBlocks(body)) {
+    const [ls, ee] = blockLineSpan(body, b.start, b.end);
+    map.set(b.start, ls);
+    map.set(b.end, ee);
+    map.set(ls, ls);
+    map.set(ee, ee);
+    if (b.kind === 'containerDirective' && EDITABLE_CONTAINERS.has(b.name ?? '')) {
+      const close = containerCloseLineStart(body, b.start, b.end);
+      map.set(close, close);
+    }
+  }
+  return map;
+}
+
+/** 围栏冒号段：首个冒号的 offset 与连续冒号数 */
+interface FenceRun {
+  offset: number;
+  count: number;
+}
+
+/**
+ * 容器指令的开/闭围栏冒号段。开围栏取 position.start 起的冒号串；
+ * 闭围栏在块末所在行（允许前导空白，spec 容错范围内）。
+ */
+function containerFenceRuns(body: string, node: ContainerDirective): { open: FenceRun; close: FenceRun } {
+  const openOffset = node.position?.start.offset;
+  const endOffset = node.position?.end.offset;
+  if (openOffset === undefined || endOffset === undefined) {
+    throw new Error('容器指令缺少位置信息');
+  }
+  let openCount = 0;
+  while (body[openOffset + openCount] === ':') openCount++;
+  const closeLineStart = body.lastIndexOf('\n', endOffset - 1) + 1;
+  let closeOffset = closeLineStart;
+  while (body[closeOffset] === ' ' || body[closeOffset] === '\t') closeOffset++;
+  let closeCount = 0;
+  while (body[closeOffset + closeCount] === ':') closeCount++;
+  return { open: { offset: openOffset, count: openCount }, close: { offset: closeOffset, count: closeCount } };
+}
+
+/** 在解析树中按坐标精确查找块节点（坐标来自同一份 body 的解析，必能命中；容器内递归） */
+function findBlockNode(root: Root, start: number, end: number): RootContent | null {
+  let found: RootContent | null = null;
+  const walk = (children: readonly RootContent[]): void => {
+    for (const node of children) {
+      if (found) return;
+      const s = node.position?.start.offset;
+      const e = node.position?.end.offset;
+      if (s === start && e === end) {
+        found = node;
+        return;
+      }
+      if (node.type === 'containerDirective') walk((node as ContainerDirective).children);
+    }
+  };
+  walk(root.children);
+  return found;
+}
+
+/** 包含指定 offset 的容器指令链（外层在前；offset 恰落在容器起/止边界上不算其内部） */
+function ancestorContainers(root: Root, at: number): ContainerDirective[] {
+  const chain: ContainerDirective[] = [];
+  const walk = (children: readonly RootContent[]): void => {
+    for (const node of children) {
+      if (node.type !== 'containerDirective') continue;
+      const s = node.position?.start.offset;
+      const e = node.position?.end.offset;
+      if (s === undefined || e === undefined || !(s < at && at < e)) continue;
+      chain.push(node as ContainerDirective);
+      walk((node as ContainerDirective).children);
+    }
+  };
+  walk(root.children);
+  return chain;
+}
+
+/** 被移动容器内部（任意深度）容器指令的围栏冒号最大值（无内部容器为 0；取全深度偏保守，合法内容下同直接子级） */
+function maxInnerFence(body: string, node: ContainerDirective): number {
+  let max = 0;
+  const walk = (children: readonly RootContent[]): void => {
+    for (const child of children) {
+      if (child.type !== 'containerDirective') continue;
+      max = Math.max(max, containerFenceRuns(body, child as ContainerDirective).open.count);
+      walk((child as ContainerDirective).children);
+    }
+  };
+  walk(node.children);
+  return max;
+}
+
+/** 重归一化方案：bump = 各祖先容器的新围栏数（外层在前，不变则同原值）；shrinkTo = 被移动容器外层新围栏数（null = 不缩减） */
+interface FencePlan {
+  bump: number[];
+  shrinkTo: number | null;
+}
+
+/**
+ * 围栏冲突（被移动内容外层冒号数 ≥ 插入点最内层祖先，违反 spec 03「外层多于内层」）时的
+ * 最小改动方案：
+ * - 提升祖先链（恒可行）：最内层提升到 被移动外层+1，再自内向外级联保持严格递增，
+ *   只改祖先的开/闭围栏行（局部编辑）；
+ * - 缩减被移动内容外层（改 2 行）：目标值 = 最内层祖先 − 1，需 ≥3 且仍大于其内部容器
+ *   围栏（有富余才可缩）；
+ * 改动行数更少者胜；相同（提升仅涉及 1 个祖先）时按既定偏好取提升祖先链。
+ */
+function planFenceRenorm(movedCount: number, movedMaxInner: number, ancestorCounts: number[]): FencePlan | null {
+  const innermost = ancestorCounts[ancestorCounts.length - 1];
+  if (movedCount < innermost) return null; // 无冲突
+  const bump = [...ancestorCounts];
+  bump[bump.length - 1] = movedCount + 1;
+  for (let i = bump.length - 2; i >= 0; i--) {
+    bump[i] = Math.max(bump[i], bump[i + 1] + 1);
+  }
+  const bumpedContainers = bump.filter((v, i) => v !== ancestorCounts[i]).length;
+  const shrinkTo = innermost - 1;
+  if (shrinkTo >= 3 && shrinkTo > movedMaxInner && bumpedContainers >= 2) {
+    return { bump: ancestorCounts, shrinkTo };
+  }
+  return { bump, shrinkTo: null };
+}
+
+/** 批量重写围栏冒号数：自底向上应用（前序修改不位移后续 offset）；只改冒号串本身，行内其余内容不动 */
+function applyFenceEdits(
+  text: string,
+  edits: readonly { offset: number; oldCount: number; newCount: number }[]
+): string {
+  let out = text;
+  const sorted = [...edits].sort((a, b) => b.offset - a.offset);
+  for (const e of sorted) {
+    if (e.newCount === e.oldCount) continue;
+    if (out.slice(e.offset, e.offset + e.oldCount) !== ':'.repeat(e.oldCount)) {
+      throw new Error(`围栏定位失败：${e.offset}`);
+    }
+    out = out.slice(0, e.offset) + ':'.repeat(e.newCount) + out.slice(e.offset + e.oldCount);
+  }
+  return out;
+}
+
+/**
+ * 把 [start, end) 处的块移动到插入边界 to（跨容器放开版 move，拖拽落点走这里）：
+ * - to 取 legalMoveBoundaries 的任一坐标（任意兄弟块之前/之后、grid/cell 容器内末尾——
+ *   含空容器唯一内部落点）；移到自身边界为空操作；落在被移动块内部抛错；
+ * - 被移动内容是容器指令且与插入点祖先链发生围栏冲突时按 planFenceRenorm 重归一化；
+ *   被移动容器内部的相对嵌套关系不变，移到顶层（无祖先）不做无谓缩减；
+ * - cell 移出 grid 到顶层不作限制（渲染上退化为普通 div，交给用户）。
+ * 调用方（块级 API）负责随后的 assertMoveStructurePreserved 结构守恒校验与落盘。
+ */
+export function moveBlockCrossContainer(body: string, start: number, end: number, to: number): string {
+  const [ls, ee] = blockLineSpan(body, start, end);
+  const atRaw = legalMoveBoundaries(body).get(to);
+  if (atRaw === undefined) throw new Error(`move 的 to 必须落在可插入的块边界上：${to}`);
+  if (atRaw === ls || atRaw === ee) return body; // 自身边界：空操作
+  if (atRaw > ls && atRaw < ee) throw new Error(`移动目标非法（落在被移动块内部）：${to}`);
+
+  // 被移动内容的围栏信息（仅容器指令有）与插入点祖先链（外层在前），均在原文坐标系计算
+  const root = parseBody(body);
+  const movedNode = findBlockNode(root, start, end);
+  const movedRuns =
+    movedNode?.type === 'containerDirective'
+      ? containerFenceRuns(body, movedNode as ContainerDirective)
+      : null;
+  const ancestors = ancestorContainers(root, atRaw).map((node) => ({
+    runs: containerFenceRuns(body, node),
+  }));
+  const plan = movedRuns
+    ? planFenceRenorm(
+        movedRuns.open.count,
+        maxInnerFence(body, movedNode as ContainerDirective),
+        ancestors.map((a) => a.runs.open.count)
+      )
+    : null;
+
+  // 剪除被移动块（与 moveBlock 相同的空行收走规则，保证移除后偏移可预测）
+  const cut = body.slice(ls, ee); // 含行尾换行
+  let rest: string;
+  let removed = ee - ls;
+  if (ee < body.length && body[ee] === '\n') {
+    rest = body.slice(0, ls) + body.slice(ee + 1);
+    removed += 1;
+  } else if (ee === body.length && ls >= 2 && body[ls - 2] === '\n') {
+    rest = body.slice(0, ls - 1);
+    removed += 1;
+  } else {
+    rest = body.slice(0, ls) + body.slice(ee);
+  }
+  // 原文 offset → rest 坐标系（被剪区域之后的内容前移 removed）
+  const adjust = (o: number): number => (o > ls ? o - removed : o);
+  let at = adjust(atRaw);
+
+  // 被移动内容外层围栏缩减（相对坐标改片段两行围栏；内部相对嵌套不变）
+  let snippet = cut;
+  if (plan?.shrinkTo != null && movedRuns) {
+    snippet = applyFenceEdits(cut, [
+      { offset: movedRuns.open.offset - ls, oldCount: movedRuns.open.count, newCount: plan.shrinkTo },
+      { offset: movedRuns.close.offset - ls, oldCount: movedRuns.close.count, newCount: plan.shrinkTo },
+    ]);
+  }
+
+  // 祖先链围栏提升（rest 坐标系；只改各容器的开/闭围栏行）
+  if (plan) {
+    const edits: { offset: number; oldCount: number; newCount: number }[] = [];
+    for (let i = 0; i < ancestors.length; i++) {
+      if (plan.bump[i] === ancestors[i].runs.open.count) continue;
+      edits.push({
+        offset: adjust(ancestors[i].runs.open.offset),
+        oldCount: ancestors[i].runs.open.count,
+        newCount: plan.bump[i],
+      });
+      edits.push({
+        offset: adjust(ancestors[i].runs.close.offset),
+        oldCount: ancestors[i].runs.close.count,
+        newCount: plan.bump[i],
+      });
+    }
+    // 插入点所在行之前的修改会位移插入点（行内增减冒号，行首边界性质不变）
+    const delta = edits.filter((e) => e.offset < at).reduce((sum, e) => sum + e.newCount - e.oldCount, 0);
+    rest = applyFenceEdits(rest, edits);
+    at += delta;
+  }
+
+  return spliceAtLine(rest, at, snippet);
+}
+
+/** 结构计数：指令节点总数 + 纯冒号残留围栏段落数（spec 03 §2 的容错移除对象） */
+function structureCounts(root: Root): { directives: number; strayFences: number } {
+  let directives = 0;
+  let strayFences = 0;
+  const walk = (node: Root | RootContent): void => {
+    if (
+      node.type === 'containerDirective' ||
+      node.type === 'leafDirective' ||
+      node.type === 'textDirective'
+    ) {
+      directives++;
+    } else if (node.type === 'paragraph') {
+      const children = node.children;
+      const only = children.length === 1 ? children[0] : null;
+      if (only?.type === 'text' && /^:{3,}$/.test(only.value.trim())) strayFences++;
+    }
+    for (const c of (node as { children?: RootContent[] }).children ?? []) walk(c);
+  };
+  walk(root);
+  return { directives, strayFences };
+}
+
+/**
+ * 移动前后的结构守恒校验（move 落盘前的最后防线）：指令节点总数必须不变、
+ * 纯冒号残留围栏段落不得新增。违反即拼接结果破坏了指令结构
+ * （如围栏重归一化遗漏导致指令降级/闭合错位），调用方拒绝落盘。
+ */
+export function assertMoveStructurePreserved(before: string, after: string): void {
+  const b = structureCounts(parseBody(before));
+  const a = structureCounts(parseBody(after));
+  if (a.directives !== b.directives) {
+    throw new Error(`移动后指令节点数发生变化（${b.directives} → ${a.directives}），疑似围栏被破坏，未写盘`);
+  }
+  if (a.strayFences > b.strayFences) {
+    throw new Error(`移动产生了新的冒号围栏残留段落（${b.strayFences} → ${a.strayFences}），未写盘`);
+  }
 }
