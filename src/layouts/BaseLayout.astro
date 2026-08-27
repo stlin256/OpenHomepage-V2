@@ -157,9 +157,9 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
   <body>
     <header class="site-header">
       <button class="nav-toggle" type="button" aria-label="打开导航菜单 / Menu" aria-expanded="false" aria-controls="site-nav">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
+        <span class="bar" aria-hidden="true"></span>
       </button>
       <nav class="site-nav" id="site-nav" aria-label="站点导航">
         <p class="site-title"><a href={homeHref}>{siteTitle}</a></p>

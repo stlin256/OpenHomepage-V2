@@ -178,22 +178,48 @@ samp {
   top: 1rem;
   left: 1rem;
   z-index: 30;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   width: 2.5rem;
   height: 2.5rem;
-  padding: 0.5rem;
+  padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg);
+  color: var(--text);
   cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  outline: none;
+}
+.nav-toggle:focus-visible {
+  border-color: var(--accent);
 }
 .nav-toggle .bar {
   display: block;
+  width: 1.25rem;
   height: 2px;
-  background: var(--text);
+  background-color: var(--text);
   border-radius: 1px;
+  flex: none;
+  pointer-events: none;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+body.nav-open .nav-toggle .bar:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+body.nav-open .nav-toggle .bar:nth-child(2) {
+  opacity: 0;
+}
+body.nav-open .nav-toggle .bar:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
 }
 
 /* 右上工具区：语言切换 + 主题切换。页顶静态放置（相对文档绝对定位），

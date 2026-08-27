@@ -77,9 +77,19 @@ function initNavToggle(): void {
   const btn = document.querySelector<HTMLElement>('.nav-toggle');
   if (!btn || btn.dataset.navInit) return;
   btn.dataset.navInit = '1';
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
     const open = document.body.classList.toggle('nav-open');
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!document.body.classList.contains('nav-open')) return;
+    const target = e.target as HTMLElement | null;
+    if (target && !target.closest('.site-nav') && !target.closest('.nav-toggle')) {
+      document.body.classList.remove('nav-open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
   });
 }
 
