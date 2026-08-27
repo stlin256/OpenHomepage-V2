@@ -17,7 +17,7 @@ OpenHomepage V2 is a static, magazine-style personal homepage generator built wi
 - **Dynamic Content Prefetching** — Build-time fetcher with intelligent cache fallback for GitHub contribution heatmaps, official-style pinned repository cards, and multi-source RSS content streams.
 - **Interactive Multimedia** — Full-screen image lightbox with automatic `-full` resolution detection, persistent background audio across client navigation, and LLM-style typewriter markdown playback.
 - **Zero-Friction Bilingual Architecture** — Add language subdirectories under `data/pages/` to automatically activate routing, navigation, and bilingual configuration fields, complete with graceful fallback rendering.
-- **Local Visual Editor (PC)** — Built-in Milkdown WYSIWYG editor (`npm run admin`) supporting split live-preview, synchronized markdown source editing, palette extraction, automatic snapshots, and one-click data export.
+- **Local Visual Editor (PC)** — Built-in local admin console (`npm run admin`) with on-page visual editing (hover outlines, in-place text editing, directive inspector, block insert/reorder), fallback whole-page markdown source editing, full-site config forms, automatic snapshots, and one-click data export.
 - **Self-Hosted Static Server** — Direct production static serving via `npm run serve` with optional SSL certificate support.
 - **Data Privacy & Decoupled CI** — Local `data/` content is git-ignored. GitHub Actions supports private data synchronization via secret URL, snapshot fallback, and demo mode.
 
@@ -62,7 +62,8 @@ Launch the editor locally on your PC:
 npm run admin       # Access at http://127.0.0.1:4174 (loopback only)
 ```
 
-- **Three Editing Modes**: WYSIWYG (rich visual directives), Markdown Source (synchronized raw text), and Split Preview (live iframe synced with dev server).
+- **On-Page Visual Editing**: The "Visual editing" button opens the real rendered page in edit mode — hover outlines, in-place text editing, a right-side inspector for directive parameters and grid columns, block insert/move/delete, homepage config block forms, and page settings.
+- **Source Fallback**: The admin page view keeps a frontmatter form and whole-page Markdown source editor (autosaves after idle).
 - **Comprehensive Configuration**: Manage profile links, favicon generation, theme accent colors, GitHub settings, RSS subscriptions, streaming blocks, and homepage layout ordering.
 - **Autosave & Version Snapshots**: Changes write to disk automatically after ~1.5s idle, with historical versions archived in `data/.snapshots/` for rollback.
 - **Data Export**: The "Export data.zip" button archives your entire `data/` structure for secure hosting and CI consumption.

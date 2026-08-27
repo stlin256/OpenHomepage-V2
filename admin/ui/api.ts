@@ -37,32 +37,6 @@ export interface DevStatus {
   error: string | null;
 }
 
-/** 指令卡片预览数据（与 admin/server/directive-preview.ts 对应） */
-export interface DirectivePreviewData {
-  pinned: {
-    full_name: string;
-    description?: string | null;
-    note?: string | null;
-    language?: string | null;
-    stargazers_count?: number;
-    forks_count?: number;
-    html_url?: string;
-    topics?: string[];
-    updated_at?: string;
-  }[];
-  streams: { id: string; title: string; excerpt: string }[];
-  editorials: {
-    id: string;
-    title: string;
-    description: string;
-    actions: number;
-    list: number;
-    tiles: number;
-    archive: number;
-    divider: boolean;
-  }[];
-}
-
 export interface AssetInfo {
   name: string;
   size: number;
@@ -121,6 +95,4 @@ export const api = {
   devStatus: () => req<DevStatus>('/api/dev-status'),
   devStart: () => req<DevStatus>('/api/dev/start', { method: 'POST' }),
   devStop: () => req<DevStatus>('/api/dev/stop', { method: 'POST' }),
-
-  directivePreview: () => req<DirectivePreviewData>('/api/directive-preview'),
 };

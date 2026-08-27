@@ -1,5 +1,5 @@
 /**
- * 编辑器跨视图流程测试：配置表单自动保存 → 页面所见即所得编辑器保存。
+ * 编辑器跨视图流程测试：配置表单自动保存 → 页面视图源码自动保存。
  * 这里验证用户会经过的完整界面链路，而不是单个 DOM helper。
  *
  * @vitest-environment jsdom
@@ -78,15 +78,13 @@ describe('编辑器跨视图流程', () => {
     expect(savedConfigs).toHaveLength(1);
     expect((savedConfigs[0].editorial_blocks as { id: string }[])[0].id).toBe('research');
 
-    // 页面面：默认所见即所得，切到源码追加内容，离开时 flush 自动保存。
+    // 页面面（M12e）：整页源码 textarea 追加内容，离开时 flush 自动保存。
     const state = makeState();
     const pageHost = document.createElement('div');
     document.body.append(pageHost);
     const cleanup = await renderPageEditor(pageHost, state, 'zh', 'index.md');
-    const segButtons = [...pageHost.querySelectorAll<HTMLButtonElement>('.seg > button')];
-    expect(segButtons[0].classList.contains('active')).toBe(true);
-    segButtons[1].click();
     const source = pageHost.querySelector<HTMLTextAreaElement>('.source-editor')!;
+    expect(source.value).toBe(PAGE_BODY);
     source.value = `${PAGE_BODY}\n跨视图新增\n`;
     source.dispatchEvent(new Event('input', { bubbles: true }));
     cleanup();

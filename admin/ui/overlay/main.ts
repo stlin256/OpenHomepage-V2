@@ -1,6 +1,6 @@
 /**
  * 可视化编辑 overlay 入口（M12b-d，docs/specs/12 §2.4）：
- * 顶栏（编辑模式标识 + 状态 live region + 页面切换下拉 + ＋插入 + 页面设置 + 退出编辑）、
+ * 顶栏（←后台链接 + 编辑模式标识 + 状态 live region + 页面切换下拉 + ＋插入 + 页面设置 + 退出编辑）、
  * 块注册表（scanner）+ 服务端块数据合并（hash/kind/parent/原文切片/指令属性表）、
  * hover 描边 + 浮动工具条（toolbar）、文本块就地微编辑器（textedit）、插入抽屉（inserter）、
  * 右侧检查器（inspector：指令参数表单 + grid 列设置/单元格增删 + M12d 配置区块表单/页面设置）。
@@ -69,7 +69,7 @@ function readStored(key: string): string | null {
   }
 }
 
-/** 顶栏：徽标 + 状态（polite live region）+ 页面下拉 + ＋插入 + 页面设置 + 退出编辑 */
+/** 顶栏：←后台链接（M12e）+ 徽标 + 状态（polite live region）+ 页面下拉 + ＋插入 + 页面设置 + 退出编辑 */
 function createTopBar(
   t: (k: string) => string,
   statusEl: HTMLElement,
@@ -99,9 +99,13 @@ function createTopBar(
   // 无法定位当前页文件（bootstrap 未注入 __OH_PAGE_SOURCE__）时禁用
   settings.disabled = !opts.settingsEnabled;
   settings.addEventListener('click', opts.onOpenSettings);
+  // 返回后台：origin 由 bootstrap 注入（未注入 = 非托管环境，不显示链接）
+  const origin = adminOrigin();
+  const back = el('a', { class: 'oh-back', href: origin || '#' }, t('backToAdmin'));
   return el(
     'div',
     { class: 'oh-topbar', role: 'region', 'aria-label': t('editModeBadge') },
+    ...(origin ? [back] : []),
     el('span', { class: 'oh-badge' }, t('editModeBadge')),
     statusEl,
     opts.switcher,

@@ -19,7 +19,6 @@ import { listAssets, saveAsset, readAsset, deleteAsset, MAX_ASSET_BYTES } from '
 import { listSnapshots, restoreSnapshot } from './snapshots.ts';
 import { safeResolve, PathError } from './paths.ts';
 import { createDevServerManager, type DevServerManager } from './devserver.ts';
-import { readDirectivePreview } from './directive-preview.ts';
 import { listPageBlocks, applyBlockOp, HashConflictError } from './blocks.ts';
 import { buildZip, collectDataEntries, exportZipName } from './export.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
@@ -176,9 +175,6 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       // 可视化编辑（M12a）：页面正文可编辑块清单（坐标 + 内容 hash，供 overlay 陈旧检测）
       '/api/page/blocks': ({ query, res }) =>
         sendJson(res, 200, { blocks: listPageBlocks(dataDir, query.get('path') ?? '') }),
-      // 指令卡片预览数据（::ghcard 用 pinned 缓存，::stream 用流式块摘要）
-      '/api/directive-preview': ({ res }) =>
-        sendJson(res, 200, readDirectivePreview(opts.rootDir ?? path.resolve(dataDir, '..'), dataDir)),
       // 导出 data/ 全量 zip（含 .snapshots/ 版本快照）
       '/api/export-data': ({ res }) => {
         const zip = buildZip(collectDataEntries(dataDir));

@@ -1,7 +1,7 @@
 /**
- * 自定义指令元数据（与 docs/specs/03 一一对应，M12b 从 admin/ui/editor/directive-nodes.ts
- * 抽离到 shared）：overlay 插入抽屉与后续右侧检查器（M12c）共用；
- * Milkdown 节点视图部分仍留在 admin/ui/editor/（M12e 移除旧编辑器后仅保留本文件）。
+ * 自定义指令元数据（与 docs/specs/03 一一对应，M12b 从旧编辑器 directive-nodes.ts
+ * 抽离到 shared；M12e 旧编辑器已移除，本文件是唯一来源）：
+ * overlay 插入抽屉与右侧检查器共用。
  */
 
 export interface DirectiveDef {
@@ -54,7 +54,7 @@ export const DIRECTIVE_LABEL_KEYS: Record<string, string> = {
   editorial: 'dirEditorial',
 };
 
-/** 插入用示例片段（overlay 插入抽屉与旧编辑器工具栏共用；占位参数由 M12c 检查器编辑） */
+/** 插入用示例片段（overlay 插入抽屉；占位参数由检查器编辑） */
 export const INSERT_SNIPPETS: Record<string, string> = {
   bilibili: '::bilibili{bvid=""}\n',
   youtube: '::youtube{id=""}\n',

@@ -68,7 +68,11 @@ const zh = {
   snapshotRestore: '回滚到此版',
   snapshotRestoreConfirm: '当前内容会先存为新快照，再回滚到所选版本。继续？',
   restored: '已回滚',
-  insertDirective: '插入区块',
+  pageSourceLabel: '正文源码（markdown）',
+  openVisualEdit: '可视化编辑',
+  visualEditExternalHint:
+    '检测到外部手动启动的预览服务（未注入编辑模式）。请在其终端停止（Ctrl+C）后，点击下方按钮改由本后台启动。',
+  devRestartManaged: '重启为托管预览',
   dirBilibili: 'Bilibili 视频',
   dirYoutube: 'YouTube 视频',
   dirVideo: '本地视频',
@@ -79,14 +83,6 @@ const zh = {
   dirGhcard: 'GitHub 卡片',
   dirEditorial: '编辑区块',
   editParams: '参数',
-  editDirective: '编辑参数',
-  previewNoImage: '未设置图片',
-  previewNoMedia: '未设置源文件',
-  ghcardNotPinned: '不在 pinned 缓存中（站点上以仓库名占位卡渲染）',
-  streamUnknown: '未在 site.yaml 定义该流式区块',
-  editorialUnknown: '未在 site.yaml 定义该编辑区块',
-  pasteImageHint: '支持 Ctrl+V 直接粘贴图片',
-
   siteSection: '站点信息',
   siteTitle: '站点标题',
   siteDescription: '站点描述',
@@ -232,18 +228,9 @@ const zh = {
 
   unsavedChanges: '有未保存内容',
 
-  modeWysiwyg: '所见即所得',
-  modeSource: '源码',
-  modeSplit: '双栏预览',
-  previewStart: '启动预览服务',
   previewStarting: '预览服务启动中…',
-  previewStop: '停止预览服务',
-  previewRefresh: '刷新预览',
-  previewOpenTab: '新标签页打开',
-  previewDownGuide: '未检测到预览服务（npm run dev）。可自行运行 npm run dev，或点击下方按钮由编辑器代为启动（编辑器退出时会一并停止）。',
   previewStartFailed: '预览服务启动失败',
   previewTimeout: '启动超时（45 秒）',
-  previewLog: '服务日志',
   themeToggle: '切换亮/暗主题',
   previewLinkSample: '链接示例',
   previewButtonSample: '按钮示例',
@@ -256,6 +243,7 @@ const zh = {
 
   editModeBadge: '编辑模式',
   exitEdit: '退出编辑',
+  backToAdmin: '← 后台',
 
   // 可视化编辑 overlay（M12b）：浮动工具条 / 微编辑器 / 插入抽屉
   edit: '编辑',
@@ -370,7 +358,11 @@ const en: Record<DictKey, string> = {
   snapshotRestore: 'Restore',
   snapshotRestoreConfirm: 'Current content is snapshotted first, then rolled back. Continue?',
   restored: 'Restored',
-  insertDirective: 'Insert block',
+  pageSourceLabel: 'Page source (markdown)',
+  openVisualEdit: 'Visual editing',
+  visualEditExternalHint:
+    'An externally started dev server was detected (edit mode not injected). Stop it (Ctrl+C in its terminal), then use the button below to start a managed one.',
+  devRestartManaged: 'Restart as managed preview',
   dirBilibili: 'Bilibili video',
   dirYoutube: 'YouTube video',
   dirVideo: 'Local video',
@@ -381,14 +373,6 @@ const en: Record<DictKey, string> = {
   dirGhcard: 'GitHub card',
   dirEditorial: 'Editorial block',
   editParams: 'Parameters',
-  editDirective: 'Edit parameters',
-  previewNoImage: 'No image set',
-  previewNoMedia: 'No source set',
-  ghcardNotPinned: 'Not in pinned cache (site renders a name-only placeholder)',
-  streamUnknown: 'Stream block not defined in site.yaml',
-  editorialUnknown: 'Editorial block not defined in site.yaml',
-  pasteImageHint: 'Ctrl+V pastes images directly',
-
   siteSection: 'Site',
   siteTitle: 'Site title',
   siteDescription: 'Description',
@@ -534,18 +518,9 @@ const en: Record<DictKey, string> = {
 
   unsavedChanges: 'Unsaved changes',
 
-  modeWysiwyg: 'WYSIWYG',
-  modeSource: 'Source',
-  modeSplit: 'Split preview',
-  previewStart: 'Start preview server',
   previewStarting: 'Starting preview server…',
-  previewStop: 'Stop preview server',
-  previewRefresh: 'Refresh preview',
-  previewOpenTab: 'Open in new tab',
-  previewDownGuide: 'Dev server (npm run dev) not detected. Run it yourself, or let the editor start it below (it is stopped automatically when the editor exits).',
   previewStartFailed: 'Failed to start preview server',
   previewTimeout: 'Start timed out (45s)',
-  previewLog: 'Server log',
   themeToggle: 'Toggle light/dark theme',
   previewLinkSample: 'Link sample',
   previewButtonSample: 'Button sample',
@@ -558,6 +533,7 @@ const en: Record<DictKey, string> = {
 
   editModeBadge: 'Edit mode',
   exitEdit: 'Exit editing',
+  backToAdmin: '← Admin',
 
   // 可视化编辑 overlay（M12b）：浮动工具条 / 微编辑器 / 插入抽屉
   edit: 'Edit',

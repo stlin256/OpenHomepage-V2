@@ -5,8 +5,7 @@
  * 完成 / Ctrl+Enter → getMarkdown() 交给调用方 replace（带 hash 防陈旧写）；
  * Esc / 取消 → 不保存还原 DOM。粘贴图片沿用 POST /api/asset 上传 + assets/<name> 引用。
  *
- * 装配模式参考旧全文编辑器（admin/ui/editor/create-editor.ts），但自包含、不 import 它
- * （旧编辑器 M12e 删除）。
+ * 装配模式沿袭旧全文编辑器（M12e 已随旧编辑器移除），但自包含、无外部装配依赖。
  */
 import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core';
 import { commonmark } from '@milkdown/preset-commonmark';
