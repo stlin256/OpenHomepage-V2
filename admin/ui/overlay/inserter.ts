@@ -7,7 +7,7 @@
  */
 import { el } from '../dom.ts';
 import { DIRECTIVE_DEFS, DIRECTIVE_LABEL_KEYS, INSERT_SNIPPETS } from '../../shared/directives.ts';
-import type { BlockEntry } from './scanner.ts';
+import type { BlockEntry, ServerBlock } from './scanner.ts';
 
 export interface InsertTarget {
   source: string;
@@ -34,6 +34,21 @@ export function resolveInsertTarget(
   const roots = entries.filter((e) => e.span.source === source && e.parent === 'root' && e.hash);
   const last = roots[roots.length - 1];
   return last ? { source, anchor: last } : { source, boundary: 0 };
+}
+
+/**
+ * 在 insert 操作返回的最新块列表中定位新插入的块（M12f：reload 后自动打开检查器/
+ * 微编辑器的回跳标记用）：原文切片与插入片段（去首尾空白，与服务端拼接归一化同口径）
+ * 相等者即新块；同内容块重复出现时取插入点（锚块 end / 边界 offset）之后的首个。
+ */
+export function locateInsertedBlock(
+  markdown: string,
+  blocks: ServerBlock[],
+  after = 0
+): ServerBlock | null {
+  const md = markdown.replace(/^\s+/, '').replace(/\s+$/, '');
+  const hits = blocks.filter((b) => b.markdown === md);
+  return hits.find((b) => b.start >= after) ?? hits[0] ?? null;
 }
 
 export interface InserterDeps {

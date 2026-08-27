@@ -37,8 +37,9 @@ export interface MarkdownOptions {
    * 可视化编辑模式（M12a，docs/specs/12 §2.2）：页面正文的 data/ 相对路径
    * （如 pages/zh/index.md）。存在时启用 remarkEditSpans——给每个可编辑块的 hast 元素
    * 注入 data-oh-src="<editSource>:<start>,<end>" 坐标（与 listEditableBlocks 同一函数，
-   * 坐标与 admin 块级 API 一致）；stream/ghcard/editorial 占位由整段替换改为 oh-embed 包裹。
-   * 生产渲染（无 editSource）零注入。
+   * 坐标与 admin 块级 API 一致）；stream/ghcard/editorial 占位由整段替换改为 oh-embed 包裹；
+   * 缺参/未知指令不降级为纯文本，改渲染占位卡（oh-directive-placeholder，保持节点类型
+   * 不变、坐标照常注入，overlay 可点击打开检查器）。生产渲染（无 editSource）零注入。
    */
   editSource?: string;
   /** Shiki 明暗双主题（CSS 变量双写方案，前端按主题切换 var） */
@@ -207,7 +208,7 @@ function isStrayFenceParagraph(node: Content): boolean {
   return child.type === 'text' && /^:{3,}$/.test(child.value.trim());
 }
 
-/** 未识别/缺参数的指令：按原始源码降级为普通文本，不报错 */
+/** 未识别/缺参数的指令：按原始源码降级为普通文本，不报错（生产渲染路径） */
 function degradeToText(node: Directive, file: VFile): void {
   const { start, end } = node.position ?? {};
   const raw =
@@ -229,7 +230,32 @@ function degradeToText(node: Directive, file: VFile): void {
   }
 }
 
-function remarkCustomDirectives(baseUrl?: string) {
+/**
+ * 编辑模式的降级出口：缺参/未知指令渲染占位卡（虚线卡片 + 提示文本），
+ * 只设 hName/hProperties/hChildren、不改变节点类型——remarkEditSpans 的
+ * position 匹配不受影响，坐标照常注入，overlay 据此识别为可编辑指令块
+ * （点击打开检查器配参数）。data-oh-directive 记录指令名供样式/脚本识别。
+ * 生产模式不走这里（degradeToText 降级为原文文本，行为不变）。
+ */
+function setDirectivePlaceholder(
+  node: ContainerDirective | LeafDirective,
+  reason: 'params' | 'unknown'
+): void {
+  const name = node.name;
+  const hint =
+    reason === 'params'
+      ? `${name}：缺少参数，点击配置 / ${name}: missing params, click to configure`
+      : `未知指令 ${name} / unknown directive: ${name}`;
+  const data = (node.data ??= {});
+  data.hName = 'div';
+  data.hProperties = {
+    className: ['oh-directive-placeholder', `oh-directive-${reason}`],
+    dataOhDirective: name,
+  };
+  data.hChildren = [{ type: 'text', value: hint }];
+}
+
+function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean) {
   return (tree: Root, file: VFile) => {
     visit(tree, (node) => {
       if (
@@ -249,18 +275,28 @@ function remarkCustomDirectives(baseUrl?: string) {
         data.hProperties = properties;
       };
 
+      // 缺参/未知指令的出口：编辑模式渲染占位卡（坐标照常注入，块级指令才有块坐标——
+      // 行内 textDirective 没有独立块，仍走文本降级）；生产模式降级为原文文本
+      const degrade = (reason: 'params' | 'unknown'): void => {
+        if (editMode && directive.type !== 'textDirective') {
+          setDirectivePlaceholder(directive, reason);
+        } else {
+          degradeToText(directive, file);
+        }
+      };
+
       switch (name) {
         case 'bilibili':
         case 'youtube': {
           const embed = toEmbedDiv(name, attrs);
-          if (!embed) return degradeToText(directive, file);
+          if (!embed) return degrade('params');
           setElement('div', embed.properties);
           data.hChildren = embed.children;
           break;
         }
         case 'video':
         case 'audio': {
-          if (!attrs.src) return degradeToText(directive, file);
+          if (!attrs.src) return degrade('params');
           const properties: Properties = {
             src: withBase(attrs.src, baseUrl),
             controls: true,
@@ -272,7 +308,7 @@ function remarkCustomDirectives(baseUrl?: string) {
         }
         case 'figure': {
           const figure = toFigure(attrs, baseUrl);
-          if (!figure) return degradeToText(directive, file);
+          if (!figure) return degrade('params');
           setElement('figure', figure.properties);
           data.hChildren = figure.children;
           break;
@@ -291,22 +327,22 @@ function remarkCustomDirectives(baseUrl?: string) {
           break;
         }
         case 'stream': {
-          if (!attrs.id) return degradeToText(directive, file);
+          if (!attrs.id) return degrade('params');
           setElement('div', { className: ['stream-block'], dataStreamId: attrs.id });
           break;
         }
         case 'ghcard': {
-          if (!attrs.repo) return degradeToText(directive, file);
+          if (!attrs.repo) return degrade('params');
           setElement('div', { className: ['gh-card'], dataRepo: attrs.repo });
           break;
         }
         case 'editorial': {
-          if (!attrs.id) return degradeToText(directive, file);
+          if (!attrs.id) return degrade('params');
           setElement('div', { className: ['editorial-embed'], dataEditorialId: attrs.id });
           break;
         }
         default:
-          degradeToText(directive, file);
+          degrade('unknown');
       }
     });
     // 误嵌套指令残留的纯冒号闭合围栏段落（见 isStrayFenceParagraph 注释）
@@ -328,7 +364,8 @@ function remarkCustomDirectives(baseUrl?: string) {
  * position 精确匹配挂属性——指令节点合并进既有 hProperties（remarkCustomDirectives 已设
  * hName/hProperties），普通块经 data.hProperties 由 remark-rehype 下发。
  * 误嵌套残留的纯冒号段落已被 remarkCustomDirectives 移除，不会匹配到节点（预期行为）；
- * 降级为文本的指令保留原 position，降级后的段落照样拿到坐标。
+ * 缺参/未知指令在编辑模式已渲染为占位卡（节点类型不变），坐标照常注入；
+ * 行内 textDirective 降级成的文本落在宿主段落内，随段落坐标覆盖。
  * html 块的 data.hProperties 不会生效（raw 直出无元素可挂），DOM 中无对应物。
  */
 function remarkEditSpans(editSource: string) {
@@ -534,7 +571,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(remarkGfm)
     .use(remarkDirective)
     .use(remarkMath)
-    .use(() => remarkCustomDirectives(baseUrl));
+    .use(() => remarkCustomDirectives(baseUrl, !!options.editSource));
   // 编辑模式坐标注入必须在 remarkRehype 之前（mdast 阶段），且晚于自定义指令映射
   // （指令的 hProperties 先建好，这里合并 data-oh-src）
   if (options.editSource) processor.use(() => remarkEditSpans(options.editSource!));

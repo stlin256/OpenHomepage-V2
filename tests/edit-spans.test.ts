@@ -44,11 +44,34 @@ describe('data-oh-src 坐标注入', () => {
     expect(html).toContain(`<p data-oh-src="${spanValue(md, 4)}">右</p>`);
   });
 
-  it('降级为文本的非法指令保留坐标（paragraph 拿到原指令坐标）', async () => {
+  it('缺参指令在编辑模式渲染占位卡（节点类型不变，坐标照常注入）', async () => {
     const md = '::bilibili{}\n';
     const html = await renderMarkdown(md, { editSource: SRC });
-    expect(html).toContain('::bilibili');
-    expect(html).toContain(`<p data-oh-src="${spanValue(md, 0)}">`);
+    // 占位卡：class + data-oh-directive + data-oh-src 坐标（与 listEditableBlocks 一致）
+    expect(html).toContain(
+      `<div class="oh-directive-placeholder oh-directive-params" data-oh-directive="bilibili" data-oh-src="${spanValue(md, 0)}">`
+    );
+    expect(html).toContain('缺少参数，点击配置');
+    // 不再降级为原文文本
+    expect(html).not.toContain('<p>::bilibili');
+  });
+
+  it('未知指令同样渲染占位卡（unknown 变体）；容器指令缺参也是占位卡', async () => {
+    const unknown = await renderMarkdown('::whatisthis{a=1}\n', { editSource: SRC });
+    expect(unknown).toContain('oh-directive-placeholder oh-directive-unknown');
+    expect(unknown).toContain('data-oh-directive="whatisthis"');
+    expect(unknown).toContain('未知指令 whatisthis');
+    const figure = await renderMarkdown(':::figure{}\n:::\n', { editSource: SRC });
+    expect(figure).toContain('oh-directive-placeholder oh-directive-params');
+    expect(figure).toContain('data-oh-directive="figure"');
+    expect(figure).toContain(`data-oh-src="${spanValue(':::figure{}\n:::\n', 0)}"`);
+  });
+
+  it('行内 textDirective 无独立块坐标，编辑模式仍降级为文本（随宿主段落覆盖）', async () => {
+    const md = '前文 :bilibili{} 后文\n';
+    const html = await renderMarkdown(md, { editSource: SRC });
+    expect(html).not.toContain('oh-directive-placeholder');
+    expect(html).toContain(`<p data-oh-src="${spanValue(md, 0)}">前文 :bilibili{} 后文</p>`);
   });
 
   it('误嵌套残留的纯冒号段落无对应元素（渲染移除），其余块坐标齐全', async () => {
@@ -121,5 +144,14 @@ describe('生产模式零注入', () => {
     const plain = await renderMarkdown('# 标题\n\n正文\n');
     expect(plain).not.toContain('data-oh-src');
     expect(plain).toContain('<h1>标题</h1>');
+  });
+
+  it('缺参/未知指令仍按原逻辑降级为原文文本（无占位卡、无注入）', async () => {
+    const html = await renderMarkdown('::bilibili{}\n\n::whatisthis{a=1}\n');
+    expect(html).not.toContain('oh-directive-placeholder');
+    expect(html).not.toContain('data-oh-directive');
+    expect(html).not.toContain('data-oh-src');
+    expect(html).toContain('::bilibili');
+    expect(html).toContain('::whatisthis');
   });
 });

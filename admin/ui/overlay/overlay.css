@@ -1,6 +1,7 @@
 /*
  * 可视化编辑 overlay：顶栏 + hover 描边（M12a）+ 浮动工具条 / 微编辑器 / 插入抽屉（M12b）
- * + 右侧检查器（M12c：指令参数表单 + grid 单元格管理）。
+ * + 右侧检查器（M12c：指令参数表单 + grid 单元格管理）
+ * + 指令占位卡与块内媒体指针屏蔽（M12f：缺参/未知指令占位、iframe 不吞 hover/点击）。
  * 由 admin server 以 /overlay.css 托管，仅编辑模式加载（渲染页 bootstrap 动态插入），
  * 不进入生产构建产物。class 统一 oh- 前缀，避免与站点样式冲突。
  */
@@ -116,6 +117,35 @@ html.oh-editing body {
   outline: 2px dashed #38bdf8 !important;
   outline-offset: 1px;
   cursor: text;
+}
+
+/* 块内媒体不吞指针事件（M12f）：iframe 播放器/video/audio 会截获指针，
+   导致 hover 描边与点击分流失效；编辑模式无需播放，点击语义是打开检查器。
+   img 一并处理（顺带禁用原生拖拽与灯箱触发，点击统一走块编辑） */
+[data-oh-src] iframe,
+[data-oh-src] video,
+[data-oh-src] audio,
+[data-oh-src] img {
+  pointer-events: none;
+}
+
+/* 指令占位卡（M12f）：缺参/未知指令在编辑模式的渲染结果（src/lib/markdown.ts），
+   虚线卡片醒目提示可点击配置；hover 描边照常叠加 */
+.oh-directive-placeholder {
+  padding: 12px 16px;
+  margin: 8px 0;
+  border: 2px dashed #f59e0b;
+  border-radius: 6px;
+  background: rgb(245 158 11 / 8%);
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+/* 未知指令：红色调与缺参（琥珀色）区分 */
+.oh-directive-placeholder.oh-directive-unknown {
+  border-color: #e5484d;
+  background: rgb(229 72 77 / 8%);
 }
 
 /* 浮动工具条：fixed 锚定到块上方（放不下时放块下方），z-index 略低于顶栏 */

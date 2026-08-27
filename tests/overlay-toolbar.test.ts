@@ -6,13 +6,17 @@
  *
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   createToolbar,
   computeToolbarState,
   isTextEditable,
   isInspectable,
+  bindHover,
+  HOVER_CLASS,
+  HOVER_CFG_CLASS,
   type ToolbarDeps,
+  type Toolbar,
 } from '../admin/ui/overlay/toolbar.ts';
 import type { BlockEntry, ServerBlock } from '../admin/ui/overlay/scanner.ts';
 import { createT } from '../admin/shared/i18n.ts';
@@ -176,5 +180,123 @@ describe('createToolbar：DOM 与回调', () => {
     tb.showFor(entry(0, 5));
     buttons(tb.el)[1].click(); // 上移（禁用）
     expect(deps.onMove).not.toHaveBeenCalled();
+  });
+});
+
+describe('bindHover：document 级事件委托（M12f）', () => {
+  /** 假工具条：bindHover 只依赖 el 事件与 showFor/hide */
+  function fakeToolbar(): {
+    tb: Toolbar;
+    showFor: ReturnType<typeof vi.fn>;
+    hide: ReturnType<typeof vi.fn>;
+  } {
+    const bar = document.createElement('div');
+    bar.className = 'oh-toolbar';
+    document.body.append(bar);
+    const showFor = vi.fn();
+    const hide = vi.fn();
+    return { tb: { el: bar, showFor, hide, current: () => null }, showFor, hide };
+  }
+
+  /** 建一个带坐标的块元素（tag/属性可定制）并登记到 entryByEl */
+  function blockEl(
+    entryByEl: Map<Element, BlockEntry>,
+    start: number,
+    attrs: Record<string, string> = {}
+  ): { el: HTMLElement; entry: BlockEntry } {
+    const el = document.createElement('div');
+    el.setAttribute('data-oh-src', `pages/zh/index.md:${start},${start + 10}`);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    document.body.append(el);
+    const e: BlockEntry = {
+      el,
+      span: { source: 'pages/zh/index.md', start, end: start + 10 },
+      kind: 'paragraph',
+      parent: 'root',
+      hash: `h${start}`,
+      markdown: 'x',
+    };
+    entryByEl.set(el, e);
+    return { el, entry: e };
+  }
+
+  const mouseover = (el: Element) =>
+    el.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('嵌套块只亮最内层（grid>cell>段落模型），工具条锚定内层', () => {
+    const entryByEl = new Map<Element, BlockEntry>();
+    const outer = blockEl(entryByEl, 0);
+    const inner = blockEl(entryByEl, 20);
+    outer.el.append(inner.el);
+    const span = document.createElement('span');
+    inner.el.append(span);
+    const { tb, showFor } = fakeToolbar();
+    bindHover(document, entryByEl, tb);
+
+    mouseover(span); // 指针在内层块的更深元素上
+    expect(inner.el.classList.contains(HOVER_CLASS)).toBe(true);
+    expect(outer.el.classList.contains(HOVER_CLASS)).toBe(false);
+    expect(showFor).toHaveBeenCalledWith(inner.entry);
+
+    // 内层 → 外层自己的区域：描边移到外层
+    mouseover(outer.el);
+    expect(outer.el.classList.contains(HOVER_CLASS)).toBe(true);
+    expect(inner.el.classList.contains(HOVER_CLASS)).toBe(false);
+    expect(showFor).toHaveBeenCalledWith(outer.entry);
+  });
+
+  it('移出到无坐标区域：400ms 后隐藏工具条；进入工具条本身取消隐藏', () => {
+    const entryByEl = new Map<Element, BlockEntry>();
+    const { el } = blockEl(entryByEl, 0);
+    const { tb, showFor, hide } = fakeToolbar();
+    bindHover(document, entryByEl, tb);
+
+    mouseover(el);
+    expect(showFor).toHaveBeenCalledTimes(1);
+    mouseover(document.body); // 无坐标区域
+    vi.advanceTimersByTime(399);
+    expect(hide).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(hide).toHaveBeenCalledTimes(1);
+
+    // 再次 hover，移向工具条：mouseenter 取消待执行的隐藏
+    hide.mockClear();
+    mouseover(el);
+    mouseover(document.body);
+    tb.el.dispatchEvent(new MouseEvent('mouseenter'));
+    vi.advanceTimersByTime(1000);
+    expect(hide).not.toHaveBeenCalled();
+  });
+
+  it('cfg 坐标用虚线描边且不出块工具条；离开窗口（mouseout 无 relatedTarget）清理', () => {
+    const entryByEl = new Map<Element, BlockEntry>();
+    const { el } = blockEl(entryByEl, 0);
+    const cfg = document.createElement('span');
+    cfg.setAttribute('data-oh-cfg', 'site.title@zh');
+    document.body.append(cfg);
+    const { tb, showFor, hide } = fakeToolbar();
+    bindHover(document, entryByEl, tb);
+
+    mouseover(cfg);
+    expect(cfg.classList.contains(HOVER_CFG_CLASS)).toBe(true);
+    expect(showFor).not.toHaveBeenCalled();
+    expect(hide).toHaveBeenCalledTimes(1);
+
+    // 离开窗口：描边清除 + 计划隐藏
+    hide.mockClear();
+    mouseover(el);
+    expect(el.classList.contains(HOVER_CLASS)).toBe(true);
+    document.body.dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: null }));
+    expect(el.classList.contains(HOVER_CLASS)).toBe(false);
+    vi.advanceTimersByTime(400);
+    expect(hide).toHaveBeenCalledTimes(1);
   });
 });

@@ -6,9 +6,9 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createInserter, resolveInsertTarget } from '../admin/ui/overlay/inserter.ts';
+import { createInserter, resolveInsertTarget, locateInsertedBlock } from '../admin/ui/overlay/inserter.ts';
 import { DIRECTIVE_DEFS, INSERT_SNIPPETS } from '../admin/shared/directives.ts';
-import type { BlockEntry } from '../admin/ui/overlay/scanner.ts';
+import type { BlockEntry, ServerBlock } from '../admin/ui/overlay/scanner.ts';
 import { createT } from '../admin/shared/i18n.ts';
 
 const t = createT('zh');
@@ -66,6 +66,36 @@ describe('resolveInsertTarget：插入目标解析', () => {
       anchor: a,
     });
     expect(resolveInsertTarget([], null, null)).toBeNull();
+  });
+});
+
+describe('locateInsertedBlock：插入后新块定位（回跳标记用）', () => {
+  const block = (start: number, end: number, markdown: string): ServerBlock => ({
+    start,
+    end,
+    kind: 'leafDirective',
+    parent: 'root',
+    hash: `h${start}`,
+    markdown,
+  });
+
+  it('按原文切片与插入片段匹配（片段首尾空白归一化）', () => {
+    const blocks = [block(0, 5, '前文'), block(7, 26, '::bilibili{bvid=""}')];
+    expect(locateInsertedBlock('::bilibili{bvid=""}\n', blocks)).toBe(blocks[1]);
+    expect(locateInsertedBlock('\n\n::bilibili{bvid=""}\n\n', blocks)).toBe(blocks[1]);
+  });
+
+  it('同内容块重复时取插入点之后的首个', () => {
+    const blocks = [block(0, 3, '段落'), block(5, 8, '段落')];
+    // after=4（锚块 end 之后）→ 命中最新的那个（start=5）
+    expect(locateInsertedBlock('段落', blocks, 4)).toBe(blocks[1]);
+    // after=0 → 首个匹配
+    expect(locateInsertedBlock('段落', blocks, 0)).toBe(blocks[0]);
+  });
+
+  it('无匹配返回 null（服务端列表异常时静默放弃）', () => {
+    expect(locateInsertedBlock('不存在的内容', [block(0, 5, '前文')])).toBeNull();
+    expect(locateInsertedBlock('x', [])).toBeNull();
   });
 });
 

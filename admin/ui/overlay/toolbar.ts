@@ -5,9 +5,13 @@
  * 具体操作经回调交给 main（runOp → 块级 API → 成功后整页刷新）。
  * M12c：指令块（除 cell）的「编辑」启用——语义为打开右侧检查器（参数面板），
  * 由 main 分流；cell 无参数，保持禁用。
+ * M12f：bindHover 从 main 迁入本模块——document 级 mouseover/mouseout 事件委托 +
+ * resolveHitTarget（cfg 字段 > markdown 块 > cfg-block，最内层命中），嵌套块只亮内层；
+ * 隐藏延迟 400ms + 工具条与块边缘重叠 1px（消除指针跨隙死区），
+ * 指针离开窗口（mouseout 无 relatedTarget）时清理描边并计划隐藏。
  */
 import { el } from '../dom.ts';
-import type { BlockEntry, ServerBlock } from './scanner.ts';
+import { resolveHitTarget, type BlockEntry, type ServerBlock } from './scanner.ts';
 
 /** 纯文本类块（非指令）才允许就地微编辑；无服务端数据（hash 缺失）一律不可操作 */
 export function isTextEditable(entry: BlockEntry): boolean {
@@ -122,13 +126,15 @@ export function createToolbar(doc: Document, deps: ToolbarDeps): Toolbar {
     if (current) deps.onInsertBelow(current);
   });
 
-  /** 按块位置重锚定：优先块上方，放不下（会压顶栏）则放块下方 */
+  /** 按块位置重锚定：优先块上方，放不下（会压顶栏）则放块下方；
+      与块边缘重叠 1px（GAP 为负）消除指针移向工具条的死区（M12f） */
+  const GAP = -1;
   const anchor = (): void => {
     if (!current) return;
     const rect = current.el.getBoundingClientRect();
     const h = bar.offsetHeight || 32;
-    const above = rect.top - h - 6;
-    const below = rect.bottom + 6;
+    const above = rect.top - h - GAP;
+    const below = rect.bottom + GAP;
     bar.style.top = `${above >= TOPBAR_H + 4 ? above : below}px`;
     bar.style.left = `${Math.max(4, rect.left)}px`;
   };
@@ -160,4 +166,78 @@ export function createToolbar(doc: Document, deps: ToolbarDeps): Toolbar {
   };
 
   return { el: bar, showFor, hide, current: () => current };
+}
+
+// ---------------------------------------------------------------------------
+// hover 描边高亮 + 工具条锚定（M12f 从 main 迁入，便于独立测试）
+// ---------------------------------------------------------------------------
+
+/** hover 描边 class（样式在 overlay.css；outline 不占用布局空间） */
+export const HOVER_CLASS = 'oh-hover';
+/** 配置坐标 hover 描边 class（虚线 + 不同颜色，与块描边区分，M12d） */
+export const HOVER_CFG_CLASS = 'oh-hover-cfg';
+/** 移出块后隐藏工具条的延迟（便于移到工具条上；与边缘重叠共同消除死区，M12f） */
+const HIDE_DELAY_MS = 400;
+
+/**
+ * hover 描边高亮 + 工具条锚定：document 级 mouseover 事件委托 +
+ * resolveHitTarget 命中最内层坐标（cfg 字段 > markdown 块 > cfg-block；嵌套块只亮内层）。
+ * 事件委托而非逐块绑定：嵌套结构（grid>cell>段落）与动态内容（stream 动画重写内部 DOM）
+ * 都不会漏触发。cfg/cfg-block 用虚线描边（不出块工具条）；markdown 块照旧实线 + 浮动工具条。
+ * 工具条自身上的指针不触发重锚/隐藏，移出块后 400ms 延迟隐藏（便于移到工具条上）；
+ * 指针离开窗口（mouseout 无 relatedTarget）时清理描边并计划隐藏。
+ */
+export function bindHover(doc: Document, entryByEl: Map<Element, BlockEntry>, toolbar: Toolbar): void {
+  let current: Element | null = null;
+  let currentCls = '';
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+  const clearTimer = () => clearTimeout(hideTimer);
+  const scheduleHide = () => {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => toolbar.hide(), HIDE_DELAY_MS);
+  };
+  const clearCurrent = () => {
+    if (current && currentCls) current.classList.remove(currentCls);
+    current = null;
+    currentCls = '';
+  };
+  toolbar.el.addEventListener('mouseenter', clearTimer);
+  toolbar.el.addEventListener('mouseleave', scheduleHide);
+  doc.addEventListener('mouseover', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest('.oh-toolbar')) return;
+    const hit = resolveHitTarget(target);
+    const hitEl = hit?.el ?? null;
+    if (hitEl === current) return;
+    clearCurrent();
+    if (!hit) {
+      scheduleHide();
+      return;
+    }
+    current = hit.el;
+    if (hit.type === 'src') {
+      const entry = entryByEl.get(hit.el);
+      if (!entry) {
+        scheduleHide();
+        return;
+      }
+      currentCls = HOVER_CLASS;
+      hit.el.classList.add(HOVER_CLASS);
+      clearTimer();
+      toolbar.showFor(entry);
+    } else {
+      // cfg 字段 / cfg-block 区块：虚线描边提示可点，块工具条不适用
+      currentCls = HOVER_CFG_CLASS;
+      hit.el.classList.add(HOVER_CFG_CLASS);
+      clearTimer();
+      toolbar.hide();
+    }
+  });
+  // 指针离开窗口（无 relatedTarget）：mouseover 不会再触发，主动清理
+  doc.addEventListener('mouseout', (event) => {
+    if (event.relatedTarget) return;
+    clearCurrent();
+    scheduleHide();
+  });
 }

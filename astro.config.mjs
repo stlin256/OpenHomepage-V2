@@ -26,6 +26,12 @@ const MIME = {
 /**
  * data/assets 静态资源（头像等）：build 时拷入 dist/assets，dev 时由中间件提供。
  * 与 src/lib/data-dir.ts 同样的回退规则：data/ 缺失时用 data.example/。
+ *
+ * 可视化编辑配套（M12f）：admin 写 data/（页面/配置/快照）后，Astro dev 的路由缓存
+ * （getStaticPaths 结果，含正文 body）不会自动失效——data/ 不在 vite 模块图中，
+ * 模块身份不变即直接返回缓存，overlay 保存后整页刷新仍是旧内容（插入的块"消失"）。
+ * 这里监听 data/ 变更并失效 src/pages 路由模块（仅路由组件重新求值，依赖模块缓存不动，
+ * 开销可忽略），强制下次请求重跑 getStaticPaths 读到最新文件。
  */
 function dataAssets() {
   const srcDir = () => {
@@ -38,6 +44,14 @@ function dataAssets() {
     name: 'data-assets',
     hooks: {
       'astro:server:setup'({ server }) {
+        server.watcher.on('change', (file) => {
+          if (!/[/\\]data(\.example)?[/\\]/.test(file)) return;
+          for (const mod of server.moduleGraph.idToModuleMap.values()) {
+            if (mod.file && /[/\\]src[/\\]pages[/\\].+\.astro$/.test(mod.file)) {
+              server.moduleGraph.invalidateModule(mod);
+            }
+          }
+        });
         server.middlewares.use('/assets', (req, res, next) => {
           const dir = srcDir();
           if (!dir) return next();

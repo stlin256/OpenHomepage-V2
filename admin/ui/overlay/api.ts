@@ -51,9 +51,15 @@ export interface BlockOpPayload {
   into?: boolean;
 }
 
-/** POST /api/page/block：单块操作；失败抛服务端错误消息（如 hash 陈旧 409） */
-export async function applyBlockOp(payload: BlockOpPayload): Promise<void> {
-  await req('/api/page/block', {
+/** POST /api/page/block 响应：操作后的最新块列表（坐标已平移，插入定位新块用） */
+export interface BlockOpResult {
+  ok: true;
+  blocks: ServerBlock[];
+}
+
+/** POST /api/page/block：单块操作；返回最新块列表；失败抛服务端错误消息（如 hash 陈旧 409） */
+export async function applyBlockOp(payload: BlockOpPayload): Promise<BlockOpResult> {
+  return req('/api/page/block', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(payload),

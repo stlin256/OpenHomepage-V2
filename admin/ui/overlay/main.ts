@@ -9,6 +9,8 @@
  * 页面设置面板（pagesettings → GET/PUT /api/page）、页面切换下拉（pageswitcher → GET /api/pages）。
  * 点击/hover 命中最内层坐标：cfg 字段 > markdown 块 > cfg-block 区块（resolveHitTarget）。
  * 每次写操作成功后整页刷新（§2.6 既定流程；sessionStorage 保持编辑模式）。
+ * M12f：插入成功后按返回的最新块列表写 sessionStorage 回跳标记（oh-open-block），
+ * reload 后自动打开新块的检查器（指令）/微编辑器（文本块）；hover 委托实现见 toolbar.ts。
  * 由渲染页 bootstrap（BaseLayout，OH_EDIT=1 时输出）以经典脚本跨 origin 动态加载；
  * 界面文案走 admin/shared/i18n.ts 字典（与 admin 同一语言记忆）。
  */
@@ -21,10 +23,12 @@ import {
   scanCfgBlocks,
   mergeServerBlocks,
   resolveHitTarget,
+  parseOhSrc,
   type BlockEntry,
   type CfgFieldEntry,
   type CfgBlockEntry,
   type ServerBlock,
+  type SourceSpan,
 } from './scanner.ts';
 import {
   adminOrigin,
@@ -43,23 +47,34 @@ import {
   saveConfigField,
   type BlockOpPayload,
 } from './api.ts';
-import { createToolbar, isTextEditable, isInspectable, type Toolbar } from './toolbar.ts';
+import { createToolbar, isTextEditable, isInspectable, bindHover } from './toolbar.ts';
 import { openTextEditor, type TextEditSession } from './textedit.ts';
-import { createInserter, resolveInsertTarget } from './inserter.ts';
+import { createInserter, resolveInsertTarget, locateInsertedBlock } from './inserter.ts';
 import { createInspector, gridCellSnippet } from './inspector.ts';
 import { openCfgEditor, type CfgEditSession } from './cfgedit.ts';
 import { renderCfgBlockForm } from './cfgpanel.ts';
 import { renderPageSettings } from './pagesettings.ts';
 import { createPageSwitcher } from './pageswitcher.ts';
 
-/** hover 描边 class（样式在 overlay.css；outline 不占用布局空间） */
-const HOVER_CLASS = 'oh-hover';
-/** 配置坐标 hover 描边 class（虚线 + 不同颜色，与块描边区分，M12d） */
-const HOVER_CFG_CLASS = 'oh-hover-cfg';
 /** 编辑模式会话标记（与 BaseLayout bootstrap 同一 key） */
 const STORAGE_KEY = 'oh-edit';
 /** 与 admin 顶栏同一语言记忆 key */
 const LANG_KEY = 'oh-admin-lang';
+/** 插入成功回跳标记（sessionStorage，一次性）：值形如 data-oh-src（<source>:<start>,<end>），
+    reload 后自动打开新块的检查器/微编辑器（M12f） */
+const OPEN_BLOCK_KEY = 'oh-open-block';
+
+/** 读取并清除回跳标记（一次性消费；非法值/存储不可用返回 null） */
+function consumeOpenBlockMark(): SourceSpan | null {
+  try {
+    const v = sessionStorage.getItem(OPEN_BLOCK_KEY);
+    if (v === null) return null;
+    sessionStorage.removeItem(OPEN_BLOCK_KEY);
+    return parseOhSrc(v);
+  } catch {
+    return null;
+  }
+}
 
 function readStored(key: string): string | null {
   try {
@@ -113,60 +128,6 @@ function createTopBar(
     settings,
     exit
   );
-}
-
-/**
- * hover 描边高亮 + 工具条锚定：命中最内层坐标（cfg 字段 > markdown 块 > cfg-block）。
- * cfg/cfg-block 用虚线描边（不出块工具条）；markdown 块照旧实线 + 浮动工具条。
- * 工具条自身上的指针不触发重锚/隐藏，移出块后短暂延迟隐藏（便于移到工具条上）。
- */
-function bindHover(doc: Document, entryByEl: Map<Element, BlockEntry>, toolbar: Toolbar): void {
-  let current: Element | null = null;
-  let currentCls = '';
-  let hideTimer: ReturnType<typeof setTimeout> | undefined;
-  const clearTimer = () => clearTimeout(hideTimer);
-  const scheduleHide = () => {
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => toolbar.hide(), 150);
-  };
-  const clearCurrent = () => {
-    if (current && currentCls) current.classList.remove(currentCls);
-    current = null;
-    currentCls = '';
-  };
-  toolbar.el.addEventListener('mouseenter', clearTimer);
-  toolbar.el.addEventListener('mouseleave', scheduleHide);
-  doc.addEventListener('mouseover', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-    if (target.closest('.oh-toolbar')) return;
-    const hit = resolveHitTarget(target);
-    const hitEl = hit?.el ?? null;
-    if (hitEl === current) return;
-    clearCurrent();
-    if (!hit) {
-      scheduleHide();
-      return;
-    }
-    current = hit.el;
-    if (hit.type === 'src') {
-      const entry = entryByEl.get(hit.el);
-      if (!entry) {
-        scheduleHide();
-        return;
-      }
-      currentCls = HOVER_CLASS;
-      hit.el.classList.add(HOVER_CLASS);
-      clearTimer();
-      toolbar.showFor(entry);
-    } else {
-      // cfg 字段 / cfg-block 区块：虚线描边提示可点，块工具条不适用
-      currentCls = HOVER_CFG_CLASS;
-      hit.el.classList.add(HOVER_CFG_CLASS);
-      clearTimer();
-      toolbar.hide();
-    }
-  });
 }
 
 /** 点击分流（§3，最内层优先）：cfg 字段 → 就地改字；cfg-block → 检查器配置表单；块 → 微编辑器/检查器 */
@@ -275,15 +236,18 @@ export function initOverlay(doc: Document): OverlayHandle {
     statusEl.classList.toggle('oh-err', kind === 'err');
   };
 
-  /** 写操作统一入口：API → 成功整页刷新（§2.6）；失败顶栏报错并 rethrow（编辑面据此保持打开） */
-  async function runSave(action: () => Promise<unknown>): Promise<void> {
+  /** 写操作统一入口：API → 成功整页刷新（§2.6）；失败顶栏报错并 rethrow（编辑面据此保持打开）。
+      beforeReload：刷新前钩子（M12f：插入成功后写回跳标记，reload 后自动打开新块检查器） */
+  async function runSave<T>(action: () => Promise<T>, beforeReload?: (result: T) => void): Promise<void> {
     setStatus(t('saving'));
+    let result: T;
     try {
-      await action();
+      result = await action();
     } catch (e) {
       setStatus(`${t('opFailed')}: ${(e as Error).message}`, 'err');
       throw e;
     }
+    beforeReload?.(result);
     setStatus(t('saved'), 'ok');
     location.reload();
   }
@@ -319,7 +283,25 @@ export function initOverlay(doc: Document): OverlayHandle {
             hash: '',
             markdown,
           };
-      runOpQuiet(payload);
+      // 插入成功 → 按返回的最新块列表定位新块坐标写回跳标记，reload 后自动打开检查器/微编辑器（M12f）
+      void runSave(
+        () => applyBlockOp(payload),
+        (result) => {
+          const after = target.anchor?.span.end ?? target.boundary ?? 0;
+          const block = locateInsertedBlock(markdown, result.blocks, after);
+          if (!block) return;
+          try {
+            sessionStorage.setItem(
+              OPEN_BLOCK_KEY,
+              `${target.source}:${block.start},${block.end}`
+            );
+          } catch {
+            /* storage 不可用时放弃自动打开，不影响插入本身 */
+          }
+        }
+      ).catch(() => {
+        /* 错误已显示在顶栏 */
+      });
     },
   });
 
@@ -587,6 +569,25 @@ export function initOverlay(doc: Document): OverlayHandle {
   );
 
   const ready = loadBlockData(entries, serverBlocks, t, setStatus);
+
+  // 插入回跳（M12f）：上一轮的插入成功标记 → 待服务端块数据合并完成后，
+  // 自动打开新块的检查器（指令）/微编辑器（文本块），让用户直接填参数
+  const openMark = consumeOpenBlockMark();
+  if (openMark) {
+    void ready.then(() => {
+      const entry = entries.find(
+        (e) =>
+          e.span.source === openMark.source &&
+          e.span.start === openMark.start &&
+          e.span.end === openMark.end
+      );
+      // 页面渲染滞后于写盘（dev 路由缓存等）时标记落空：一次性语义，静默放弃
+      if (!entry) return;
+      if (isInspectable(entry)) inspector.open(entry);
+      else if (isTextEditable(entry)) void openEditor(entry);
+    });
+  }
+
   return { blocks: entries, cfgFields, cfgBlocks, ready };
 }
 

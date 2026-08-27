@@ -50,6 +50,7 @@
 - 新增共享纯函数 `listEditableBlocks(body): { start, end, kind, name? }[]`（放 `src/lib/`，remark-parse + GFM + remark-directive + remark-math 解析，只依赖 mdast position）：枚举**顶层块**以及 **grid/cell 容器内部的块**（递归，支持嵌套 grid）。
 - remark 插件 `remarkEditSpans`（仅 `editSource` 存在时启用，在自定义指令映射之后运行）：给每个可编辑块的 hast 输出加 `data-oh-src="<fileRef>:<start>,<end>"`。指令节点合并进其既有 `hProperties`；文本块经 `data.hProperties` 下发。`data*` 本就在 sanitize 白名单。
 - stream/ghcard/editorial 三个占位替换插件在编辑模式下由"替换"改为"包裹"：`<div data-oh-src=... class="oh-embed">原始片段</div>`（仅编辑模式，生产渲染不变）。
+- 缺参/未知指令（M12f）：编辑模式不降级为纯文本，渲染占位卡 `<div class="oh-directive-placeholder" data-oh-directive="<name>">`（节点类型不变，`data-oh-src` 照常注入，点击开检查器配参数）；生产模式仍按原逻辑降级为原文文本。
 - overlay 扫描 `[data-oh-src]` 建立块注册表；hover 高亮/工具条锚定都基于它。文件内容以服务端为准，overlay 不在本地拼 markdown。
 
 ### 2.3 配置字段坐标 `data-oh-cfg`（yaml 字段 ↔ DOM 映射）
@@ -122,3 +123,4 @@
 3. **M12c 指令与 grid**：右侧检查器 + 指令参数表单 + grid 列设置/单元格增删。
 4. **M12d 配置与字段**：`data-oh-cfg` 就地改字 + 首页配置区块原生表单 + 页面设置面板 + 页面切换。
 5. **M12e admin 收尾**：页面视图重写、旧编辑器与双栏预览移除、文档（06 标记被取代）与测试清理。
+6. **M12f 可靠性修补**：缺参/未知指令在编辑模式渲染占位卡（`oh-directive-placeholder`，节点类型不变、坐标照常注入，生产模式降级不变）；插入成功后写 sessionStorage 回跳标记（`oh-open-block`），reload 后自动打开新块检查器/微编辑器；hover 改 document 级事件委托（嵌套取最内层）+ 块内媒体 `pointer-events:none`（iframe 不吞事件）+ 工具条贴边/400ms 延迟消除死区；dev server 监听 data/ 变更失效路由模块（getStaticPaths 缓存否则不随 data 写入刷新）。
