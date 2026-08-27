@@ -1,5 +1,5 @@
 /*
- * 可视化编辑 overlay（M12a）：顶栏 + hover 描边。
+ * 可视化编辑 overlay：顶栏 + hover 描边（M12a）+ 浮动工具条 / 微编辑器 / 插入抽屉（M12b）。
  * 由 admin server 以 /overlay.css 托管，仅编辑模式加载（渲染页 bootstrap 动态插入），
  * 不进入生产构建产物。class 统一 oh- 前缀，避免与站点样式冲突。
  */
@@ -30,6 +30,7 @@ html.oh-editing body {
 .oh-badge {
   font-weight: 600;
   letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
 .oh-badge::before {
@@ -42,9 +43,115 @@ html.oh-editing body {
   background: #f59e0b;
 }
 
-.oh-exit {
-  margin-left: auto;
+/* 顶栏状态（polite live region）：保存中/失败等反馈，单行省略 */
+.oh-status {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.oh-status.oh-err {
+  color: #ff9e8a;
+  opacity: 1;
+}
+
+/* 顶栏按钮（＋插入 / 退出编辑） */
+.oh-topbar button {
   padding: 3px 10px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.oh-topbar button:hover {
+  background: rgb(255 255 255 / 12%);
+}
+
+/* hover 描边高亮：outline 不影响布局 */
+.oh-hover {
+  outline: 2px solid #f59e0b !important;
+  outline-offset: 1px;
+}
+
+/* 浮动工具条：fixed 锚定到块上方（放不下时放块下方），z-index 略低于顶栏 */
+.oh-toolbar {
+  position: fixed;
+  z-index: 99998;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 6px;
+  background: #23272e;
+  color: #f5f6f7;
+  font: 12px/1.5 -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 35%);
+}
+
+.oh-toolbar[hidden] {
+  display: none;
+}
+
+.oh-toolbar button {
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.oh-toolbar button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 12%);
+}
+
+.oh-toolbar button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.oh-toolbar .oh-danger:hover:not(:disabled) {
+  background: #b0403c;
+}
+
+/* 微编辑器：块隐藏、编辑器占位（页面排版样式自然作用于内部内容） */
+.oh-editing-hidden {
+  display: none !important;
+}
+
+.oh-textedit {
+  outline: 2px solid #f59e0b;
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+.oh-textedit .ProseMirror {
+  outline: none;
+  min-height: 1.5em;
+}
+
+/* 完成/取消操作条：深色底保证在明/暗页面上都有对比度 */
+.oh-textedit-ops {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 0 0 4px 4px;
+  background: #23272e;
+  color: #f5f6f7;
+  font: 12px/1.5 -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.oh-textedit-ops button {
+  padding: 3px 12px;
   border: 1px solid rgb(255 255 255 / 35%);
   border-radius: 4px;
   background: transparent;
@@ -53,12 +160,76 @@ html.oh-editing body {
   cursor: pointer;
 }
 
-.oh-exit:hover {
+.oh-textedit-ops button:hover {
   background: rgb(255 255 255 / 12%);
 }
 
-/* hover 描边高亮：outline 不影响布局 */
-.oh-hover {
-  outline: 2px solid #f59e0b !important;
-  outline-offset: 1px;
+.oh-textedit-ops .oh-primary {
+  border-color: #f59e0b;
+  background: #f59e0b;
+  color: #23272e;
+  font-weight: 600;
+}
+
+/* 插入抽屉：遮罩 + 右侧滑出面板 */
+.oh-drawer-mask {
+  position: fixed;
+  top: 40px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99997;
+  background: rgb(0 0 0 / 25%);
+}
+
+.oh-drawer {
+  position: fixed;
+  top: 40px;
+  right: 0;
+  bottom: 0;
+  z-index: 99998;
+  width: 280px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 12px;
+  background: #23272e;
+  color: #f5f6f7;
+  font: 13px/1.5 -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  box-shadow: -2px 0 12px rgb(0 0 0 / 35%);
+}
+
+.oh-drawer h3 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.55;
+}
+
+.oh-drawer h3:first-child {
+  margin-top: 0;
+}
+
+.oh-drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.oh-drawer-item:hover,
+.oh-drawer-item:focus-visible {
+  background: rgb(255 255 255 / 10%);
+}
+
+.oh-drawer-icon {
+  width: 18px;
+  text-align: center;
 }

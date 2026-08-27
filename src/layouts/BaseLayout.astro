@@ -41,6 +41,8 @@ interface Props {
   /** 页脚 HTML（路由层 resolveFooter + footerTextToHtml 渲染；null = 关闭） */
   footer?: string | null;
   introCard?: ResolvedIntroCard | null;
+  /** 可视化编辑（M12b）：当前页正文的 data/ 相对路径，注入 bootstrap 供 overlay 定位插入目标（空页面无块坐标时必需） */
+  editPageSource?: string;
 }
 
 const {
@@ -61,6 +63,7 @@ const {
   favicon,
   footer,
   introCard,
+  editPageSource,
 } = Astro.props;
 
 const baseUrl = getBaseUrl();
@@ -260,9 +263,10 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
       import '../scripts/interactions.ts';
     </script>
     {editAdminOrigin && (
-      <script is:inline define:vars={{ adminOrigin: editAdminOrigin }}>
+      <script is:inline define:vars={{ adminOrigin: editAdminOrigin, pageSource: editPageSource ?? '' }}>
         // 可视化编辑 bootstrap（M12a）：?edit=1 或 sessionStorage 已标记 → 置标记、
         // 摘掉 query、动态加载 admin 托管的 overlay.js/overlay.css；「退出编辑」在 overlay 顶栏。
+        // M12b：__OH_PAGE_SOURCE__ 为当前页正文的 data/ 相对路径（空页面无块坐标时插入定位用）。
         (function () {
           try {
             var params = new URLSearchParams(location.search);
@@ -276,6 +280,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
             }
             if (!active) return;
             window.__OH_ADMIN_ORIGIN__ = adminOrigin;
+            window.__OH_PAGE_SOURCE__ = pageSource;
             var link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = adminOrigin + '/overlay.css';

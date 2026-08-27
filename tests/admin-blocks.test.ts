@@ -120,6 +120,10 @@ describe('GET /api/page/blocks', () => {
     ]);
     // hash 与正文切片一致
     expect(blocks[1].hash).toBe(createHash('sha1').update('第一段。').digest('hex'));
+    // markdown 字段为块原文切片（M12b：overlay 微编辑器初值）
+    expect(blocks[0].markdown).toBe('# 欢迎');
+    expect(blocks[1].markdown).toBe('第一段。');
+    expect(blocks[4].markdown).toBe('左栏');
     // grid 内部块 parent 指向父块坐标
     expect(blocks[3].parent).toBe(`${blocks[2].start}:${blocks[2].end}`);
     expect(blocks[4].parent).toBe(`${blocks[3].start}:${blocks[3].end}`);

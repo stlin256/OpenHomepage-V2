@@ -256,6 +256,27 @@ const zh = {
 
   editModeBadge: '编辑模式',
   exitEdit: '退出编辑',
+
+  // 可视化编辑 overlay（M12b）：浮动工具条 / 微编辑器 / 插入抽屉
+  edit: '编辑',
+  done: '完成',
+  insertBlock: '插入',
+  insertBelow: '下方插入',
+  insertSectionBasic: '基础块',
+  insertSectionDirective: '指令区块',
+  blkParagraph: '段落',
+  blkHeading2: '二级标题',
+  blkHeading3: '三级标题',
+  blkBulletList: '无序列表',
+  blkOrderedList: '有序列表',
+  blkQuote: '引用',
+  blkCode: '代码块',
+  blkDivider: '分割线',
+  blkListItem: '列表项',
+  confirmDeleteBlock: '删除该块？可从快照找回。',
+  opFailed: '操作失败',
+  blockDataFailed: '块数据加载失败',
+  editUnsupported: '该块不支持就地编辑（指令参数编辑将在后续版本提供）',
 } as const;
 
 export type DictKey = keyof typeof zh;
@@ -511,6 +532,27 @@ const en: Record<DictKey, string> = {
 
   editModeBadge: 'Edit mode',
   exitEdit: 'Exit editing',
+
+  // 可视化编辑 overlay（M12b）：浮动工具条 / 微编辑器 / 插入抽屉
+  edit: 'Edit',
+  done: 'Done',
+  insertBlock: 'Insert',
+  insertBelow: 'Insert below',
+  insertSectionBasic: 'Basic blocks',
+  insertSectionDirective: 'Directive blocks',
+  blkParagraph: 'Paragraph',
+  blkHeading2: 'Heading 2',
+  blkHeading3: 'Heading 3',
+  blkBulletList: 'Bulleted list',
+  blkOrderedList: 'Numbered list',
+  blkQuote: 'Quote',
+  blkCode: 'Code block',
+  blkDivider: 'Divider',
+  blkListItem: 'List item',
+  confirmDeleteBlock: 'Delete this block? It can be recovered from snapshots.',
+  opFailed: 'Operation failed',
+  blockDataFailed: 'Failed to load block data',
+  editUnsupported: 'This block cannot be edited in place (directive params coming in a later milestone)',
 };
 
 export const dict: Record<Lang, Record<string, string>> = { zh, en };

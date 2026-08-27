@@ -1,6 +1,7 @@
 /**
  * 块级编辑 API 的服务端逻辑（M12a，docs/specs/12 §2.5）：
- * - listPageBlocks：列出页面正文（去 frontmatter）的可编辑块，附内容切片 sha1，
+ * - listPageBlocks：列出页面正文（去 frontmatter）的可编辑块，附内容切片 sha1 与
+ *   原文切片（markdown 字段，M12b：overlay 微编辑器的初始内容），
  *   供 overlay/客户端做陈旧检测（hash 不一致即 409）；
  * - applyBlockOp：replace/insert/delete/move 单块操作——重解析校验坐标处块 hash、
  *   replace/insert 的 markdown 必须恰好解析为一个顶层块、move 目标限同一父容器内
@@ -35,6 +36,8 @@ export class HashConflictError extends Error {
 export interface BlockInfo extends EditableBlock {
   /** 内容切片 body.slice(start, end) 的 sha1（hex） */
   hash: string;
+  /** 块原文切片 body.slice(start, end)（M12b：overlay 微编辑器的初始内容） */
+  markdown: string;
 }
 
 /** 块级 API 只接受 pages/<lang>/<file>.md 形状（先形状校验，再 safeResolve 限制在 data/ 内） */
@@ -67,15 +70,20 @@ function hashSlice(body: string, start: number, end: number): string {
   return createHash('sha1').update(body.slice(start, end)).digest('hex');
 }
 
-function withHashes(body: string): BlockInfo[] {
-  return listEditableBlocks(body).map((b) => ({ ...b, hash: hashSlice(body, b.start, b.end) }));
+/** 块 → 响应体：附内容 hash（防陈旧写）与原文切片（微编辑器初值） */
+function withBlockMeta(body: string): BlockInfo[] {
+  return listEditableBlocks(body).map((b) => ({
+    ...b,
+    hash: hashSlice(body, b.start, b.end),
+    markdown: body.slice(b.start, b.end),
+  }));
 }
 
-/** GET /api/page/blocks：列出可编辑块（含 parent 容器标识与内容 hash） */
+/** GET /api/page/blocks：列出可编辑块（含 parent 容器标识、内容 hash 与原文切片） */
 export function listPageBlocks(dataDir: string, rel: string): BlockInfo[] {
   const abs = pageAbs(dataDir, rel);
   if (!existsSync(abs)) throw new Error(`页面不存在：${rel}`);
-  return withHashes(readPageFile(abs).body);
+  return withBlockMeta(readPageFile(abs).body);
 }
 
 export interface BlockOpResult {
@@ -198,5 +206,5 @@ export function applyBlockOp(dataDir: string, payload: Record<string, unknown>):
 
   createSnapshot(dataDir, rel);
   writeFileSync(abs, head + newBody, 'utf8');
-  return { ok: true, blocks: withHashes(newBody) };
+  return { ok: true, blocks: withBlockMeta(newBody) };
 }

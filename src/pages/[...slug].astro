@@ -183,17 +183,19 @@ const ghHtmlByRepo = Object.fromEntries(
     repoCardHtml(r, { lang: contentLang === 'zh' ? 'zh' : 'en' }),
   ]),
 );
+// 可视化编辑（M12a）：OH_EDIT=1 时给正文块注入 data-oh-src 坐标（data/ 相对路径；
+// route.page.filePath 是绝对路径，取文件名拼回 pages/<lang>/<file>）
+const editSource =
+  process.env.OH_EDIT === '1'
+    ? `pages/${route.page.lang}/${path.basename(route.page.filePath)}`
+    : undefined;
 const bodyHtml = await renderMarkdown(route.page.body, {
   baseUrl,
   streamEmbeds,
   ghCards: { htmlByRepo: ghHtmlByRepo },
   editorialEmbeds,
   localizeHrefs: { lang: route.lang, defaultLang, slugs, baseUrl },
-  // 可视化编辑（M12a）：OH_EDIT=1 时给正文块注入 data-oh-src 坐标（data/ 相对路径；
-  // route.page.filePath 是绝对路径，取文件名拼回 pages/<lang>/<file>）
-  ...(process.env.OH_EDIT === '1'
-    ? { editSource: `pages/${route.page.lang}/${path.basename(route.page.filePath)}` }
-    : {}),
+  ...(editSource ? { editSource } : {}),
 });
 const isFeaturesPage = route.page.slug === 'features';
 const componentLabels = {
@@ -221,6 +223,7 @@ const componentLabels = {
   favicon={favicon}
   footer={footerHtml}
   introCard={introCard}
+  editPageSource={editSource}
 >
   {isHome ? (
       <div class="home">
