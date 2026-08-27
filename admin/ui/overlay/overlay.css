@@ -76,10 +76,33 @@ html.oh-editing body {
   background: rgb(255 255 255 / 12%);
 }
 
+.oh-topbar button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 页面切换下拉（M12d）：深色顶栏内的紧凑 select */
+.oh-topbar select.oh-pageswitch {
+  max-width: 200px;
+  padding: 3px 6px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 4px;
+  background: #23272e;
+  color: inherit;
+  font: inherit;
+}
+
 /* hover 描边高亮：outline 不影响布局 */
 .oh-hover {
   outline: 2px solid #f59e0b !important;
   outline-offset: 1px;
+}
+
+/* 配置坐标 hover 描边（M12d）：蓝色虚线，与 markdown 块的琥珀色实线区分 */
+.oh-hover-cfg {
+  outline: 2px dashed #38bdf8 !important;
+  outline-offset: 1px;
+  cursor: text;
 }
 
 /* 浮动工具条：fixed 锚定到块上方（放不下时放块下方），z-index 略低于顶栏 */
@@ -403,4 +426,161 @@ html.oh-editing body {
 .oh-add-cell {
   margin-top: 8px;
   width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+ * M12d：配置字段就地改字 + 检查器内的配置区块/页面设置表单
+ * ------------------------------------------------------------------------- */
+
+/* 就地改字输入框：占位在原元素位置（深色底保证在明/暗页面上都有对比度） */
+.oh-cfgedit {
+  margin: 2px 0;
+}
+
+.oh-cfgedit-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 12em;
+  padding: 4px 8px;
+  border: 2px dashed #38bdf8;
+  border-radius: 4px;
+  background: #23272e;
+  color: #f5f6f7;
+  font: inherit;
+}
+
+textarea.oh-cfgedit-input {
+  min-height: 4em;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.oh-cfgedit-input:focus {
+  outline: none;
+  border-color: #f59e0b;
+}
+
+/* 检查器内的共享表单（admin/ui/configforms.ts 与 admin 视图同 class）深色浮层适配 */
+.oh-inspector .form-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.oh-inspector .field {
+  display: block;
+  min-width: 0;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.oh-inspector .field-label {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.oh-inspector .input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px 8px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 8%);
+  color: inherit;
+  font: inherit;
+}
+
+.oh-inspector .input:focus {
+  outline: none;
+  border-color: #f59e0b;
+}
+
+.oh-inspector input[type='checkbox'] {
+  width: auto;
+}
+
+.oh-inspector .localized {
+  display: block;
+  margin-bottom: 0;
+}
+
+.oh-inspector h4 {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.oh-inspector .list-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.oh-inspector .list-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.oh-inspector .list-row > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.oh-inspector .list-ops {
+  display: flex;
+  gap: 4px;
+}
+
+.oh-inspector .list-ops button,
+.oh-inspector .list-add button {
+  padding: 2px 8px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.oh-inspector .list-ops button:hover,
+.oh-inspector .list-add button:hover {
+  background: rgb(255 255 255 / 12%);
+}
+
+.oh-inspector .list-ops .btn-danger:hover {
+  background: #b0403c;
+}
+
+.oh-inspector .list-add {
+  margin-top: 4px;
+}
+
+.oh-inspector .row-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.oh-inspector .source-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+/* 「在后台编辑」深链（editorial 组件列表等超出面板能力的部分） */
+.oh-inspector .oh-admin-link {
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+.oh-inspector .oh-admin-link:hover {
+  text-decoration: underline;
 }

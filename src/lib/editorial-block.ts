@@ -93,7 +93,9 @@ function archiveCardHtml(
 export function renderEditorialBlock(
   block: EditorialBlock,
   lang: string,
-  localizeHref?: (href: string) => string
+  localizeHref?: (href: string) => string,
+  /** 追加到根 <section> 上的额外属性（M12d：编辑模式的 data-oh-cfg-block 坐标；生产不传） */
+  rootAttrs?: Record<string, string>,
 ): string {
   const tag = block.tag ? `<span class="section-tag">${escapeHtml(resolveText(block.tag, lang))}</span>` : '';
   const description = block.description
@@ -113,5 +115,8 @@ export function renderEditorialBlock(
     : '';
   const divider = block.divider ? '<hr class="editorial-divider" />' : '';
   const color = escapeHtml(block.color ?? 'var(--accent)');
-  return `<section class="home-block block-editorial reveal" style="--section-color:${color}"><header class="section-header reveal">${tag}<span class="section-rule" aria-hidden="true"></span></header><div class="editorial-heading"><h2>${escapeHtml(resolveText(block.title, lang))}</h2>${description}</div>${actions}${list}${tiles}${archive}${divider}</section>`;
+  const extra = Object.entries(rootAttrs ?? {})
+    .map(([k, v]) => ` ${k}="${escapeHtml(v)}"`)
+    .join('');
+  return `<section class="home-block block-editorial reveal"${extra} style="--section-color:${color}"><header class="section-header reveal">${tag}<span class="section-rule" aria-hidden="true"></span></header><div class="editorial-heading"><h2>${escapeHtml(resolveText(block.title, lang))}</h2>${description}</div>${actions}${list}${tiles}${archive}${divider}</section>`;
 }

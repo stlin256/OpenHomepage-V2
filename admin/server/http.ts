@@ -14,7 +14,7 @@ import {
   renamePage,
   deletePage,
 } from './pages.ts';
-import { readSiteConfig, writeSiteConfig, readRssConfig, writeRssConfig } from './configs.ts';
+import { readSiteConfig, writeSiteConfig, readRssConfig, writeRssConfig, writeConfigField } from './configs.ts';
 import { listAssets, saveAsset, readAsset, deleteAsset, MAX_ASSET_BYTES } from './assets.ts';
 import { listSnapshots, restoreSnapshot } from './snapshots.ts';
 import { safeResolve, PathError } from './paths.ts';
@@ -141,7 +141,14 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
     GET: {
       '/api/info': ({ res }) =>
         sendJson(res, 200, { initialized: opts.initialized, dataDir: path.basename(dataDir) }),
-      '/api/pages': ({ res }) => sendJson(res, 200, { pages: listPages(dataDir) }),
+      // M12d：每页附 previewPath（overlay 顶栏页面切换下拉的跳转目标）
+      '/api/pages': ({ res }) =>
+        sendJson(res, 200, {
+          pages: listPages(dataDir).map((p) => ({
+            ...p,
+            previewPath: previewPathFor(dataDir, p.lang, p.file, { slug: p.slug }),
+          })),
+        }),
       '/api/page': ({ query, res }) => {
         const lang = query.get('lang') ?? '';
         const file = query.get('file') ?? '';
@@ -206,6 +213,8 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
     POST: {
       // 可视化编辑（M12a）：单块 replace/insert/delete/move（hash 防陈旧写 + 快照 + 落盘）
       '/api/page/block': ({ body, res }) => sendJson(res, 200, applyBlockOp(dataDir, body)),
+      // 可视化编辑（M12d）：单字段写回（就地改字；路径校验 + schema 校验 + 快照）
+      '/api/config/field': ({ body, res }) => sendJson(res, 200, writeConfigField(dataDir, body)),
       '/api/page/create': ({ body, res }) => {
         const r = createPage(
           dataDir,

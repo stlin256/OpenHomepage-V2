@@ -1,7 +1,28 @@
 ---
+/**
+ * 编辑风展示区块（editorial）：渲染见 src/lib/editorial-block.ts。
+ * M12d：cfgBlock（首页配置区块坐标 data-oh-cfg-block="editorial:<id>"）仅编辑模式
+ * 由路由层传入，经 renderEditorialBlock 的 rootAttrs 挂到根 <section>，生产零注入。
+ */
 import { renderEditorialBlock } from '../lib/editorial-block.ts';
+import type { EditorialBlock as EditorialBlockDef } from '../lib/config.ts';
 
-  const { block, lang, localizeHref } = Astro.props;
+interface Props {
+  block: EditorialBlockDef;
+  lang: string;
+  localizeHref?: (href: string) => string;
+  /** 配置区块坐标值（editorial:<id>） */
+  cfgBlock?: string;
+}
+
+const { block, lang, localizeHref, cfgBlock } = Astro.props;
 ---
 
-<Fragment set:html={renderEditorialBlock(block, lang, localizeHref)} />
+<Fragment
+  set:html={renderEditorialBlock(
+    block,
+    lang,
+    localizeHref,
+    cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : undefined,
+  )}
+/>

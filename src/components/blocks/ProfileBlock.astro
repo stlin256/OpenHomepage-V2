@@ -1,22 +1,29 @@
 ---
 import type { SiteConfig } from '../../lib/config.ts';
 import { resolveText } from '../../lib/localize.ts';
+import { editCfgAttr } from '../../lib/edit-cfg.ts';
 
 interface Props {
   site: SiteConfig;
   lang: string;
   avatarUrl?: string;
   avatarTop: boolean;
+  /** 可视化编辑（M12d）：首页配置区块坐标值（profile）；仅 OH_EDIT 下由路由层传入 */
+  cfgBlock?: string;
 }
 
-const { site, lang, avatarUrl, avatarTop } = Astro.props;
+const { site, lang, avatarUrl, avatarTop, cfgBlock } = Astro.props;
 const showAvatar = Boolean(avatarUrl);
 ---
 
-<section class:list={['home-block block-profile reveal', avatarTop ? 'profile-top' : 'mag-grid']}>
+<section
+  class:list={['home-block block-profile reveal', avatarTop ? 'profile-top' : 'mag-grid']}
+  {...(cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {})}
+>
   <div class:list={['profile-intro', { 'span-7': showAvatar && !avatarTop, 'span-12': !showAvatar && !avatarTop }]}>
-    <h1 class="profile-name">{resolveText(site.profile.name, lang)}</h1>
-    {site.profile.tagline && <p class="profile-tagline">{resolveText(site.profile.tagline, lang)}</p>}
+    {/* 昵称/简介挂 data-oh-cfg 字段坐标（仅 OH_EDIT 注入，生产零痕迹） */}
+    <h1 class="profile-name" {...editCfgAttr('profile.name', lang)}>{resolveText(site.profile.name, lang)}</h1>
+    {site.profile.tagline && <p class="profile-tagline" {...editCfgAttr('profile.tagline', lang)}>{resolveText(site.profile.tagline, lang)}</p>}
     {site.profile.links && site.profile.links.length > 0 && (
       <ul class="profile-links">
         {site.profile.links.map((link) => (

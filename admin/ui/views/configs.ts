@@ -1,40 +1,26 @@
 /**
  * 配置表单视图：站点 / GitHub / RSS / 流式块 + home.layout 拖拽排序。
  * 全部 1.5s 停顿自动保存（PUT 整份配置，服务端校验失败不落盘并提示）。
+ * M12d：profile/github/rss/streaming/editorial 各段表单构建抽到 configforms.ts，
+ * 与可视化编辑 overlay 检查器共用（避免两份实现漂移）；本文件负责取数与保存。
  */
 import { el, btn, textInput, numberInput, checkbox, select, field, listEditor, rangeInput } from '../dom.ts';
 import { api } from '../api.ts';
 import { createAutosave, type Autosave } from '../../shared/autosave.ts';
+import {
+  localizedField,
+  buildProfileForm,
+  buildGithubForm,
+  buildRssForm,
+  buildStreamingBlockCard,
+  buildEditorialMainFields,
+  type Obj,
+  type List,
+} from '../configforms.ts';
 import type { AppState } from '../main.ts';
-
-type Obj = Record<string, unknown>;
-type List = Record<string, unknown>[];
 
 function sectionTitle(text: string): HTMLElement {
   return el('h2', { class: 'section-title' }, text);
-}
-
-/** 双语文案字段：string | {zh,en} → 双输入框；只填一个时存回纯字符串 */
-function localizedField(
-  value: unknown,
-  labelZh: string,
-  labelEn: string,
-  onChange: (v: unknown) => void
-): HTMLElement {
-  const cur: { zh: string; en: string } =
-    typeof value === 'string'
-      ? { zh: value, en: '' }
-      : { zh: String((value as Obj)?.zh ?? ''), en: String((value as Obj)?.en ?? '') };
-  const commit = () => {
-    if (cur.zh && cur.en) onChange({ zh: cur.zh, en: cur.en });
-    else onChange(cur.zh || cur.en);
-  };
-  return el(
-    'div',
-    { class: 'localized' },
-    field(labelZh, textInput(cur.zh, (v) => { cur.zh = v; commit(); })),
-    field(labelEn, textInput(cur.en, (v) => { cur.en = v; commit(); }))
-  );
 }
 
 function makeSaver(state: AppState, saveFn: () => Promise<unknown>): Autosave {
@@ -75,10 +61,11 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
   cfg.site ??= {};
   cfg.profile ??= {};
   const profile = cfg.profile as Obj;
-  profile.links ??= [];
   const bgm = (cfg.bgm ??= {}) as Obj;
   const autosave = makeSaver(state, () => api.saveSite(cfg));
   const touch = () => autosave.touch();
+  // 素材引用值列表（assets/<name>；profile 表单的头像下拉等，与 overlay 同一形态）
+  const assetRefs = assets.map((a) => `assets/${a.name}`);
 
   // BGM 音频文件候选：素材库中的音频扩展名；当前值不在库中时保留显示
   const AUDIO_EXT = /\.(wav|mp3|ogg|m4a|flac)$/i;
@@ -157,29 +144,7 @@ export async function renderSiteConfig(container: HTMLElement, state: AppState):
       faviconField
     ),
     sectionTitle(t('profileSection')),
-    el(
-      'div',
-      { class: 'form-grid' },
-      field(t('profileName'), textInput(String(profile.name ?? ''), (v) => { profile.name = v; touch(); })),
-      field(t('profileAvatar'), textInput(String(profile.avatar ?? ''), (v) => { profile.avatar = v; touch(); })),
-      field(t('profileBioPage'), textInput(String(profile.bio_page ?? ''), (v) => { profile.bio_page = v; touch(); }))
-    ),
-    localizedField(profile.tagline, t('profileTaglineZh'), t('profileTaglineEn'), (v) => { profile.tagline = v; touch(); }),
-    el('h3', {}, t('profileLinks')),
-    listEditor({
-      items: profile.links as List,
-      renderRow: (link) =>
-        el(
-          'div',
-          { class: 'row-fields' },
-          textInput(String(link.label ?? ''), (v) => { link.label = v; touch(); }),
-          textInput(String(link.url ?? ''), (v) => { link.url = v; touch(); })
-        ),
-      onChange: touch,
-      makeNew: () => ({ label: '', url: '' }),
-      addLabel: t('addLink'),
-      t,
-    }),
+    ...buildProfileForm(profile, { t, touch, assets: assetRefs }),
     sectionTitle(t('bgmSection')),
     el(
       'div',
@@ -270,23 +235,8 @@ export async function renderEditorialConfig(container: HTMLElement, state: AppSt
       ['archive', t('editorialArchive'), () => ({ title: '', status: '', image: '' })],
     ] as const;
 
-    const content = el(
-      'div',
-      { class: 'source-card' },
-      el(
-        'div',
-        { class: 'row-fields' },
-        field(t('blockId'), textInput(String(block.id ?? ''), (v) => { block.id = v; touch(); })),
-        field(t('editorialColor'), textInput(String(block.color ?? ''), (v) => {
-          block.color = v || undefined;
-          touch();
-        }, '#7b9aac')),
-        field(t('editorialDivider'), checkbox(Boolean(block.divider), (v) => { block.divider = v; touch(); }))
-      ),
-      localizedField(block.tag, t('tagZh'), t('tagEn'), (v) => { block.tag = v; touch(); }),
-      localizedField(block.title, t('titleZh'), t('titleEn'), (v) => { block.title = v; touch(); }),
-      localizedField(block.description, t('descriptionZh'), t('descriptionEn'), (v) => { block.description = v; touch(); })
-    );
+    // 主字段（id/颜色/分割线 + tag/title/description）与 overlay 检查器共用同一构建器
+    const content = buildEditorialMainFields(block, { t, touch });
 
     const blockPanel = el('details', { class: 'config-panel' }) as HTMLDetailsElement;
     if (index === 0) blockPanel.open = true;
@@ -404,33 +354,12 @@ export async function renderGithubConfig(container: HTMLElement, state: AppState
   const { data } = await api.site();
   const cfg = data as Obj;
   const gh = (cfg.github ??= {}) as Obj;
-  gh.pinned ??= [];
   const autosave = makeSaver(state, () => api.saveSite(cfg));
   const touch = () => autosave.touch();
 
   container.replaceChildren(
     sectionTitle(t('configGithub')),
-    el(
-      'div',
-      { class: 'form-grid' },
-      field(t('githubUsername'), textInput(String(gh.username ?? ''), (v) => { gh.username = v; touch(); })),
-      field(t('githubShowContributions'), checkbox(Boolean(gh.show_contributions), (v) => { gh.show_contributions = v; touch(); }))
-    ),
-    el('h3', {}, t('githubPinned')),
-    listEditor({
-      items: gh.pinned as List,
-      renderRow: (p) =>
-        el(
-          'div',
-          { class: 'row-fields' },
-          textInput(String(p.repo ?? ''), (v) => { p.repo = v; touch(); }),
-          textInput(String(p.note ?? ''), (v) => { p.note = v; touch(); })
-        ),
-      onChange: touch,
-      makeNew: () => ({ repo: '', note: '' }),
-      addLabel: t('addRepo'),
-      t,
-    })
+    ...buildGithubForm(gh, { t, touch })
   );
 }
 
@@ -443,7 +372,6 @@ export async function renderRssConfig(container: HTMLElement, state: AppState): 
   const [{ data: site }, { data: rssRaw }] = await Promise.all([api.site(), api.rss()]);
   const siteCfg = site as Obj;
   const rss = rssRaw as Obj;
-  rss.sources ??= [];
   const siteRss = ((siteCfg.rss ??= {}) as Obj);
 
   const autosave = makeSaver(state, () =>
@@ -451,84 +379,9 @@ export async function renderRssConfig(container: HTMLElement, state: AppState): 
   );
   const touch = () => autosave.touch();
 
-  const sourcesWrap = el('div', {});
-  const renderSources = () => {
-    sourcesWrap.replaceChildren(
-      listEditor({
-        items: rss.sources as List,
-        renderRow: (src) => {
-          const row = el(
-            'div',
-            { class: 'source-card' },
-            el(
-              'div',
-              { class: 'row-fields' },
-              field(t('sourceName'), textInput(String(src.name ?? ''), (v) => { src.name = v; touch(); })),
-              field(t('sourceUrl'), textInput(String(src.url ?? ''), (v) => { src.url = v; touch(); })),
-              field(
-                t('sourceMode'),
-                select(
-                  [{ value: 'latest', label: t('modeLatest') }, { value: 'curated', label: t('modeCurated') }],
-                  String(src.mode ?? 'latest'),
-                  (v) => { src.mode = v; touch(); renderSources(); }
-                )
-              ),
-              field(t('sourceLatest'), numberInput(src.latest as number | undefined, (v) => { src.latest = v; touch(); })),
-              field(t('sourceWeight'), numberInput(src.weight as number | undefined, (v) => { src.weight = v; touch(); })),
-              field(t('sourceCover'), textInput(String(src.cover ?? ''), (v) => { src.cover = v; touch(); }))
-            )
-          );
-          if (src.mode === 'curated') {
-            src.articles ??= [];
-            row.append(
-              el('h4', {}, t('sourceArticles')),
-              listEditor({
-                items: src.articles as List,
-                renderRow: (a) =>
-                  el(
-                    'div',
-                    { class: 'row-fields' },
-                    textInput(String(a.url ?? ''), (v) => { a.url = v; touch(); }),
-                    textInput(String(a.note ?? ''), (v) => { a.note = v; touch(); }),
-                    textInput(String(a.cover ?? ''), (v) => { a.cover = v; touch(); })
-                  ),
-                onChange: touch,
-                makeNew: () => ({ url: '', note: '' }),
-                addLabel: t('addArticle'),
-                t,
-              })
-            );
-          }
-          return row;
-        },
-        onChange: touch,
-        makeNew: () => ({ name: '', url: '', mode: 'latest', latest: 5 }),
-        addLabel: t('addSource'),
-        t,
-      })
-    );
-  };
-  renderSources();
-
   container.replaceChildren(
     sectionTitle(t('configRss')),
-    el(
-      'div',
-      { class: 'form-grid' },
-      field(t('rssEnabled'), checkbox(Boolean(siteRss.enabled ?? true), (v) => { siteRss.enabled = v; touch(); })),
-      field(t('rssSourcesFile'), textInput(String(siteRss.sources_file ?? 'rss.yaml'), (v) => { siteRss.sources_file = v; touch(); })),
-      field(
-        t('rssDisplay'),
-        select(
-          [{ value: 'grouped', label: t('displayGrouped') }, { value: 'mixed', label: t('displayMixed') }],
-          String(rss.display ?? 'grouped'),
-          (v) => { rss.display = v; touch(); }
-        )
-      )
-    ),
-    localizedField(siteRss.block_title, t('rssBlockTitleZh'), t('rssBlockTitleEn'), (v) => { siteRss.block_title = v; touch(); }),
-    el('h3', {}, t('rssSources')),
-    sourcesWrap
+    ...buildRssForm(siteRss, rss, { t, touch })
   );
 }
 
@@ -637,20 +490,7 @@ export async function renderStreamingConfig(container: HTMLElement, state: AppSt
     sectionTitle(t('streamingBlocks')),
     listEditor({
       items: cfg.streaming_blocks as List,
-      renderRow: (blk) =>
-        el(
-          'div',
-          { class: 'source-card' },
-          el(
-            'div',
-            { class: 'row-fields' },
-            field(t('blockId'), textInput(String(blk.id ?? ''), (v) => { blk.id = v; touch(); })),
-            field(t('blockContentFile'), textInput(String(blk.content_file ?? ''), (v) => { blk.content_file = v; touch(); })),
-            field(t('blockAutoplay'), checkbox(Boolean(blk.autoplay), (v) => { blk.autoplay = v; touch(); })),
-            field(t('blockSpeed'), numberInput(blk.speed as number | undefined, (v) => { blk.speed = v; touch(); }))
-          ),
-          localizedField(blk.title, t('blockTitleZh'), t('blockTitleEn'), (v) => { blk.title = v; touch(); })
-        ),
+      renderRow: (blk) => buildStreamingBlockCard(blk, { t, touch }),
       onChange: touch,
       makeNew: () => ({ id: '', title: '', content_file: 'streaming/zh/welcome.md', autoplay: true, speed: 40 }),
       addLabel: t('addBlock'),

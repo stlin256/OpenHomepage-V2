@@ -19,4 +19,18 @@ describe('renderEditorialBlock', () => {
     expect(html).toContain('editorial-tile reveal tile-wide');
     expect(html).toContain('editorial-tile reveal tile-tall');
   });
+
+  it('rootAttrs（M12d）：追加到根 section 并转义；缺省零注入', () => {
+    const withAttr = renderEditorialBlock(
+      { id: 'work', title: 'W' },
+      'zh',
+      undefined,
+      { 'data-oh-cfg-block': 'editorial:work' }
+    );
+    expect(withAttr).toContain(
+      '<section class="home-block block-editorial reveal" data-oh-cfg-block="editorial:work"'
+    );
+    const plain = renderEditorialBlock({ id: 'work', title: 'W' }, 'zh');
+    expect(plain).not.toContain('data-oh-cfg-block');
+  });
 });

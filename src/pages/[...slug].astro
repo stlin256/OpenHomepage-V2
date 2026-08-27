@@ -54,6 +54,7 @@ import StreamBlock from '../components/blocks/StreamBlock.astro';
 import EditorialBlock from '../components/EditorialBlock.astro';
 import NoticeBanner from '../components/NoticeBanner.astro';
 import { renderEditorialBlock } from '../lib/editorial-block.ts';
+import { editCfgValue, editCfgBlockName } from '../lib/edit-cfg.ts';
 import { localizeInternalHref } from '../lib/routes.ts';
 import { withBase, getBaseUrl } from '../lib/base-url.ts';
 
@@ -171,7 +172,10 @@ for (const def of site.streaming_blocks ?? []) {
   if (b) streamBlocks.push(b);
 }
 const streamById = new Map(streamBlocks.map((b) => [b.id, b]));
-const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b)]));
+// 可视化编辑（M12d）：.stream-title 挂 data-oh-cfg 字段坐标（streaming_blocks.<id>.title@内容语言）；
+// 生产模式 editCfgValue 返回 undefined，streamEmbedHtml 零注入
+const streamTitleCfg = (id: string) => editCfgValue(`streaming_blocks.${id}.title`, contentLang);
+const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b, streamTitleCfg(b.id))]));
 const editorialById = new Map((site.editorial_blocks ?? []).map((block) => [block.id, block]));
 const editorialEmbeds = Object.fromEntries(
   (site.editorial_blocks ?? []).map((block) => [block.id, renderEditorialBlock(block, contentLang, localizeHref)]),
@@ -235,6 +239,7 @@ const componentLabels = {
               lang={contentLang}
               avatarUrl={avatarUrl}
               avatarTop={avatarTop}
+              cfgBlock={editCfgBlockName('profile')}
             />
           ) : b.block === 'markdown' ? (
             <section class="home-block block-markdown reveal">
@@ -242,19 +247,21 @@ const componentLabels = {
             </section>
           ) : b.block === 'streaming' ? (
             // 未定义的 id 在 loadStreamingBlock 已 warning，这里跳过渲染
-            streamById.has(b.id ?? '') ? <StreamBlock block={streamById.get(b.id ?? '')!} /> : null
+            streamById.has(b.id ?? '') ? <StreamBlock block={streamById.get(b.id ?? '')!} cfgBlock={editCfgBlockName(`streaming:${b.id}`)} titleCfg={streamTitleCfg(b.id ?? '')} /> : null
           ) : b.block === 'github' ? (
             <GithubBlock
               view={githubView}
               lang={contentLang}
               accent={accent}
               showContributions={site.github.show_contributions !== false}
+              cfgBlock={editCfgBlockName('github')}
             />
           ) : b.block === 'rss' ? (
             <RssBlock
               view={rssView}
               title={resolveText(site.rss?.block_title ?? 'RSS', contentLang)}
               lang={contentLang}
+              cfgBlock={editCfgBlockName('rss')}
             />
           ) : b.block === 'editorial' ? (
             editorialById.has(b.id ?? '') ? (
@@ -262,6 +269,7 @@ const componentLabels = {
                 block={editorialById.get(b.id ?? '')!}
                 lang={contentLang}
                 localizeHref={localizeHref}
+                cfgBlock={editCfgBlockName(`editorial:${b.id}`)}
               />
             ) : null
           ) : null,

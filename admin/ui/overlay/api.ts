@@ -74,3 +74,79 @@ export async function uploadAsset(name: string, buf: ArrayBuffer): Promise<{ nam
     body: buf,
   });
 }
+
+// ---------------------------------------------------------------------------
+// M12d：配置读写（区块表单 / 就地改字）与页面（设置面板 / 切换下拉）
+// ---------------------------------------------------------------------------
+
+function json(method: string, body: unknown): RequestInit {
+  return { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) };
+}
+
+/** 页面列表项（GET /api/pages；previewPath 为 dev server 上的页面路径，M12d 起由服务端附带） */
+export interface PageListItem {
+  lang: string;
+  file: string;
+  slug: string;
+  title: string;
+  nav: boolean;
+  order?: number;
+  previewPath?: string;
+}
+
+/** GET /api/pages：页面下拉数据源（标题 + 语言 + 跳转路径） */
+export async function fetchPages(): Promise<PageListItem[]> {
+  const r = await req<{ pages: PageListItem[] }>('/api/pages');
+  return r.pages;
+}
+
+export interface PageContent {
+  frontmatter: Record<string, unknown>;
+  body: string;
+  previewPath?: string;
+}
+
+/** GET /api/page：页面设置面板的表单初值（body 原样带回，保存时不动正文） */
+export async function fetchPage(lang: string, file: string): Promise<PageContent> {
+  return req(`/api/page?lang=${encodeURIComponent(lang)}&file=${encodeURIComponent(file)}`);
+}
+
+/** PUT /api/page：页面设置保存（frontmatter 改动 + 原 body 不动） */
+export async function savePage(
+  lang: string,
+  file: string,
+  frontmatter: Record<string, unknown>,
+  body: string
+): Promise<void> {
+  await req('/api/page', json('PUT', { lang, file, frontmatter, body }));
+}
+
+/** GET /api/config/site：站点配置全量（面板按段编辑后整体 PUT 回） */
+export async function fetchSiteConfig(): Promise<Record<string, unknown>> {
+  const r = await req<{ data: Record<string, unknown> }>('/api/config/site');
+  return r.data;
+}
+
+export async function saveSiteConfig(data: Record<string, unknown>): Promise<void> {
+  await req('/api/config/site', json('PUT', { data }));
+}
+
+/** GET /api/config/rss：订阅源配置（rss 区块面板的 sources 列表） */
+export async function fetchRssConfig(): Promise<Record<string, unknown>> {
+  const r = await req<{ data: Record<string, unknown> }>('/api/config/rss');
+  return r.data;
+}
+
+export async function saveRssConfig(data: Record<string, unknown>): Promise<void> {
+  await req('/api/config/rss', json('PUT', { data }));
+}
+
+/** POST /api/config/field：就地改字的单字段写回（校验 + 快照在服务端） */
+export async function saveConfigField(payload: {
+  file: 'site' | 'rss';
+  path: string;
+  lang?: string;
+  value: string;
+}): Promise<void> {
+  await req('/api/config/field', json('POST', payload));
+}

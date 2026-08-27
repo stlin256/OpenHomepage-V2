@@ -24,9 +24,11 @@ interface Props {
   lang: string;
   accent: AccentTheme;
   showContributions: boolean;
+  /** 可视化编辑（M12d）：首页配置区块坐标值（github）；仅 OH_EDIT 下由路由层传入 */
+  cfgBlock?: string;
 }
 
-const { view, lang, accent, showContributions } = Astro.props;
+const { view, lang, accent, showContributions, cfgBlock } = Astro.props;
 const L2 = lang === 'zh' ? 'zh' : 'en';
 
 const L = {
@@ -65,7 +67,7 @@ const weekdays = weekdayLabels(L2);
 const totalFmt = contributions.kind === 'ok' ? formatCount(contributions.total) : '';
 ---
 
-<section class="home-block block-github reveal">
+<section class="home-block block-github reveal" {...(cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {})}>
   {view === null && <p class="block-empty">{L.empty}</p>}
 
   {showContributions && contributions.kind === 'placeholder' && (

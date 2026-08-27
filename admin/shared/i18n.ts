@@ -288,6 +288,21 @@ const zh = {
   dirParamVideoId: '视频 ID',
   dirParamRepo: '仓库',
   dirParamBlockId: '区块 id',
+
+  // 可视化编辑 overlay（M12d）：就地改字 / 配置区块表单 / 页面设置 / 页面切换
+  loading: '加载中…',
+  pageSettings: '页面设置',
+  switchPage: '切换页面',
+  cfgFieldHint: '点击编辑字段',
+  cfgBlockHint: '点击编辑区块配置',
+  cfgBlockMissing: '未找到对应配置（id 未命中定义）',
+  editInAdmin: '在后台编辑完整配置',
+  avatarPosition: '头像位置',
+  avatarPosSide: '侧边（side）',
+  avatarPosTop: '居顶（top）',
+  profileNameZh: '名字（中文）',
+  profileNameEn: '名字（英文，可空）',
+  assetRefEmpty: '（未选择）',
 } as const;
 
 export type DictKey = keyof typeof zh;
@@ -575,6 +590,21 @@ const en: Record<DictKey, string> = {
   dirParamVideoId: 'Video ID',
   dirParamRepo: 'Repository',
   dirParamBlockId: 'Block ID',
+
+  // 可视化编辑 overlay（M12d）：就地改字 / 配置区块表单 / 页面设置 / 页面切换
+  loading: 'Loading…',
+  pageSettings: 'Page settings',
+  switchPage: 'Switch page',
+  cfgFieldHint: 'Click to edit field',
+  cfgBlockHint: 'Click to edit block config',
+  cfgBlockMissing: 'Config block not found (id not defined)',
+  editInAdmin: 'Edit full config in admin',
+  avatarPosition: 'Avatar position',
+  avatarPosSide: 'Side',
+  avatarPosTop: 'Top',
+  profileNameZh: 'Name (Chinese)',
+  profileNameEn: 'Name (English, optional)',
+  assetRefEmpty: '(none)',
 };
 
 export const dict: Record<Lang, Record<string, string>> = { zh, en };

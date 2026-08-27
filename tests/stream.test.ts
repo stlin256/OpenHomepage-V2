@@ -277,4 +277,18 @@ describe('markdownToStream / loadStreamingBlock / streamEmbedHtml', () => {
     expect(frag).not.toContain('<b>不注入</b>');
     expect(frag).toContain('data-autoplay="false"');
   });
+
+  it('streamEmbedHtml：titleCfgAttr（M12d 编辑模式）挂到 .stream-title；缺省零注入', async () => {
+    const { html, tokens } = await markdownToStream('内容');
+    const block = { id: 'welcome', title: '一段话', autoplay: true, speed: 40, html, tokens };
+    const withCfg = streamEmbedHtml(block, 'streaming_blocks.welcome.title@zh');
+    expect(withCfg).toContain(
+      '<p class="stream-title" data-oh-cfg="streaming_blocks.welcome.title@zh">一段话</p>'
+    );
+    // 缺省 / 无标题时不注入
+    expect(streamEmbedHtml(block)).not.toContain('data-oh-cfg');
+    expect(streamEmbedHtml({ ...block, title: '' }, 'streaming_blocks.welcome.title@zh')).not.toContain(
+      'data-oh-cfg'
+    );
+  });
 });

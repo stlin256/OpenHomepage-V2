@@ -165,6 +165,8 @@ describe('main：块数据加载（M12b）', () => {
       { start: 0, end: 5, kind: 'paragraph', parent: 'root', hash: 'h1', markdown: '甲' },
     ];
     const fetchMock = vi.fn(async (url: string) => {
+      // M12d：顶栏页面切换下拉会另发 /api/pages；块数据请求保持原断言
+      if (String(url).includes('/api/pages')) return { ok: true, json: async () => ({ pages: [] }) };
       expect(url).toBe('http://127.0.0.1:4174/api/page/blocks?path=pages%2Fzh%2Findex.md');
       return { ok: true, json: async () => ({ blocks: serverBlocks }) };
     });
@@ -176,7 +178,10 @@ describe('main：块数据加载（M12b）', () => {
     expect(blocks[0].hash).toBe('h1');
     expect(blocks[0].kind).toBe('paragraph');
     expect(blocks[0].markdown).toBe('甲');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const blockCalls = fetchMock.mock.calls.filter(([url]) =>
+      String(url).includes('/api/page/blocks')
+    );
+    expect(blockCalls).toHaveLength(1);
     const bar = document.querySelector('.oh-topbar')!;
     expect(bar.querySelector('.oh-status')!.getAttribute('aria-live')).toBe('polite');
     expect(bar.querySelector('.oh-insert')!.textContent).toContain(t('insertBlock'));

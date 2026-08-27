@@ -8,15 +8,21 @@
  */
 import type { RssView } from '../../lib/rss-block.ts';
 import { formatTimestamp } from '../../lib/github-block.ts';
+import { editCfgAttr } from '../../lib/edit-cfg.ts';
 import RssCard from './RssCard.astro';
 
 interface Props {
   view: RssView | null;
   title: string;
   lang: string;
+  /** 可视化编辑（M12d）：首页配置区块坐标值（rss）；仅 OH_EDIT 下由路由层传入 */
+  cfgBlock?: string;
 }
 
-const { view, title, lang } = Astro.props;
+const { view, title, lang, cfgBlock } = Astro.props;
+// 区块根坐标（检查器表单入口）+ 标题字段坐标（就地改字；rss.block_title@内容语言）
+const cfgBlockAttr = cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {};
+const titleCfg = editCfgAttr('rss.block_title', lang);
 
 const L = {
   zh: { empty: 'RSS 数据未预取：请先运行 npm run prefetch', updated: '数据更新于' },
@@ -29,16 +35,16 @@ const hasContent =
 ---
 
 {view === null && (
-  <section class="home-block block-rss reveal">
-    <h2 class="block-title">{title}</h2>
+  <section class="home-block block-rss reveal" {...cfgBlockAttr}>
+    <h2 class="block-title" {...titleCfg}>{title}</h2>
     <p class="block-empty">{L.empty}</p>
   </section>
 )}
 
 {
   view !== null && hasContent && (
-    <section class="home-block block-rss reveal">
-      <h2 class="block-title">{title}</h2>
+    <section class="home-block block-rss reveal" {...cfgBlockAttr}>
+      <h2 class="block-title" {...titleCfg}>{title}</h2>
       {view.display === 'grouped' ? (
         <div class="rss-columns">
           {view.columns.map((col) => (

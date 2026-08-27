@@ -10,6 +10,8 @@
  *   同口径）走同一 attrs 保存；单元格列表（删除 → onDeleteCell）+「添加单元格」
  *   （→ onAddCell，insert into op；空 grid 同样可加第一个 cell，服务端定位容器内插入点）。
  * cell 无参数，不开检查器（cell 内块照常走各自路径）。
+ * M12d：openPanel 自定义面板（配置区块原生表单 / 页面设置表单）复用同一面板骨架
+ * （右侧滑出 + 遮罩 + Esc/× 关闭），内容渲染回调自行填充 body。
  */
 import { el } from '../dom.ts';
 import { DIRECTIVE_DEFS, DIRECTIVE_LABEL_KEYS } from '../../shared/directives.ts';
@@ -32,6 +34,8 @@ export interface InspectorDeps {
 export interface Inspector {
   /** 打开（或切换到）指定指令块的检查器；重复打开即重渲染面板内容 */
   open(entry: BlockEntry): void;
+  /** 打开自定义面板（M12d：配置区块表单 / 页面设置）：标题 + 内容渲染回调（body 已被清空） */
+  openPanel(title: string, renderBody: (body: HTMLElement) => void): void;
   close(): void;
   isOpen(): boolean;
 }
@@ -231,12 +235,27 @@ export function createInspector(doc: Document, deps: InspectorDeps): Inspector {
     else body.replaceChildren(el('p', { class: 'oh-inspector-hint' }, t('editUnsupported')));
   }
 
-  function open(entry: BlockEntry): void {
-    render(entry);
+  function show(): void {
     if (opened) return;
     opened = true;
     doc.body.append(mask, panel);
   }
+
+  function open(entry: BlockEntry): void {
+    render(entry);
+    show();
+  }
+
+  /** 自定义面板（M12d）：标题走调用方，内容由 renderBody 填充（可先渲染 loading 再异步替换） */
+  function openPanel(title: string, renderBody: (body: HTMLElement) => void): void {
+    head.replaceChildren(
+      el('span', { class: 'oh-inspector-title' }, title),
+      closeBtn
+    );
+    renderBody(body);
+    show();
+  }
+
   function close(): void {
     if (!opened) return;
     opened = false;
@@ -244,5 +263,5 @@ export function createInspector(doc: Document, deps: InspectorDeps): Inspector {
     panel.remove();
   }
 
-  return { open, close, isOpen: () => opened };
+  return { open, openPanel, close, isOpen: () => opened };
 }

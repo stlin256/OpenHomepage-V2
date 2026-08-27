@@ -225,10 +225,14 @@ const REPLAY_ICON =
  * 流式区块的完整 HTML 片段：主页 streaming 区块与 markdown `::stream{id}`
  * 占位替换共用同一份结构（前端脚本按 .stream-block[data-stream-id] 全局初始化）。
  * 结构：头部（标题+重播按钮）/ 空播放容器 / noscript 完整内容 / tokens JSON。
+ * titleCfgAttr（M12d，可选）：data-oh-cfg 完整属性值（<yaml路径>@<lang>），仅编辑模式
+ * 由调用方（editCfgValue）传入，挂到 .stream-title 上；本函数输出在 sanitize 之后注入，属性可存活。
  */
-export function streamEmbedHtml(block: LoadedStreamBlock): string {
+export function streamEmbedHtml(block: LoadedStreamBlock, titleCfgAttr?: string): string {
+  const cfgAttr =
+    titleCfgAttr && block.title ? ` data-oh-cfg="${escapeHtml(titleCfgAttr)}"` : '';
   const title = block.title
-    ? `<p class="stream-title">${escapeHtml(block.title)}</p>`
+    ? `<p class="stream-title"${cfgAttr}>${escapeHtml(block.title)}</p>`
     : '';
   return (
     `<div class="stream-block" data-stream-id="${escapeHtml(block.id)}"` +

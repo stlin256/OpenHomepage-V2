@@ -2,14 +2,24 @@
 /**
  * 主页流式区块：结构与 markdown `::stream{id}` 占位替换完全一致
  * （同一份 streamEmbedHtml，见 src/lib/stream.ts），前端脚本全局初始化。
+ * M12d：cfgBlock（区块根坐标 data-oh-cfg-block）与 titleCfg（.stream-title 的
+ * data-oh-cfg 字段坐标）仅编辑模式由路由层传入，生产为零注入。
  */
 import { streamEmbedHtml, type LoadedStreamBlock } from '../../lib/stream.ts';
 
 interface Props {
   block: LoadedStreamBlock;
+  /** 配置区块坐标值（streaming:<id>） */
+  cfgBlock?: string;
+  /** 标题字段坐标完整值（streaming_blocks.<id>.title@<lang>） */
+  titleCfg?: string;
 }
 
-const { block } = Astro.props;
+const { block, cfgBlock, titleCfg } = Astro.props;
 ---
 
-<section class="home-block block-streaming reveal" set:html={streamEmbedHtml(block)} />
+<section
+  class="home-block block-streaming reveal"
+  {...(cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {})}
+  set:html={streamEmbedHtml(block, titleCfg)}
+/>

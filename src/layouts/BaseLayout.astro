@@ -16,6 +16,7 @@ import type { ResolvedIntroCard } from '../lib/config.ts';
 import ContactCard from '../components/ContactCard.astro';
 import type { NavItem } from '../lib/routes.ts';
 import { withBase, getBaseUrl } from '../lib/base-url.ts';
+import { editCfgAttr } from '../lib/edit-cfg.ts';
 
 interface Props {
   /** 页面标题（<title> 为 `${title} · ${siteTitle}`） */
@@ -168,7 +169,8 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
         <span class="bar" aria-hidden="true"></span>
       </button>
       <nav class="site-nav" id="site-nav" aria-label="站点导航">
-        <p class="site-title"><a href={homeHref}>{siteTitle}</a></p>
+        {/* 可视化编辑（M12d）：站点标题挂 data-oh-cfg 坐标（site.title@内容语言，仅 OH_EDIT 注入） */}
+        <p class="site-title" {...editCfgAttr('site.title', htmlLang)}><a href={homeHref}>{siteTitle}</a></p>
         <ul>
           {nav.map((item) => (
             <li>
@@ -235,8 +237,10 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
     <main class="site-main">
       <slot />
     </main>
-    {/* 页脚（默认开启，site.yaml footer.enabled:false 关闭；文本支持内联链接，见 src/lib/footer.ts） */}
-    {footer && <footer class="site-footer" set:html={footer} />}
+    {/* 页脚（默认开启，site.yaml footer.enabled:false 关闭；文本支持内联链接，见 src/lib/footer.ts）。
+        M12d：data-oh-cfg 坐标挂在包裹元素上（footer 内部是经 footerTextToHtml 渲染的链接 HTML，
+        就地改字编辑的是 yaml 原文而非渲染后的 textContent） */}
+    {footer && <footer class="site-footer" {...editCfgAttr('footer.text', htmlLang)} set:html={footer} />}
     {/* 背景音乐：audio 不参与内容交换，天然连续播放 */}
     {bgm && (
       <audio
