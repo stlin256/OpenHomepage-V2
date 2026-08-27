@@ -26,6 +26,8 @@ export interface ServerBlock {
   hash: string;
   /** 块原文切片（微编辑器初值） */
   markdown: string;
+  /** 指令属性表（kind 为指令时存在；M12c 检查器表单初值） */
+  attrs?: Record<string, string>;
 }
 
 export interface BlockEntry {
@@ -37,6 +39,8 @@ export interface BlockEntry {
   parent?: string;
   hash?: string;
   markdown?: string;
+  /** 指令属性表（M12c：合并自服务端块，检查器表单初值） */
+  attrs?: Record<string, string>;
 }
 
 const SPAN_RE = /^(.+):(\d+),(\d+)$/;
@@ -82,6 +86,7 @@ export function mergeServerBlocks(
     entry.parent = b.parent;
     entry.hash = b.hash;
     entry.markdown = b.markdown;
+    entry.attrs = b.attrs;
     matched.add(`${b.start}:${b.end}`);
   }
   for (const b of blocks) {

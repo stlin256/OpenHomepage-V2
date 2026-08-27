@@ -3,6 +3,8 @@
  * 编辑/上移/下移/删除/下方插入；fixed 定位，滚动/缩放时重锚定。
  * 纯 DOM 组件：可用性由 computeToolbarState 推导（服务端口径同父兄弟块），
  * 具体操作经回调交给 main（runOp → 块级 API → 成功后整页刷新）。
+ * M12c：指令块（除 cell）的「编辑」启用——语义为打开右侧检查器（参数面板），
+ * 由 main 分流；cell 无参数，保持禁用。
  */
 import { el } from '../dom.ts';
 import type { BlockEntry, ServerBlock } from './scanner.ts';
@@ -12,7 +14,17 @@ export function isTextEditable(entry: BlockEntry): boolean {
   return !!entry.hash && entry.kind !== 'containerDirective' && entry.kind !== 'leafDirective';
 }
 
+/** 指令块（除 cell）启用「编辑」= 打开右侧检查器（M12c）；无服务端数据一律不可操作 */
+export function isInspectable(entry: BlockEntry): boolean {
+  return (
+    !!entry.hash &&
+    (entry.kind === 'containerDirective' || entry.kind === 'leafDirective') &&
+    entry.name !== 'cell'
+  );
+}
+
 export interface ToolbarState {
+  /** 编辑入口可用：文本块 → 微编辑器；指令块（除 cell）→ 右侧检查器（M12c，分流在 main） */
   canEdit: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
@@ -35,7 +47,7 @@ export function computeToolbarState(entry: BlockEntry, siblings: ServerBlock[]):
   const prev = idx > 0 ? siblings[idx - 1] : undefined;
   const next = idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : undefined;
   return {
-    canEdit: isTextEditable(entry),
+    canEdit: isTextEditable(entry) || isInspectable(entry),
     canMoveUp: !!entry.hash && !!prev,
     canMoveDown: !!entry.hash && !!next,
     canDelete: !!entry.hash,

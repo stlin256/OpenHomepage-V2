@@ -6,7 +6,7 @@
  * 指令片段的占位参数本里程碑不管，M12c 检查器负责点开后编辑）。
  */
 import { el } from '../dom.ts';
-import { DIRECTIVE_DEFS, INSERT_SNIPPETS } from '../../shared/directives.ts';
+import { DIRECTIVE_DEFS, DIRECTIVE_LABEL_KEYS, INSERT_SNIPPETS } from '../../shared/directives.ts';
 import type { BlockEntry } from './scanner.ts';
 
 export interface InsertTarget {
@@ -49,19 +49,9 @@ export interface Inserter {
   isOpen(): boolean;
 }
 
-/** 指令块的展示名（与旧编辑器插入下拉同一套 i18n 键） */
+/** 指令块的展示名（与旧编辑器插入下拉同一套 i18n 键，映射见 shared/directives.ts） */
 function directiveLabels(t: (k: string) => string): Record<string, string> {
-  return {
-    bilibili: t('dirBilibili'),
-    youtube: t('dirYoutube'),
-    video: t('dirVideo'),
-    audio: t('dirAudio'),
-    figure: t('dirFigure'),
-    grid: t('dirGrid'),
-    stream: t('dirStream'),
-    ghcard: t('dirGhcard'),
-    editorial: t('dirEditorial'),
-  };
+  return Object.fromEntries(Object.entries(DIRECTIVE_LABEL_KEYS).map(([name, key]) => [name, t(key)]));
 }
 
 export function createInserter(doc: Document, deps: InserterDeps): Inserter {

@@ -1,8 +1,9 @@
 /**
- * 块级编辑 API（M12a，admin/server/blocks.ts + http.ts 路由）测试：
- * GET /api/page/blocks（坐标 + hash）、POST /api/page/block（replace/insert/delete/move、
- * hash 冲突 409、路径越权/非法 op/非法 markdown 400、move 同容器约束）；
- * 以及 overlay 静态资源（/overlay.js、/overlay.css）与 /api/* 的回环 CORS。
+ * 块级编辑 API（M12a/M12c，admin/server/blocks.ts + http.ts 路由）测试：
+ * GET /api/page/blocks（坐标 + hash + 原文切片 + 指令属性表）、
+ * POST /api/page/block（replace/insert/delete/move/attrs、insert into 容器内追加、
+ * hash 冲突 409、路径越权/非法 op/非法 markdown/非指令块 attrs/非法属性名 400、
+ * move 同容器约束）；以及 overlay 静态资源（/overlay.js、/overlay.css）与 /api/* 的回环 CORS。
  */
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
@@ -46,6 +47,9 @@ interface BlockInfo {
   name?: string;
   parent: string;
   hash: string;
+  markdown: string;
+  /** 指令属性表（kind 为指令时存在，M12c） */
+  attrs?: Record<string, string>;
 }
 
 function seedExample(dir: string) {
@@ -124,6 +128,11 @@ describe('GET /api/page/blocks', () => {
     expect(blocks[0].markdown).toBe('# 欢迎');
     expect(blocks[1].markdown).toBe('第一段。');
     expect(blocks[4].markdown).toBe('左栏');
+    // 指令块附属性表（M12c：检查器表单初值）；非指令块无 attrs 字段
+    expect(blocks[2].attrs).toEqual({ cols: '2' });
+    expect(blocks[3].attrs).toEqual({});
+    expect(blocks[7].attrs).toEqual({ id: 'welcome' });
+    expect('attrs' in blocks[1]).toBe(false);
     // grid 内部块 parent 指向父块坐标
     expect(blocks[3].parent).toBe(`${blocks[2].start}:${blocks[2].end}`);
     expect(blocks[4].parent).toBe(`${blocks[3].start}:${blocks[3].end}`);
@@ -275,6 +284,187 @@ describe('POST /api/page/block', () => {
   it('路径越权 → 400', async () => {
     const r = await postBlock({ path: 'pages/../../site.yaml', op: 'delete', start: 0, end: 1, hash: 'x' });
     expect(r.status).toBe(400);
+  });
+});
+
+describe('POST /api/page/block：attrs（M12c）', () => {
+  it('叶指令改参：整行效果等同替换，其他块不动', async () => {
+    const blocks = await getBlocks();
+    const stream = blocks[7]; // ::stream{id="welcome"}
+    const r = await postBlock({
+      path: 'pages/zh/index.md',
+      op: 'attrs',
+      start: stream.start,
+      end: stream.end,
+      hash: stream.hash,
+      attrs: { id: 'news' },
+    });
+    expect(r.status).toBe(200);
+    const text = pageFile();
+    expect(text).toContain('::stream{id="news"}');
+    expect(text).toContain('第一段。'); // 其他块不动
+    expect(text).toContain('::::grid{cols=2}');
+    // 响应块列表坐标平移正确，attrs 已更新
+    const next = (r.body as { blocks: BlockInfo[] }).blocks;
+    expect(next[7].attrs).toEqual({ id: 'news' });
+  });
+
+  it('grid 改列数：cell 与其内容完全不动', async () => {
+    const before = pageFile();
+    const blocks = await getBlocks();
+    const grid = blocks[2];
+    const r = await postBlock({
+      path: 'pages/zh/index.md',
+      op: 'attrs',
+      start: grid.start,
+      end: grid.end,
+      hash: grid.hash,
+      attrs: { cols: '3' },
+    });
+    expect(r.status).toBe(200);
+    const after = pageFile();
+    expect(after).toContain('::::grid{cols="3"}');
+    // 除起始行属性段外逐字节一致（cell 块切片不动）
+    expect(after.replace('::::grid{cols="3"}', '')).toBe(before.replace('::::grid{cols=2}', ''));
+  });
+
+  it('清空 attrs 移除属性段；无属性段的指令可插入属性段', async () => {
+    const blocks = await getBlocks();
+    const stream = blocks[7];
+    const r = await postBlock({
+      path: 'pages/zh/index.md',
+      op: 'attrs',
+      start: stream.start,
+      end: stream.end,
+      hash: stream.hash,
+      attrs: {},
+    });
+    expect(r.status).toBe(200);
+    expect(pageFile()).toContain('::stream\n');
+    // 再插回属性段（无属性段 → 指令名后插入）
+    const blocks2 = await getBlocks();
+    const stream2 = blocks2.find((b) => b.name === 'stream')!;
+    const r2 = await postBlock({
+      path: 'pages/zh/index.md',
+      op: 'attrs',
+      start: stream2.start,
+      end: stream2.end,
+      hash: stream2.hash,
+      attrs: { id: 'back' },
+    });
+    expect(r2.status).toBe(200);
+    expect(pageFile()).toContain('::stream{id="back"}');
+  });
+
+  it('hash 冲突 → 409 且不落盘', async () => {
+    const before = pageFile();
+    const blocks = await getBlocks();
+    const r = await postBlock({
+      path: 'pages/zh/index.md',
+      op: 'attrs',
+      start: blocks[7].start,
+      end: blocks[7].end,
+      hash: 'deadbeef',
+      attrs: { id: 'news' },
+    });
+    expect(r.status).toBe(409);
+    expect(pageFile()).toBe(before);
+  });
+
+  it('非指令块 / 非法属性名 / 非字符串值 → 400 且不落盘', async () => {
+    const before = pageFile();
+    const blocks = await getBlocks();
+    const para = blocks[1];
+    const grid = blocks[2];
+    const basePayload = { path: 'pages/zh/index.md' };
+    // 段落不是指令块
+    const r1 = await postBlock({
+      ...basePayload, op: 'attrs', start: para.start, end: para.end, hash: para.hash, attrs: {},
+    });
+    expect(r1.status).toBe(400);
+    expect((r1.body as { error: string }).error).toMatch(/不支持/);
+    // 非法属性名
+    expect((await postBlock({
+      ...basePayload, op: 'attrs', start: grid.start, end: grid.end, hash: grid.hash,
+      attrs: { 'bad key': 'x' },
+    })).status).toBe(400);
+    // 非字符串值
+    expect((await postBlock({
+      ...basePayload, op: 'attrs', start: grid.start, end: grid.end, hash: grid.hash,
+      attrs: { cols: 3 },
+    })).status).toBe(400);
+    // 缺 attrs
+    expect((await postBlock({
+      ...basePayload, op: 'attrs', start: grid.start, end: grid.end, hash: grid.hash,
+    })).status).toBe(400);
+    expect(pageFile()).toBe(before);
+  });
+});
+
+describe('POST /api/page/block：insert into 容器内追加（M12c）', () => {
+  it('grid 追加 cell：落在闭围栏之前，既有 cell 不动', async () => {
+    const blocks = await getBlocks();
+    const grid = blocks[2];
+    const r = await postBlock({
+      path: 'pages/zh/index.md',
+      op: 'insert',
+      start: grid.start,
+      end: grid.end,
+      hash: grid.hash,
+      markdown: ':::cell\n\n:::',
+      into: true,
+    });
+    expect(r.status).toBe(200);
+    const text = pageFile();
+    // 三个 cell，新 cell 在闭围栏之前
+    const cells = (text.match(/:::cell/g) ?? []).length;
+    expect(cells).toBe(3);
+    expect(text.indexOf(':::cell\n\n:::')).toBeGreaterThan(text.indexOf('右栏'));
+    expect(text.indexOf('::::\n')).toBeGreaterThan(text.indexOf(':::cell\n\n:::'));
+    // 既有内容不动
+    expect(text).toContain('左栏');
+    expect(text).toContain('右栏');
+  });
+
+  it('空 grid 加第一个 cell（into 定位容器内插入点）', async () => {
+    writeFileSync(
+      path.join(root, 'data/pages/zh/index.md'),
+      '---\ntitle: 主页\n---\n::::grid\n::::\n\n后文。\n',
+      'utf8'
+    );
+    const blocks = await getBlocks();
+    const grid = blocks.find((b) => b.name === 'grid')!;
+    const r = await postBlock({
+      path: 'pages/zh/index.md',
+      op: 'insert',
+      start: grid.start,
+      end: grid.end,
+      hash: grid.hash,
+      markdown: ':::cell\n\n:::',
+      into: true,
+    });
+    expect(r.status).toBe(200);
+    const next = (r.body as { blocks: BlockInfo[] }).blocks;
+    // 重解析：cell 在 grid 内（parent 指向 grid 新坐标）
+    const gridAfter = next.find((b) => b.name === 'grid')!;
+    const cell = next.find((b) => b.name === 'cell')!;
+    expect(cell.parent).toBe(`${gridAfter.start}:${gridAfter.end}`);
+    expect(pageFile()).toContain('后文。');
+  });
+
+  it('into 用于非 grid/cell 容器或普通块 → 400；零宽边界 + into → 400', async () => {
+    const before = pageFile();
+    const blocks = await getBlocks();
+    const para = blocks[1];
+    expect((await postBlock({
+      path: 'pages/zh/index.md', op: 'insert',
+      start: para.start, end: para.end, hash: para.hash, markdown: 'x', into: true,
+    })).status).toBe(400);
+    expect((await postBlock({
+      path: 'pages/zh/index.md', op: 'insert',
+      start: 0, end: 0, hash: '', markdown: 'x', into: true,
+    })).status).toBe(400);
+    expect(pageFile()).toBe(before);
   });
 });
 

@@ -1,8 +1,10 @@
 /**
  * 可视化编辑 overlay 入口（M12b，docs/specs/12 §2.4）：
  * 顶栏（编辑模式标识 + 状态 live region + ＋插入 + 退出编辑）、块注册表（scanner）
- * + 服务端块数据合并（hash/kind/parent/原文切片）、hover 描边 + 浮动工具条（toolbar）、
- * 文本块就地微编辑器（textedit，点击块或工具条「编辑」进入，§3）、插入抽屉（inserter）。
+ * + 服务端块数据合并（hash/kind/parent/原文切片/指令属性表）、hover 描边 + 浮动工具条（toolbar）、
+ * 文本块就地微编辑器（textedit，点击块或工具条「编辑」进入，§3）、插入抽屉（inserter）、
+ * 右侧检查器（inspector，M12c：指令参数表单 + grid 列设置/单元格增删，点击指令块或
+ * 工具条「编辑」进入）。
  * 每次写操作成功后整页刷新（§2.6 既定流程；sessionStorage 保持编辑模式）。
  * 由渲染页 bootstrap（BaseLayout，OH_EDIT=1 时输出）以经典脚本跨 origin 动态加载；
  * 界面文案走 admin/shared/i18n.ts 字典（与 admin 同一语言记忆）。
@@ -19,13 +21,15 @@ import {
   adminOrigin,
   pageSource,
   fetchBlocks,
+  fetchAssets,
   applyBlockOp,
   uploadAsset,
   type BlockOpPayload,
 } from './api.ts';
-import { createToolbar, isTextEditable, type Toolbar } from './toolbar.ts';
+import { createToolbar, isTextEditable, isInspectable, type Toolbar } from './toolbar.ts';
 import { openTextEditor, type TextEditSession } from './textedit.ts';
 import { createInserter, resolveInsertTarget } from './inserter.ts';
+import { createInspector, gridCellSnippet } from './inspector.ts';
 
 /** hover 描边 class（样式在 overlay.css；outline 不占用布局空间） */
 const HOVER_CLASS = 'oh-hover';
@@ -99,22 +103,32 @@ function bindHover(doc: Document, entryByEl: Map<Element, BlockEntry>, toolbar: 
   });
 }
 
-/** 点击文本块直接进入微编辑器（§3）；指令块暂由 M12c 检查器负责，这里忽略 */
+/** 点击块进入编辑（§3）：文本块 → 原位微编辑器；指令块（除 cell）→ 右侧检查器（M12c） */
 function bindClickToEdit(
   doc: Document,
   entryByEl: Map<Element, BlockEntry>,
-  open: (entry: BlockEntry) => void
+  openText: (entry: BlockEntry) => void,
+  openInspector: (entry: BlockEntry) => void
 ): void {
   doc.addEventListener('click', (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
     // overlay 自身控件不触发块编辑
-    if (target.closest('.oh-topbar, .oh-toolbar, .oh-textedit, .oh-drawer, .oh-drawer-mask')) return;
+    if (
+      target.closest('.oh-topbar, .oh-toolbar, .oh-textedit, .oh-drawer, .oh-drawer-mask, .oh-inspector, .oh-inspector-mask')
+    ) {
+      return;
+    }
     const blockEl = target.closest('[data-oh-src]');
     const entry = blockEl ? entryByEl.get(blockEl) : undefined;
-    if (!entry || !isTextEditable(entry)) return;
-    event.preventDefault();
-    open(entry);
+    if (!entry) return;
+    if (isTextEditable(entry)) {
+      event.preventDefault();
+      openText(entry);
+    } else if (isInspectable(entry)) {
+      event.preventDefault();
+      openInspector(entry);
+    }
   });
 }
 
@@ -208,11 +222,69 @@ export function initOverlay(doc: Document): OverlayHandle {
     },
   });
 
+  // ---- 微编辑器会话（同时只开一个；开新的先取消旧的并还原 DOM）----
+  let activeEdit: TextEditSession | null = null;
+  const cancelActiveEdit = async (): Promise<void> => {
+    const prev = activeEdit;
+    activeEdit = null;
+    if (prev) await prev.cancel();
+  };
+
+  // ---- 右侧检查器（M12c）：指令参数表单 + grid 列设置/单元格增删 ----
+  const inspector = createInspector(doc, {
+    t,
+    loadAssets: fetchAssets,
+    cellsOf: (grid) =>
+      (serverBlocks.get(grid.span.source) ?? []).filter(
+        (b) =>
+          b.parent === `${grid.span.start}:${grid.span.end}` &&
+          b.kind === 'containerDirective' &&
+          b.name === 'cell'
+      ),
+    onSaveAttrs: (entry, attrs) =>
+      runOp({
+        path: entry.span.source,
+        op: 'attrs',
+        start: entry.span.start,
+        end: entry.span.end,
+        hash: entry.hash ?? '',
+        attrs,
+      }),
+    onDeleteCell: (cell, grid) => {
+      if (!confirm(t('confirmDeleteBlock'))) return;
+      runOpQuiet({
+        path: grid.span.source,
+        op: 'delete',
+        start: cell.start,
+        end: cell.end,
+        hash: cell.hash,
+      });
+    },
+    onAddCell: (grid) =>
+      runOpQuiet({
+        path: grid.span.source,
+        op: 'insert',
+        start: grid.span.start,
+        end: grid.span.end,
+        hash: grid.hash ?? '',
+        markdown: gridCellSnippet(grid.markdown ?? ''),
+        into: true,
+      }),
+  });
+
   const toolbar = createToolbar(doc, {
     t,
     siblingsOf: (entry) =>
       serverBlocks.get(entry.span.source)?.filter((b) => b.parent === entry.parent) ?? [],
-    onEdit: (entry) => void openEditor(entry),
+    // 「编辑」分流：指令块（除 cell）→ 检查器参数面板；文本块 → 微编辑器
+    onEdit: (entry) => {
+      if (isInspectable(entry)) {
+        void cancelActiveEdit();
+        inspector.open(entry);
+      } else {
+        void openEditor(entry);
+      }
+    },
     onMove: (entry, to) =>
       runOpQuiet({
         path: entry.span.source,
@@ -235,12 +307,9 @@ export function initOverlay(doc: Document): OverlayHandle {
     onInsertBelow: (entry) => inserter.open(entry),
   });
 
-  // ---- 微编辑器会话（同时只开一个；开新的先取消旧的并还原 DOM）----
-  let activeEdit: TextEditSession | null = null;
   async function openEditor(entry: BlockEntry): Promise<void> {
-    const prev = activeEdit;
-    activeEdit = null;
-    if (prev) await prev.cancel();
+    await cancelActiveEdit();
+    inspector.close();
     toolbar.hide();
     const session = await openTextEditor(entry, {
       t,
@@ -274,7 +343,15 @@ export function initOverlay(doc: Document): OverlayHandle {
 
   doc.body.append(createTopBar(t, statusEl, () => inserter.open(null)));
   bindHover(doc, entryByEl, toolbar);
-  bindClickToEdit(doc, entryByEl, (entry) => void openEditor(entry));
+  bindClickToEdit(
+    doc,
+    entryByEl,
+    (entry) => void openEditor(entry),
+    (entry) => {
+      void cancelActiveEdit();
+      inspector.open(entry);
+    }
+  );
 
   const ready = loadBlockData(entries, serverBlocks, t, setStatus);
   return { blocks: entries, ready };

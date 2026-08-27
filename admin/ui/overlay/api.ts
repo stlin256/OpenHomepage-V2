@@ -39,12 +39,16 @@ export async function fetchBlocks(path: string): Promise<ServerBlock[]> {
 /** POST /api/page/block 的请求体（与 admin/server/blocks.ts 的 applyBlockOp 对应） */
 export interface BlockOpPayload {
   path: string;
-  op: 'replace' | 'insert' | 'delete' | 'move';
+  op: 'replace' | 'insert' | 'delete' | 'move' | 'attrs';
   start: number;
   end: number;
   hash: string;
   markdown?: string;
   to?: number;
+  /** op=attrs：新的指令属性表（M12c 检查器保存） */
+  attrs?: Record<string, string>;
+  /** op=insert：插为锚块（grid/cell 容器）的最后一个子块而非插到其后（M12c 添加单元格） */
+  into?: boolean;
 }
 
 /** POST /api/page/block：单块操作；失败抛服务端错误消息（如 hash 陈旧 409） */
@@ -54,6 +58,12 @@ export async function applyBlockOp(payload: BlockOpPayload): Promise<void> {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(payload),
   });
+}
+
+/** GET /api/assets：素材引用值列表（assets/<name>，M12c 检查器素材下拉） */
+export async function fetchAssets(): Promise<string[]> {
+  const r = await req<{ assets: { name: string }[] }>('/api/assets');
+  return r.assets.map((a) => `assets/${a.name}`);
 }
 
 /** 素材上传（POST /api/asset 二进制，粘贴图片用）；返回可引用的素材名 */

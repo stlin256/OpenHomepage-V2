@@ -1,15 +1,21 @@
 /**
  * 可编辑块坐标枚举与块拼接（src/lib/edit-blocks.ts）单测：
- * 各类块/指令/grid 嵌套/误嵌套残留围栏的坐标枚举；replace/insert/delete/move 拼接往返。
+ * 各类块/指令/grid 嵌套/误嵌套残留围栏的坐标枚举；replace/insert/delete/move 拼接往返；
+ * M12c：指令属性表枚举、serializeAttrs 序列化（与 mdast-util-directive 解析往返）、
+ * rewriteDirectiveAttrs 起始行属性段重写、containerCloseLineStart 容器内插入点。
  */
 import { describe, it, expect } from 'vitest';
 import {
   listEditableBlocks,
+  parseBody,
   blockLineSpan,
   replaceBlock,
   insertBlock,
   deleteBlock,
   moveBlock,
+  serializeAttrs,
+  rewriteDirectiveAttrs,
+  containerCloseLineStart,
 } from '../src/lib/edit-blocks.ts';
 
 /** 块列表 → 源码切片（坐标正确性的直接验证） */
@@ -280,5 +286,133 @@ describe('块拼接：replace/insert/delete/move', () => {
     const next = replaceBlock(md, b[0].start, b[0].end, '甲。');
     expect(next).toBe(md);
     expect(listEditableBlocks(next)).toEqual(b);
+  });
+});
+
+describe('listEditableBlocks：指令属性表（M12c）', () => {
+  it('指令块附 attrs（无属性段为 {}），非指令块无 attrs 字段', () => {
+    const md = '::stream{id="welcome"}\n\n:::figure\n:::\n\n段落。\n';
+    const blocks = listEditableBlocks(md);
+    expect(blocks[0].attrs).toEqual({ id: 'welcome' });
+    expect(blocks[1].attrs).toEqual({});
+    expect('attrs' in blocks[2]).toBe(false);
+  });
+});
+
+describe('serializeAttrs：属性表序列化（M12c）', () => {
+  it('空表 → 空串；基本表 → {key="v"} 形式', () => {
+    expect(serializeAttrs({})).toBe('');
+    expect(serializeAttrs({ cols: '2' })).toBe('{cols="2"}');
+    expect(serializeAttrs({ src: 'assets/a.jpg', width: '70%' })).toBe(
+      '{src="assets/a.jpg" width="70%"}'
+    );
+  });
+
+  it('与 mdast-util-directive 解析往返一致：引号/空格/空值/中文/反斜杠', () => {
+    const cases: Record<string, string>[] = [
+      { caption: '他说 "你好"', src: 'assets/a b.jpg' }, // 双引号 → 实体；空格
+      { caption: '' }, // 空值
+      { caption: '中文 标题 🎬' }, // 中文与 emoji
+      { src: 'assets\\weird\\path.jpg' }, // 反斜杠原样（解析端不处理转义）
+      { caption: 'a & b' }, // & 必须编码（否则解析端实体解码破坏往返）
+      { caption: "单'引号'混合\"双引号\"" }, // 混合引号
+      { caption: 'a}b' }, // 值内 }（引号内合法）
+    ];
+    for (const attrs of cases) {
+      const md = `::figure${serializeAttrs(attrs)}\n`;
+      const parsed = parseBody(md).children[0] as { attributes?: Record<string, string> };
+      expect(parsed.attributes ?? {}).toEqual(attrs);
+    }
+  });
+});
+
+describe('rewriteDirectiveAttrs：起始行属性段重写（M12c）', () => {
+  it('叶指令改参：整行效果等同替换', () => {
+    const md = '前文。\n\n::stream{id="welcome"}\n';
+    const blocks = listEditableBlocks(md);
+    const leaf = blocks[1];
+    const next = rewriteDirectiveAttrs(md, leaf.start, leaf.end, { id: 'news' });
+    expect(next).toBe('前文。\n\n::stream{id="news"}\n');
+  });
+
+  it('容器改参：指令名/围栏冒号数/内容全部保留', () => {
+    const md = ':::figure{src="assets/old.jpg" caption="旧"}\n:::\n';
+    const blocks = listEditableBlocks(md);
+    const next = rewriteDirectiveAttrs(md, blocks[0].start, blocks[0].end, {
+      src: 'assets/new.jpg',
+      caption: '新 "标题"',
+    });
+    expect(next).toBe(':::figure{src="assets/new.jpg" caption="新 &quot;标题&quot;"}\n:::\n');
+  });
+
+  it('grid 改 cols：cell 内容不动（含值内 } 的属性段正确定位）', () => {
+    const md = '::::grid{cols=2 note="a}b"}\n:::cell\n左\n:::\n::::\n';
+    const blocks = listEditableBlocks(md);
+    const grid = blocks[0];
+    const next = rewriteDirectiveAttrs(md, grid.start, grid.end, { cols: '3', note: 'a}b' });
+    expect(next).toBe('::::grid{cols="3" note="a}b"}\n:::cell\n左\n:::\n::::\n');
+  });
+
+  it('无属性段：在指令名后插入；空 attrs 原样返回', () => {
+    const md = '::stream\n\n::::grid\n:::cell\n甲\n:::\n::::\n';
+    const blocks = listEditableBlocks(md);
+    const next = rewriteDirectiveAttrs(md, blocks[0].start, blocks[0].end, { id: 'x' });
+    expect(next).toBe('::stream{id="x"}\n\n::::grid\n:::cell\n甲\n:::\n::::\n');
+    // 空 attrs + 无属性段 → 不变
+    expect(rewriteDirectiveAttrs(md, blocks[0].start, blocks[0].end, {})).toBe(md);
+    // 容器（grid）插入属性段同样只动起始行
+    const g = rewriteDirectiveAttrs(md, blocks[1].start, blocks[1].end, { cols: '3' });
+    expect(g).toBe('::stream\n\n::::grid{cols="3"}\n:::cell\n甲\n:::\n::::\n');
+  });
+
+  it('空 attrs：移除属性段（保留 label 时插在 label 后）', () => {
+    const md = '::figure{src="assets/a.jpg"}\n';
+    const blocks = listEditableBlocks(md);
+    expect(rewriteDirectiveAttrs(md, blocks[0].start, blocks[0].end, {})).toBe('::figure\n');
+    // 带 label 的容器：属性段定位跳过 label
+    const md2 = ':::figure[图注]{src="assets/a.jpg"}\n:::\n';
+    const b2 = listEditableBlocks(md2);
+    expect(rewriteDirectiveAttrs(md2, b2[0].start, b2[0].end, { src: 'assets/b.jpg' })).toBe(
+      ':::figure[图注]{src="assets/b.jpg"}\n:::\n'
+    );
+    // 无属性段但有 label：插在 label 后（指令语法 name[label]{attrs} 顺序固定）
+    const md3 = ':::figure[图注]\n:::\n';
+    const b3 = listEditableBlocks(md3);
+    expect(rewriteDirectiveAttrs(md3, b3[0].start, b3[0].end, { src: 'assets/a.jpg' })).toBe(
+      ':::figure[图注]{src="assets/a.jpg"}\n:::\n'
+    );
+  });
+
+  it('重写结果可被同一解析器稳定重解析（坐标平移正确）', () => {
+    const md = '# 标题\n\n:::figure{src="assets/a.jpg"}\n:::\n\n尾段。\n';
+    const blocks = listEditableBlocks(md);
+    const next = rewriteDirectiveAttrs(md, blocks[1].start, blocks[1].end, {
+      src: 'assets/更长的文件名.png',
+      caption: '图 1',
+    });
+    const reparsed = listEditableBlocks(next);
+    expect(reparsed.map((b) => b.kind)).toEqual(blocks.map((b) => b.kind));
+    expect(reparsed[1].attrs).toEqual({ src: 'assets/更长的文件名.png', caption: '图 1' });
+    expect(next.slice(reparsed[2].start, reparsed[2].end)).toBe('尾段。');
+  });
+});
+
+describe('containerCloseLineStart：容器闭围栏行首（M12c into 插入点）', () => {
+  it('定位闭围栏行首（非空/空容器），块内容插入后仍在容器内', () => {
+    const md = '::::grid{cols=2}\n:::cell\n左\n:::\n::::\n后文。\n';
+    const blocks = listEditableBlocks(md);
+    const grid = blocks[0];
+    const at = containerCloseLineStart(md, grid.start, grid.end);
+    expect(md.slice(at)).toBe('::::\n后文。\n');
+    // 配合 insertBlock：新 cell 落在闭围栏之前
+    const next = insertBlock(md, at, ':::cell\n\n:::');
+    const cells = listEditableBlocks(next).filter((b) => b.name === 'cell');
+    expect(cells).toHaveLength(2);
+    expect(next.indexOf('::::', at)).toBeGreaterThan(next.indexOf(':::cell\n\n:::'));
+  });
+
+  it('非法坐标抛错', () => {
+    expect(() => containerCloseLineStart('甲\n', 5, 3)).toThrow(/非法的块坐标/);
+    expect(() => containerCloseLineStart('甲\n', 0, 99)).toThrow(/非法的块坐标/);
   });
 });

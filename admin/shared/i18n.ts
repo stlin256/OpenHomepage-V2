@@ -276,7 +276,18 @@ const zh = {
   confirmDeleteBlock: '删除该块？可从快照找回。',
   opFailed: '操作失败',
   blockDataFailed: '块数据加载失败',
-  editUnsupported: '该块不支持就地编辑（指令参数编辑将在后续版本提供）',
+  editUnsupported: '该块无参数可编辑',
+
+  // 可视化编辑 overlay（M12c）：右侧检查器（指令参数表单 + grid 列设置/单元格增删）
+  gridCols: '列数 (cols)',
+  gridCells: '单元格',
+  cellLabel: '单元格',
+  addCell: '添加单元格',
+  noCells: '暂无单元格',
+  dirParamBvid: 'BV 号',
+  dirParamVideoId: '视频 ID',
+  dirParamRepo: '仓库',
+  dirParamBlockId: '区块 id',
 } as const;
 
 export type DictKey = keyof typeof zh;
@@ -552,7 +563,18 @@ const en: Record<DictKey, string> = {
   confirmDeleteBlock: 'Delete this block? It can be recovered from snapshots.',
   opFailed: 'Operation failed',
   blockDataFailed: 'Failed to load block data',
-  editUnsupported: 'This block cannot be edited in place (directive params coming in a later milestone)',
+  editUnsupported: 'This block has no parameters to edit',
+
+  // 可视化编辑 overlay（M12c）：右侧检查器（指令参数表单 + grid 列设置/单元格增删）
+  gridCols: 'Columns (cols)',
+  gridCells: 'Cells',
+  cellLabel: 'Cell',
+  addCell: 'Add cell',
+  noCells: 'No cells yet',
+  dirParamBvid: 'BV ID',
+  dirParamVideoId: 'Video ID',
+  dirParamRepo: 'Repository',
+  dirParamBlockId: 'Block ID',
 };
 
 export const dict: Record<Lang, Record<string, string>> = { zh, en };

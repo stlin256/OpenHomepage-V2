@@ -1,7 +1,8 @@
 /**
- * 浮动工具条（admin/ui/overlay/toolbar.ts，M12b）jsdom 测试：
- * 按钮可用性逻辑（指令块禁编辑、首/末兄弟块禁上移/下移、无 hash 全禁）、
- * 点击回调（编辑/移动目标坐标/删除/下方插入）与 showFor/hide 显隐。
+ * 浮动工具条（admin/ui/overlay/toolbar.ts，M12b/M12c）jsdom 测试：
+ * 按钮可用性逻辑（文本块/指令块（除 cell）编辑可用——后者为检查器语义，cell 禁编辑、
+ * 首/末兄弟块禁上移/下移、无 hash 全禁）、点击回调（编辑/移动目标坐标/删除/下方插入）
+ * 与 showFor/hide 显隐。
  *
  * @vitest-environment jsdom
  */
@@ -10,6 +11,7 @@ import {
   createToolbar,
   computeToolbarState,
   isTextEditable,
+  isInspectable,
   type ToolbarDeps,
 } from '../admin/ui/overlay/toolbar.ts';
 import type { BlockEntry, ServerBlock } from '../admin/ui/overlay/scanner.ts';
@@ -40,16 +42,22 @@ function sBlock(start: number, end: number, parent = 'root'): ServerBlock {
 const SIBS: ServerBlock[] = [sBlock(0, 5), sBlock(7, 10), sBlock(12, 20)];
 
 describe('computeToolbarState：按钮可用性', () => {
-  it('指令块禁编辑；其余操作不受影响', () => {
+  it('指令块（除 cell）编辑启用（语义为打开检查器，M12c）；cell 禁编辑；其余操作不受影响', () => {
     const grid = entry(7, 10, { kind: 'containerDirective', name: 'grid' });
     const s = computeToolbarState(grid, SIBS);
-    expect(s.canEdit).toBe(false);
+    expect(s.canEdit).toBe(true);
     expect(s.canMoveUp).toBe(true);
     expect(s.canMoveDown).toBe(true);
     expect(s.canDelete).toBe(true);
     expect(s.canInsert).toBe(true);
     const leaf = entry(7, 10, { kind: 'leafDirective', name: 'stream' });
-    expect(isTextEditable(leaf)).toBe(false);
+    expect(isTextEditable(leaf)).toBe(false); // 指令块不走微编辑器
+    expect(isInspectable(leaf)).toBe(true);
+    expect(isInspectable(grid)).toBe(true);
+    // cell 无参数：编辑禁用
+    const cell = entry(7, 10, { kind: 'containerDirective', name: 'cell' });
+    expect(computeToolbarState(cell, SIBS).canEdit).toBe(false);
+    expect(isInspectable(cell)).toBe(false);
     expect(isTextEditable(entry(7, 10))).toBe(true);
   });
 
@@ -128,10 +136,17 @@ describe('createToolbar：DOM 与回调', () => {
     expect(tb.current()).toBeNull();
   });
 
-  it('指令块：编辑禁用（带提示），移动/删除/下方插入可用', () => {
+  it('指令块：编辑可用（检查器语义）；cell 编辑禁用（带提示），移动/删除/下方插入可用', () => {
     const tb = createToolbar(document, deps);
     tb.showFor(entry(7, 10, { kind: 'containerDirective', name: 'grid' }));
-    const [edit, up, down, del, ins] = buttons(tb.el);
+    let [edit, up, down, del, ins] = buttons(tb.el);
+    expect(edit.disabled).toBe(false);
+    expect([up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
+      false, false, false, false,
+    ]);
+    tb.hide();
+    tb.showFor(entry(7, 10, { kind: 'containerDirective', name: 'cell' }));
+    [edit, up, down, del, ins] = buttons(tb.el);
     expect(edit.disabled).toBe(true);
     expect(edit.title).toBe(t('editUnsupported'));
     expect([up.disabled, down.disabled, del.disabled, ins.disabled]).toEqual([
