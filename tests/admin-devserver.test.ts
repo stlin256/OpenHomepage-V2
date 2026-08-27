@@ -86,6 +86,15 @@ describe('buildAstroSpawn / parseLocalUrl / pushLog（纯函数）', () => {
     expect(spec.cwd).toBe('/proj');
   });
 
+  it('buildAstroSpawn：注入可视化编辑环境变量（OH_EDIT / OH_ADMIN_ORIGIN），外部 dev server 不涉及', () => {
+    const spec = buildAstroSpawn('/proj', 4321, '/usr/bin/node', 'http://127.0.0.1:4174');
+    expect(spec.env).toEqual({ OH_EDIT: '1', OH_ADMIN_ORIGIN: 'http://127.0.0.1:4174' });
+    // 未指定 adminOrigin 时回退默认 admin 端口
+    expect(buildAstroSpawn('/proj', 4321, '/usr/bin/node').env?.OH_ADMIN_ORIGIN).toBe(
+      'http://127.0.0.1:4174',
+    );
+  });
+
   it('parseLocalUrl：识别 Astro 的 Local 行（含端口递增与 [::1]），拒绝其他行', () => {
     expect(parseLocalUrl(' ┃ Local    http://localhost:4321/')).toBe('http://localhost:4321/');
     expect(parseLocalUrl('┃ Local    http://127.0.0.1:4322/')).toBe('http://127.0.0.1:4322/');

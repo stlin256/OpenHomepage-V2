@@ -20,12 +20,18 @@ import { listSnapshots, restoreSnapshot } from './snapshots.ts';
 import { safeResolve, PathError } from './paths.ts';
 import { createDevServerManager, type DevServerManager } from './devserver.ts';
 import { readDirectivePreview } from './directive-preview.ts';
+import { listPageBlocks, applyBlockOp, HashConflictError } from './blocks.ts';
 import { buildZip, collectDataEntries, exportZipName } from './export.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 
 const ADMIN_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATIC_DIR = path.join(ADMIN_DIR, 'public');
+/** 可视化编辑 overlay 样式（admin/ui/overlay/overlay.css，随请求读取） */
+const OVERLAY_CSS = path.join(ADMIN_DIR, 'ui', 'overlay', 'overlay.css');
+
+/** overlay 跑在 dev server origin，跨域调 admin API：仅放行回环 origin（纯本地工具，spec 12 §2.4） */
+const LOOPBACK_ORIGIN_RE = /^https?:\/\/(127\.0\.0\.1|localhost|\[::1\]):\d+$/;
 
 export interface AdminServerOptions {
   dataDir: string;
@@ -33,6 +39,8 @@ export interface AdminServerOptions {
   initialized: boolean;
   /** 打包后的前端 JS（启动时由 esbuild 产物注入） */
   appJs: string;
+  /** 打包后的可视化编辑 overlay JS（admin/ui/overlay/main.ts 的 esbuild 产物；缺省返回空脚本） */
+  overlayJs?: string;
   /** 项目根目录（spawn astro dev 用；缺省取 dataDir 的上一级） */
   rootDir?: string;
   /** dev server 管理器（测试可注入替身） */
@@ -92,7 +100,14 @@ function sendJson(res: http.ServerResponse, status: number, data: unknown): void
 
 function sendError(res: http.ServerResponse, e: unknown): void {
   const msg = e instanceof Error ? e.message : String(e);
-  const status = e instanceof PathError ? 400 : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg) ? 400 : 500;
+  const status =
+    e instanceof PathError
+      ? 400
+      : e instanceof HashConflictError
+        ? 409
+        : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
+          ? 400
+          : 500;
   sendJson(res, status, { error: msg });
 }
 
@@ -151,6 +166,9 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         sendJson(res, 200, { snapshots: listSnapshots(dataDir, rel) });
       },
       '/api/dev-status': async ({ res }) => sendJson(res, 200, await dev.status()),
+      // 可视化编辑（M12a）：页面正文可编辑块清单（坐标 + 内容 hash，供 overlay 陈旧检测）
+      '/api/page/blocks': ({ query, res }) =>
+        sendJson(res, 200, { blocks: listPageBlocks(dataDir, query.get('path') ?? '') }),
       // 指令卡片预览数据（::ghcard 用 pinned 缓存，::stream 用流式块摘要）
       '/api/directive-preview': ({ res }) =>
         sendJson(res, 200, readDirectivePreview(opts.rootDir ?? path.resolve(dataDir, '..'), dataDir)),
@@ -186,6 +204,8 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       },
     },
     POST: {
+      // 可视化编辑（M12a）：单块 replace/insert/delete/move（hash 防陈旧写 + 快照 + 落盘）
+      '/api/page/block': ({ body, res }) => sendJson(res, 200, applyBlockOp(dataDir, body)),
       '/api/page/create': ({ body, res }) => {
         const r = createPage(
           dataDir,
@@ -231,6 +251,24 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
   return http.createServer((req, res) => {
     void (async () => {
       const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+      // CORS（M12a）：overlay 跑在 dev server origin 调 /api/*；仅回环 origin 回显，预检 204
+      const origin = req.headers.origin ?? '';
+      const corsOrigin = LOOPBACK_ORIGIN_RE.test(origin) ? origin : null;
+      if (url.pathname.startsWith('/api/')) {
+        if (corsOrigin) {
+          res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+          res.setHeader('Vary', 'Origin');
+        }
+        if (req.method === 'OPTIONS') {
+          res.writeHead(204, {
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'content-type',
+            'Access-Control-Max-Age': '600',
+          });
+          res.end();
+          return;
+        }
+      }
       const handler = routes[req.method ?? '']?.[url.pathname];
       if (handler) {
         // 原始二进制上传（素材 / favicon 图片）；其余按 JSON 解析
@@ -249,7 +287,7 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         return;
       }
       if (req.method === 'GET' && !url.pathname.startsWith('/api/')) {
-        serveStatic(url.pathname, res, opts.appJs);
+        serveStatic(url.pathname, res, opts);
         return;
       }
       sendJson(res, 404, { error: '接口不存在 / Not found' });
@@ -260,7 +298,7 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
   });
 }
 
-function serveStatic(pathname: string, res: http.ServerResponse, appJs: string): void {
+function serveStatic(pathname: string, res: http.ServerResponse, opts: AdminServerOptions): void {
   if (pathname === '/' || pathname === '/index.html') {
     const html = readFileSync(path.join(STATIC_DIR, 'index.html'), 'utf8');
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
@@ -269,7 +307,18 @@ function serveStatic(pathname: string, res: http.ServerResponse, appJs: string):
   }
   if (pathname === '/app.js') {
     res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' });
-    res.end(appJs);
+    res.end(opts.appJs);
+    return;
+  }
+  // 可视化编辑 overlay（M12a）：dev server 页面 bootstrap 从本 origin 动态加载
+  if (pathname === '/overlay.js') {
+    res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8' });
+    res.end(opts.overlayJs ?? '');
+    return;
+  }
+  if (pathname === '/overlay.css') {
+    res.writeHead(200, { 'content-type': 'text/css; charset=utf-8' });
+    res.end(readFileSync(OVERLAY_CSS, 'utf8'));
     return;
   }
   if (pathname === '/styles.css') {

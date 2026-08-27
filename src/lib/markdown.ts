@@ -28,10 +28,19 @@ import type { Root as HastRoot, Element, ElementContent, Properties } from 'hast
 import type { VFile } from 'vfile';
 import { localizeInternalHref } from './routes.ts';
 import { withBase, getBaseUrl } from './base-url.ts';
+import { listEditableBlocks } from './edit-blocks.ts';
 
 export interface MarkdownOptions {
   /** 站点 base URL，用于静态资源与链接补齐前缀（缺省自动读取或为 /） */
   baseUrl?: string;
+  /**
+   * 可视化编辑模式（M12a，docs/specs/12 §2.2）：页面正文的 data/ 相对路径
+   * （如 pages/zh/index.md）。存在时启用 remarkEditSpans——给每个可编辑块的 hast 元素
+   * 注入 data-oh-src="<editSource>:<start>,<end>" 坐标（与 listEditableBlocks 同一函数，
+   * 坐标与 admin 块级 API 一致）；stream/ghcard/editorial 占位由整段替换改为 oh-embed 包裹。
+   * 生产渲染（无 editSource）零注入。
+   */
+  editSource?: string;
   /** Shiki 明暗双主题（CSS 变量双写方案，前端按主题切换 var） */
   shikiThemes?: { light: string; dark: string };
   /**
@@ -310,6 +319,45 @@ function remarkCustomDirectives(baseUrl?: string) {
 }
 
 // ---------------------------------------------------------------------------
+// remark 插件（仅编辑模式）：可编辑块 → data-oh-src 源码坐标
+// ---------------------------------------------------------------------------
+
+/**
+ * 按 listEditableBlocks 的坐标给可编辑块注入 data-oh-src="<editSource>:<start>,<end>"。
+ * 坐标一致性关键：块列表来自对原文的独立解析（与 admin 块级 API 同一函数），树内按
+ * position 精确匹配挂属性——指令节点合并进既有 hProperties（remarkCustomDirectives 已设
+ * hName/hProperties），普通块经 data.hProperties 由 remark-rehype 下发。
+ * 误嵌套残留的纯冒号段落已被 remarkCustomDirectives 移除，不会匹配到节点（预期行为）；
+ * 降级为文本的指令保留原 position，降级后的段落照样拿到坐标。
+ * html 块的 data.hProperties 不会生效（raw 直出无元素可挂），DOM 中无对应物。
+ */
+function remarkEditSpans(editSource: string) {
+  return (tree: Root, file: VFile) => {
+    const valueByPos = new Map(
+      listEditableBlocks(String(file)).map((b) => [
+        `${b.start}:${b.end}`,
+        `${editSource}:${b.start},${b.end}`,
+      ]),
+    );
+    const attach = (node: Content): void => {
+      const pos = node.position;
+      if (pos && pos.start.offset != null && pos.end.offset != null) {
+        const value = valueByPos.get(`${pos.start.offset}:${pos.end.offset}`);
+        if (value !== undefined) {
+          const data = (node.data ??= {});
+          data.hProperties = { ...((data.hProperties as Properties | undefined) ?? {}), dataOhSrc: value };
+        }
+      }
+      // 递归容器指令内部（与 listEditableBlocks 的递归范围对应：grid/cell 内部块在坐标表中）
+      if (node.type === 'containerDirective') {
+        for (const child of (node as ContainerDirective).children) attach(child as Content);
+      }
+    };
+    for (const child of tree.children) attach(child);
+  };
+}
+
+// ---------------------------------------------------------------------------
 // rehype 插件：图片懒加载、iframe 域名白名单、资产路径归一化
 // ---------------------------------------------------------------------------
 
@@ -366,6 +414,22 @@ function classesOf(node: Element): string[] {
   return Array.isArray(c) ? c.map(String) : c != null ? [String(c)] : [];
 }
 
+/** data-oh-src 值转义为 HTML 属性值（坐标由本管线生成，双写引号/& 兜底） */
+function escapeAttrValue(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+/**
+ * 编辑模式包裹：占位元素带 data-oh-src（remarkEditSpans 注入）时，片段不整段替换，
+ * 而是包一层 <div data-oh-src class="oh-embed">，保留坐标供 overlay 锚定；
+ * 生产模式（无坐标）返回 null，调用方维持整段替换。
+ */
+function wrapFragmentForEdit(node: Element, html: string): string | null {
+  const src = node.properties?.dataOhSrc ?? node.properties?.['data-oh-src'];
+  if (typeof src !== 'string' || src === '') return null;
+  return `<div data-oh-src="${escapeAttrValue(src)}" class="oh-embed">${html}</div>`;
+}
+
 /** 把占位元素替换为 raw HTML 片段；片段缺省时按 replace=remove 移除并 warning */
 function replacePlaceholder(
   tree: HastRoot,
@@ -385,7 +449,10 @@ function replacePlaceholder(
       parent.children.splice(index, 1);
       return [SKIP, index];
     }
-    parent.children[index] = { type: 'raw', value: html } as unknown as ElementContent;
+    parent.children[index] = {
+      type: 'raw',
+      value: wrapFragmentForEdit(node, html) ?? html,
+    } as unknown as ElementContent;
     return [SKIP, index];
   });
 }
@@ -467,7 +534,11 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(remarkGfm)
     .use(remarkDirective)
     .use(remarkMath)
-    .use(() => remarkCustomDirectives(baseUrl))
+    .use(() => remarkCustomDirectives(baseUrl));
+  // 编辑模式坐标注入必须在 remarkRehype 之前（mdast 阶段），且晚于自定义指令映射
+  // （指令的 hProperties 先建好，这里合并 data-oh-src）
+  if (options.editSource) processor.use(() => remarkEditSpans(options.editSource!));
+  processor
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeKatex)

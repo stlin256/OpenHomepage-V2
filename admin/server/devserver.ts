@@ -27,10 +27,21 @@ export interface SpawnSpec {
   command: string;
   args: string[];
   cwd: string;
+  /** 需合并进子进程的环境变量（可视化编辑开关等）；undefined = 原样继承 process.env */
+  env?: Record<string, string>;
 }
 
-/** spawn 参数（纯函数）：node + astro CLI 直跑，避免 .cmd 壳；--host 固定 IPv4 回环便于探测 */
-export function buildAstroSpawn(rootDir: string, port: number, execPath: string): SpawnSpec {
+/**
+ * spawn 参数（纯函数）：node + astro CLI 直跑，避免 .cmd 壳；--host 固定 IPv4 回环便于探测。
+ * 可视化编辑（M12a）：admin 拉起的 dev server 注入 OH_EDIT=1 与 OH_ADMIN_ORIGIN
+ * （overlay 静态资源/CORS 的来源）；外部手动 npm run dev 无此环境变量 → 页面零编辑痕迹。
+ */
+export function buildAstroSpawn(
+  rootDir: string,
+  port: number,
+  execPath: string,
+  adminOrigin?: string,
+): SpawnSpec {
   return {
     command: execPath,
     args: [
@@ -42,6 +53,7 @@ export function buildAstroSpawn(rootDir: string, port: number, execPath: string)
       String(port),
     ],
     cwd: rootDir,
+    env: { OH_EDIT: '1', OH_ADMIN_ORIGIN: adminOrigin ?? 'http://127.0.0.1:4174' },
   };
 }
 
@@ -158,6 +170,8 @@ export interface DevServerManager {
 export function createDevServerManager(opts: {
   rootDir: string;
   port?: number;
+  /** admin server 的回环 origin（注入 OH_ADMIN_ORIGIN；缺省 http://127.0.0.1:4174） */
+  adminOrigin?: string;
   deps?: Partial<DevServerDeps>;
 }): DevServerManager {
   const port = opts.port ?? 4321;
@@ -222,11 +236,12 @@ export function createDevServerManager(opts: {
     if (await deps.probe(port)) return status(); // 已有（外部）dev server，不重复 spawn
     error = null;
     url = null;
-    const spec = buildAstroSpawn(opts.rootDir, port, deps.execPath);
+    const spec = buildAstroSpawn(opts.rootDir, port, deps.execPath, opts.adminOrigin);
     let c: ChildProcess;
     try {
       c = deps.spawn(spec.command, spec.args, {
         cwd: spec.cwd,
+        env: { ...process.env, ...spec.env },
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: deps.platform !== 'win32', // POSIX 下独立进程组，便于整组终止
         windowsHide: true,

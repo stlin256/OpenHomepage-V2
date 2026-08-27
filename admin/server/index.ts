@@ -28,9 +28,22 @@ const bundle = await build({
 });
 const appJs = bundle.outputFiles[0].text;
 
+// 可视化编辑 overlay（M12a）：独立打包为经典脚本（IIFE），由 dev server 页面 bootstrap
+// 跨 origin 以普通 <script> 加载（module 脚本会受 CORS 限制，IIFE 不需要）
+const overlayBundle = await build({
+  entryPoints: [path.join(root, 'admin/ui/overlay/main.ts')],
+  bundle: true,
+  format: 'iife',
+  target: 'es2022',
+  write: false,
+  logLevel: 'warning',
+});
+const overlayJs = overlayBundle.outputFiles[0].text;
+
 const port = Number(process.env.ADMIN_PORT ?? 4174);
-const devManager = createDevServerManager({ rootDir: root });
-const server = createAdminServer({ dataDir, initialized, appJs, rootDir: root, devManager });
+const adminOrigin = `http://127.0.0.1:${port}`;
+const devManager = createDevServerManager({ rootDir: root, adminOrigin });
+const server = createAdminServer({ dataDir, initialized, appJs, overlayJs, rootDir: root, devManager });
 server.listen(port, '127.0.0.1', () => {
   console.log(`编辑器已启动 / Editor running:  http://127.0.0.1:${port}`);
   console.log('仅监听本机回环地址 / Listening on loopback only.');

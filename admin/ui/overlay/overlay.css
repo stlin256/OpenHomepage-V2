@@ -1,0 +1,64 @@
+/*
+ * 可视化编辑 overlay（M12a）：顶栏 + hover 描边。
+ * 由 admin server 以 /overlay.css 托管，仅编辑模式加载（渲染页 bootstrap 动态插入），
+ * 不进入生产构建产物。class 统一 oh- 前缀，避免与站点样式冲突。
+ */
+
+/* 顶栏占位：编辑模式下给页面顶部留 40px，避免遮挡站点导航 */
+html.oh-editing body {
+  padding-top: 40px;
+}
+
+.oh-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 40px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background: #23272e;
+  color: #f5f6f7;
+  font: 13px/1.5 -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
+}
+
+.oh-badge {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.oh-badge::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.oh-exit {
+  margin-left: auto;
+  padding: 3px 10px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.oh-exit:hover {
+  background: rgb(255 255 255 / 12%);
+}
+
+/* hover 描边高亮：outline 不影响布局 */
+.oh-hover {
+  outline: 2px solid #f59e0b !important;
+  outline-offset: 1px;
+}

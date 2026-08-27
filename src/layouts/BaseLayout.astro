@@ -65,6 +65,9 @@ const {
 
 const baseUrl = getBaseUrl();
 const langLabel = (l: string) => ({ zh: '中文', en: 'English' })[l] ?? l;
+// 可视化编辑（M12a）：仅 admin 拉起的 dev server（OH_EDIT=1 且注入 OH_ADMIN_ORIGIN）
+// 输出编辑 bootstrap；生产构建/外部 dev server 无此环境变量，整段不输出、零开销
+const editAdminOrigin = process.env.OH_EDIT === '1' ? (process.env.OH_ADMIN_ORIGIN ?? '') : '';
 const xDefault = alternates.find((a) => a.lang === defaultLang) ?? alternates[0];
 /** 构建期注入的 accent 变量（global.css 中 --accent 引用这四个值） */
 const themeVars = `--accent-light:${accent.light.accent};--accent-light-contrast:${accent.light.contrast};--accent-dark:${accent.dark.accent};--accent-dark-contrast:${accent.dark.contrast};--site-bg-light:${background.light};--site-bg-dark:${background.dark};`;
@@ -256,5 +259,33 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
       // 前端交互入口：首屏 + 客户端内容交换后初始化
       import '../scripts/interactions.ts';
     </script>
+    {editAdminOrigin && (
+      <script is:inline define:vars={{ adminOrigin: editAdminOrigin }}>
+        // 可视化编辑 bootstrap（M12a）：?edit=1 或 sessionStorage 已标记 → 置标记、
+        // 摘掉 query、动态加载 admin 托管的 overlay.js/overlay.css；「退出编辑」在 overlay 顶栏。
+        (function () {
+          try {
+            var params = new URLSearchParams(location.search);
+            var active = sessionStorage.getItem('oh-edit') === '1';
+            if (params.get('edit') === '1') {
+              sessionStorage.setItem('oh-edit', '1');
+              active = true;
+              params.delete('edit');
+              var q = params.toString();
+              history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
+            }
+            if (!active) return;
+            window.__OH_ADMIN_ORIGIN__ = adminOrigin;
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = adminOrigin + '/overlay.css';
+            document.head.appendChild(link);
+            var s = document.createElement('script');
+            s.src = adminOrigin + '/overlay.js';
+            document.head.appendChild(s);
+          } catch (e) {}
+        })();
+      </script>
+    )}
   </body>
 </html>
