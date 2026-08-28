@@ -3,7 +3,8 @@
  * 打开指令块 → 参数表单初值 = 服务端下发的块属性表；保存合并收集（空值删键、
  * 未定义键保留）→ onSaveAttrs；options/asset 字段渲染为下拉（素材列表异步填充）；
  * grid 检查器（列数校验、单元格列表增删回调、空 grid 提示）；Esc/遮罩/× 关闭；
- * 保存失败面板保持打开；gridCellSnippet 围栏冒号数推断。
+ * 保存失败面板保持打开；gridCellSnippet 围栏冒号数推断；
+ * stream「编辑内容」按钮（M12g：按属性表初值 id 回调，非 stream/空 id/未注入回调不出按钮）。
  *
  * @vitest-environment jsdom
  */
@@ -157,6 +158,36 @@ describe('inspector：指令参数表单', () => {
     await tick();
     expect(deps.onSaveAttrs).toHaveBeenCalledTimes(1);
     expect(insp.isOpen()).toBe(true);
+  });
+});
+
+describe('inspector：stream「编辑内容」入口（M12g）', () => {
+  const editBtn = () =>
+    Array.from(document.querySelectorAll('.oh-inspector-ops button')).find(
+      (b) => b.textContent === t('streamEditContent')
+    ) as HTMLButtonElement | undefined;
+
+  it('stream 检查器带「编辑内容」按钮：按表单初值 id（attrs.id）回调', () => {
+    const onEditStreamContent = vi.fn();
+    const deps = makeDeps({ onEditStreamContent });
+    const insp = createInspector(document, deps);
+    insp.open(dirEntry('stream', 'leaf', { id: 'welcome' }));
+    expect(editBtn()).toBeTruthy();
+    editBtn()!.click();
+    expect(onEditStreamContent).toHaveBeenCalledWith('welcome');
+  });
+
+  it('非 stream 指令 / 空 id / 未提供回调时不出按钮', () => {
+    const onEditStreamContent = vi.fn();
+    const insp = createInspector(document, makeDeps({ onEditStreamContent }));
+    insp.open(dirEntry('ghcard', 'leaf', { repo: 'o/r' }));
+    expect(editBtn()).toBeUndefined();
+    insp.open(dirEntry('stream', 'leaf', {})); // 空 id：不提供入口
+    expect(editBtn()).toBeUndefined();
+    // 未注入回调（向后兼容）：stream 块也不出按钮
+    const insp2 = createInspector(document, makeDeps());
+    insp2.open(dirEntry('stream', 'leaf', { id: 'welcome' }));
+    expect(editBtn()).toBeUndefined();
   });
 });
 

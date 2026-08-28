@@ -271,6 +271,8 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
         // 可视化编辑 bootstrap（M12a）：?edit=1 或 sessionStorage 已标记 → 置标记、
         // 摘掉 query、动态加载 admin 托管的 overlay.js/overlay.css；「退出编辑」在 overlay 顶栏。
         // M12b：__OH_PAGE_SOURCE__ 为当前页正文的 data/ 相对路径（空页面无块坐标时插入定位用）。
+        // M12g：激活时同步给 <html> 加 oh-edit class——本脚本内联同步执行，早于 deferred 模块
+        // 脚本（interactions.ts），stream-player 据此不播打字机、流式块直接完整展开。
         (function () {
           try {
             var params = new URLSearchParams(location.search);
@@ -283,6 +285,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
               history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
             }
             if (!active) return;
+            document.documentElement.classList.add('oh-edit');
             window.__OH_ADMIN_ORIGIN__ = adminOrigin;
             window.__OH_PAGE_SOURCE__ = pageSource;
             var link = document.createElement('link');

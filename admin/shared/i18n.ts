@@ -300,6 +300,13 @@ const zh = {
   redo: '重做',
   nothingToUndo: '没有可撤销的更改',
   nothingToRedo: '没有可重做的更改',
+
+  // 可视化编辑 overlay（M12g）：流式块内容编辑窗口（源码 + 实时预览）
+  streamEditContent: '编辑内容',
+  streamEditorTitle: '编辑流式内容',
+  streamSourceLabel: 'Markdown 源码',
+  streamPreviewLabel: '预览',
+  confirmCloseUnsaved: '有未保存的修改，确定关闭？',
 } as const;
 
 export type DictKey = keyof typeof zh;
@@ -599,6 +606,13 @@ const en: Record<DictKey, string> = {
   redo: 'Redo',
   nothingToUndo: 'Nothing to undo',
   nothingToRedo: 'Nothing to redo',
+
+  // 可视化编辑 overlay（M12g）：流式块内容编辑窗口（源码 + 实时预览）
+  streamEditContent: 'Edit content',
+  streamEditorTitle: 'Edit stream content',
+  streamSourceLabel: 'Markdown source',
+  streamPreviewLabel: 'Preview',
+  confirmCloseUnsaved: 'Discard unsaved changes and close?',
 };
 
 export const dict: Record<Lang, Record<string, string>> = { zh, en };

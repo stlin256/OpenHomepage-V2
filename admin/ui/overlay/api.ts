@@ -158,6 +158,34 @@ export async function saveConfigField(payload: {
 }
 
 // ---------------------------------------------------------------------------
+// M12g：流式块内容编辑窗口（内容文件读写 + 预览渲染，streamedit.ts）
+// ---------------------------------------------------------------------------
+
+/** GET /api/stream-content 响应：path 为实际内容文件的 data/ 相对路径（语言回退链解析） */
+export interface StreamContent {
+  path: string;
+  markdown: string;
+}
+
+/** GET /api/stream-content：编辑窗口初值（lang = 页面内容语言，编辑的就是正在展示的那份） */
+export async function fetchStreamContent(id: string, lang: string): Promise<StreamContent> {
+  return req(
+    `/api/stream-content?id=${encodeURIComponent(id)}&lang=${encodeURIComponent(lang)}`
+  );
+}
+
+/** POST /api/stream-content：写回内容文件（服务端快照 + 撤销链） */
+export async function saveStreamContent(id: string, lang: string, markdown: string): Promise<void> {
+  await req('/api/stream-content', json('POST', { id, lang, markdown }));
+}
+
+/** POST /api/render-markdown：编辑窗口实时预览（站点同一条 markdown 管线） */
+export async function renderMarkdownPreview(markdown: string): Promise<string> {
+  const r = await req<{ html: string }>('/api/render-markdown', json('POST', { markdown }));
+  return r.html;
+}
+
+// ---------------------------------------------------------------------------
 // 撤销/重做（快照兜底）：目标 = 服务端记录的最近写盘文件（块操作→页面 md，
 // 配置保存→site/rss.yaml）；overlay 一律省略 path，走服务端的全局"最近写盘"语义
 // ---------------------------------------------------------------------------

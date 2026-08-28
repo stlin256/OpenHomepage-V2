@@ -12,6 +12,8 @@
  * cell 无参数，不开检查器（cell 内块照常走各自路径）。
  * M12d：openPanel 自定义面板（配置区块原生表单 / 页面设置表单）复用同一面板骨架
  * （右侧滑出 + 遮罩 + Esc/× 关闭），内容渲染回调自行填充 body。
+ * M12g：stream 指令检查器在参数表单下方附「编辑内容」按钮（onEditStreamContent，
+ * id 取属性表初值），打开流式内容编辑窗口（streamedit.ts）。
  */
 import { el } from '../dom.ts';
 import { DIRECTIVE_DEFS, DIRECTIVE_LABEL_KEYS } from '../../shared/directives.ts';
@@ -29,6 +31,8 @@ export interface InspectorDeps {
   onDeleteCell: (cell: ServerBlock, grid: BlockEntry) => void;
   /** 添加单元格（insert into op；片段组装与写库由调用方负责） */
   onAddCell: (grid: BlockEntry) => void;
+  /** 流式块内容编辑（M12g）：stream 指令检查器的「编辑内容」按钮（id 取块属性表初值） */
+  onEditStreamContent?: (id: string) => void;
 }
 
 export interface Inspector {
@@ -233,6 +237,16 @@ export function createInspector(doc: Document, deps: InspectorDeps): Inspector {
     if (name === 'grid') renderGrid(entry);
     else if (def) renderParams(entry, def);
     else body.replaceChildren(el('p', { class: 'oh-inspector-hint' }, t('editUnsupported')));
+    // 流式块内容编辑入口（M12g）：id 取检查器表单初值（attrs.id），空 id 不提供入口
+    if (name === 'stream' && deps.onEditStreamContent) {
+      const id = entry.attrs?.id ?? '';
+      const openEditor = deps.onEditStreamContent;
+      if (id !== '') {
+        const editBtn = el('button', { type: 'button' }, t('streamEditContent')) as HTMLButtonElement;
+        editBtn.addEventListener('click', () => openEditor(id));
+        body.append(el('div', { class: 'oh-inspector-ops' }, editBtn));
+      }
+    }
   }
 
   function show(): void {

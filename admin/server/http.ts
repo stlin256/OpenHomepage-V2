@@ -21,9 +21,12 @@ import { historyState, undo as historyUndo, redo as historyRedo } from './histor
 import { safeResolve, PathError } from './paths.ts';
 import { createDevServerManager, type DevServerManager } from './devserver.ts';
 import { listPageBlocks, applyBlockOp, HashConflictError } from './blocks.ts';
+import { readStreamContent, writeStreamContent, NotFoundError } from './stream.ts';
 import { buildZip, collectDataEntries, exportZipName } from './export.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
+import { renderMarkdown } from '../../src/lib/markdown.ts';
+import { getBaseUrl } from '../../src/lib/base-url.ts';
 
 const ADMIN_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const STATIC_DIR = path.join(ADMIN_DIR, 'public');
@@ -56,6 +59,8 @@ type Handler = (ctx: {
 }) => void | Promise<void>;
 
 const MAX_JSON_BYTES = 5 * 1024 * 1024;
+/** 预览渲染（POST /api/render-markdown，M12g）的 markdown 上限：256KB（防滥用） */
+const MAX_RENDER_MARKDOWN_BYTES = 256 * 1024;
 
 const MIME: Record<string, string> = {
   '.png': 'image/png',
@@ -103,11 +108,13 @@ function sendError(res: http.ServerResponse, e: unknown): void {
   const status =
     e instanceof PathError
       ? 400
-      : e instanceof HashConflictError
-        ? 409
-        : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
-          ? 400
-          : 500;
+      : e instanceof NotFoundError
+        ? 404
+        : e instanceof HashConflictError
+          ? 409
+          : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
+            ? 400
+            : 500;
   sendJson(res, status, { error: msg });
 }
 
@@ -179,6 +186,14 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       // 可视化编辑（M12a）：页面正文可编辑块清单（坐标 + 内容 hash，供 overlay 陈旧检测）
       '/api/page/blocks': ({ query, res }) =>
         sendJson(res, 200, { blocks: listPageBlocks(dataDir, query.get('path') ?? '') }),
+      // 可视化编辑（M12g）：流式块内容文件读取（overlay 编辑窗口初值；
+      // lang 缺省用站点默认语言，回退链与渲染端一致）
+      '/api/stream-content': ({ query, res }) =>
+        sendJson(
+          res,
+          200,
+          readStreamContent(dataDir, query.get('id') ?? '', normalizeLang(query.get('lang') ?? ''))
+        ),
       // 导出 data/ 全量 zip（含 .snapshots/ 版本快照）
       '/api/export-data': ({ res }) => {
         const zip = buildZip(collectDataEntries(dataDir));
@@ -215,6 +230,22 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       '/api/page/block': ({ body, res }) => sendJson(res, 200, applyBlockOp(dataDir, body)),
       // 可视化编辑（M12d）：单字段写回（就地改字；路径校验 + schema 校验 + 快照）
       '/api/config/field': ({ body, res }) => sendJson(res, 200, writeConfigField(dataDir, body)),
+      // 可视化编辑（M12g）：流式块内容写回（快照 + 撤销链在 admin/server/stream.ts）
+      '/api/stream-content': ({ body, res }) =>
+        sendJson(res, 200, writeStreamContent(dataDir, body)),
+      // 可视化编辑（M12g）：编辑窗口的预览渲染（站点同一条 markdown 管线；上限 256KB → 413。
+      // 已知限制：stream/ghcard/editorial 嵌入占位在预览缺数据时被移除，预览用于文本/排版/媒体核对）
+      '/api/render-markdown': async ({ body, res }) => {
+        const markdown = body.markdown;
+        if (typeof markdown !== 'string') throw new Error('非法的内容：markdown 必须是字符串');
+        if (Buffer.byteLength(markdown, 'utf8') > MAX_RENDER_MARKDOWN_BYTES) {
+          sendJson(res, 413, {
+            error: 'markdown 过大（上限 256KB）/ Markdown too large (256KB max)',
+          });
+          return;
+        }
+        sendJson(res, 200, { html: await renderMarkdown(markdown, { baseUrl: getBaseUrl() }) });
+      },
       '/api/page/create': ({ body, res }) => {
         const r = createPage(
           dataDir,

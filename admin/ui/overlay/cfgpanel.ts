@@ -6,6 +6,8 @@
  * 沿用服务端 schema 校验 + 快照）→ 成功由调用方整页刷新。
  * editorial 的组件列表（actions/list/tiles/archive）完整移植成本高，面板内只覆盖
  * 主字段，另给「在后台编辑」深链（新标签打开 admin 对应配置页）。
+ * M12g：streaming 表单附「编辑内容」按钮（onEditStreamContent，id 取区块定义），
+ * 打开流式内容编辑窗口（streamedit.ts）。
  */
 import { el } from '../dom.ts';
 import {
@@ -32,6 +34,8 @@ export interface CfgPanelDeps {
   runSave: (action: () => Promise<unknown>) => Promise<void>;
   /** 取消（关闭检查器） */
   onCancel: () => void;
+  /** 流式块内容编辑（M12g）：streaming 表单的「编辑内容」按钮（id 取区块定义） */
+  onEditStreamContent?: (id: string) => void;
 }
 
 /** 在 body 中渲染配置区块表单（异步：先取配置再建表单） */
@@ -113,6 +117,14 @@ export async function renderCfgBlockForm(
       t('editInAdmin')
     );
     nodes.push(el('p', { class: 'oh-inspector-hint' }, link));
+  }
+  // 流式块内容编辑入口（M12g）：按区块 id 打开页面内编辑窗口（源码 + 实时预览）
+  if (entry.kind === 'streaming' && entry.id && deps.onEditStreamContent) {
+    const openEditor = deps.onEditStreamContent;
+    const id = entry.id;
+    const editBtn = el('button', { type: 'button' }, t('streamEditContent')) as HTMLButtonElement;
+    editBtn.addEventListener('click', () => openEditor(id));
+    nodes.push(el('div', { class: 'oh-inspector-ops' }, editBtn));
   }
   nodes.push(el('div', { class: 'oh-inspector-ops' }, saveBtn, cancelBtn));
   body.replaceChildren(...nodes);

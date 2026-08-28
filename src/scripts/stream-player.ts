@@ -6,6 +6,10 @@
  * - 增量插入 DOM：open/text/close/node 指令流 + 元素栈，结构随播随成型；
  * - prefers-reduced-motion → 直接完整呈现；无 JS → <noscript> 完整内容（构建期内联）；
  * - autoplay: false → 直接完整呈现，重播按钮仍可动画重播（决策见 spec 04 §2）。
+ * - 可视化编辑模式（M12g）：<html class="oh-edit">（编辑 bootstrap 同步加注）时不初始化
+ *   打字机，直接把完整内容渲染进 .stream-content（与 noscript 同一份 HTML）——编辑 overlay
+ *   要打开流式内容编辑窗口，动画与静态编辑冲突；重播按钮隐藏（overlay.css），
+ *   脚本侧同样兜底为完整呈现。生产模式无该 class，行为零变化。
  */
 import { tokenDelay } from '../lib/interactive.ts';
 import type { StreamToken } from '../lib/stream.ts';
@@ -28,6 +32,11 @@ function sleep(ms: number): Promise<void> {
 
 function reducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** 可视化编辑模式（编辑 bootstrap 同步给 <html> 加 oh-edit，早于本模块执行）：不播打字机 */
+function editMode(): boolean {
+  return document.documentElement.classList.contains('oh-edit');
 }
 
 /** noscript 内的完整 HTML（JS 开启时 noscript 不入 DOM，textContent 取字符串） */
@@ -175,12 +184,13 @@ export function initStreamBlocks(): void {
     };
 
     root.querySelector<HTMLButtonElement>('.stream-replay')?.addEventListener('click', () => {
-      // 显式重播尊重用户操作：reduced-motion 下也只完整呈现（spec 04 §3 全局降级）
-      if (reducedMotion()) renderFull(root, content);
+      // 显式重播尊重用户操作：reduced-motion 下也只完整呈现（spec 04 §3 全局降级）；
+      // 编辑模式（M12g）同样只完整呈现（按钮已被 overlay.css 隐藏，这里是脚本兜底）
+      if (reducedMotion() || editMode()) renderFull(root, content);
       else void play(ctx);
     });
 
-    if (reducedMotion() || root.dataset.autoplay !== 'true') {
+    if (reducedMotion() || editMode() || root.dataset.autoplay !== 'true') {
       renderFull(root, content);
       continue;
     }

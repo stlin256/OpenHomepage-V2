@@ -15,6 +15,9 @@
  * reload 后自动打开新块的检查器（指令）/微编辑器（文本块）；hover 委托实现见 toolbar.ts。
  * 块拖拽排序（v2 落地）：工具条拖拽手柄发起，落点指示/合法性判定在 dnd.ts，
  * 落下 = move op（跨容器，服务端围栏重归一化），随后整页刷新。
+ * M12g：流式块内容编辑窗口（streamedit.ts）——stream 指令检查器与首页 streaming
+ * 配置面板的「编辑内容」按钮打开；编辑模式下 stream-player 不播打字机
+ * （<html class="oh-edit">，BaseLayout bootstrap 同步加注），无动画冲突。
  * 由渲染页 bootstrap（BaseLayout，OH_EDIT=1 时输出）以经典脚本跨 origin 动态加载；
  * 界面文案走 admin/shared/i18n.ts 字典（与 admin 同一语言记忆）。
  */
@@ -49,6 +52,9 @@ import {
   fetchRssConfig,
   saveRssConfig,
   saveConfigField,
+  fetchStreamContent,
+  saveStreamContent,
+  renderMarkdownPreview,
   type BlockOpPayload,
 } from './api.ts';
 import { createToolbar, isTextEditable, isInspectable, bindHover } from './toolbar.ts';
@@ -57,6 +63,7 @@ import { openTextEditor, type TextEditSession } from './textedit.ts';
 import { createInserter, resolveInsertTarget, locateInsertedBlock } from './inserter.ts';
 import { createInspector, gridCellSnippet } from './inspector.ts';
 import { openCfgEditor, type CfgEditSession } from './cfgedit.ts';
+import { openStreamEditor } from './streamedit.ts';
 import { renderCfgBlockForm } from './cfgpanel.ts';
 import { renderPageSettings } from './pagesettings.ts';
 import { createPageSwitcher } from './pageswitcher.ts';
@@ -154,7 +161,7 @@ function bindClickToEdit(
     if (!(target instanceof Element)) return;
     // overlay 自身控件不触发块编辑
     if (
-      target.closest('.oh-topbar, .oh-toolbar, .oh-textedit, .oh-cfgedit, .oh-drawer, .oh-drawer-mask, .oh-inspector, .oh-inspector-mask')
+      target.closest('.oh-topbar, .oh-toolbar, .oh-textedit, .oh-cfgedit, .oh-drawer, .oh-drawer-mask, .oh-inspector, .oh-inspector-mask, .oh-streamedit-mask')
     ) {
       return;
     }
@@ -266,6 +273,29 @@ export function initOverlay(doc: Document): OverlayHandle {
     });
   };
 
+  // ---- 流式块内容编辑窗口（M12g，streamedit.ts）----
+  // 入口：stream 指令检查器 / 首页 streaming 配置面板的「编辑内容」按钮。
+  // inspector/toolbar 在下方才创建，闭包在点击时才解析（届时已初始化）。
+  const openStreamContentEditor = (id: string): void => {
+    if (!id) return;
+    cancelActiveCfgEdit();
+    void cancelActiveEdit();
+    inspector.close();
+    toolbar.hide();
+    // 内容文件按页面内容语言解析（<html lang>；与渲染端回退链一致——编辑的就是正在展示的那份）
+    const lang = doc.documentElement.lang || 'zh';
+    void openStreamEditor(doc, {
+      t,
+      id,
+      load: () => fetchStreamContent(id, lang),
+      render: renderMarkdownPreview,
+      onSave: (markdown) => runSave(() => saveStreamContent(id, lang, markdown)),
+    }).catch((e) => {
+      // 内容读取失败：不打开窗口，顶栏报错（polite live region）
+      setStatus(`${t('loadFailed')}: ${(e as Error).message}`, 'err');
+    });
+  };
+
   // 撤销/重做（快照兜底）：顶栏按钮 + 快捷键在 history.ts；状态在 overlay 初始化时拉取
   // （每次写操作成功后整页刷新，重新初始化即刷新置灰，无需写后单独刷新）
   const historyControls = createHistoryControls(doc, { t, runSave });
@@ -365,6 +395,7 @@ export function initOverlay(doc: Document): OverlayHandle {
         markdown: gridCellSnippet(grid.markdown ?? ''),
         into: true,
       }),
+    onEditStreamContent: openStreamContentEditor,
   });
 
   // ---- 配置字段就地改字（M12d）：当前值从服务端配置读取（渲染 HTML 与 yaml 原文不同构，
@@ -439,6 +470,7 @@ export function initOverlay(doc: Document): OverlayHandle {
         adminOrigin: adminOrigin(),
         runSave,
         onCancel: () => inspector.close(),
+        onEditStreamContent: openStreamContentEditor,
       }).catch((e) => {
         body.replaceChildren(
           el('p', { class: 'oh-inspector-hint' }, `${t('loadFailed')}: ${(e as Error).message}`)

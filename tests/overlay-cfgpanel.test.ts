@@ -1,7 +1,8 @@
 /**
  * 配置区块原生表单面板（admin/ui/overlay/cfgpanel.ts，M12d）jsdom 测试：
  * profile/github/rss/streaming/editorial 五类区块的表单初值、编辑收集与保存路径
- * （site / site+rss 全量 PUT）、streaming/editorial 的 id 未命中提示、editorial 深链。
+ * （site / site+rss 全量 PUT）、streaming/editorial 的 id 未命中提示、editorial 深链、
+ * streaming「编辑内容」按钮（M12g：按区块 id 回调 onEditStreamContent）。
  * 表单构建与 admin 视图共用 configforms.ts，这里同时守护共享构建器的面板侧行为。
  *
  * @vitest-environment jsdom
@@ -157,6 +158,27 @@ describe('cfgpanel：streaming / editorial 表单', () => {
     await renderCfgBlockForm(body2, entry('streaming', 'nope'), makeDeps());
     expect(body2.textContent).toContain(t('cfgBlockMissing'));
     expect(body2.querySelector('.oh-inspector-ops')).toBeNull();
+  });
+
+  it('streaming：「编辑内容」按钮按区块 id 回调（M12g）；未注入回调不出按钮', async () => {
+    const onEditStreamContent = vi.fn();
+    const deps = makeDeps({ onEditStreamContent });
+    const body = document.createElement('div');
+    await renderCfgBlockForm(body, entry('streaming', 'welcome'), deps);
+    const btn = Array.from(body.querySelectorAll('button')).find(
+      (b) => b.textContent === t('streamEditContent')
+    ) as HTMLButtonElement | undefined;
+    expect(btn).toBeTruthy();
+    btn!.click();
+    expect(onEditStreamContent).toHaveBeenCalledWith('welcome');
+
+    const body2 = document.createElement('div');
+    await renderCfgBlockForm(body2, entry('streaming', 'welcome'), makeDeps());
+    expect(
+      Array.from(body2.querySelectorAll('button')).find(
+        (b) => b.textContent === t('streamEditContent')
+      )
+    ).toBeUndefined();
   });
 
   it('editorial：主字段 + 「在后台编辑」深链（组件列表不内嵌）', async () => {
