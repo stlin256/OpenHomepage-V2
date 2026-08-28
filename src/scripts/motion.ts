@@ -16,10 +16,17 @@ function coarsePointer(): boolean {
 
 /** 滚动显现：进入视口 10% 即淡入上移，一次性 */
 function initReveal(): void {
+  // 先把当前视口外的项挂到 pending。首屏保持 CSS 初始可见，不再等 JS；
+  // deferred 模块在首次绘制前完成标记，下方内容不会产生可见回退。
+  const viewportHeight = window.innerHeight;
+  for (const el of document.querySelectorAll<HTMLElement>('.reveal:not(.revealed)')) {
+    if (el.getBoundingClientRect().top >= viewportHeight) el.classList.add('reveal-pending');
+  }
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
         if (e.isIntersecting) {
+          e.target.classList.remove('reveal-pending');
           e.target.classList.add('revealed');
           io.unobserve(e.target);
         }

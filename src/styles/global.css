@@ -2121,11 +2121,14 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
 
 /* ---- 动效：滚动显现 ---- */
 html.js .reveal {
-  opacity: 0;
-  transform: translateY(16px);
   transition:
     opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* 初始可见是首屏基线；JS 首帧前只标记视口外内容，避免 LCP 等延迟模块。 */
+html.js .reveal.reveal-pending {
+  opacity: 0;
+  transform: translateY(16px);
 }
 html.js .reveal.revealed {
   opacity: 1;
@@ -2176,7 +2179,7 @@ html.js .reveal.revealed {
     transform: none;
     transition: opacity 0.15s ease;
   }
-  html.js .reveal {
+  html.js .reveal.reveal-pending {
     transform: none;
     transition: opacity 0.2s ease;
   }
