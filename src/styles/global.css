@@ -1535,6 +1535,9 @@ html[data-theme='dark'] .shiki {
   padding-bottom: 0.35rem;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  /* 容器只有 heatmap-inner 一个子节点：rtl 使初始滚动位置停靠在右侧（最新数据），
+     子节点内恢复 ltr，格子/月份/图例排布不受影响 */
+  direction: rtl;
 }
 .heatmap-scroll::-webkit-scrollbar {
   height: 6px;
@@ -1553,6 +1556,8 @@ html[data-theme='dark'] .shiki {
   display: inline-flex;
   flex-direction: column;
   min-width: 100%;
+  /* 抵消滚动容器的 rtl（见 .heatmap-scroll）：内容仍按从左到右排布 */
+  direction: ltr;
 }
 .heat-main {
   display: flex;
