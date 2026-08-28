@@ -27,17 +27,34 @@ sources:
     weight: 1
 
   # 指定文章模式：按本列表顺序编排，note 显示为推荐语，cover 为卡片封面（可选）
-  - name: "编辑精选"
+  # name 与 note 支持多语言映射（zh/en/ja/fr），缺语言时回退 en → zh
+  - name:
+      zh: "编辑精选"
+      en: "Editor's Picks"
+      ja: "編集部セレクト"
+      fr: "Sélection de la rédaction"
     url: "https://deepmind.google/blog/rss.xml"   # 用于匹配元数据；匹配不到则抓文章页
     mode: curated
     weight: 3
     articles:
       - url: "https://deepmind.google/blog/co-scientist-a-multi-agent-ai-partner-to-accelerate-research/"
-        note: "多智能体系统做科研加速，和我的方向直接相关"
+        note:
+          zh: "多智能体系统做科研加速，和我的方向直接相关"
+          en: "Multi-agent systems accelerating research — directly related to my work"
+          ja: "研究を加速するマルチエージェントシステム。自分の方向と直結している"
+          fr: "Des systèmes multi-agents pour accélérer la recherche, en lien direct avec mes travaux"
         cover: "assets/co-scientist-a-multi-agent-ai-partner-to-accelerate-research.webp"
       - url: "https://deepmind.google/blog/10-years-of-alphago/"
-        note: "AlphaGo 十年，值得一读的技术史"
+        note:
+          zh: "AlphaGo 十年，值得一读的技术史"
+          en: "Ten years of AlphaGo — a piece of tech history worth reading"
+          ja: "AlphaGo 10年、読む価値のある技術史"
+          fr: "Dix ans d'AlphaGo, une page d'histoire technique qui vaut la lecture"
         cover: "assets/10-years-of-alphago.png"
       - url: "https://deepmind.google/blog/gemma-scope-2-helping-the-ai-safety-community-deepen-understanding-of-complex-language-model-behavior/"
-        note: "可解释性工具的标杆；这张卡片故意不配图，演示纯文字卡片"
+        note:
+          zh: "可解释性工具的标杆；这张卡片故意不配图，演示纯文字卡片"
+          en: "A benchmark for interpretability tooling; this card intentionally has no cover, demoing text-only cards"
+          ja: "解釈可能性ツールのベンチマーク。このカードは意図的に画像なしで、テキストのみのカードをデモ"
+          fr: "Une référence en outillage d'interprétabilité ; cette carte est volontairement sans image, pour démontrer les cartes texte"
         cover: "none"

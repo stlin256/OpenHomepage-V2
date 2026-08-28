@@ -211,4 +211,53 @@ describe('buildRssView', () => {
   it('cache 为 null（.cache 缺失）→ 返回 null（组件渲染空态提示）', () => {
     expect(buildRssView(null, config)).toBeNull();
   });
+
+  it('i18n：源名与 curated 推荐语按 lang 解析；缓存按规范名匹配', () => {
+    const i18nConfig: RssConfig = {
+      display: 'grouped',
+      sources: [
+        {
+          name: { zh: '编辑精选', en: "Editor's Picks", ja: '編集者の選集', fr: 'Sélection' },
+          url: 'https://c.d/rss',
+          mode: 'curated',
+        },
+      ],
+    };
+    const i18nCache: RssCache = {
+      sources: [
+        {
+          name: '编辑精选',
+          url: 'https://c.d/rss',
+          mode: 'curated',
+          entries: [
+            entry({
+              title: '策展1',
+              note: { zh: '中文推荐', en: 'English note', fr: 'Note française' },
+              published: null,
+            }),
+          ],
+          fetched_at: null,
+          error: null,
+          failed_at: null,
+        },
+      ],
+    };
+    const zh = buildRssView(i18nCache, i18nConfig, { lang: 'zh' })!;
+    const en = buildRssView(i18nCache, i18nConfig, { lang: 'en' })!;
+    const fr = buildRssView(i18nCache, i18nConfig, { lang: 'fr' })!;
+    // ja 的 note 缺 key → 回退 en
+    const ja = buildRssView(i18nCache, i18nConfig, { lang: 'ja' })!;
+    if (zh.display !== 'grouped' || en.display !== 'grouped' || fr.display !== 'grouped' || ja.display !== 'grouped') {
+      throw new Error('unreachable');
+    }
+    expect(zh.columns[0].name).toBe('编辑精选');
+    expect(en.columns[0].name).toBe("Editor's Picks");
+    expect(ja.columns[0].name).toBe('編集者の選集');
+    expect(fr.columns[0].name).toBe('Sélection');
+    expect(zh.columns[0].cards[0].note).toBe('中文推荐');
+    expect(en.columns[0].cards[0].note).toBe('English note');
+    expect(fr.columns[0].cards[0].note).toBe('Note française');
+    expect(ja.columns[0].cards[0].note).toBe('English note');
+    expect(en.columns[0].cards[0].source).toBe("Editor's Picks");
+  });
 });

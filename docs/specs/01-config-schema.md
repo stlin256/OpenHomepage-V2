@@ -164,17 +164,18 @@ sources:
     latest: 5                   # 取最新 5 篇
     weight: 2                   # mixed 模式下排序权重，越大越靠前
 
-  - name: "精选收藏"
+  - name: "精选收藏"              # 源名支持多语言映射 { zh, en, ... }（回退 en → zh）
     url: "https://another.com/rss"
     mode: curated               # 指定文章模式
     weight: 3
     articles:
       - url: "https://another.com/post/1"
-        note: "推荐理由一句话"   # 可选，显示在卡片上
+        note: "推荐理由一句话"   # 可选，显示在卡片上；支持多语言映射
       - url: "https://another.com/post/2"
 ```
 
 卡片字段：标题、来源名、发布时间、摘要（构建时截取）、原文链接、可选 note。
+源名与 curated note 支持多语言映射（`{ zh, en, ja, fr }`），按页面语言解析，缺语言回退 en → zh。
 
 排序规则：
 - `grouped`：每个源一个栏目，栏目顺序 = sources 列表顺序，栏目内按发布时间倒序；

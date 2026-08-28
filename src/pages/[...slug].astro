@@ -106,9 +106,12 @@ export function getStaticPaths() {
   // 缺数即报错的闸口在 prefetch，见 docs/specs/07 §4）
   const cacheDir = path.join(process.cwd(), '.cache');
   const githubView = buildGithubView(loadGithubCache(cacheDir));
-  const rssView = rssEnabled
-    ? buildRssView(loadRssCache(cacheDir), loadRssConfig(dataDir, site.rss?.sources_file))
-    : null;
+  // 源名 / curated 推荐语按路由语言解析（多语言映射），每种语言各建一份视图
+  const rssCache = rssEnabled ? loadRssCache(cacheDir) : null;
+  const rssConfig = rssEnabled ? loadRssConfig(dataDir, site.rss?.sources_file) : null;
+  const rssViews = new Map(
+    langs.map((l) => [l, rssConfig ? buildRssView(rssCache, rssConfig, { lang: l }) : null]),
+  );
 
   return buildRoutes(pages, langs, defaultLang).map((route) => ({
     params: { slug: route.param },
@@ -127,7 +130,7 @@ export function getStaticPaths() {
       blocks,
       slugs: [...new Set(pages.map((page) => page.slug))],
       githubView,
-      rssView,
+      rssView: rssViews.get(route.lang) ?? null,
     } satisfies Props,
   }));
 }

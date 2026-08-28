@@ -8,6 +8,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { RssConfig, RssSource } from './config.ts';
+import { canonicalText, resolveText } from './localize.ts';
 import { truncateText, type RssCache, type RssEntry } from './prefetch.ts';
 
 /** 卡片摘要字符数（spec 05：默认 120 字符，构建时固化） */
@@ -74,7 +75,7 @@ export interface RssCardView {
   weight: number;
 }
 
-function toCard(entry: RssEntry, source: string, weight: number, summaryMax: number): RssCardView {
+function toCard(entry: RssEntry, source: string, weight: number, summaryMax: number, lang: string): RssCardView {
   return {
     title: entry.title,
     link: entry.link,
@@ -83,7 +84,7 @@ function toCard(entry: RssEntry, source: string, weight: number, summaryMax: num
     day: formatDay(entry.published),
     summary: truncateText(entry.summary, summaryMax),
     cover: coverUrl(entry.cover),
-    note: entry.note,
+    note: entry.note ? resolveText(entry.note, lang) : null,
     weight,
   };
 }
@@ -124,7 +125,8 @@ export type RssView =
   | { display: 'mixed'; cards: RssCardView[]; stale: boolean; fetchedAt: number | null };
 
 /**
- * 构建 RSS 视图。sources 顺序以 rss.yaml 为准（缓存按 name+url 匹配）。
+ * 构建 RSS 视图。sources 顺序以 rss.yaml 为准（缓存按 规范源名+url 匹配）。
+ * 源名与 curated 推荐语支持多语言映射，按 opts.lang 解析（回退 en → zh）。
  * cache 为 null（.cache 文件缺失/损坏，从未 prefetch）→ 返回 null，组件渲染空态提示；
  * cache 存在但全部源无条目（抓取降级，spec 07 §3）→ 空视图，组件整区隐藏。
  * 空栏目（无条目）在两种模式下都丢弃。
@@ -132,20 +134,22 @@ export type RssView =
 export function buildRssView(
   cache: RssCache | null,
   config: RssConfig,
-  opts: { summaryMax?: number } = {},
+  opts: { summaryMax?: number; lang?: string } = {},
 ): RssView | null {
   if (!cache) return null;
   const summaryMax = opts.summaryMax ?? CARD_SUMMARY_MAX;
+  const lang = opts.lang ?? 'zh';
   const columns: RssColumnView[] = [];
   for (const src of config.sources) {
-    const cached = cache.sources.find((s) => s.name === src.name && s.url === src.url);
+    const cached = cache.sources.find((s) => s.name === canonicalText(src.name) && s.url === src.url);
     const weight = src.weight ?? DEFAULT_WEIGHT;
-    let cards = (cached?.entries ?? []).map((e) => toCard(e, src.name, weight, summaryMax));
+    const name = resolveText(src.name, lang);
+    let cards = (cached?.entries ?? []).map((e) => toCard(e, name, weight, summaryMax, lang));
     // latest 栏内时间倒序；curated 保持配置顺序（spec 05：列表顺序即展示顺序）
     if (src.mode === 'latest') cards = sortByDateDesc(cards);
     if (cards.length === 0) continue;
     columns.push({
-      name: src.name,
+      name,
       stale: cached?.error != null,
       fetchedAt: cached?.fetched_at ?? null,
       cards,

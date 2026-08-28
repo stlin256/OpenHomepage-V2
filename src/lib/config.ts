@@ -136,13 +136,14 @@ export interface EditorialBlock {
 }
 
 export interface RssSource {
-  name: string;
+  /** 源名（栏目名 / 卡片来源标签）；支持多语言映射 */
+  name: LocalizedText;
   url: string;
   mode: 'latest' | 'curated';
   latest?: number;
   weight?: number;
   cover?: string;
-  articles?: { url: string; note?: string; cover?: string }[];
+  articles?: { url: string; note?: LocalizedText; cover?: string }[];
 }
 
 export interface RssConfig {

@@ -8,11 +8,11 @@
 | 字段 | 来源 | 说明 |
 |------|------|------|
 | 标题 | feed entry title | 最多 2 行，超出省略 |
-| 来源名 | sources[].name | 小字标签 |
+| 来源名 | sources[].name | 小字标签；支持多语言映射，按页面语言解析 |
 | 发布时间 | entry published | 格式 `2026-08-22`，悬停 title 提示完整时间 |
 | 摘要 | entry summary 截取 | 默认 120 字符，构建时固化 |
 | 封面图 | 声明的 cover，或 curated 条目文章页 og:image | 有则显示缩略图，无则纯文字卡片；外链加载失败前端隐藏图位 |
-| note | rss.yaml articles[].note | curated 模式的推荐语，斜体小字 |
+| note | rss.yaml articles[].note | curated 模式的推荐语，斜体小字；支持多语言映射，按页面语言解析 |
 
 ## hover 预览浮层（已移除）
 

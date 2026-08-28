@@ -19,7 +19,7 @@ export interface CfgFormDeps {
   assets?: string[];
 }
 
-/** 双语文案字段：string | {zh,en} → 双输入框；只填一个时存回纯字符串 */
+/** 双语文案字段：string | {zh,en,...} → 双输入框；只填一个时存回纯字符串；已有其他语言键（ja/fr 等）原样保留 */
 export function localizedField(
   value: unknown,
   labelZh: string,
@@ -31,8 +31,14 @@ export function localizedField(
       ? { zh: value, en: '' }
       : { zh: String((value as Obj)?.zh ?? ''), en: String((value as Obj)?.en ?? '') };
   const commit = () => {
-    if (cur.zh && cur.en) onChange({ zh: cur.zh, en: cur.en });
-    else onChange(cur.zh || cur.en);
+    // zh/en 之外的语言键（编辑器 UI 只做双语，但不能丢数据）
+    const rest: Obj = typeof value === 'object' && value !== null ? { ...(value as Obj) } : {};
+    delete rest.zh;
+    delete rest.en;
+    if (cur.zh && cur.en) onChange({ zh: cur.zh, en: cur.en, ...rest });
+    else if (Object.keys(rest).length > 0) {
+      onChange({ ...(cur.zh ? { zh: cur.zh } : {}), ...(cur.en ? { en: cur.en } : {}), ...rest });
+    } else onChange(cur.zh || cur.en);
   };
   return el(
     'div',
@@ -149,7 +155,7 @@ export function buildRssForm(siteRss: Obj, rss: Obj, deps: CfgFormDeps): HTMLEle
             el(
               'div',
               { class: 'row-fields' },
-              field(t('sourceName'), textInput(String(src.name ?? ''), (v) => { src.name = v; touch(); })),
+              localizedField(src.name, t('sourceName'), t('labelEn'), (v) => { src.name = v; touch(); }),
               field(t('sourceUrl'), textInput(String(src.url ?? ''), (v) => { src.url = v; touch(); })),
               field(
                 t('sourceMode'),
@@ -175,7 +181,7 @@ export function buildRssForm(siteRss: Obj, rss: Obj, deps: CfgFormDeps): HTMLEle
                     'div',
                     { class: 'row-fields' },
                     textInput(String(a.url ?? ''), (v) => { a.url = v; touch(); }),
-                    textInput(String(a.note ?? ''), (v) => { a.note = v; touch(); }),
+                    localizedField(a.note, t('articleNote'), t('labelEn'), (v) => { a.note = v; touch(); }),
                     textInput(String(a.cover ?? ''), (v) => { a.cover = v; touch(); })
                   ),
                 onChange: touch,

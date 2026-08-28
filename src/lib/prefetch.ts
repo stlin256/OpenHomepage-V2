@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import path from 'node:path';
 import Parser from 'rss-parser';
 import { loadSiteConfig, loadRssConfig, type LocalizedText, type RssSource } from './config.ts';
+import { canonicalText } from './localize.ts';
 
 // ---------- 常量 ----------
 
@@ -95,7 +96,8 @@ export interface RssEntry {
   published: string | null;
   summary: string;
   cover: string | null;
-  note: string | null;
+  /** curated 推荐语（rss.yaml articles[].note，支持多语言映射） */
+  note: LocalizedText | null;
 }
 
 export interface RssSourceCache {
@@ -357,7 +359,7 @@ function rawSummary(item: FeedItem): string {
   );
 }
 
-function feedItemToEntry(item: FeedItem, cover: string | null, note: string | null): RssEntry {
+function feedItemToEntry(item: FeedItem, cover: string | null, note: LocalizedText | null): RssEntry {
   return {
     title: (item.title ?? '').trim() || '(无标题)',
     link: item.link ?? '',
@@ -720,10 +722,12 @@ export async function runPrefetch(options: PrefetchOptions): Promise<PrefetchRes
   // ---- rss.* ----
   const usedKeys = new Set(orderedKeys);
   for (const src of rssSources) {
-    let key = `rss.${src.name}`;
-    for (let i = 2; usedKeys.has(key); i += 1) key = `rss.${src.name}#${i}`;
+    // 源名支持多语言映射：缓存键与缓存条目统一用规范名（zh → en → 首个值）
+    const srcName = canonicalText(src.name);
+    let key = `rss.${srcName}`;
+    for (let i = 2; usedKeys.has(key); i += 1) key = `rss.${srcName}#${i}`;
     usedKeys.add(key);
-    const oldSource = oldRss.sources?.find((s) => s.name === src.name && s.url === src.url);
+    const oldSource = oldRss.sources?.find((s) => s.name === srcName && s.url === src.url);
     // 失败块写盘时 entries 为 []：error 非空且无条目视为「无旧数据」，否则空数组会被误当有缓存
     const oldBlock: CacheBlock<RssEntry[]> | undefined = oldSource
       ? {
@@ -741,7 +745,7 @@ export async function runPrefetch(options: PrefetchOptions): Promise<PrefetchRes
       );
       finish(key, r, (b) => {
         newRss.sources.push({
-          name: src.name,
+          name: srcName,
           url: src.url,
           mode: src.mode,
           entries: b.data ?? [],
@@ -758,8 +762,8 @@ export async function runPrefetch(options: PrefetchOptions): Promise<PrefetchRes
   // rss.json 的 sources 顺序与配置一致（job 并发完成，push 顺序不定，这里重排）
   newRss.sources.sort(
     (a, b) =>
-      rssSources.findIndex((s) => s.name === a.name && s.url === a.url) -
-      rssSources.findIndex((s) => s.name === b.name && s.url === b.url)
+      rssSources.findIndex((s) => canonicalText(s.name) === a.name && s.url === a.url) -
+      rssSources.findIndex((s) => canonicalText(s.name) === b.name && s.url === b.url)
   );
 
   const blocks = orderedKeys.map((k) => reportMap.get(k)!);
