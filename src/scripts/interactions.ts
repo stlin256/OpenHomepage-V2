@@ -155,11 +155,22 @@ function initAll(): void {
 
 let swapping = false;
 
-async function swapContent(path: string, { push = true }: { push?: boolean } = {}): Promise<void> {
+async function swapContent(
+  path: string,
+  { push = true, minOverlayMs = 0 }: { push?: boolean; minOverlayMs?: number } = {},
+): Promise<void> {
   if (swapping) return;
   swapping = true;
-  // 预取/缓存命中时交换几乎瞬时完成；遮罩延迟出现，避免快速切换时闪烁
-  const loadingTimer = setTimeout(showLoading, 150);
+  // 预取/缓存命中时交换几乎瞬时完成；遮罩延迟出现，避免快速切换时闪烁。
+  // minOverlayMs > 0 时（如语言切换）遮罩立即出现并至少停留该时长，给出明确反馈。
+  let loadingTimer: ReturnType<typeof setTimeout> | null = null;
+  let overlayShownAt = 0;
+  if (minOverlayMs > 0) {
+    showLoading();
+    overlayShownAt = Date.now();
+  } else {
+    loadingTimer = setTimeout(showLoading, 150);
+  }
   try {
     const html = await fetchPageHtml(path);
     if (html === null) {
@@ -231,7 +242,11 @@ async function swapContent(path: string, { push = true }: { push?: boolean } = {
   } catch {
     location.href = path;
   } finally {
-    clearTimeout(loadingTimer);
+    if (loadingTimer !== null) clearTimeout(loadingTimer);
+    if (overlayShownAt > 0) {
+      const remaining = minOverlayMs - (Date.now() - overlayShownAt);
+      if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
+    }
     hideLoading();
     swapping = false;
   }
@@ -329,7 +344,8 @@ document.addEventListener('click', (e) => {
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
   if (selectedLanguage) writePreferredLanguage(selectedLanguage);
-  void swapContent(href);
+  // 语言切换即使命中缓存也至少给 0.1s 转圈遮罩过渡
+  void swapContent(href, selectedLanguage ? { minOverlayMs: 100 } : {});
 });
 
 // ---- 语言切换器菜单 ----
