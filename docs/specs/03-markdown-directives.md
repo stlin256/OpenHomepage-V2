@@ -57,7 +57,7 @@
 
 **生产 WebP 优化**：`npm run build` 在静态输出后把 `dist/assets` 中常规 JPG/PNG/WebP 生成基础 WebP 与 `480/768/1024/1440/1920/2560` 响应式档位（小于源图时才生成，不放大、跳过动画），并重写页面 HTML/内联背景图引用。`<img>` 会获得按当前杂志布局推断的 `sizes`：正文全宽、`grid` 栏宽、`figure` 百分比宽度、头像/RSS/二维码固定尺寸，浏览器据此和设备像素密度选择最小清晰候选。原 JPG/PNG/WebP 与 `*-full` 高清变体继续随站点发布；重写后的 `<img data-original>` 保存原图地址，灯箱优先加载原图/`-full`，失败才回落已缓存的 WebP。
 
-**同语言 tab 空闲预取**：当前页面 `load` 完成并进入空闲时段后，前端会预取当前语言导航中的其他 tab HTML，并用页面中相同的 `srcset/sizes` 创建 detached image，让浏览器按当前视口与像素密度预加载对应档位。`data-original`、`-full` 灯箱源不参与预取；Data Saver 与 2G/慢速网络下自动跳过。
+**空闲预取与页面缓存**：当前页面 `load` 完成并进入空闲时段后，前端依次预取语言切换器中的其他语言页面（语言切换是冷请求开销最大的导航，因此优先）和当前语言导航中的其他 tab HTML，并用页面中相同的 `srcset/sizes` 创建 detached image，让浏览器按当前视口与像素密度预加载对应档位。预取到的 HTML 进入共享内存缓存（`src/scripts/page-cache.ts`），随后的语言切换/内容交换直接命中缓存、不再冷请求；缓存仅生产环境启用，失败结果不缓存。`data-original`、`-full` 灯箱源不参与预取；Data Saver 与 2G/慢速网络下自动跳过。
 
 ## 5. 注意事项
 

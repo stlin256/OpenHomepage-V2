@@ -37,6 +37,18 @@ export function sameLanguageTabPaths(document: Document, currentPath: string): s
   return paths;
 }
 
+/** 语言切换器菜单中的其他语言页面（当前页路径除外）。 */
+export function languageAlternatePaths(document: Document, currentPath: string): string[] {
+  const current = normalizedPath(currentPath, 'https://openhomepage.local/');
+  const paths: string[] = [];
+  for (const link of document.querySelectorAll<HTMLAnchorElement>('.lang-menu a[href]')) {
+    const path = normalizedPath(link.getAttribute('href') ?? '', 'https://openhomepage.local/');
+    if (!path || path === current || paths.includes(path)) continue;
+    paths.push(path);
+  }
+  return paths;
+}
+
 export function responsiveImageCandidates(document: Document): PrefetchImageCandidate[] {
   const candidates: PrefetchImageCandidate[] = [];
   const seen = new Set<string>();

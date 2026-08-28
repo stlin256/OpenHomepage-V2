@@ -1,6 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
 import {
+  languageAlternatePaths,
   responsiveImageCandidates,
   sameLanguageTabPaths,
   shouldPrefetchResources,
@@ -17,6 +18,18 @@ describe('page prefetch helpers', () => {
         '</ul></nav><div class="lang-menu"><a href="/en/gallery/">English</a></div>',
     );
     expect(sameLanguageTabPaths(dom.window.document, '/')).toEqual(['/research/', '/gallery/']);
+  });
+
+  it('collects language alternates excluding the current path', () => {
+    const dom = new JSDOM(
+      '<ul class="lang-menu">' +
+        '<li><a href="/" hreflang="zh">中文</a></li>' +
+        '<li><a href="/en/" hreflang="en">English</a></li>' +
+        '<li><a href="/ja/" hreflang="ja">日本語</a></li>' +
+        '<li><a href="/en/" hreflang="en">Duplicate</a></li>' +
+        '</ul>',
+    );
+    expect(languageAlternatePaths(dom.window.document, '/')).toEqual(['/en/', '/ja/']);
   });
 
   it('collects responsive candidates without lightbox originals', () => {

@@ -1,16 +1,21 @@
 /**
- * Idle-time prefetch for other tabs in the current language. HTML is fetched
- * first, then detached responsive images use the same srcset/sizes rules so
- * the browser selects the smallest clear candidate for this device. Lightbox
- * originals are intentionally not read from data-original.
+ * Idle-time prefetch for language alternates and other tabs in the current
+ * language. HTML is fetched through the shared page cache (page-cache.ts), so
+ * a later language switch or tab swap reuses the already-downloaded page
+ * instead of a cold fetch. Detached responsive images use the same
+ * srcset/sizes rules so the browser selects the smallest clear candidate for
+ * this device. Lightbox originals are intentionally not read from
+ * data-original.
  */
 import {
+  languageAlternatePaths,
   responsiveImageCandidates,
   sameLanguageTabPaths,
   shouldPrefetchResources,
   type NetworkInformationLike,
   type PrefetchImageCandidate,
 } from '../lib/page-prefetch.ts';
+import { fetchPageHtml } from './page-cache.ts';
 
 const prefetchedPages = new Set<string>();
 const prefetchedImages = new Set<string>();
@@ -59,16 +64,12 @@ async function prefetchPage(path: string): Promise<void> {
   if (prefetchedPages.has(path)) return;
   prefetchedPages.add(path);
 
-  try {
-    const response = await fetch(path, { credentials: 'same-origin' });
-    if (!response.ok) return;
-    const html = await response.text();
-    const document = new DOMParser().parseFromString(html, 'text/html');
-    for (const candidate of responsiveImageCandidates(document)) {
-      await loadImage(candidate);
-    }
-  } catch {
-    /* Prefetch is best-effort; normal navigation will retry on demand. */
+  // 经共享缓存抓取：随后的语言切换/内容交换直接命中，不再冷请求
+  const html = await fetchPageHtml(path);
+  if (!html) return;
+  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  for (const candidate of responsiveImageCandidates(parsed)) {
+    await loadImage(candidate);
   }
 }
 
@@ -80,7 +81,12 @@ async function runPrefetch(): Promise<void> {
   running = true;
   try {
     const currentPath = `${location.pathname}${location.search}`;
-    for (const path of sameLanguageTabPaths(document, currentPath)) {
+    // 备选语言优先：语言切换是冷请求开销最大的导航
+    const paths = [
+      ...languageAlternatePaths(document, currentPath),
+      ...sameLanguageTabPaths(document, currentPath),
+    ];
+    for (const path of paths) {
       if (!shouldPrefetchResources(connection())) return;
       await prefetchPage(path);
     }

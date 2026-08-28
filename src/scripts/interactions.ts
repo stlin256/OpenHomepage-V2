@@ -11,6 +11,7 @@ import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
 import { scheduleTabPrefetch } from './tab-prefetch.ts';
+import { fetchPageHtml } from './page-cache.ts';
 import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
 import './lightbox.ts';
 
@@ -70,6 +71,17 @@ function showLoading(): void {
 
 function hideLoading(): void {
   document.querySelector('.page-loading')?.classList.remove('visible');
+}
+
+/** 等待两帧（淡出起始帧 + 一帧过渡）；无 rAF 环境退化为短延时。 */
+function nextPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    } else {
+      setTimeout(resolve, 32);
+    }
+  });
 }
 
 // ---- 初始化 ----
@@ -146,28 +158,26 @@ let swapping = false;
 async function swapContent(path: string, { push = true }: { push?: boolean } = {}): Promise<void> {
   if (swapping) return;
   swapping = true;
-  showLoading();
+  // 预取/缓存命中时交换几乎瞬时完成；遮罩延迟出现，避免快速切换时闪烁
+  const loadingTimer = setTimeout(showLoading, 150);
   try {
-    const r = await fetch(path);
-    if (!r.ok) {
-      hideLoading();
+    const html = await fetchPageHtml(path);
+    if (html === null) {
       location.href = path;
       return;
     }
-    const html = await r.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const newMain = doc.querySelector('main.site-main');
     const newFooter = doc.querySelector('footer.site-footer');
     const oldMain = document.querySelector<HTMLElement>('main.site-main');
     const oldFooter = document.querySelector<HTMLElement>('footer.site-footer');
     if (!newMain || !oldMain) {
-      hideLoading();
       location.href = path;
       return;
     }
-    // 淡出旧内容
+    // 淡出旧内容（两帧即可，不等完整过渡）
     oldMain.style.opacity = '0';
-    await new Promise((r2) => setTimeout(r2, 120));
+    await nextPaint();
     // 替换内容
     oldMain.replaceChildren(...newMain.children);
     if (newFooter && oldFooter) {
@@ -221,6 +231,7 @@ async function swapContent(path: string, { push = true }: { push?: boolean } = {
   } catch {
     location.href = path;
   } finally {
+    clearTimeout(loadingTimer);
     hideLoading();
     swapping = false;
   }
