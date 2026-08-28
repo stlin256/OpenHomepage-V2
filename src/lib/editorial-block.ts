@@ -55,7 +55,11 @@ function listItemHtml(
   localizeHref?: (href: string) => string
 ): string {
   const mask = item.image
-    ? lazyImage(item.image, 'editorial-item-mask', '(max-width: 768px) 60vw, 768px')
+    ? `<span class="editorial-item-mask" aria-hidden="true">${lazyImage(
+        item.image,
+        'editorial-item-mask-img',
+        '(max-width: 768px) 60vw, 768px',
+      )}</span>`
     : '';
   const meta = item.meta ? `<span class="editorial-item-meta">${escapeHtml(text(item.meta, ctx))}</span>` : '';
   const description = item.description

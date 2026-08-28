@@ -47,7 +47,8 @@ describe('renderEditorialBlock', () => {
     );
     expect(html).not.toContain('background-image:url');
     expect(html).not.toContain('--tile-image:');
-    expect(html).toContain('<img class="editorial-item-mask" src="/assets/list.jpg"');
+    expect(html).toContain('<span class="editorial-item-mask" aria-hidden="true">');
+    expect(html).toContain('<img class="editorial-item-mask-img" src="/assets/list.jpg"');
     expect(html).toContain('<img class="editorial-tile-media" src="/assets/tile.jpg"');
     expect(html).toContain('<img class="archive-media" src="/assets/archive.jpg"');
     expect((html.match(/loading="lazy"/g) ?? []).length).toBe(3);
