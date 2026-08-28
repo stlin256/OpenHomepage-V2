@@ -99,4 +99,41 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(clickEvt.defaultPrevented).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("/features/");
   });
+
+  it("语言切换后，导航栏站点标题链接同步到当前语言首页", async () => {
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='en'><head><title>Home</title></head><body>",
+      "<nav class='site-nav'><p class='site-title'><a href='/en/'>English Site</a></p><ul><li><a href='/en/'>Home</a></li></ul></nav>",
+      "<main class='site-main'><p>English home</p></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => targetHtml,
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.documentElement.dataset.routeLang = "zh";
+    document.documentElement.dataset.siteLangs = "zh,en";
+    localStorage.setItem("oh-language", "zh");
+    document.body.innerHTML = [
+      "<nav class='site-nav'>",
+      "<p class='site-title'><a id='site-title-link' href='/'>中文站名</a></p>",
+      "<ul><li><a href='/'>主页</a></li></ul>",
+      "</nav>",
+      "<div class='lang-switcher'><ul class='lang-menu'><li><a id='switch-en' href='/en/' hreflang='en'>English</a></li></ul></div>",
+      "<main class='site-main'><p>中文页面</p></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    document.querySelector<HTMLAnchorElement>("#switch-en")!.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true })
+    );
+
+    await vi.waitFor(() => {
+      expect(document.querySelector<HTMLAnchorElement>("#site-title-link")?.getAttribute("href")).toBe("/en/");
+    });
+    expect(document.querySelector("#site-title-link")?.textContent).toBe("English Site");
+  });
 });

@@ -215,7 +215,11 @@ async function swapContent(
     if (newNav && oldNav) {
       const newTitle = newNav.querySelector('.site-title a');
       const oldTitle = oldNav.querySelector('.site-title a');
-      if (newTitle && oldTitle) oldTitle.textContent = newTitle.textContent;
+      // 站点标题链接也必须随语言交换更新；否则 SPA 切换语言后，标题仍指向旧语言/默认语言首页。
+      if (newTitle && oldTitle) {
+        oldTitle.textContent = newTitle.textContent;
+        oldTitle.setAttribute('href', newTitle.getAttribute('href') ?? oldTitle.getAttribute('href') ?? '/');
+      }
       const newList = newNav.querySelector('ul');
       const oldList = oldNav.querySelector('ul');
       if (newList && oldList) oldList.replaceChildren(...newList.children);
