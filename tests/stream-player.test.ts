@@ -68,6 +68,70 @@ describe('流式光标位置', () => {
   });
 });
 
+describe('流式高度预留', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('播放前预留 noscript 完整高度，结束后恢复自适应', async () => {
+    vi.useFakeTimers();
+    const tokens = [
+      { t: 'open', tag: 'p', h: '<p>' },
+      { t: 'text', w: '你好' },
+      { t: 'close' },
+    ];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(private readonly callback: IntersectionObserverCallback) {}
+        observe(): void {
+          this.callback(
+            [{ isIntersecting: true } as IntersectionObserverEntry],
+            this as unknown as IntersectionObserver,
+          );
+        }
+        disconnect(): void {}
+      },
+    );
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: () => ({ matches: false }),
+    });
+    document.body.innerHTML =
+      `<div class="stream-block" data-stream-id="test" data-autoplay="true" data-speed="100">` +
+      `<div class="stream-content markdown-body"></div>` +
+      `<noscript><div class="stream-content markdown-body"><p>完整内容</p></div></noscript>` +
+      `<script type="application/json" class="stream-tokens">${JSON.stringify(tokens)}</script>` +
+      `</div>`;
+    const rectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        return {
+          width: this.dataset.streamHeightProbe === '1' ? 0 : 300,
+          height: this.dataset.streamHeightProbe === '1' ? 120 : 0,
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        } as DOMRect;
+      });
+
+    initStreamBlocks();
+    const content = document.querySelector<HTMLElement>('.stream-content')!;
+    expect(content.style.height).toBe('120px');
+
+    await vi.runAllTimersAsync();
+    expect(content.style.height).toBe('');
+    expect(rectSpy).toHaveBeenCalled();
+  });
+});
+
 describe('编辑模式（M12g：<html class="oh-edit">）', () => {
   afterEach(() => {
     document.body.innerHTML = '';
