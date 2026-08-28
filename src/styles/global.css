@@ -1159,6 +1159,42 @@ a.editorial-item:focus-visible .editorial-item-content {
   background: var(--card);
   color: var(--text);
 }
+/* 打开：短促的淡入 + 轻微放大；关闭：JS 加 .closing 淡出后再真正 close() */
+.qr-modal[open] {
+  animation: qr-modal-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qr-modal[open]::backdrop {
+  animation: qr-backdrop-fade 0.18s ease;
+}
+.qr-modal.closing {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+.qr-modal.closing::backdrop {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+@keyframes qr-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes qr-backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .qr-modal::backdrop {
   background: rgba(0, 0, 0, 0.82);
 }

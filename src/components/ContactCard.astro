@@ -59,14 +59,26 @@ const image = withBase(card.image);
           modal?.remove();
         }, 450);
       });
+      // 关闭先播 150ms 淡出动画（.closing），结束后再真正 close()；与 CSS 时长对应
+      const closeModal = () => {
+        if (!modal || modal.classList.contains('closing')) return;
+        modal.classList.add('closing');
+        window.setTimeout(() => {
+          modal.classList.remove('closing');
+          modal.close();
+        }, 160);
+      };
       root.querySelector<HTMLButtonElement>('.intro-content')?.addEventListener('click', () => {
         modal?.showModal();
       });
-      modal?.querySelector<HTMLButtonElement>('[data-qr-close]')?.addEventListener('click', () => {
-        modal.close();
-      });
+      modal?.querySelector<HTMLButtonElement>('[data-qr-close]')?.addEventListener('click', closeModal);
       modal?.addEventListener('click', (event) => {
-        if (event.target === modal) modal.close();
+        if (event.target === modal) closeModal();
+      });
+      // Esc 走原生 cancel 事件，拦下来统一播关闭动画
+      modal?.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        closeModal();
       });
     }
   }
