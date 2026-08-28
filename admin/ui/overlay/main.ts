@@ -156,14 +156,32 @@ function bindClickToEdit(
   openCfg: (entry: CfgFieldEntry) => void,
   openCfgBlock: (entry: CfgBlockEntry) => void
 ): void {
+  const isOverlayControl = (target: Element) =>
+    Boolean(
+      target.closest(
+        '.oh-topbar, .oh-toolbar, .oh-textedit, .oh-cfgedit, .oh-drawer, .oh-drawer-mask, .oh-inspector, .oh-inspector-mask, .oh-streamedit-mask'
+      )
+    );
+
+  // 阻止中键/辅助点击超链接导致的意外新标签页跳转
+  doc.addEventListener('auxclick', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element) || isOverlayControl(target)) return;
+    if (target.closest('a')) {
+      event.preventDefault();
+    }
+  });
+
   doc.addEventListener('click', (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
     // overlay 自身控件不触发块编辑
-    if (
-      target.closest('.oh-topbar, .oh-toolbar, .oh-textedit, .oh-cfgedit, .oh-drawer, .oh-drawer-mask, .oh-inspector, .oh-inspector-mask, .oh-streamedit-mask')
-    ) {
+    if (isOverlayControl(target)) {
       return;
+    }
+    // 编辑模式下页面正文与控件内的超链接一律阻止默认跳转（无论是站内还是外链），避免意外跳出或错误导航
+    if (target.closest('a')) {
+      event.preventDefault();
     }
     const hit = resolveHitTarget(target);
     if (!hit) return;

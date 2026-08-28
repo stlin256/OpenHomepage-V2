@@ -247,6 +247,21 @@ function replaceContactCard(doc: Document): void {
   }
 }
 
+function isEditMode(): boolean {
+  try {
+    return (
+      document.documentElement.classList.contains('oh-edit') ||
+      document.documentElement.classList.contains('oh-editing') ||
+      sessionStorage.getItem('oh-edit') === '1'
+    );
+  } catch {
+    return (
+      document.documentElement.classList.contains('oh-edit') ||
+      document.documentElement.classList.contains('oh-editing')
+    );
+  }
+}
+
 function isInternalLink(href: string): boolean {
   if (!href.startsWith('/') || href.startsWith('//')) return false;
   return true;
@@ -279,6 +294,19 @@ document.addEventListener("click", (e) => {
 document.addEventListener('click', (e) => {
   const link = e.target instanceof Element ? e.target.closest('a') : null;
   if (!link) return;
+  // overlay 自身控件（如 ←后台 链接）不拦截
+  if (
+    link.closest(
+      '.oh-topbar, .oh-toolbar, .oh-textedit, .oh-cfgedit, .oh-drawer, .oh-drawer-mask, .oh-inspector, .oh-inspector-mask, .oh-streamedit-mask'
+    )
+  ) {
+    return;
+  }
+  if (isEditMode()) {
+    // 编辑模式下阻止任何页面超链接的默认跳转 / SPA 内容交换，避免破坏编辑状态或意外跳出
+    e.preventDefault();
+    return;
+  }
   const href = link.getAttribute('href') ?? '';
   const selectedLanguage = normalizeLanguage(link.getAttribute('hreflang'));
   // 语言切换器也走内容交换（保留当前页面）
@@ -327,6 +355,7 @@ document.addEventListener(
 );
 
 async function bootstrapLanguage(): Promise<void> {
+  if (isEditMode()) return;
   const current = currentRouteLanguage();
   const preferred = readPreferredLanguage() ?? browserLanguage() ?? current;
   if (!preferred) return;
