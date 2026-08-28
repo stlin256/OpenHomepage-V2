@@ -15,47 +15,98 @@ OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静
 - **自动图片优化与响应式加载**——生产构建自动生成多档分辨率 WebP，按当前布局和设备像素密度选择最小清晰档位；页面加载完成后空闲预取同语言其他 tab 及对应尺寸图片，同时保留原图与 `-full` 高清灯箱源且不参与预加载。
 - **动态数据预取与缓存降级**——构建期预取 GitHub 年度贡献热力图、1:1 官网质感 Pinned 仓库卡片以及多源 RSS 文章卡片流，支持网络失败时的本地缓存平滑降级。
 - **拟真交互与多媒体支持**——图片全屏灯箱（自动匹配 `-full` 高清源图）、站内无缝连续播放的背景音乐、以及拟真 LLM 打字机流式呈现的 Markdown 动画区块。
-- **零开销多语言架构**——在 `data/pages/<lang>/` 下增设语言目录即可自动激活对应语言路由、导航与多语言配置，配合智能回退链实现静默兜底渲染。
+- **零开销多语言架构**——在 `data/pages/<lang>/` 下增设语言目录即可自动激活对应语言路由、导航与多语言配置，配合智能回退链实现静默兜底渲染。内置示例站点自带 中文 / English / 日本語 / Français 四种语言演示。
 - **本地可视化编辑器（PC）**——内置本地管理后台（`npm run admin`），页面正文在真实渲染页上直编（悬停描边、就地编辑、指令参数检查器、区块插入与拖拽排序、撤销/重做），后台另附页面源码兜底编辑与全站配置表单，配备自动保存、版本快照回滚与一键数据导出。
 - **自托管静态服务器**——提供开箱即用的静态生产服务命令 `npm run serve`，支持自定义端口及 SSL/HTTPS 证书接入。
 - **数据隐私与 CI/CD 解耦**——真实 `data/` 内容不入版本库；GitHub Actions 支持从私有直链下载数据、快照兜底容灾与演示示例部署。
 
-## 页面控件与组件展示
+## 组件画廊
 
-### 1. 首页概览与流式组件 (Hero, Profile & Stream)
+以下每个组件都取自生产构建的单独截图（`npm run screenshots` 一键重新生成）——所见即所得。
 
-- **个人名片 (`ProfileBlock`)**：展示头像（支持自适应取色）、姓名、职位身份、研究方向与多语言简介，底部配备社交平台与学术主页图标链接行（GitHub、Scholar、Email 等）。
-- **LLM 流式打字机 (`StreamBlock`)**：拟真模拟大模型流式打字机动画呈现 Markdown 内容，支持重播控制；在编辑模式下提供源码与实时预览双栏直编窗口。
-- **悬浮联系卡片 (`ContactCard`)**：页面加载后在右下角延迟微动画弹出，支持点击呼出微信/赞赏等全屏二维码弹窗。
-- **全局顶栏控件**：包含站点标题、多页面导航标签栏、持续播放背景音乐开关、多语言切换下拉菜单与首帧防闪烁明暗主题切换按钮。
+### 主页区块
 
-![首页概览与流式组件](docs/images/preview-zh.png)
+**个人名片（ProfileBlock）**——头像（支持自适应取色）、姓名、身份简介与社交/学术主页链接行。
 
-### 2. 动态数据与内容流组件 (GitHub Activity & RSS Feeds)
+![个人名片](docs/images/components/profile-zh.webp)
 
-- **GitHub 贡献热力图 (`GithubBlock`)**：构建期预取 GitHub GraphQL 贡献日历，渲染标准 5 档色阶热力图，支持桌面 Hover 与移动端点按查看贡献次数提示气泡。
-- **Pinned 仓库卡片**：1:1 还原 GitHub 官方卡片视觉质感，实时呈现项目语言色标、Star / Fork 计数与 Topics 标签徽章。
-- **多源 RSS 文章卡片流 (`RssBlock`)**：聚合博客与订阅源，支持最新发布时间排序（`latest`）与精选人工置顶（`curated`），配备文章来源 Tag、发布日期、封面懒加载及摘要截断。
+**LLM 流式区块（StreamBlock）**——拟真大模型打字机动画呈现预写 Markdown，支持重播与速度调节。
 
-![GitHub 动态与 RSS 卡片流](docs/images/github-zh.png)
+![LLM 流式区块](docs/images/components/stream-zh.webp)
 
-### 3. Markdown 扩展指令与媒体排版 (Directives & Media)
+**编辑风展示区块（`::editorial`）**——按钮组、编号列表卡、图片磁贴、归档卡与分割线的自由组合，完全由 `site.yaml` 定义。
 
-- **数学公式渲染**：原生集成 KaTeX，支持行内公式 `$E=mc^2$` 与块级公式 `$$\int_0^1 x\,dx$$` 解析。
-- **多媒体嵌入指令**：提供 `::bilibili`、`::youtube` 16:9 响应式播放器外框，以及 `:::video`、`:::audio` 原生全宽媒体控件。
-- **结构化配图 (`:::figure`)**：支持图片居中/靠左/靠右对齐、显式百分比或像素宽度约束与居中美观图注。
-- **双主题代码高亮**：基于 Shiki 的语法高亮引擎，产物内联明暗双套样式，随页面主题无缝实时切换。
-- **页面通知横幅 (`NoticeBanner`)**：支持单页 frontmatter 独立配置的顶端弹出横幅，支持主题色、警示色与自定义色彩。
+![编辑风区块：按钮组与列表卡](docs/images/components/editorial-list-zh.webp)
 
-![Markdown 扩展指令与排版演示](docs/images/features-zh.png)
+![编辑风区块：磁贴与归档卡](docs/images/components/editorial-tiles-zh.webp)
 
-### 4. 杂志化网格与画廊相册 (Editorial Grids & Gallery)
+**GitHub 贡献热力图**——构建期 GraphQL 预取贡献日历，5 档主题色阶、月份/星期坐标轴与逐日提示气泡。
 
-- **12 列非对称网格 (`::::grid` / `:::cell`)**：容器指令支持 1–12 列自由切分，轻松实现双栏图文、三栏要点或复杂杂志版式。
-- **画廊相册流**：针对摄影与视觉作品提供自适应图文排版，附带分类 Kicker、作品标题与元数据描述。
-- **全屏图片预览灯箱**：全站所有正文与相册图片内置点击灯箱，自动探测并按需加载 `-full` 高清原图变体。
+![GitHub 贡献热力图](docs/images/components/github-heatmap-zh.webp)
 
-![杂志化网格与画廊相册](docs/images/gallery-zh.png)
+**Pinned 仓库卡片**——1:1 还原 GitHub 官网质感：语言色点、Star/Fork 计数、Topics 标签与本地化相对时间。
+
+![Pinned 仓库卡片](docs/images/components/github-repos-zh.webp)
+
+**RSS 区块（RssBlock）**——多源文章卡片流，支持最新排序（`latest`）与精选置顶（`curated`），含来源标签、日期与封面懒加载。
+
+![RSS 区块](docs/images/components/rss-zh.webp)
+
+### Markdown 与指令渲染
+
+**双主题代码高亮**——Shiki 引擎内联明暗双套样式，随站点主题无缝切换。
+
+![Shiki 代码高亮](docs/images/components/markdown-code-zh.webp)
+
+**KaTeX 数学公式**——行内 `$...$` 与块级公式原生渲染。
+
+![KaTeX 数学公式](docs/images/components/markdown-math-zh.webp)
+
+**结构化配图（`:::figure`）**——对齐方式、显式宽度约束与美观图注。
+
+![配图指令](docs/images/components/markdown-figure-zh.webp)
+
+**杂志化网格（`::::grid` / `:::cell`）**——12 列非对称版式，移动端自动塌缩为单栏。
+
+![网格指令](docs/images/components/markdown-grid-zh.webp)
+
+**原生媒体（`:::audio` / `:::video`）**——杂志宽度播放器；`::bilibili` / `::youtube` 渲染 16:9 响应式嵌入外框。
+
+![音频指令](docs/images/components/media-audio-zh.webp)
+
+**GitHub 仓库卡（`::ghcard`）**——在正文任意位置内嵌 pinned 仓库卡片。
+
+![ghcard 指令](docs/images/components/ghcard-zh.webp)
+
+### 全局控件与交互
+
+**顶栏工具区**——背景音乐开关、语言切换器与首帧防闪烁主题切换。
+
+![顶栏工具区](docs/images/components/header-tools-zh.webp)
+
+**语言切换器**——一个目录即一种语言；演示站内置 中文 / English / 日本語 / Français，缺译页面静默回退。
+
+![语言切换器](docs/images/components/lang-switcher-zh.webp)
+
+**页面通知横幅（NoticeBanner）**——单页 frontmatter 独立配置的顶端横幅，支持主题色 / 黄 / 红 / 自定义色。
+
+![通知横幅](docs/images/components/notice-banner-zh.webp)
+
+**联系卡与二维码弹窗（ContactCard）**——右下角延迟滑入的微卡片，点击呼出全屏二维码弹窗。
+
+![联系卡](docs/images/components/contact-card-zh.webp)
+
+![二维码弹窗](docs/images/components/qr-modal-zh.webp)
+
+**画廊与灯箱**——带图注的网格相册；任意图片点击即开全屏灯箱，自动加载 `-full` 高清原图。
+
+![画廊网格](docs/images/components/gallery-grid-zh.webp)
+
+![图片灯箱](docs/images/components/lightbox-zh.webp)
+
+**暗色主题**——跟随系统并支持会话记忆，所有组件均有明暗双主题。
+
+![暗色主题](docs/images/components/profile-dark-zh.webp)
 
 ## 快速上手
 
@@ -87,6 +138,7 @@ npm run build
 | `npm run build` | 执行正式静态构建，并自动优化页面图片为 WebP | — | 运行完成自动退出 |
 | `npm run preview` | 预览 `dist/` 生产构建产物 | http://localhost:4321 | 终端按 `Ctrl+C` 停止 |
 | `npm run serve` | 运行生产级独立静态托管服务（可选 HTTPS） | http://localhost:8080（或 https://localhost:8443） | 终端按 `Ctrl+C` 停止 |
+| `npm run screenshots` | 从 `dist/` 重新生成上文组件画廊截图（需先 `npm run build`，首次运行需 `npx playwright install chromium`） | — | 运行完成自动退出 |
 
 ## 可视化编辑器
 

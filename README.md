@@ -15,47 +15,98 @@ OpenHomepage V2 is a static, magazine-style personal homepage generator built wi
 - **Responsive Image Optimization** — Production builds create multiple WebP widths, select the smallest clear candidate from the current layout and device pixel ratio, and idle-prefetch other same-language tabs with their matching images. Originals and `-full` lightbox sources remain excluded from preloading.
 - **Dynamic Content Prefetching** — Build-time fetcher with intelligent cache fallback for GitHub contribution heatmaps, official-style pinned repository cards, and multi-source RSS content streams.
 - **Interactive Multimedia** — Full-screen image lightbox with automatic `-full` resolution detection, persistent background audio across client navigation, and LLM-style typewriter markdown playback.
-- **Zero-Friction Multilingual Architecture** — Add language subdirectories under `data/pages/<lang>/` to automatically activate routing, navigation, and multilingual configuration fields, complete with graceful fallback rendering.
+- **Zero-Friction Multilingual Architecture** — Add language subdirectories under `data/pages/<lang>/` to automatically activate routing, navigation, and multilingual configuration fields, complete with graceful fallback rendering. The bundled demo ships in 中文 / English / 日本語 / Français.
 - **Local Visual Editor (PC)** — Built-in local admin console (`npm run admin`) with on-page visual editing (hover outlines, in-place text editing, directive inspector, block insert/reorder/drag-and-drop, undo/redo), fallback whole-page markdown source editing, full-site config forms, automatic snapshots, and one-click data export.
 - **Self-Hosted Static Server** — Direct production static serving via `npm run serve` with optional SSL certificate support.
 - **Data Privacy & Decoupled CI** — Local `data/` content is git-ignored. GitHub Actions supports private data synchronization via secret URL, snapshot fallback, and demo mode.
 
-## Page Components & UI Tour
+## Component Gallery
 
-### 1. Hero, Profile & Stream Components
+Each component below is captured individually from the production build (`npm run screenshots`) — what you see is exactly what ships.
 
-- **Profile Card (`ProfileBlock`)**: Avatar (with automatic palette extraction), name, academic/professional bio, and social/research icon links (GitHub, Google Scholar, Email, etc.).
-- **LLM Streaming Block (`StreamBlock`)**: Realistic LLM typewriter markdown animation with replay controls; features an in-page dual-column editor modal with real-time live preview during edit mode.
-- **Floating Contact Card (`ContactCard`)**: Micro-card sliding in from the bottom right, with full-screen QR code modal popup (WeChat / Sponsorship).
-- **Global Header Tools**: Site branding, multi-page navigation bar, persistent background audio player, language switcher dropdown, and zero-flash theme toggle.
+### Homepage Blocks
 
-![Hero, Profile & Stream Components](docs/images/preview-en.png)
+**Profile Block** — Avatar (with automatic palette extraction), name, tagline, and social/research links.
 
-### 2. Dynamic Content & Feed Components (GitHub & RSS)
+![Profile Block](docs/images/components/profile-en.webp)
 
-- **GitHub Contribution Calendar (`GithubBlock`)**: Prefetched via GraphQL at build time, rendering a standard 5-level heat scale with interactive contribution tooltips.
-- **Pinned Repository Cards**: 1:1 authentic GitHub visual styling with language color dots, Star/Fork counts, and topic tag badges.
-- **Multi-Source RSS Stream (`RssBlock`)**: Aggregated article streams supporting chronological sorting (`latest`) and curated lists (`curated`), with feed tags, publication timestamps, lazy-loaded covers, and text clamping.
+**LLM Streaming Block (`StreamBlock`)** — Typewriter-style playback of pre-written markdown, with replay control and adjustable speed.
 
-![GitHub Activity & RSS Feed Stream](docs/images/github-en.png)
+![LLM Streaming Block](docs/images/components/stream-en.webp)
 
-### 3. Markdown Directives & Media Layout
+**Editorial Blocks (`::editorial`)** — Magazine sections mixing action buttons, numbered list cards, image tiles, archive cards, and dividers; fully defined in `site.yaml`.
 
-- **Mathematical Typography**: Native KaTeX integration rendering inline `$E=mc^2$` and display math `$$\int_0^1 x\,dx$$`.
-- **Media Directives**: 16:9 responsive embed frames for `::bilibili` and `::youtube`, plus magazine-width native players for `:::video` and `:::audio`.
-- **Structured Figures (`:::figure`)**: Custom image alignment (center, left, right), explicit width constraints, and styled captions.
-- **Dual-Theme Code Highlighting**: Powered by Shiki with CSS variables seamlessly switching between light and dark palettes alongside the site theme.
-- **Page Notice Banners (`NoticeBanner`)**: Configurable top banner alerts with accent, warning, and custom color presets.
+![Editorial block: actions and list cards](docs/images/components/editorial-list-en.webp)
 
-![Markdown Directives & Media Layout](docs/images/features-en.png)
+![Editorial block: tiles and archive cards](docs/images/components/editorial-tiles-en.webp)
 
-### 4. Magazine Grid & Photo Gallery
+**GitHub Contribution Heatmap** — GraphQL-prefetched calendar with a 5-level accent-derived scale, month/weekday axes, and per-day tooltips.
 
-- **12-Column Asymmetric Grid (`::::grid` / `:::cell`)**: Flexible container directives enabling modern multi-column magazine editorial layouts.
-- **Photo Gallery Stream**: Responsive masonry layout for photography and creative assets, enriched with category kickers, titles, and metadata descriptions.
-- **Full-Screen Image Lightbox**: Instant modal zoom on any article or gallery image with automatic high-resolution `-full` asset loading.
+![GitHub contribution heatmap](docs/images/components/github-heatmap-en.webp)
 
-![Magazine Grid & Gallery](docs/images/gallery-en.png)
+**Pinned Repository Cards** — 1:1 GitHub styling with language color dots, star/fork counts, topics, and localized relative timestamps.
+
+![Pinned repository cards](docs/images/components/github-repos-en.webp)
+
+**RSS Block (`RssBlock`)** — Multi-source article cards with feed tags, dates, lazy-loaded covers, and curated picks (`latest` / `curated`).
+
+![RSS block](docs/images/components/rss-en.webp)
+
+### Markdown & Directive Rendering
+
+**Dual-Theme Code Highlighting** — Shiki with light/dark palettes bound to the site theme.
+
+![Shiki code highlighting](docs/images/components/markdown-code-en.webp)
+
+**KaTeX Mathematics** — Inline `$...$` and display math rendered natively.
+
+![KaTeX math](docs/images/components/markdown-math-en.webp)
+
+**Structured Figures (`:::figure`)** — Alignment, explicit width constraints, and styled captions.
+
+![Figure directive](docs/images/components/markdown-figure-en.webp)
+
+**Magazine Grids (`::::grid` / `:::cell`)** — 12-column asymmetric layouts that collapse gracefully on mobile.
+
+![Grid directive](docs/images/components/markdown-grid-en.webp)
+
+**Native Media (`:::audio` / `:::video`)** — Magazine-width players; `::bilibili` / `::youtube` render responsive 16:9 embed frames.
+
+![Audio directive](docs/images/components/media-audio-en.webp)
+
+**GitHub Repo Card (`::ghcard`)** — Embed any pinned repository card inline in markdown.
+
+![ghcard directive](docs/images/components/ghcard-en.webp)
+
+### Global UI & Interactions
+
+**Header Tools** — Persistent background music toggle, language switcher, and zero-flash theme toggle.
+
+![Header tools](docs/images/components/header-tools-en.webp)
+
+**Language Switcher** — One directory per language under `data/pages/`; the demo ships 中文 / English / 日本語 / Français with graceful fallback.
+
+![Language switcher](docs/images/components/lang-switcher-en.webp)
+
+**Notice Banner (`NoticeBanner`)** — Per-page frontmatter announcement bar with accent / yellow / red / custom colors.
+
+![Notice banner](docs/images/components/notice-banner-en.webp)
+
+**Contact Card & QR Modal (`ContactCard`)** — A floating card slides in after a configurable delay; clicking it opens the full-screen QR modal.
+
+![Contact card](docs/images/components/contact-card-en.webp)
+
+![QR code modal](docs/images/components/qr-modal-en.webp)
+
+**Photo Gallery & Lightbox** — Grid galleries with captions; every image opens a full-screen lightbox with automatic `-full` resolution loading.
+
+![Gallery grid](docs/images/components/gallery-grid-en.webp)
+
+![Image lightbox](docs/images/components/lightbox-en.webp)
+
+**Dark Theme** — Follows the system with session override; every component is dual-themed.
+
+![Dark theme](docs/images/components/profile-dark-en.webp)
 
 ## Quick Start
 
@@ -87,6 +138,7 @@ npm run build
 | `npm run build` | Static production build with automatic WebP image optimization | — | Exits on completion |
 | `npm run preview` | Preview static output in `dist/` | http://localhost:4321 | Press `Ctrl+C` |
 | `npm run serve` | Standalone static server with optional HTTPS | http://localhost:8080 (or https://localhost:8443) | Press `Ctrl+C` |
+| `npm run screenshots` | Regenerate the component gallery images above from `dist/` (requires `npm run build` and a one-time `npx playwright install chromium`) | — | Exits on completion |
 
 ## Visual Editor
 
