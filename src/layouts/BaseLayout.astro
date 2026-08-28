@@ -259,7 +259,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
         class="bgm-audio"
         src={withBase(bgm.src)}
         loop
-        preload={bgm.autoplay ? 'auto' : 'none'}
+        preload="none"
         data-volume={bgm.volume}
         data-autoplay={bgm.autoplay ? 'true' : 'false'}
       />

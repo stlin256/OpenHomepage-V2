@@ -2,7 +2,8 @@
  * 背景音乐（site.yaml bgm 段）：
  * - <audio class="bgm-audio"> 在 BaseLayout 渲染，客户端内容交换不触碰它；
  * - 播放/暂停按钮在 header 内，header 不参与内容交换，监听持久；
- * - autoplay 或 localStorage 记忆播放态时，等首次用户交互后开播。
+ * - 音频始终 preload=none；autoplay 或 localStorage 记忆播放态时，
+ *   等首次用户交互后按需加载并开播。
  */
 
 const STORAGE_KEY = 'bgm';
@@ -31,6 +32,13 @@ function clampVolume(raw: string | undefined): number {
   const v = Number(raw);
   if (!Number.isFinite(v)) return 0.4;
   return Math.min(1, Math.max(0, v));
+}
+
+function playAudio(audio: HTMLAudioElement): void {
+  // preload=none 时先显式进入资源加载流程，交互触发的播放不被浏览器
+  // 惰性调度拖延。
+  if (audio.networkState === HTMLMediaElement.NETWORK_EMPTY) audio.load();
+  void audio.play().catch(() => {});
 }
 
 export function initBgm(): void {
@@ -64,7 +72,7 @@ export function initBgm(): void {
       e.stopPropagation();
       if (audio.paused) {
         writeSaved('1');
-        void audio.play().catch(() => {});
+        playAudio(audio);
       } else {
         writeSaved('0');
         audio.pause();
@@ -79,7 +87,7 @@ export function initBgm(): void {
   if ((autoplayEnabled || readSaved() === '1') && audio.paused && !kickArmed) {
     kickArmed = true;
     const kick = () => {
-      void audio.play().catch(() => {});
+      playAudio(audio);
       sync();
     };
     document.addEventListener('click', kick, { once: true });
