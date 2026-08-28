@@ -68,7 +68,7 @@ const {
 } = Astro.props;
 
 const baseUrl = getBaseUrl();
-const langLabel = (l: string) => ({ zh: '中文', en: 'English' })[l] ?? l;
+const langLabel = (l: string) => ({ zh: '中文', en: 'English', ja: '日本語', fr: 'Français' })[l] ?? l;
 // 可视化编辑（M12a）：仅 admin 拉起的 dev server（OH_EDIT=1 且注入 OH_ADMIN_ORIGIN）
 // 输出编辑 bootstrap；生产构建/外部 dev server 无此环境变量，整段不输出、零开销
 const editAdminOrigin = process.env.OH_EDIT === '1' ? (process.env.OH_ADMIN_ORIGIN ?? '') : '';
@@ -127,7 +127,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
         (function () {
           var normalize = function (value) {
             var lang = (value || '').toLowerCase().split(/[-_]/)[0];
-            return lang === 'zh' || lang === 'en' ? lang : null;
+            return lang === 'zh' || lang === 'en' || lang === 'ja' || lang === 'fr' ? lang : null;
           };
           var preferred = null;
           try {

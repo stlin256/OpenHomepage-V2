@@ -184,7 +184,7 @@ const editorialEmbeds = Object.fromEntries(
 const ghHtmlByRepo = Object.fromEntries(
   (githubView?.pinned?.repos ?? []).map((r) => [
     r.full_name.toLowerCase(),
-    repoCardHtml(r, { lang: contentLang === 'zh' ? 'zh' : 'en' }),
+    repoCardHtml(r, { lang: contentLang }),
   ]),
 );
 // 可视化编辑（M12a）：OH_EDIT=1 时给正文块注入 data-oh-src 坐标（data/ 相对路径；
@@ -202,11 +202,30 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   ...(editSource ? { editSource } : {}),
 });
 const isFeaturesPage = route.page.slug === 'features';
-const componentLabels = {
-  profile: contentLang === 'zh' ? 'Profile Block · 资料区' : 'Profile Block',
-  github: contentLang === 'zh' ? 'GitHub Block · 贡献热力图 + 仓库卡' : 'GitHub Block: heatmap + repo cards',
-  rss: contentLang === 'zh' ? 'RSS Block · 内容卡片流' : 'RSS Block: content cards',
-};
+const COMPONENT_LABELS = {
+  zh: {
+    profile: 'Profile Block · 资料区',
+    github: 'GitHub Block · 贡献热力图 + 仓库卡',
+    rss: 'RSS Block · 内容卡片流',
+  },
+  en: {
+    profile: 'Profile Block',
+    github: 'GitHub Block: heatmap + repo cards',
+    rss: 'RSS Block: content cards',
+  },
+  ja: {
+    profile: 'Profile Block · プロフィール',
+    github: 'GitHub Block · ヒートマップ + リポジトリカード',
+    rss: 'RSS Block · コンテンツカード',
+  },
+  fr: {
+    profile: 'Profile Block · Profil',
+    github: 'GitHub Block · heatmap + cartes de dépôts',
+    rss: 'RSS Block · cartes de contenu',
+  },
+} as const;
+const componentLabels =
+  COMPONENT_LABELS[contentLang as keyof typeof COMPONENT_LABELS] ?? COMPONENT_LABELS.en;
 ---
 
 <BaseLayout

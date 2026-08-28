@@ -21,10 +21,14 @@ const notice = typeof rawNotice === "string" ? { text: rawNotice, color: "accent
 const html = notice ? noticeTextToHtml(notice.text) : "";
 const delay = typeof notice?.delay === "number" && notice.delay >= 0 ? notice.delay : 500;
 const { colorClass, customStyle } = resolveNoticeColorClass(notice?.color, notice?.customColor);
-const ariaLabels = {
-  region: lang === "zh" ? "页面通知" : "Page notice",
-  close: lang === "zh" ? "关闭通知" : "Dismiss notice",
-};
+const ARIA_LABELS = {
+  zh: { region: "页面通知", close: "关闭通知" },
+  en: { region: "Page notice", close: "Dismiss notice" },
+  ja: { region: "ページ通知", close: "通知を閉じる" },
+  fr: { region: "Notification de page", close: "Fermer la notification" },
+} as const;
+type LabelLang = keyof typeof ARIA_LABELS;
+const ariaLabels = ARIA_LABELS[(lang as LabelLang) in ARIA_LABELS ? (lang as LabelLang) : "en"];
 ---
 
 {notice?.text && (

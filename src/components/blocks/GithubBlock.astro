@@ -29,9 +29,8 @@ interface Props {
 }
 
 const { view, lang, accent, showContributions, cfgBlock } = Astro.props;
-const L2 = lang === 'zh' ? 'zh' : 'en';
 
-const L = {
+const LABELS = {
   zh: {
     total: (n: string) => `过去一年 ${n} 次贡献`,
     totalAlt: (n: string) => `过去一年 ${n} 次 GitHub 贡献`,
@@ -52,7 +51,30 @@ const L = {
     less: 'Less',
     more: 'More',
   },
-}[L2];
+  ja: {
+    total: (n: string) => `過去 1 年間で ${n} 件のコントリビューション`,
+    totalAlt: (n: string) => `過去 1 年間で ${n} 件の GitHub コントリビューション`,
+    updated: '最終更新',
+    placeholder: 'ローカルプレビューでは利用できません（GH_PAT 未設定。CI ビルドでは実データを表示）',
+    empty: 'GitHub データが未取得です：先に npm run prefetch を実行してください',
+    heatLabel: 'GitHub コントリビューションヒートマップ',
+    less: '少',
+    more: '多',
+  },
+  fr: {
+    total: (n: string) => `${n} contributions au cours de l’année écoulée`,
+    totalAlt: (n: string) => `${n} contributions GitHub au cours de l’année écoulée`,
+    updated: 'Données mises à jour le',
+    placeholder: 'Indisponible en aperçu local (pas de GH_PAT ; les builds CI affichent les données réelles)',
+    empty: 'Données GitHub non préchargées : exécutez d’abord npm run prefetch',
+    heatLabel: 'Carte de chaleur des contributions GitHub',
+    less: 'Moins',
+    more: 'Plus',
+  },
+} as const;
+type LabelLang = keyof typeof LABELS;
+const L2: LabelLang = (lang as LabelLang) in LABELS ? (lang as LabelLang) : 'en';
+const L = LABELS[L2];
 
 const scales = buildHeatScales(accent.light.accent, accent.dark.accent);
 const heatVars = Object.fromEntries(scales.light.map((c, i) => [`heat${i}`, c]));

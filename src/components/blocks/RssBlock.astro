@@ -24,10 +24,14 @@ const { view, title, lang, cfgBlock } = Astro.props;
 const cfgBlockAttr = cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {};
 const titleCfg = editCfgAttr('rss.block_title', lang);
 
-const L = {
+const LABELS = {
   zh: { empty: 'RSS 数据未预取：请先运行 npm run prefetch', updated: '数据更新于' },
   en: { empty: 'RSS data not prefetched: run npm run prefetch first', updated: 'Data updated' },
-}[lang === 'zh' ? 'zh' : 'en'];
+  ja: { empty: 'RSS データが未取得です：先に npm run prefetch を実行してください', updated: '最終更新' },
+  fr: { empty: 'Données RSS non préchargées : exécutez d’abord npm run prefetch', updated: 'Données mises à jour le' },
+} as const;
+type LabelLang = keyof typeof LABELS;
+const L = LABELS[(lang as LabelLang) in LABELS ? (lang as LabelLang) : 'en'];
 
 const hasContent =
   view !== null &&

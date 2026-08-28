@@ -8,10 +8,12 @@ import type { LocalizedText, SiteConfig } from './config.ts';
 
 export const FOOTER_REPO_URL = 'https://github.com/stlin256/OpenHomepage-V2';
 
-/** 默认页脚内容（双语）：OpenHomepage-V2 链接到项目仓库 */
-export const DEFAULT_FOOTER_TEXT: Record<'zh' | 'en', string> = {
+/** 默认页脚内容（四语）：OpenHomepage-V2 链接到项目仓库 */
+export const DEFAULT_FOOTER_TEXT: Record<'zh' | 'en' | 'ja' | 'fr', string> = {
   zh: `由 [OpenHomepage-V2](${FOOTER_REPO_URL}) 驱动`,
   en: `Powered by [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  ja: `Powered by [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  fr: `Propulsé par [OpenHomepage-V2](${FOOTER_REPO_URL})`,
 };
 
 /**

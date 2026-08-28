@@ -91,13 +91,13 @@ export function formatCount(n: number): string {
 }
 
 /**
- * "Updated xxx" 相对时间（GitHub 风，双语）：<1min 刚刚；<60min N 分钟；
+ * "Updated xxx" 相对时间（GitHub 风，四语）：<1min 刚刚；<60min N 分钟；
  * <24h N 小时；<31d N 天；更早落回日期。非法/缺失输入返回空串。
  */
 export function relativeUpdated(
   iso: string | null | undefined,
   now: number,
-  lang: 'zh' | 'en',
+  lang: string,
 ): string {
   if (!iso) return '';
   const t = Date.parse(iso);
@@ -105,6 +105,24 @@ export function relativeUpdated(
   const diff = Math.max(0, now - t);
   const mins = Math.floor(diff / 60_000);
   const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'} ago`;
+  if (lang === 'ja') {
+    if (mins < 1) return 'たった今更新';
+    if (mins < 60) return `${mins} 分前に更新`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} 時間前に更新`;
+    const days = Math.floor(hours / 24);
+    if (days < 31) return `${days} 日前に更新`;
+    return `${iso.slice(0, 10)} に更新`;
+  }
+  if (lang === 'fr') {
+    if (mins < 1) return 'Mis à jour à l’instant';
+    if (mins < 60) return `Mis à jour il y a ${mins} minute${mins === 1 ? '' : 's'}`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `Mis à jour il y a ${hours} heure${hours === 1 ? '' : 's'}`;
+    const days = Math.floor(hours / 24);
+    if (days < 31) return `Mis à jour il y a ${days} jour${days === 1 ? '' : 's'}`;
+    return `Mis à jour le ${iso.slice(0, 10)}`;
+  }
   if (mins < 1) return lang === 'zh' ? '刚刚更新' : 'Updated just now';
   if (mins < 60) return lang === 'zh' ? `更新于 ${mins} 分钟前` : `Updated ${plural(mins, 'minute')}`;
   const hours = Math.floor(mins / 60);
@@ -125,9 +143,9 @@ export const TOPICS_MAX = 6;
  */
 export function repoCardHtml(
   repo: GithubPinnedRepo,
-  opts: { lang?: 'zh' | 'en'; now?: number } = {},
+  opts: { lang?: string; now?: number } = {},
 ): string {
-  const lang = opts.lang === 'zh' ? 'zh' : 'en';
+  const lang = opts.lang ?? 'en';
   const now = opts.now ?? Date.now();
   const noteText = repo.note != null ? resolveText(repo.note, lang) : '';
   const desc = noteText || repo.description || '';

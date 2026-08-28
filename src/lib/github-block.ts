@@ -188,18 +188,27 @@ export function formatTimestamp(ts: number): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-/** 热力图格子 tooltip 文案（双语）："N contributions on 2026-08-22" / "2026年8月22日，N 次贡献" */
-export function heatTooltip(date: string, count: number, lang: 'zh' | 'en'): string {
+/** 热力图格子 tooltip 文案（四语）："N contributions on 2026-08-22" / "2026年8月22日，N 次贡献" */
+export function heatTooltip(date: string, count: number, lang: string): string {
+  const [y, m, d] = date.split('-').map(Number);
   if (lang === 'zh') {
-    const [y, m, d] = date.split('-').map(Number);
     const zhDate = `${y}年${m}月${d}日`;
     return count === 0 ? `${zhDate}，无贡献` : `${zhDate}，${count} 次贡献`;
+  }
+  if (lang === 'ja') {
+    const jaDate = `${y}年${m}月${d}日`;
+    return count === 0 ? `${jaDate}、コントリビューションなし` : `${jaDate}、${count} 件のコントリビューション`;
+  }
+  if (lang === 'fr') {
+    if (count === 0) return `Aucune contribution le ${date}`;
+    return `${count} contribution${count === 1 ? '' : 's'} le ${date}`;
   }
   if (count === 0) return `No contributions on ${date}`;
   return `${count} contribution${count === 1 ? '' : 's'} on ${date}`;
 }
 
 const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS_FR = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
 /**
  * 月份标签列（GitHub 风）：含某月 1 日的周列标该月（"只标新月起始列"）；
@@ -207,11 +216,12 @@ const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'
  */
 export function monthLabels(
   weeks: HeatWeek[],
-  lang: 'zh' | 'en',
+  lang: string,
 ): { weekIndex: number; label: string }[] {
   const monthLabel = (date: string) => {
     const m = Number(date.slice(5, 7));
-    return lang === 'zh' ? `${m}月` : MONTHS_EN[m - 1];
+    if (lang === 'zh' || lang === 'ja') return `${m}月`;
+    return lang === 'fr' ? MONTHS_FR[m - 1] : MONTHS_EN[m - 1];
   };
   const out: { weekIndex: number; label: string }[] = [];
   weeks.forEach((w, i) => {
@@ -227,8 +237,9 @@ export function monthLabels(
 }
 
 /** 星期标签（周日开头）：GitHub 只显示 Mon/Wed/Fri（中文 一/三/五），其余行留空占位 */
-export function weekdayLabels(lang: 'zh' | 'en'): (string | null)[] {
-  return lang === 'zh'
-    ? [null, '一', null, '三', null, '五', null]
-    : [null, 'Mon', null, 'Wed', null, 'Fri', null];
+export function weekdayLabels(lang: string): (string | null)[] {
+  if (lang === 'zh') return [null, '一', null, '三', null, '五', null];
+  if (lang === 'ja') return [null, '月', null, '水', null, '金', null];
+  if (lang === 'fr') return [null, 'lun.', null, 'mer.', null, 'ven.', null];
+  return [null, 'Mon', null, 'Wed', null, 'Fri', null];
 }

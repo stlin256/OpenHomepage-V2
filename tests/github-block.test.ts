@@ -324,6 +324,16 @@ describe('relativeUpdated（GitHub 风相对时间）', () => {
     expect(relativeUpdated('2026-08-23T10:00:00Z', NOW, 'zh')).toBe('更新于 2 小时前');
     expect(relativeUpdated('2026-08-20T12:00:00Z', NOW, 'zh')).toBe('更新于 3 天前');
     expect(relativeUpdated('2026-01-01T00:00:00Z', NOW, 'zh')).toBe('更新于 2026-01-01');
+
+    expect(relativeUpdated('2026-08-23T11:59:30Z', NOW, 'ja')).toBe('たった今更新');
+    expect(relativeUpdated('2026-08-23T11:15:00Z', NOW, 'ja')).toBe('45 分前に更新');
+    expect(relativeUpdated('2026-08-20T12:00:00Z', NOW, 'ja')).toBe('3 日前に更新');
+    expect(relativeUpdated('2026-01-01T00:00:00Z', NOW, 'ja')).toBe('2026-01-01 に更新');
+
+    expect(relativeUpdated('2026-08-23T11:59:30Z', NOW, 'fr')).toBe('Mis à jour à l’instant');
+    expect(relativeUpdated('2026-08-23T11:15:00Z', NOW, 'fr')).toBe('Mis à jour il y a 45 minutes');
+    expect(relativeUpdated('2026-08-22T12:00:00Z', NOW, 'fr')).toBe('Mis à jour il y a 1 jour');
+    expect(relativeUpdated('2026-01-01T00:00:00Z', NOW, 'fr')).toBe('Mis à jour le 2026-01-01');
   });
 
   it('非法/缺失输入返回空串（调用方不渲染）', () => {
@@ -343,6 +353,14 @@ describe('heatTooltip（格子提示双语）', () => {
     expect(heatTooltip('2026-08-22', 0, 'zh')).toBe('2026年8月22日，无贡献');
     expect(heatTooltip('2026-08-22', 5, 'zh')).toBe('2026年8月22日，5 次贡献');
     expect(heatTooltip('2026-01-03', 12, 'zh')).toBe('2026年1月3日，12 次贡献');
+  });
+
+  it('日/法语：本地化文案（0 与复数特判）', () => {
+    expect(heatTooltip('2026-08-22', 0, 'ja')).toBe('2026年8月22日、コントリビューションなし');
+    expect(heatTooltip('2026-08-22', 5, 'ja')).toBe('2026年8月22日、5 件のコントリビューション');
+    expect(heatTooltip('2026-08-22', 0, 'fr')).toBe('Aucune contribution le 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'fr')).toBe('1 contribution le 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'fr')).toBe('5 contributions le 2026-08-22');
   });
 });
 
@@ -366,6 +384,14 @@ describe('monthLabels / weekdayLabels（坐标轴）', () => {
       { weekIndex: 0, label: '1月' },
       { weekIndex: 3, label: '2月' },
     ]);
+    expect(monthLabels(weeks, 'ja')).toEqual([
+      { weekIndex: 0, label: '1月' },
+      { weekIndex: 3, label: '2月' },
+    ]);
+    expect(monthLabels(weeks, 'fr')).toEqual([
+      { weekIndex: 0, label: 'janv.' },
+      { weekIndex: 3, label: 'févr.' },
+    ]);
   });
 
   it('首周不含 1 日时按首天月份标注', () => {
@@ -382,6 +408,8 @@ describe('monthLabels / weekdayLabels（坐标轴）', () => {
   it('星期标签：GitHub 只显示 Mon/Wed/Fri（中文一/三/五）', () => {
     expect(weekdayLabels('en')).toEqual([null, 'Mon', null, 'Wed', null, 'Fri', null]);
     expect(weekdayLabels('zh')).toEqual([null, '一', null, '三', null, '五', null]);
+    expect(weekdayLabels('ja')).toEqual([null, '月', null, '水', null, '金', null]);
+    expect(weekdayLabels('fr')).toEqual([null, 'lun.', null, 'mer.', null, 'ven.', null]);
   });
 });
 

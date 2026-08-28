@@ -5,7 +5,9 @@ describe('normalizeSiteLanguage', () => {
   it('normalizes supported primary language tags', () => {
     expect(normalizeSiteLanguage('zh-CN')).toBe('zh');
     expect(normalizeSiteLanguage('en_US')).toBe('en');
-    expect(normalizeSiteLanguage('fr')).toBeNull();
+    expect(normalizeSiteLanguage('fr')).toBe('fr');
+    expect(normalizeSiteLanguage('ja-JP')).toBe('ja');
+    expect(normalizeSiteLanguage('de')).toBeNull();
   });
 });
 
