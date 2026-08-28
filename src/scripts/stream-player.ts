@@ -50,27 +50,6 @@ function renderFull(root: HTMLElement, content: HTMLElement): void {
   root.classList.add('stream-done');
 }
 
-/** 用同一排版环境离屏测量完整内容高度，播放前预留最终高度。 */
-function measureFullHeight(root: HTMLElement, content: HTMLElement): number {
-  const html = fullHtml(root);
-  if (!html) return 0;
-
-  const probe = content.cloneNode(false) as HTMLElement;
-  probe.dataset.streamHeightProbe = '1';
-  probe.style.position = 'absolute';
-  probe.style.left = '-9999px';
-  probe.style.top = '0';
-  probe.style.width = `${content.getBoundingClientRect().width}px`;
-  probe.style.height = 'auto';
-  probe.style.visibility = 'hidden';
-  probe.innerHTML = html;
-  root.append(probe);
-
-  const height = probe.getBoundingClientRect().height;
-  probe.remove();
-  return Math.ceil(height);
-}
-
 /** 逐 token 增长时把内容高度从当前值过渡到新值，避免容器瞬间跳高。 */
 function animateContentGrowth(ctx: PlayerCtx, previousHeight: number, generation: number): void {
   const nextHeight = ctx.content.scrollHeight;
@@ -149,12 +128,10 @@ function applyToken(ctx: PlayerCtx, token: StreamToken): void {
 
 async function play(ctx: PlayerCtx): Promise<void> {
   const gen = ++ctx.generation;
-  const reservedHeight = measureFullHeight(ctx.root, ctx.content);
   ctx.content.innerHTML = '';
   ctx.stack = [ctx.content];
   ctx.cursor.hidden = false;
   ctx.content.appendChild(ctx.cursor);
-  if (reservedHeight > 0) ctx.content.style.height = `${reservedHeight}px`;
   ctx.root.classList.add('stream-playing');
   for (const token of ctx.tokens) {
     if (ctx.generation !== gen) return; // 已有新一轮播放接管
@@ -171,7 +148,6 @@ async function play(ctx: PlayerCtx): Promise<void> {
     if (d > 0) await sleep(d);
   }
   ctx.cursor.hidden = true;
-  ctx.content.style.height = '';
   ctx.root.classList.remove('stream-playing');
   ctx.root.classList.add('stream-done');
 }
