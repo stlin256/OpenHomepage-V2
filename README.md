@@ -62,7 +62,7 @@ Launch the editor locally on your PC:
 npm run admin       # Access at http://127.0.0.1:4174 (loopback only)
 ```
 
-- **On-Page Visual Editing**: The "Visual editing" button opens the real rendered page in edit mode — hover outlines, in-place text editing, a right-side inspector for directive parameters and grid columns, block insert/move/delete, homepage config block forms, and page settings.
+- **On-Page Visual Editing**: The "Visual editing" button opens the real rendered page in edit mode — hover outlines, in-place text editing, a right-side inspector for directive parameters and grid columns, block insert/drag-reorder/cross-container move/delete, undo/redo (Ctrl+Z), a stream-block content editor modal with live preview (content fully expanded while editing), homepage config block forms, and page settings.
 - **Source Fallback**: The admin page view keeps a frontmatter form and whole-page Markdown source editor (autosaves after idle).
 - **Comprehensive Configuration**: Manage profile links, favicon generation, theme accent colors, GitHub settings, RSS subscriptions, streaming blocks, and homepage layout ordering.
 - **Autosave & Version Snapshots**: Changes write to disk automatically after ~1.5s idle, with historical versions archived in `data/.snapshots/` for rollback.

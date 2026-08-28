@@ -1,6 +1,6 @@
 # 可视化编辑器重构：渲染页直编（细化项 #12）
 
-> 状态：✅ 已实现（2026-08-27 定稿；M12a–M12c 完成于 2026-08-27，M12d/M12e 完成于 2026-08-28）。
+> 状态：✅ 已实现（2026-08-27 定稿；M12a–M12c 完成于 2026-08-27，M12d/M12e 完成于 2026-08-28，M12f–M12i 完成于 2026-08-28）。
 > 取代 06 的编辑器形态：admin 内 Milkdown 全文编辑器、所见即所得/源码/双栏三模式、内嵌 iframe 预览**全部移除**；正文编辑迁移到 astro dev 渲染页上的 overlay。
 > 硬约束：markdown + 自定义指令**无损往返**；仅适配 PC；功能不丢（自动保存/快照/粘贴图片/页面管理/i18n/明暗主题）。
 
@@ -13,7 +13,7 @@
 | 预览形态 | 独立浏览器标签页（编辑即发生在该页），admin 内不再内嵌 iframe 预览 |
 | 文本块编辑 | 就地微编辑器（点击块→原位挂载迷你 Milkdown→序列化回 markdown 拼接），不用 contenteditable + HTML→md（有损） |
 | 范围 | 一步到位：页面正文、grid 单元格内部、首页配置驱动区块、yaml 简单文本字段全部 v1 覆盖 |
-| 块排序 | 浮动工具条的上移/下移按钮（键盘可达）；拖拽留 v2 |
+| 块排序 | 浮动工具条按钮 + 手柄拖拽（M12g 补齐，含跨容器移动）；上移/下移按钮保留保证键盘可达 |
 | 配置表单 | overlay 右侧面板内**原生重写**（不嵌 admin iframe），视觉统一 |
 | yaml 文本字段 | 支持点击就地改字（`data-oh-cfg` 坐标） |
 | 面板位置 | 右侧滑出（Gutenberg 块检查器风格）；顶栏放页面级操作 |
@@ -89,7 +89,7 @@
 | 段落/标题/列表/引用/代码块 | 点击（或工具条"编辑"）→ 原位微编辑器；Esc 取消，Ctrl+Enter/完成按钮保存 |
 | 叶指令（bilibili/youtube/figure/ghcard/editorial/stream…） | 点击 → 右侧检查器参数表单 → 保存回写指令语法 |
 | grid 容器 | 点击 → 检查器：列数、增删单元格；内部块照常直编 |
-| cell 内块 | 与顶层块完全同等（坐标递归）；移动/插入限定在**同一父容器**内（防跨容器结构破坏） |
+| cell 内块 | 与顶层块完全同等（坐标递归）；支持跨容器移动（M12g：服务端做围栏冒号重归一化 + 结构守恒校验，非法目标 400） |
 | 首页配置区块（profile/github/rss/streaming/editorial） | 点击 → 右侧检查器原生配置表单（编辑 site.yaml/rss.yaml 对应段） |
 | `data-oh-cfg` 文本 | 点击 → 就地改字 → 回车保存 |
 | 页面设置 | 顶栏按钮 → 检查器显示 frontmatter 表单（标题/slug/nav/order/描述/notice） |
@@ -101,13 +101,13 @@
 - **保留不动**：配置视图、素材管理、快照、站点信息、预览服务管理、i18n、明暗主题、侧栏折叠。
 - **页面视图重写**：frontmatter 设置表单 + 整页源码 textarea（等宽，自动保存）+「可视化编辑」主按钮 + 页面操作（快照/重命名/删除/创建另一语言版）。
 
-## 5. 范围边界（v1 明确不做）
+## 5. 范围边界（仍不做）
 
-- 块拖拽排序（v2，沿用按钮先保证键盘可达）。
-- 跨容器移动块、grid 单元格的可视化拖拽分栏。
-- overlay 内撤销/重做（用快照回滚兜底）。
-- 流式块内容的页面内直编（其打字机动画与静态编辑冲突；内容经检查器表单中的 markdown 字段编辑）。
 - 移动端适配。
+- `POST /api/render-markdown` 预览接口无 stream/ghcard/editorial 嵌入数据，预览中这些占位被移除（已知限制；真实效果以保存后页面刷新为准）。
+- 流式块编辑只写已命中的内容文件（含语言回退命中的文件），不自动创建当前语言新文件。
+
+> 原 v1 边界中的块拖拽、跨容器移动、grid 单元格拖拽、overlay 撤销/重做、流式块内容直编已分别在 M12g/M12h/M12i 实现。
 
 ## 6. 测试策略
 
@@ -124,3 +124,6 @@
 4. **M12d 配置与字段**：`data-oh-cfg` 就地改字 + 首页配置区块原生表单 + 页面设置面板 + 页面切换。
 5. **M12e admin 收尾**：页面视图重写、旧编辑器与双栏预览移除、文档（06 标记被取代）与测试清理。
 6. **M12f 可靠性修补**：缺参/未知指令在编辑模式渲染占位卡（`oh-directive-placeholder`，节点类型不变、坐标照常注入，生产模式降级不变）；插入成功后写 sessionStorage 回跳标记（`oh-open-block`），reload 后自动打开新块检查器/微编辑器；hover 改 document 级事件委托（嵌套取最内层）+ 块内媒体 `pointer-events:none`（iframe 不吞事件）+ 工具条贴边/400ms 延迟消除死区；dev server 监听 data/ 变更失效路由模块（getStaticPaths 缓存否则不随 data 写入刷新）。
+7. **M12g 拖拽与跨容器移动**：工具条拖动手柄（⠿，HTML5 DnD）+ 落点指示线/容器高亮 + Esc 取消；服务端 move 放开同父限制，`legalMoveBoundaries` 枚举全容器落点，`moveBlockCrossContainer` 做围栏冒号重归一化（提升祖先链或缩减被移内容外层，取改动行数更少者）+ `assertMoveStructurePreserved` 结构守恒校验；cell 可在 grid 内/跨 grid 拖拽重排。
+8. **M12h 撤销/重做**：`admin/server/history.ts` 以文件为粒度在快照时间线上维护内存游标（undo 存 redo 点、新写盘作废 redo 栈、restore 走 `restoreVerbatim` 不重复快照）；`GET /api/history` + `POST /api/history/undo|redo`（path 可省略 = 最近写盘文件）；overlay 顶栏按钮（按状态置灰）+ Ctrl+Z / Ctrl+Shift+Z（输入控件与微编辑器内不劫持）。
+9. **M12i 流式块内容直编**：编辑模式 `<html class="oh-edit">` 使流式块跳过打字机、完全展开渲染；检查器/配置面板的「编辑内容」打开页面内双栏窗口（左 markdown 源码、右实时预览 `POST /api/render-markdown` 500ms 防抖），保存经 `GET/POST /api/stream-content` 写回内容文件（快照 + notifyWrite 入撤销链）。
