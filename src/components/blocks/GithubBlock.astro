@@ -77,8 +77,11 @@ const L2: LabelLang = (lang as LabelLang) in LABELS ? (lang as LabelLang) : 'en'
 const L = LABELS[L2];
 
 const scales = buildHeatScales(accent.light.accent, accent.dark.accent);
-const heatVars = Object.fromEntries(scales.light.map((c, i) => [`heat${i}`, c]));
-const heatVarsDark = Object.fromEntries(scales.dark.map((c, i) => [`heatDark${i}`, c]));
+// 色阶只挂在区块根上；define:vars 会把同一组变量复制到所有 scoped 后代节点。
+const heatScaleVars = [
+  ...scales.light.map((color, index) => `--heat-light-${index}:${color}`),
+  ...scales.dark.map((color, index) => `--heat-dark-${index}:${color}`),
+].join(';');
 
 const contributions = view?.contributions ?? { kind: 'hidden' };
 const pinned = view?.pinned ?? null;
@@ -89,7 +92,11 @@ const weekdays = weekdayLabels(L2);
 const totalFmt = contributions.kind === 'ok' ? formatCount(contributions.total) : '';
 ---
 
-<section class="home-block block-github reveal" {...(cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {})}>
+<section
+  class="home-block block-github reveal"
+  style={heatScaleVars}
+  {...(cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {})}
+>
   {view === null && <p class="block-empty">{L.empty}</p>}
 
   {showContributions && contributions.kind === 'placeholder' && (
@@ -154,19 +161,19 @@ const totalFmt = contributions.kind === 'ok' ? formatCount(contributions.total) 
   )}
 </section>
 
-<style define:vars={{ ...heatVars, ...heatVarsDark }}>
+<style>
   .block-github {
-    --heat-0: var(--heat0);
-    --heat-1: var(--heat1);
-    --heat-2: var(--heat2);
-    --heat-3: var(--heat3);
-    --heat-4: var(--heat4);
+    --heat-0: var(--heat-light-0);
+    --heat-1: var(--heat-light-1);
+    --heat-2: var(--heat-light-2);
+    --heat-3: var(--heat-light-3);
+    --heat-4: var(--heat-light-4);
   }
   html[data-theme='dark'] .block-github {
-    --heat-0: var(--heatDark0);
-    --heat-1: var(--heatDark1);
-    --heat-2: var(--heatDark2);
-    --heat-3: var(--heatDark3);
-    --heat-4: var(--heatDark4);
+    --heat-0: var(--heat-dark-0);
+    --heat-1: var(--heat-dark-1);
+    --heat-2: var(--heat-dark-2);
+    --heat-3: var(--heat-dark-3);
+    --heat-4: var(--heat-dark-4);
   }
 </style>
