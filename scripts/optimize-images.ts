@@ -342,34 +342,35 @@ export async function optimizeDistImages(
       }
       if (!naturalWidth) continue;
 
+      const conversionTasks: Array<Promise<void>> = [];
       const webpFile = path.join(assetsDir, webpRelative);
       const isWebpSource = /\.webp$/i.test(relative);
-      if (isWebpSource) {
-        if (!(await validExistingVariant(webpFile, naturalWidth))) {
-          await writeWebp(source, webpFile, naturalWidth, quality);
-          converted += 1;
-        } else {
-          reused += 1;
-        }
-      } else if (await validExistingVariant(webpFile, naturalWidth)) {
-        reused += 1;
-      } else {
-        const output = await writeWebp(source, webpFile, naturalWidth, quality);
-        converted += 1;
-        bytesSaved += Math.max(0, source.length - output.length);
-      }
-      availableWebp.add(`assets/${webpRelative}`);
-
       const avifRelative = relative.replace(/\.[a-z0-9]+$/i, '.avif');
       const avifFile = path.join(assetsDir, avifRelative);
-      if (await validExistingVariant(avifFile, naturalWidth)) {
-        avifReused += 1;
-      } else {
+
+      conversionTasks.push((async () => {
+        if (await validExistingVariant(webpFile, naturalWidth)) {
+          reused += 1;
+          availableWebp.add(`assets/${webpRelative}`);
+          return;
+        }
+        const output = await writeWebp(source, webpFile, naturalWidth, quality);
+        converted += 1;
+        if (!isWebpSource) bytesSaved += Math.max(0, source.length - output.length);
+        availableWebp.add(`assets/${webpRelative}`);
+      })());
+
+      conversionTasks.push((async () => {
+        if (await validExistingVariant(avifFile, naturalWidth)) {
+          avifReused += 1;
+          availableAvif.add(`assets/${avifRelative}`);
+          return;
+        }
         const output = await writeAvif(source, avifFile, naturalWidth, avifQuality);
         avifConverted += 1;
         bytesSaved += Math.max(0, source.length - output.length);
-      }
-      availableAvif.add(`assets/${avifRelative}`);
+        availableAvif.add(`assets/${avifRelative}`);
+      })());
 
       const variantWidths: number[] = [];
       if (!metadata.pages || metadata.pages <= 1) {
@@ -377,29 +378,43 @@ export async function optimizeDistImages(
           if (width >= naturalWidth) continue;
           const variantRelative = responsiveWebpRelativePath(webpRelative, width);
           const variantFile = path.join(assetsDir, variantRelative);
-          if (await validExistingVariant(variantFile, width)) {
-            variantsReused += 1;
-          } else {
-            const output = await writeWebp(source, variantFile, width, quality);
-            variantsCreated += 1;
-            bytesSaved += Math.max(0, source.length - output.length);
-          }
-          availableWebp.add(`assets/${variantRelative}`);
-
           const avifVariantRelative = responsiveAvifRelativePath(avifRelative, width);
           const avifVariantFile = path.join(assetsDir, avifVariantRelative);
-          if (await validExistingVariant(avifVariantFile, width)) {
-            avifVariantsReused += 1;
-          } else {
-            const output = await writeAvif(source, avifVariantFile, width, avifQuality);
-            avifVariantsCreated += 1;
-            bytesSaved += Math.max(0, source.length - output.length);
-          }
-          availableAvif.add(`assets/${avifVariantRelative}`);
-
-          variantWidths.push(width);
+          conversionTasks.push((async () => {
+            await Promise.all([
+              (async () => {
+                if (await validExistingVariant(variantFile, width)) {
+                  variantsReused += 1;
+                  availableWebp.add(`assets/${variantRelative}`);
+                  return;
+                }
+                const output = await writeWebp(source, variantFile, width, quality);
+                variantsCreated += 1;
+                bytesSaved += Math.max(0, source.length - output.length);
+                availableWebp.add(`assets/${variantRelative}`);
+              })(),
+              (async () => {
+                if (await validExistingVariant(avifVariantFile, width)) {
+                  avifVariantsReused += 1;
+                  availableAvif.add(`assets/${avifVariantRelative}`);
+                  return;
+                }
+                const output = await writeAvif(source, avifVariantFile, width, avifQuality);
+                avifVariantsCreated += 1;
+                bytesSaved += Math.max(0, source.length - output.length);
+                availableAvif.add(`assets/${avifVariantRelative}`);
+              })(),
+            ]);
+            variantWidths.push(width);
+          })());
         }
       }
+
+      // 一张源图的所有输出互相独立；任一输出失败时，先等同批任务结束，
+      // 再像旧流程一样跳过整张图，避免半成品引用进入 HTML。
+      const settled = await Promise.allSettled(conversionTasks);
+      const failed = settled.find((entry) => entry.status === 'rejected');
+      if (failed && failed.status === 'rejected') throw failed.reason;
       catalog.set(`assets/${webpRelative}`, { naturalWidth, naturalHeight, variantWidths });
     } catch (error) {
       console.warn(`[optimize-images] skipped ${relative}: ${(error as Error).message}`);
