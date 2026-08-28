@@ -3,9 +3,13 @@ site:
   title:
     zh: "林知远"
     en: "Zhiyuan Lin"
+    ja: "林知远"
+    fr: "Zhiyuan Lin"
   description:
     zh: "林知远的个人主页：机器学习研究、开源项目与阅读记录"
     en: "Zhiyuan Lin's homepage: machine learning research, open source, and reading notes"
+    ja: "林知远の個人ホームページ：機械学習研究、オープンソース、読書記録"
+    fr: "Page personnelle de Zhiyuan Lin : recherche en apprentissage automatique, open source et notes de lecture"
   language: zh-CN
   favicon: "assets/favicon.svg"     # 站点图标（svg/png/ico）；删除该行则用内置默认
 
@@ -14,9 +18,13 @@ profile:
   name:
     zh: "林知远"
     en: "Zhiyuan Lin"
+    ja: "林知远"
+    fr: "Zhiyuan Lin"
   tagline:
     zh: "博士研究生 / 机器学习与系统"
     en: "PhD candidate / ML & Systems"
+    ja: "博士課程 / 機械学習とシステム"
+    fr: "Doctorant / ML & systèmes"
   avatar: ""                     # 留空则主页不渲染头像图片
   # avatar_position: "side"     # side=头像在简介右侧（默认杂志布局）；top=头像在姓名上方居顶居中
   bio_page: "index"
@@ -38,6 +46,8 @@ footer:
   text:
     zh: "由 [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2) 驱动"
     en: "Powered by [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2)"
+    ja: "このサイトは [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2) で構築"
+    fr: "Propulsé par [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2)"
 
 # ---- 右下角联系卡 ----
 contact:
@@ -47,12 +57,18 @@ contact:
     label:
       zh: "Hello"
       en: "Hello"
+      ja: "こんにちは"
+      fr: "Bonjour"
     title:
       zh: "交个朋友"
       en: "Say Hello"
+      ja: "友達になろう"
+      fr: "Dites bonjour"
     description:
       zh: "扫码交流机器学习与系统"
       en: "Scan to discuss ML and systems"
+      ja: "スキャンして機械学習とシステムについて語り合いましょう"
+      fr: "Scannez pour discuter de ML et de systèmes"
     image: "assets/contact-qr.svg"
 
 # ---- 背景音乐 ----
@@ -71,14 +87,20 @@ github:
       note:
         zh: "杂志化排版、纯静态、中英双语的个人主页生成器"
         en: "Lightweight, magazine-style static personal homepage generator"
+        ja: "軽量でマガジン風の静的個人ホームページジェネレーター"
+        fr: "Générateur de page d'accueil personnelle statique et léger, au style magazine"
     - repo: "huggingface/transformers"
       note:
         zh: "State-of-the-art NLP for everyone —— 复现论文时的基础设施"
         en: "State-of-the-art NLP for everyone — infrastructure for reproducing papers"
+        ja: "すべての人のための最先端 NLP —— 論文を再現するためのインフラ"
+        fr: "NLP de pointe pour tous — l'infrastructure pour reproduire les articles"
     - repo: "ggml-org/llama.cpp"
       note:
         zh: "在笔记本上跑大模型，本地实验的起点"
         en: "Running LLMs on a laptop — where local experiments begin"
+        ja: "ノートPCで大規模モデルを動かす —— ローカル実験の出発点"
+        fr: "Faire tourner des LLM sur un ordinateur portable — le point de départ des expériences locales"
     - repo: "openai/whisper"
 
 # ---- RSS 区块 ----
@@ -87,6 +109,8 @@ rss:
   block_title:
     zh: "前沿动态"
     en: "Frontier Radar"
+    ja: "フロンティアレーダー"
+    fr: "Radar de pointe"
   sources_file: "rss.yaml"
 
 # ---- 主页布局：区块顺序完全可配置（调整列表顺序即可重排主页）----
@@ -109,56 +133,84 @@ editorial_blocks:
     tag:
       zh: "01 · Work"
       en: "01 · Work"
+      ja: "01 · Work"
+      fr: "01 · Work"
     title:
       zh: "RESEARCH INDEX"
       en: "RESEARCH INDEX"
+      ja: "RESEARCH INDEX"
+      fr: "RESEARCH INDEX"
     description:
       zh: "把论文、工具与实验记录放进同一条索引。每一项都保留可复现的入口。"
       en: "Papers, tools, and experiments share one index. Every entry keeps a reproducible entry point."
+      ja: "論文、ツール、実験記録を同じインデックスに。すべての項目に再現可能な入口を残しています。"
+      fr: "Articles, outils et expériences partagent un même index. Chaque entrée conserve un point d'accès reproductible."
     color: "#7b9aac"
     actions:
       - label:
           zh: "查看研究"
           en: "View research"
+          ja: "研究を見る"
+          fr: "Voir la recherche"
         url: "/research"
         variant: "primary"
       - label:
           zh: "特性演示"
           en: "Feature tour"
+          ja: "機能ツアー"
+          fr: "Tour des fonctionnalités"
         url: "/features"
         variant: "outline"
     list:
       - title:
           zh: "高效推理流水线"
           en: "Efficient inference pipeline"
+          ja: "効率的な推論パイプライン"
+          fr: "Pipeline d'inférence efficace"
         meta:
           zh: "系统 · 2026"
           en: "Systems · 2026"
+          ja: "システム · 2026"
+          fr: "Systèmes · 2026"
         description:
           zh: "围绕投机解码、KV cache 与调度策略做可测量优化。"
           en: "Measurable work on speculative decoding, KV cache, and scheduling."
+          ja: "投機的デコーディング、KVキャッシュ、スケジューリングに関する測定可能な最適化。"
+          fr: "Travaux mesurables sur le décodage spéculatif, le cache KV et l'ordonnancement."
         image: "assets/research-compute.jpg"
         url: "/research"
       - title:
           zh: "可复现评测集"
           en: "Reproducible evaluation"
+          ja: "再現可能な評価"
+          fr: "Évaluation reproductible"
         meta:
           zh: "评测 · 2026"
           en: "Evaluation · 2026"
+          ja: "評価 · 2026"
+          fr: "Évaluation · 2026"
         description:
           zh: "滚动更新样本，报告分布而不是单次分数。"
           en: "Rolling samples and distribution reports instead of single scores."
+          ja: "サンプルをローリング更新し、単一スコアではなく分布を報告します。"
+          fr: "Échantillons renouvelés et rapports de distributions plutôt que scores uniques."
         image: "assets/research-evaluation.jpg"
         url: "/research"
       - title:
           zh: "开源实验工具"
           en: "Open-source tooling"
+          ja: "オープンソースツール"
+          fr: "Outils open source"
         meta:
           zh: "工具 · 2026"
           en: "Tools · 2026"
+          ja: "ツール · 2026"
+          fr: "Outils · 2026"
         description:
           zh: "小而可读，能在一个下午被另一个人接住。"
           en: "Small, readable, and easy for someone else to pick up."
+          ja: "小さく読みやすく、他の人が簡単に引き継げるもの。"
+          fr: "Petits, lisibles et faciles à reprendre par quelqu'un d'autre."
         image: "assets/research-tooling.jpg"
         url: "https://github.com/stlin256"
     divider: true
@@ -167,68 +219,102 @@ editorial_blocks:
     tag:
       zh: "02 · Studio"
       en: "02 · Studio"
+      ja: "02 · Studio"
+      fr: "02 · Studio"
     title:
       zh: "VISUAL LAB"
       en: "VISUAL LAB"
+      ja: "VISUAL LAB"
+      fr: "VISUAL LAB"
     description:
       zh: "磁贴用来快速扫描，归档卡保留停运项目与旧实验的痕迹。"
       en: "Tiles support fast scanning; archive cards preserve retired experiments."
+      ja: "タイルは素早いスキャン用、アーカイブカードは引退した実験の痕跡を残します。"
+      fr: "Les tuiles permettent un balayage rapide ; les cartes archive préservent les expériences retirées."
     color: "#a87ca5"
     tiles:
       - title:
           zh: "光影档案"
           en: "Visual archive"
+          ja: "ビジュアルアーカイブ"
+          fr: "Archive visuelle"
         kicker:
           zh: "Gallery"
           en: "Gallery"
+          ja: "Gallery"
+          fr: "Gallery"
         image: "assets/hero.jpg"
         url: "/gallery"
         size: "wide"
       - title:
           zh: "field notes"
           en: "Field notes"
+          ja: "フィールドノート"
+          fr: "Notes de terrain"
         kicker:
           zh: "Photo"
           en: "Photo"
+          ja: "Photo"
+          fr: "Photo"
         image: "assets/gallery-kingfisher.jpg"
         url: "/gallery"
         size: "tall"
       - title:
           zh: "城市线路"
           en: "City lines"
+          ja: "都市のライン"
+          fr: "Lignes urbaines"
         kicker:
           zh: "Travel"
           en: "Travel"
+          ja: "Travel"
+          fr: "Travel"
         image: "assets/gallery-transit-station.jpg"
         url: "/gallery"
       - title:
           zh: "夜间片段"
           en: "Night fragments"
+          ja: "夜の断片"
+          fr: "Fragments de nuit"
         kicker:
           zh: "Archive"
           en: "Archive"
+          ja: "Archive"
+          fr: "Archive"
         image: "assets/gallery-victoria-harbour-night.jpg"
         url: "/gallery"
     archive:
       - title:
           zh: "旧实验 A"
           en: "Old experiment A"
+          ja: "過去の実験 A"
+          fr: "Ancienne expérience A"
         status:
           zh: "已归档"
           en: "Archived"
+          ja: "アーカイブ済み"
+          fr: "Archivé"
         description:
           zh: "服务停了，结论和配置仍然值得保留。"
           en: "The service stopped, but the conclusions and config remain useful."
+          ja: "サービスは停止しましたが、結論と設定は残す価値があります。"
+          fr: "Le service est arrêté, mais les conclusions et la configuration restent utiles."
         image: "assets/gallery-shantou-university.jpg"
       - title:
           zh: "Travel Log 2025"
           en: "Travel Log 2025"
+          ja: "Travel Log 2025"
+          fr: "Travel Log 2025"
         status:
           zh: "已归档"
           en: "Archived"
+          ja: "アーカイブ済み"
+          fr: "Archivé"
         description:
           zh: "旧内容仍可作为研究索引的一部分。"
           en: "Old material still belongs in a research index."
+          ja: "古い素材も研究インデックスの一部です。"
+          fr: "Les anciens contenus ont toujours leur place dans un index de recherche."
         image: "assets/gallery-travel-log.jpg"
     divider: true
 
@@ -236,104 +322,156 @@ editorial_blocks:
     tag:
       zh: "03 · Components"
       en: "03 · Components"
+      ja: "03 · Components"
+      fr: "03 · Components"
     title:
       zh: "EDITORIAL KIT"
       en: "EDITORIAL KIT"
+      ja: "EDITORIAL KIT"
+      fr: "EDITORIAL KIT"
     description:
       zh: "这一块由正文里的 ::editorial{id=\"features\"} 指令嵌入，完整展示按钮、列表、磁贴、归档卡和分割线。"
       en: "This block is embedded with ::editorial{id=\"features\"}; it shows actions, list cards, tiles, archive cards, and a divider."
+      ja: "このブロックは本文中の ::editorial{id=\"features\"} ディレクティブで埋め込まれ、アクション、リストカード、タイル、アーカイブカード、区切り線をすべて展示します。"
+      fr: "Ce bloc est intégré avec ::editorial{id=\"features\"} ; il montre les actions, cartes liste, tuiles, cartes archive et un séparateur."
     color: "#6d8f7c"
     actions:
       - label:
           zh: "主要动作"
           en: "Primary action"
+          ja: "主要アクション"
+          fr: "Action principale"
         url: "/features"
         variant: "primary"
       - label:
           zh: "次要动作"
           en: "Secondary action"
+          ja: "副アクション"
+          fr: "Action secondaire"
         url: "/gallery"
         variant: "outline"
       - label:
           zh: "弱化动作"
           en: "Quiet action"
+          ja: "控えめなアクション"
+          fr: "Action discrète"
         variant: "ghost"
     list:
       - title:
           zh: "带图列表卡"
           en: "List card with image"
+          ja: "画像付きリストカード"
+          fr: "Carte liste avec image"
         meta:
           zh: "Mask · Hover"
           en: "Mask · Hover"
+          ja: "Mask · Hover"
+          fr: "Mask · Hover"
         description:
           zh: "鼠标悬停时遮罩提升透明度，图片轻微缩小。"
           en: "Hover raises mask opacity and scales the image down slightly."
+          ja: "ホバー時にマスクの不透明度が上がり、画像がわずかに縮小します。"
+          fr: "Au survol, l'opacité du masque augmente et l'image rétrécit légèrement."
         image: "assets/gallery-red-whiskered-bulbul.jpg"
         url: "/gallery"
       - title:
           zh: "无图列表卡"
           en: "List card without image"
+          ja: "画像なしリストカード"
+          fr: "Carte liste sans image"
         meta:
           zh: "Text · Stable"
           en: "Text · Stable"
+          ja: "Text · Stable"
+          fr: "Text · Stable"
         description:
           zh: "没有图片时仍然保持稳定的两栏编号布局。"
           en: "The numbered two-column layout remains stable without an image."
+          ja: "画像がなくても、番号付き2カラムレイアウトは安定したままです。"
+          fr: "La mise en page numérotée à deux colonnes reste stable sans image."
     tiles:
       - title:
           zh: "宽磁贴"
           en: "Wide tile"
+          ja: "ワイドタイル"
+          fr: "Tuile large"
         kicker:
           zh: "Wide"
           en: "Wide"
+          ja: "Wide"
+          fr: "Wide"
         image: "assets/gallery-sunset-clouds.jpg"
         url: "/gallery"
         size: "wide"
       - title:
           zh: "高磁贴"
           en: "Tall tile"
+          ja: "トールタイル"
+          fr: "Tuile haute"
         kicker:
           zh: "Tall"
           en: "Tall"
+          ja: "Tall"
+          fr: "Tall"
         image: "assets/gallery-iron-sparks.jpg"
         url: "/gallery"
         size: "tall"
       - title:
           zh: "标准磁贴"
           en: "Standard tile"
+          ja: "標準タイル"
+          fr: "Tuile standard"
         kicker:
           zh: "Small"
           en: "Small"
+          ja: "Small"
+          fr: "Small"
         image: "assets/gallery-wind-turbine.jpg"
         url: "/gallery"
       - title:
           zh: "标准磁贴 B"
           en: "Standard tile B"
+          ja: "標準タイル B"
+          fr: "Tuile standard B"
         kicker:
           zh: "Small"
           en: "Small"
+          ja: "Small"
+          fr: "Small"
         image: "assets/gallery-botanical-garden.jpg"
         url: "/gallery"
     archive:
       - title:
           zh: "归档卡 A"
           en: "Archive card A"
+          ja: "アーカイブカード A"
+          fr: "Carte archive A"
         status:
           zh: "Archived"
           en: "Archived"
+          ja: "Archived"
+          fr: "Archived"
         description:
           zh: "灰度媒体在悬停时恢复部分色彩。"
           en: "Grayscale media regains some color on hover."
+          ja: "グレースケールメディアはホバー時に一部の色が戻ります。"
+          fr: "Les médias en niveaux de gris retrouvent un peu de couleur au survol."
         image: "assets/gallery-beishan-bay.jpg"
       - title:
           zh: "归档卡 B"
           en: "Archive card B"
+          ja: "アーカイブカード B"
+          fr: "Carte archive B"
         status:
           zh: "Legacy"
           en: "Legacy"
+          ja: "Legacy"
+          fr: "Legacy"
         description:
           zh: "适合保留停运项目和旧实验记录。"
           en: "Useful for retired projects and old experiments."
+          ja: "引退したプロジェクトや古い実験記録の保存に適しています。"
+          fr: "Utile pour les projets retirés et les anciennes expériences."
         image: "assets/gallery-yingge-dance.jpg"
     divider: true
 
@@ -343,6 +481,8 @@ streaming_blocks:
     title:
       zh: "AI 助理致辞"
       en: "A word from my assistant"
+      ja: "AI アシスタントからの挨拶"
+      fr: "Un mot de mon assistant"
     content_file: "streaming/welcome.md"
     autoplay: true
     speed: 40
