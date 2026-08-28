@@ -59,8 +59,22 @@ export function responsiveImageCandidates(document: Document): PrefetchImageCand
     if (!src && !srcset) continue;
     if ((srcset ?? src).includes('-full.')) continue;
 
-    const candidate: PrefetchImageCandidate = srcset
-      ? { src, srcset, sizes: image.getAttribute('sizes') ?? undefined }
+    // Post-build images are AVIF-first <picture> elements. The detached Image
+    // used by idle prefetch must follow that source, not the WebP fallback.
+    const avifSource = [...(image.closest('picture')?.children ?? [])].find(
+      (element): element is HTMLSourceElement =>
+        element.tagName === 'SOURCE' &&
+        element.getAttribute('type') === 'image/avif' &&
+        Boolean(element.getAttribute('srcset')),
+    );
+    const effectiveSrcset = avifSource?.getAttribute('srcset') ?? srcset;
+    const firstCandidate = /^(\S+)/.exec(effectiveSrcset ?? '')?.[1];
+    const candidate: PrefetchImageCandidate = effectiveSrcset
+      ? {
+          src: avifSource ? firstCandidate ?? src : src,
+          srcset: effectiveSrcset,
+          sizes: image.getAttribute('sizes') ?? undefined,
+        }
       : { src };
     const key = `${candidate.srcset ?? ''}|${candidate.sizes ?? ''}|${candidate.src}`;
     if (seen.has(key)) continue;

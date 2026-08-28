@@ -50,6 +50,22 @@ describe('page prefetch helpers', () => {
     expect(candidates.at(-1)).toEqual({ src: '/assets/full-only.webp' });
   });
 
+  it('prefers the AVIF source from a responsive picture element', () => {
+    const dom = new JSDOM(
+      '<picture>' +
+        '<source type="image/avif" srcset="/assets/a.480.avif 480w, /assets/a.avif 1200w">' +
+        '<img src="/assets/a.webp" srcset="/assets/a.480.webp 480w, /assets/a.webp 1200w" sizes="100vw">' +
+        '</picture>',
+    );
+    expect(responsiveImageCandidates(dom.window.document)).toEqual([
+      {
+        src: '/assets/a.480.avif',
+        srcset: '/assets/a.480.avif 480w, /assets/a.avif 1200w',
+        sizes: '100vw',
+      },
+    ]);
+  });
+
   it('respects data saver and very slow connections', () => {
     expect(shouldPrefetchResources()).toBe(true);
     expect(shouldPrefetchResources({ saveData: true, effectiveType: '4g' })).toBe(false);

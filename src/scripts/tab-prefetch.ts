@@ -2,10 +2,10 @@
  * Idle-time prefetch for language alternates and other tabs in the current
  * language. HTML is fetched through the shared page cache (page-cache.ts), so
  * a later language switch or tab swap reuses the already-downloaded page
- * instead of a cold fetch. Detached responsive images use the same
- * srcset/sizes rules so the browser selects the smallest clear candidate for
- * this device. Lightbox originals are intentionally not read from
- * data-original.
+ * instead of a cold fetch. There is deliberately no byte cap: every tab and
+ * language alternate is warmed after load. Detached responsive images use
+ * AVIF-first srcset/sizes rules so the browser keeps the visual experience
+ * while selecting the efficient candidate. Lightbox originals remain excluded.
  */
 import {
   languageAlternatePaths,
@@ -34,10 +34,10 @@ function connection(): NetworkInformationLike | undefined {
 function requestIdle(callback: () => void): void {
   const idleWindow = window as IdleCapableWindow;
   if (typeof idleWindow.requestIdleCallback === 'function') {
-    idleWindow.requestIdleCallback(callback, { timeout: 3000 });
+    idleWindow.requestIdleCallback(callback, { timeout: 1000 });
     return;
   }
-  window.setTimeout(callback, 1200);
+  window.setTimeout(callback, 250);
 }
 
 async function loadImage(candidate: PrefetchImageCandidate): Promise<void> {
