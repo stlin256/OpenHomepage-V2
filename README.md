@@ -2,7 +2,7 @@
 
 [![Demo](https://img.shields.io/badge/Demo-Live%20Preview-blue?style=flat-square&logo=github)](https://stlin256.github.io/OpenHomepage-V2/)
 [![Deploy](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg)](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml)
-[![License: ISC](https://img.shields.io/badge/License-ISC-green.svg?style=flat-square)](https://github.com/stlin256/OpenHomepage-V2/blob/master/LICENSE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/stlin256/OpenHomepage-V2)
 
 [中文文档](README.zh-CN.md) · [Live Demo](https://stlin256.github.io/OpenHomepage-V2/)
 
@@ -181,6 +181,3 @@ GitHub Actions automatically builds and publishes the static site to GitHub Page
 └── tests/           # Vitest test suite
 ```
 
-## License
-
-This project is licensed under the [ISC License](LICENSE).
