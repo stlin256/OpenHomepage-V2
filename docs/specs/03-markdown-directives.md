@@ -57,9 +57,11 @@
 
 **高分辨率约定**：同名 `-full` 后缀文件为高清版（`assets/hero.jpg` → `assets/hero-full.jpg`）。灯箱运行时乐观加载高清版，404 时回退原图（失败结果会话内缓存，不重复请求）。推导与选用逻辑在 `src/lib/lightbox.ts`（纯函数，有单测）；交互在 `src/scripts/lightbox.ts`（事件委托，ClientRouter 转场无需重绑；链接/按钮内的图片不劫持）。灯箱骨架由 BaseLayout 服务端渲染（无 JS 时无影响）。
 
-**生产 WebP/AVIF 优化**：`npm run build` 在静态输出后把 `dist/assets` 中常规 JPG/PNG/WebP 生成基础 WebP 与 AVIF 及 `480/768/1024/1440/1920/2560` 响应式档位（小于源图时才生成，不放大、跳过动画），并重写页面 HTML/内联背景图引用：`<img>` 被 `<picture>` 包裹并前置 `<source type="image/avif">`，支持 AVIF 的浏览器加载更小的 AVIF，其余回落 WebP；内联背景图保持 WebP。质量可用环境变量调节：`WEBP_QUALITY`（默认 80）与 `AVIF_QUALITY`（默认 50，AVIF 压缩效率更高，q50 观感约等于 WebP q80）。`<img>` 会获得按当前杂志布局推断的 `sizes`：正文全宽、`grid` 栏宽、`figure` 百分比宽度、头像/RSS/二维码固定尺寸，浏览器据此和设备像素密度选择最小清晰候选。原 JPG/PNG/WebP 与 `*-full` 高清变体继续随站点发布；重写后的 `<img data-original>` 保存原图地址，灯箱优先加载原图/`-full`，失败才回落已缓存的 WebP。
+**生产 WebP/AVIF 优化**：`npm run build` 在静态输出后把 `dist/assets` 中常规 JPG/PNG/WebP 生成基础 WebP 与 AVIF 及 `480/768/1024/1440/1920/2560` 响应式档位（小于源图时才生成，不放大、跳过动画），并重写页面 HTML/内联背景图引用：`<img>` 被 `<picture>` 包裹并前置 `<source type="image/avif">`，支持 AVIF 的浏览器加载更小的 AVIF，其余回落 WebP；内联背景图保持 WebP。编辑区块的列表遮罩、tile 和归档卡媒体在源码中就是 `loading="lazy"` 的 `<img>`，列表遮罩保留固定包装层以兼容后处理生成的 `<picture>`。质量可用环境变量调节：`WEBP_QUALITY`（默认 80）与 `AVIF_QUALITY`（默认 50，AVIF 压缩效率更高，q50 观感约等于 WebP q80）。`<img>` 会获得按当前杂志布局推断的 `sizes`：正文全宽、`grid` 栏宽、`figure` 百分比宽度、头像/RSS/二维码固定尺寸，浏览器据此和设备像素密度选择最小清晰候选。原 JPG/PNG/WebP 与 `*-full` 高清变体继续随站点发布；重写后的 `<img data-original>` 保存原图地址，灯箱优先加载原图/`-full`，失败才回落已缓存的 WebP。
 
-**空闲预取与页面缓存**：当前页面 `load` 完成并进入空闲时段后，前端依次预取语言切换器中的其他语言页面（语言切换是冷请求开销最大的导航，因此优先）和当前语言导航中的其他 tab HTML，并用页面中相同的 `srcset/sizes` 创建 detached image，让浏览器按当前视口与像素密度预加载对应档位。预取到的 HTML 进入共享内存缓存（`src/scripts/page-cache.ts`），随后的语言切换/内容交换直接命中缓存、不再冷请求；缓存仅生产环境启用，失败结果不缓存。`data-original`、`-full` 灯箱源不参与预取；Data Saver 与 2G/慢速网络下自动跳过。
+**空闲预取与页面缓存**：当前页面 `load` 完成并进入空闲时段后（空闲回调最长等待 1 秒，无字节总量上限），前端依次预取语言切换器中的其他语言页面（语言切换是冷请求开销最大的导航，因此优先）和当前语言导航中的其他 tab HTML；图片候选优先读取 `<picture>` 内的 AVIF `srcset`，再用原 `<img>` 的 `sizes` 创建 detached image，让浏览器按当前视口与像素密度预加载对应档位。预取到的 HTML 进入共享内存缓存（`src/scripts/page-cache.ts`），随后的语言切换/内容交换直接命中缓存、不再冷请求；缓存仅生产环境启用，失败结果不缓存。`data-original`、`-full` 灯箱源不参与预取；Data Saver 与 2G/慢速网络下自动跳过。
+
+**Speculation Rules**：生产构建注入 Chromium 可理解的 prefetch-only 规则（`eagerness: moderate`），仅用于站内链接 hover/pointerdown 时预热 HTTP 缓存；不使用 prerender，也不改变自定义 fetch + 内容交换的点击路径。其他浏览器忽略该规则，功能等价回退到现有 fetch。
 
 ## 5. 注意事项
 

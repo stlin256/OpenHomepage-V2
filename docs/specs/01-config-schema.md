@@ -137,6 +137,7 @@ serve:
 ### 1.1 背景音乐（bgm）行为
 
 - 启用且文件真实存在时：页顶静态区出现播放/暂停小图标按钮（与语言/主题按钮同排同风格），页面底部渲染 `<audio loop transition:persist>`——ClientRouter 站内转场播放不中断。
+- 音频始终 `preload="none"`，不参与首屏加载；`autoplay` 或 localStorage 记忆为播放态时，在首次用户手势触发播放前才调用 `load()`。
 - 自动播放策略：localStorage 记住用户上次播放/暂停；上次为播放态时，等首次用户交互（click/keydown）后才恢复播放；用户点过播放按钮（本身是手势）立即开播。
 - `prefers-reduced-motion: reduce`：整功能不启用（按钮隐藏、不自动播放）。
 - 归一化逻辑在 `src/lib/config.ts` 的 `resolveBgm`（纯函数，有单测）。

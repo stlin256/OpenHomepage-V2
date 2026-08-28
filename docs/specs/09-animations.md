@@ -35,7 +35,8 @@
   accent 与底色混合计算，明暗两套，见 `src/lib/github-block.ts` heatScale）。
 - bilibili/youtube 嵌入已改为**直接渲染官方 iframe**（`loading="lazy"`，见 spec 03 §1），
   不再有封面占位/点击加载逻辑（原封面方案：bilibili 封面需 API 查询构建期拿不到，已废弃）。
-- 动效初始隐藏态（.reveal 等）只挂在 `html.js` 下：无 JS 时内容不隐藏。
+- 滚动显现首屏基线：`.reveal` 默认可见，不等待 JS/IntersectionObserver；前端首帧前只给当前视口外元素追加 `.reveal-pending`。无 JS 或首屏内容都不隐藏，避免 LCP 被动效脚本延迟。
+- 贡献图明暗色阶只作为自定义属性注入区块根节点，再由 scoped CSS 暴露给格子；禁止在组件级使用 `define:vars`，避免同一组颜色复制到数百个后代节点。
 
 ## 3. 性能预算
 

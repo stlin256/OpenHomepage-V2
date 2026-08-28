@@ -12,7 +12,7 @@ OpenHomepage V2 is a static, magazine-style personal homepage generator built wi
 
 - **Markdown & Directive Pipeline** — Standard GFM extended with Shiki dual-theme syntax highlighting, KaTeX mathematics, and expressive custom directives (`::bilibili`, `::youtube`, `:::video`, `:::audio`, `:::figure`, `::::grid`, `::stream`, `::ghcard`, `::editorial`).
 - **Editorial Typography & Magazine Layout** — Asymmetric 12-column grid, restrained transform/opacity animations, configurable accent colors, and automatic light/dark theme switching (follows system preference with session override).
-- **Responsive Image Optimization** — Production builds create multiple WebP + AVIF widths, serve AVIF first via `<picture>` when the browser supports it (WebP as fallback), and select the smallest clear candidate from the current layout and device pixel ratio. Idle-prefetch covers language alternates and same-language tabs with their matching images (fetched HTML feeds a shared in-memory cache, so language switches are near-instant). Originals and `-full` lightbox sources remain excluded from preloading.
+- **Responsive Image Optimization** — Production builds create multiple WebP + AVIF widths, serve AVIF first via `<picture>` when the browser supports it (WebP as fallback), and select the smallest clear candidate from the current layout and device pixel ratio. Aggressive idle prefetch covers language alternates and same-language tabs plus their AVIF candidates without a byte cap, while prefetch-only Speculation Rules warm hover targets in Chromium. Fetched HTML feeds a shared in-memory cache, so language switches are near-instant; originals and `-full` lightbox sources remain excluded from preloading.
 - **Dynamic Content Prefetching** — Build-time fetcher with intelligent cache fallback for GitHub contribution heatmaps, official-style pinned repository cards, and multi-source RSS content streams.
 - **Interactive Multimedia** — Full-screen image lightbox with automatic `-full` resolution detection, persistent background audio across client navigation, and LLM-style typewriter markdown playback.
 - **Zero-Friction Multilingual Architecture** — Add language subdirectories under `data/pages/<lang>/` to automatically activate routing, navigation, and multilingual configuration fields, complete with graceful fallback rendering. The bundled demo ships in 中文 / English / 日本語 / Français.
@@ -40,7 +40,7 @@ Each component below is captured individually from the production build (`npm ru
 
 ![Editorial block: tiles and archive cards](docs/images/components/editorial-tiles-en.webp)
 
-**GitHub Contribution Heatmap** — GraphQL-prefetched calendar with a 5-level accent-derived scale, month/weekday axes, and per-day tooltips.
+**GitHub Contribution Heatmap** — GraphQL-prefetched calendar with a 5-level accent-derived scale, month/weekday axes, and per-day tooltips. Theme scales are injected once on the block root instead of being repeated across every cell.
 
 ![GitHub contribution heatmap](docs/images/components/github-heatmap-en.webp)
 
@@ -180,4 +180,3 @@ GitHub Actions automatically builds and publishes the static site to GitHub Page
 ├── admin/           # Local visual editor application
 └── tests/           # Vitest test suite
 ```
-
