@@ -19,6 +19,10 @@ function assetUrl(path: string): string {
   return withBase(path.startsWith('/') ? path : `/${path}`);
 }
 
+function lazyImage(path: string, className: string, sizes: string): string {
+  return `<img class="${className}" src="${escapeHtml(assetUrl(path))}" alt="" loading="lazy" decoding="async" sizes="${escapeHtml(sizes)}" />`;
+}
+
 /** 多语言字段解析上下文：内容语言 + 网站主语言（回退链 当前语言 → en → 主语言） */
 interface ResolveCtx {
   lang: string;
@@ -51,7 +55,7 @@ function listItemHtml(
   localizeHref?: (href: string) => string
 ): string {
   const mask = item.image
-    ? `<span class="editorial-item-mask" style="background-image:url('${escapeHtml(assetUrl(item.image))}')" aria-hidden="true"></span>`
+    ? lazyImage(item.image, 'editorial-item-mask', '(max-width: 768px) 60vw, 768px')
     : '';
   const meta = item.meta ? `<span class="editorial-item-meta">${escapeHtml(text(item.meta, ctx))}</span>` : '';
   const description = item.description
@@ -73,10 +77,10 @@ function tileHtml(
   const kicker = tile.kicker
     ? `<span class="tile-kicker">${escapeHtml(text(tile.kicker, ctx))}</span>`
     : '';
-  const image = tile.image ? `url('${escapeHtml(assetUrl(tile.image))}')` : '';
   const size = `tile-${tile.size ?? 'small'}`;
   const url = localizeHref?.(tile.url ?? '#') ?? tile.url ?? '#';
-  return `<a class="editorial-tile reveal ${size}" href="${escapeHtml(url)}" style="--tile-image:${image};--delay:0ms"><span class="tile-content">${kicker}<span class="tile-title">${escapeHtml(text(tile.title, ctx))}</span></span></a>`;
+  const media = tile.image ? lazyImage(tile.image, 'editorial-tile-media', '(max-width: 768px) 41vw, 332px') : '';
+  return `<a class="editorial-tile reveal ${size}" href="${escapeHtml(url)}" style="--delay:0ms">${media}<span class="tile-content">${kicker}<span class="tile-title">${escapeHtml(text(tile.title, ctx))}</span></span></a>`;
 }
 
 function archiveCardHtml(
@@ -90,7 +94,7 @@ function archiveCardHtml(
     ? `<span class="archive-description">${escapeHtml(text(card.description, ctx))}</span>`
     : '';
   const media = card.image
-    ? `<span class="archive-media" style="background-image:url('${escapeHtml(assetUrl(card.image))}')" aria-hidden="true"></span>`
+    ? lazyImage(card.image, 'archive-media', '120px')
     : '<span class="archive-media" aria-hidden="true"></span>';
   const body = `${media}<span class="archive-body"><span class="archive-status">${status}</span><span class="archive-title">${escapeHtml(text(card.title, ctx))}</span>${description}</span>`;
   const delay = ` style="--delay:${index * 90}ms"`;
