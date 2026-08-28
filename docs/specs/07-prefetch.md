@@ -83,7 +83,9 @@ pinned 条目并入 site.yaml 的 `note`（无则 null）。
     `og:description` → 首段有实质内容（≥40 字符）的 `<p>`，截 300 字；不做全文本地化；
   - 文章页也失败 → 该条降级为占位条目（title=URL、空摘要），源记 `partial`；feed 与文章页
     全灭才视为整源失败，走缓存降级；
-  - 封面不抓图：`article.cover` ?? 源级 `cover` ?? null；
+  - 封面抓取取 `article.cover` ?? 源级 `cover` ?? null；所有块抓取完成后、写盘前统一做
+    **封面本地化**：仍为 http(s) 的 cover 下载到 `data/assets/remote/` 并改写为本地路径
+    （src/lib/remote-assets.ts；仅真实 data/ 目录启用，失败保留原 URL 并 warning）；
   - 单源失败不影响其他源。
 - 并发：所有数据块共用同一限制器（上限 4），单源内串行；单请求超时 15s，总超时 60s，
   超时的块按普通失败走降级。

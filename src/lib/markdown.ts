@@ -29,6 +29,7 @@ import type { VFile } from 'vfile';
 import { localizeInternalHref } from './routes.ts';
 import { withBase, getBaseUrl } from './base-url.ts';
 import { listEditableBlocks } from './edit-blocks.ts';
+import { localizeRemoteAsset, type RemoteFetchFn } from './remote-assets.ts';
 
 export interface MarkdownOptions {
   /** 站点 base URL，用于静态资源与链接补齐前缀（缺省自动读取或为 /） */
@@ -65,6 +66,13 @@ export interface MarkdownOptions {
     slugs: string[];
     baseUrl?: string;
   };
+  /**
+   * 远程媒体本地化：img/video/audio/source 的 http(s) src/poster 在渲染时下载到
+   * <dataDir>/assets/remote/ 并改写为本地路径（URL→路径映射持久化在 .cache/
+   * remote-assets.json，同一 URL 跨页面/跨构建只下载一次）。下载失败保留原 URL。
+   * 仅真实 data/ 目录生效（data.example/ 为入库示例数据，不写入）。
+   */
+  localizeAssets?: { dataDir: string; fetchFn?: RemoteFetchFn; warn?: (msg: string) => void };
 }
 
 const DEFAULT_SHIKI_THEMES = { light: 'github-light', dark: 'github-dark' };
@@ -417,6 +425,34 @@ function rehypeNormalizeAssetPaths(baseUrl?: string) {
   };
 }
 
+/**
+ * 远程媒体本地化：img/video/audio/source 的 http(s) src/poster 下载到
+ * data/assets/remote/ 并改写为带 base 前缀的本地路径；下载失败保留原 URL。
+ * 在 rehypeNormalizeAssetPaths 之后运行（本地路径已归一，这里只处理远程）。
+ */
+function rehypeLocalizeRemoteAssets(
+  baseUrl: string,
+  opts: NonNullable<MarkdownOptions['localizeAssets']>,
+) {
+  return async (tree: HastRoot) => {
+    const jobs: Promise<void>[] = [];
+    visit(tree, 'element', (node: Element) => {
+      const tag = node.tagName;
+      if (tag !== 'img' && tag !== 'video' && tag !== 'audio' && tag !== 'source') return;
+      for (const attr of ['src', 'poster'] as const) {
+        const v = node.properties?.[attr];
+        if (typeof v !== 'string' || !/^https?:\/\//i.test(v)) continue;
+        jobs.push(
+          localizeRemoteAsset(v, opts).then((local) => {
+            if (local && node.properties) node.properties[attr] = withBase(`/${local}`, baseUrl);
+          }),
+        );
+      }
+    });
+    await Promise.all(jobs);
+  };
+}
+
 function rehypeLazyImages() {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element) => {
@@ -584,6 +620,11 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(rehypeLazyImages)
     .use(rehypeSanitize, buildSanitizeSchema())
     .use(rehypeFilterIframes);
+
+  // 远程媒体下载在 sanitize/iframe 过滤之后：只改写 src/poster 属性，不影响结构
+  if (options.localizeAssets) {
+    processor.use(() => rehypeLocalizeRemoteAssets(baseUrl, options.localizeAssets!));
+  }
 
   if (options.streamEmbeds) processor.use(() => rehypeStreamEmbeds(options.streamEmbeds!, warn));
   if (options.ghCards) processor.use(() => rehypeGhCards(options.ghCards!));

@@ -14,6 +14,7 @@ import path from 'node:path';
 import Parser from 'rss-parser';
 import { loadSiteConfig, loadRssConfig, type LocalizedText, type RssSource } from './config.ts';
 import { canonicalText } from './localize.ts';
+import { localizeRemoteAsset } from './remote-assets.ts';
 
 // ---------- 常量 ----------
 
@@ -765,6 +766,25 @@ export async function runPrefetch(options: PrefetchOptions): Promise<PrefetchRes
       rssSources.findIndex((s) => canonicalText(s.name) === a.name && s.url === a.url) -
       rssSources.findIndex((s) => canonicalText(s.name) === b.name && s.url === b.url)
   );
+
+  // 封面本地化：远程封面（手配 http URL / curated 的 og:image 回退）下载到
+  // data/assets/remote/ 并把缓存里的 cover 改写为本地路径，避免访客浏览器被反爬/
+  // 防盗链拦截。每次运行都执行（TTL 命中未重抓的 cached 块同样覆盖）；下载失败
+  // 保留原 URL（localizeRemoteAsset 内部已 warning），不阻断构建。
+  if (rssEnabled) {
+    for (const source of newRss.sources) {
+      for (const entry of source.entries) {
+        if (!entry.cover || !/^https?:\/\//i.test(entry.cover)) continue;
+        const local = await localizeRemoteAsset(entry.cover, {
+          dataDir: options.dataDir,
+          fetchFn,
+          now,
+          requestTimeoutMs: ctx.requestTimeoutMs,
+        });
+        if (local) entry.cover = local;
+      }
+    }
+  }
 
   const blocks = orderedKeys.map((k) => reportMap.get(k)!);
   // placeholder（本地无 PAT 的贡献图）是中性块：不算失败，但也不构成「有数据」

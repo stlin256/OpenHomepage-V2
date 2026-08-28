@@ -28,4 +28,4 @@
 - ~~封面图：是否抓取条目图片做卡片缩略图？~~ **已定（2026-08-23 修订）**：
   - 显式声明优先：源级别可选 `cover:`（该源所有卡片的默认封面）；curated 模式的每个 article 可单独声明 `cover:`（覆盖源默认）；值为 data/ 内本地路径或外部 URL；
   - **curated 条目未显式声明 cover 时**，prefetch 抓文章页提取 `og:image`（回退：`twitter:image` → 正文首个 `<img>`，相对地址按文章 URL 解析为绝对 URL）作为封面；feed 命中的条目也会为封面补抓文章页，补抓失败不致命（保留 feed 数据，封面置空）；
-  - 封面存外链 URL（不下载本地化）；前端加载失败时隐藏图位（捕获阶段 error 委托，见 src/scripts/interactions.ts）。
+  - ~~封面存外链 URL（不下载本地化）~~ **再修订（2026-08-28）**：远程封面在 prefetch 写盘前统一下载到 `data/assets/remote/` 并改写为本地路径（src/lib/remote-assets.ts，URL→路径映射持久化在 `.cache/remote-assets.json`，同一 URL 只下载一次；TTL 命中的缓存块同样覆盖；下载失败保留原 URL 不阻断）；本地路径封面随 dist/assets 进入 WebP/响应式管线。前端加载失败时隐藏图位（捕获阶段 error 委托，见 src/scripts/interactions.ts）。

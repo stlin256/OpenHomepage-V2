@@ -16,6 +16,8 @@
 - `bilibili` / `youtube` **直接渲染**官方播放器 iframe（`<div class="embed-player">` 响应式 16:9 容器 + `<iframe loading="lazy">`，浏览器视口附近才加载，不拖慢首屏）。YouTube 嵌入 URL 用隐私增强域名 `youtube-nocookie.com`。
 - `video` / `audio` 渲染原生 `<video controls>` / `<audio controls>`，src 支持相对 data/ 的路径和外部 URL。版式与 figure/embed-player 一致：块级、杂志全宽（`width:100%`、1.5em 上下间距），video 带与 embed-player 同款的底色/描边/圆角。
 
+**远程媒体本地化**：正文与 streaming 内容中 `img`/`video`/`audio`/`source` 的 http(s) `src`/`poster`（含普通 markdown 图片、figure/video/audio 指令与 raw HTML）在渲染时下载到 `data/assets/remote/` 并改写为本地路径（src/lib/remote-assets.ts；URL→路径映射持久化在 `.cache/remote-assets.json`，同一 URL 跨页面/语言/构建只下载一次；下载失败保留原 URL 不阻断构建）。仅真实 `data/` 目录启用（`data.example/` 为入库示例数据，不写入）；本地化后的图片同样进入下述 WebP/响应式管线。`bilibili`/`youtube` 播放器 iframe 是白名单内的有意远程嵌入，不在本地化范围。
+
 ## 2. 图文排版（杂志化用）
 
 ```markdown

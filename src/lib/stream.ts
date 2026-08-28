@@ -196,9 +196,11 @@ export async function loadStreamingBlock(
     );
     return null;
   }
-  const { html, tokens } = await markdownToStream(readFileSync(file, 'utf8'), slugs ? {
-    localizeHrefs: { lang, defaultLang, slugs: [...slugs] },
-  } : {});
+  const { html, tokens } = await markdownToStream(readFileSync(file, 'utf8'), {
+    // 流式内容复用同一 markdown 管线：远程媒体同样下载本地化
+    localizeAssets: { dataDir },
+    ...(slugs ? { localizeHrefs: { lang, defaultLang, slugs: [...slugs] } } : {}),
+  });
   return {
     id: def.id,
     title: def.title === undefined ? '' : resolveText(def.title, lang),
