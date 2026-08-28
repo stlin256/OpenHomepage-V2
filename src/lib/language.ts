@@ -3,6 +3,13 @@ import { stripBase, withBase } from './base-url.ts';
 
 export type SiteLanguage = 'zh' | 'en' | 'ja' | 'fr';
 
+/** 语言菜单条目顺序：当前语言置顶，其余保持原站点语言顺序（稳定排序） */
+export function orderLangMenu<T extends { lang: string }>(alternates: T[], currentLang: string): T[] {
+  return [...alternates].sort((a, b) =>
+    (a.lang === currentLang ? 0 : 1) - (b.lang === currentLang ? 0 : 1),
+  );
+}
+
 /** 归一化主语言子标签；只接受站点当前支持的 zh/en/ja/fr */
 export function normalizeSiteLanguage(value: string | null | undefined): SiteLanguage | null {
   const lang = value?.toLowerCase().split(/[-_]/)[0];

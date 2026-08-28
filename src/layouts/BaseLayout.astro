@@ -17,6 +17,7 @@ import ContactCard from '../components/ContactCard.astro';
 import type { NavItem } from '../lib/routes.ts';
 import { withBase, getBaseUrl } from '../lib/base-url.ts';
 import { editCfgAttr } from '../lib/edit-cfg.ts';
+import { orderLangMenu } from '../lib/language.ts';
 
 interface Props {
   /** 页面标题（<title> 为 `${title} · ${siteTitle}`） */
@@ -73,6 +74,8 @@ const langLabel = (l: string) => ({ zh: '中文', en: 'English', ja: '日本語'
 // 输出编辑 bootstrap；生产构建/外部 dev server 无此环境变量，整段不输出、零开销
 const editAdminOrigin = process.env.OH_EDIT === '1' ? (process.env.OH_ADMIN_ORIGIN ?? '') : '';
 const xDefault = alternates.find((a) => a.lang === defaultLang) ?? alternates[0];
+// 语言菜单：当前语言置顶，其余保持站点语言顺序（仅菜单显示顺序，hreflang 不受影响）
+const menuAlternates = orderLangMenu(alternates, lang);
 /** 构建期注入的 accent 变量（global.css 中 --accent 引用这四个值） */
 const themeVars = `--accent-light:${accent.light.accent};--accent-light-contrast:${accent.light.contrast};--accent-dark:${accent.dark.accent};--accent-dark-contrast:${accent.dark.contrast};--site-bg-light:${background.light};--site-bg-dark:${background.dark};`;
 const FAVICON_MIME: Record<string, string> = {
@@ -207,7 +210,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
               </svg>
             </button>
             <ul class="lang-menu" role="menu">
-              {alternates.map((a) => (
+              {menuAlternates.map((a) => (
                 <li role="none">
                   <a
                     href={withBase(a.path)}

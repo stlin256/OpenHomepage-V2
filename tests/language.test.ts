@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { localizedPathname, normalizeSiteLanguage } from '../src/lib/language.ts';
+import { localizedPathname, normalizeSiteLanguage, orderLangMenu } from '../src/lib/language.ts';
 
 describe('normalizeSiteLanguage', () => {
   it('normalizes supported primary language tags', () => {
@@ -22,5 +22,26 @@ describe('localizedPathname', () => {
     expect(localizedPathname('en', '/OpenHomepage-V2/', 'zh', 'zh', '/OpenHomepage-V2/')).toBe('/OpenHomepage-V2/en/');
     expect(localizedPathname('en', '/OpenHomepage-V2/features/', 'zh', 'zh', '/OpenHomepage-V2/')).toBe('/OpenHomepage-V2/en/features/');
     expect(localizedPathname('zh', '/OpenHomepage-V2/en/features', 'en', 'zh', '/OpenHomepage-V2/')).toBe('/OpenHomepage-V2/features');
+  });
+});
+
+describe('orderLangMenu', () => {
+  const alternates = [
+    { lang: 'zh', path: '/' },
+    { lang: 'en', path: '/en/' },
+    { lang: 'ja', path: '/ja/' },
+    { lang: 'fr', path: '/fr/' },
+  ];
+
+  it('当前语言置顶，其余保持站点语言顺序', () => {
+    expect(orderLangMenu(alternates, 'en').map((a) => a.lang)).toEqual(['en', 'zh', 'ja', 'fr']);
+    expect(orderLangMenu(alternates, 'fr').map((a) => a.lang)).toEqual(['fr', 'zh', 'en', 'ja']);
+    expect(orderLangMenu(alternates, 'zh').map((a) => a.lang)).toEqual(['zh', 'en', 'ja', 'fr']);
+  });
+
+  it('当前语言不在列表中时保持原顺序；不改入参', () => {
+    const input = alternates.map((a) => ({ ...a }));
+    expect(orderLangMenu(input, 'de').map((a) => a.lang)).toEqual(['zh', 'en', 'ja', 'fr']);
+    expect(input.map((a) => a.lang)).toEqual(['zh', 'en', 'ja', 'fr']);
   });
 });
