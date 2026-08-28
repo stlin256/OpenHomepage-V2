@@ -10,6 +10,8 @@ import { build } from 'esbuild';
 import { ensureDataDir } from './setup.ts';
 import { createAdminServer } from './http.ts';
 import { createDevServerManager } from './devserver.ts';
+import { renderMarkdown } from '../../src/lib/markdown.ts';
+import { getBaseUrl } from '../../src/lib/base-url.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -44,6 +46,9 @@ const port = Number(process.env.ADMIN_PORT ?? 4174);
 const adminOrigin = `http://127.0.0.1:${port}`;
 const devManager = createDevServerManager({ rootDir: root, adminOrigin });
 const server = createAdminServer({ dataDir, initialized, appJs, overlayJs, rootDir: root, devManager });
+// 预热 Markdown 渲染管线（Shiki/WASM/主题），消除首次打开预览窗口或编辑时的冷启动延迟
+void renderMarkdown('```js\nwarmup\n```', { baseUrl: getBaseUrl() }).catch(() => {});
+
 server.listen(port, '127.0.0.1', () => {
   console.log(`编辑器已启动 / Editor running:  http://127.0.0.1:${port}`);
   console.log('仅监听本机回环地址 / Listening on loopback only.');

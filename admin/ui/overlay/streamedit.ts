@@ -33,7 +33,7 @@ export interface StreamEditSession {
 }
 
 /** 预览渲染防抖间隔（ms） */
-const PREVIEW_DEBOUNCE_MS = 500;
+const PREVIEW_DEBOUNCE_MS = 150;
 
 /** 打开流式内容编辑窗口（先异步取内容文件，再挂 DOM；load 失败则不打开） */
 export async function openStreamEditor(

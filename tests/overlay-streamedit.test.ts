@@ -78,7 +78,7 @@ describe('streamedit：打开与预览', () => {
     expect(rootEl()).toBeNull();
   });
 
-  it('输入 500ms 防抖后重新渲染；连续输入只渲染最后一次', async () => {
+  it('输入 150ms 防抖后重新渲染；连续输入只渲染最后一次', async () => {
     vi.useFakeTimers();
     const deps = makeDeps();
     await open(deps);
@@ -87,11 +87,11 @@ describe('streamedit：打开与预览', () => {
 
     inputEl().value = '# 改';
     inputEl().dispatchEvent(new Event('input', { bubbles: true }));
-    await vi.advanceTimersByTimeAsync(499);
+    await vi.advanceTimersByTimeAsync(149);
     expect(deps.render).toHaveBeenCalledTimes(1); // 防抖窗口内不触发
     inputEl().value = '# 改了两下';
     inputEl().dispatchEvent(new Event('input', { bubbles: true }));
-    await vi.advanceTimersByTimeAsync(500);
+    await vi.advanceTimersByTimeAsync(150);
     expect(deps.render).toHaveBeenCalledTimes(2);
     expect(deps.render).toHaveBeenLastCalledWith('# 改了两下');
     await vi.advanceTimersByTimeAsync(0);
