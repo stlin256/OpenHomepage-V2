@@ -344,8 +344,8 @@ document.addEventListener('click', (e) => {
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
   if (selectedLanguage) writePreferredLanguage(selectedLanguage);
-  // 语言切换即使命中缓存也至少给 0.1s 转圈遮罩过渡
-  void swapContent(href, selectedLanguage ? { minOverlayMs: 100 } : {});
+  // 语言切换即使命中缓存也至少给 0.25s 转圈遮罩过渡
+  void swapContent(href, selectedLanguage ? { minOverlayMs: 250 } : {});
 });
 
 // ---- 语言切换器菜单 ----
