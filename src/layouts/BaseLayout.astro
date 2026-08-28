@@ -17,7 +17,7 @@ import ContactCard from '../components/ContactCard.astro';
 import type { NavItem } from '../lib/routes.ts';
 import { withBase, getBaseUrl } from '../lib/base-url.ts';
 import { editCfgAttr } from '../lib/edit-cfg.ts';
-import { orderLangMenu } from '../lib/language.ts';
+import { languageDisplayName, orderLangMenu } from '../lib/language.ts';
 
 interface Props {
   /** 页面标题（<title> 为 `${title} · ${siteTitle}`） */
@@ -36,6 +36,8 @@ interface Props {
   currentPath: string;
   i18n: boolean;
   alternates: { lang: string; path: string }[];
+  /** 站点全部语言（页面目录扫描；data-site-langs 供客户端语言偏好校验） */
+  langs: string[];
   /** 背景音乐（site.yaml bgm 段，缺省不渲染；交互见 src/scripts/bgm.ts） */
   bgm?: { src: string; volume: number; autoplay: boolean };
   /** favicon URL（路由层已决定：配置的文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
@@ -61,6 +63,7 @@ const {
   currentPath,
   i18n,
   alternates,
+  langs,
   bgm,
   favicon,
   footer,
@@ -69,7 +72,8 @@ const {
 } = Astro.props;
 
 const baseUrl = getBaseUrl();
-const langLabel = (l: string) => ({ zh: '中文', en: 'English', ja: '日本語', fr: 'Français' })[l] ?? l;
+// 语言切换器显示名：Intl.DisplayNames 自称名（覆盖任意语言，见 src/lib/language.ts）
+const langLabel = languageDisplayName;
 // 可视化编辑（M12a）：仅 admin 拉起的 dev server（OH_EDIT=1 且注入 OH_ADMIN_ORIGIN）
 // 输出编辑 bootstrap；生产构建/外部 dev server 无此环境变量，整段不输出、零开销
 const editAdminOrigin = process.env.OH_EDIT === '1' ? (process.env.OH_ADMIN_ORIGIN ?? '') : '';
@@ -93,6 +97,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
   data-theme="light"
   data-default-mode={defaultMode}
   data-default-lang={defaultLang}
+  data-site-langs={langs.join(',')}
   data-base={baseUrl}
   style={themeVars}
 >
@@ -127,10 +132,14 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
       <script is:inline define:vars={{ defaultLang, baseUrl }}>
         // 语言偏好在首帧绘制前解析：已保存选择 > 浏览器语言。URL 语言不一致时直接
         // replace 到目标路由，避免先渲染默认语言再被模块脚本换内容造成闪动。
+        // normalize 与 src/lib/language.ts normalizeSiteLanguage 同一套规则（is:inline 无法 import，此处内联镜像）：
+        // 归一化主语言子标签 + 对照 data-site-langs 校验是本站语言（支持任意语言目录，不写死语言列表）。
         (function () {
+          var siteLangs = (document.documentElement.dataset.siteLangs || '').split(',').filter(Boolean);
           var normalize = function (value) {
             var lang = (value || '').toLowerCase().split(/[-_]/)[0];
-            return lang === 'zh' || lang === 'en' || lang === 'ja' || lang === 'fr' ? lang : null;
+            if (!/^[a-z]{2,3}$/.test(lang)) return null;
+            return siteLangs.length === 0 || siteLangs.indexOf(lang) !== -1 ? lang : null;
           };
           var preferred = null;
           try {

@@ -13,9 +13,11 @@ interface Props {
   localizeHref?: (href: string) => string;
   /** 配置区块坐标值（editorial:<id>） */
   cfgBlock?: string;
+  /** 网站主语言（多语言字段回退链 当前语言 → en → 主语言） */
+  defaultLang?: string;
 }
 
-const { block, lang, localizeHref, cfgBlock } = Astro.props;
+const { block, lang, localizeHref, cfgBlock, defaultLang } = Astro.props;
 ---
 
 <Fragment
@@ -24,5 +26,6 @@ const { block, lang, localizeHref, cfgBlock } = Astro.props;
     lang,
     localizeHref,
     cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : undefined,
+    defaultLang,
   )}
 />

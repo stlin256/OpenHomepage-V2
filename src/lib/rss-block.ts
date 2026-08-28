@@ -75,7 +75,7 @@ export interface RssCardView {
   weight: number;
 }
 
-function toCard(entry: RssEntry, source: string, weight: number, summaryMax: number, lang: string): RssCardView {
+function toCard(entry: RssEntry, source: string, weight: number, summaryMax: number, lang: string, defaultLang?: string): RssCardView {
   return {
     title: entry.title,
     link: entry.link,
@@ -84,7 +84,7 @@ function toCard(entry: RssEntry, source: string, weight: number, summaryMax: num
     day: formatDay(entry.published),
     summary: truncateText(entry.summary, summaryMax),
     cover: coverUrl(entry.cover),
-    note: entry.note ? resolveText(entry.note, lang) : null,
+    note: entry.note ? resolveText(entry.note, lang, defaultLang) : null,
     weight,
   };
 }
@@ -126,7 +126,7 @@ export type RssView =
 
 /**
  * 构建 RSS 视图。sources 顺序以 rss.yaml 为准（缓存按 规范源名+url 匹配）。
- * 源名与 curated 推荐语支持多语言映射，按 opts.lang 解析（回退 en → zh）。
+ * 源名与 curated 推荐语支持多语言映射，按 opts.lang 解析（回退 en → 默认语言）。
  * cache 为 null（.cache 文件缺失/损坏，从未 prefetch）→ 返回 null，组件渲染空态提示；
  * cache 存在但全部源无条目（抓取降级，spec 07 §3）→ 空视图，组件整区隐藏。
  * 空栏目（无条目）在两种模式下都丢弃。
@@ -134,7 +134,7 @@ export type RssView =
 export function buildRssView(
   cache: RssCache | null,
   config: RssConfig,
-  opts: { summaryMax?: number; lang?: string } = {},
+  opts: { summaryMax?: number; lang?: string; defaultLang?: string } = {},
 ): RssView | null {
   if (!cache) return null;
   const summaryMax = opts.summaryMax ?? CARD_SUMMARY_MAX;
@@ -143,8 +143,8 @@ export function buildRssView(
   for (const src of config.sources) {
     const cached = cache.sources.find((s) => s.name === canonicalText(src.name) && s.url === src.url);
     const weight = src.weight ?? DEFAULT_WEIGHT;
-    const name = resolveText(src.name, lang);
-    let cards = (cached?.entries ?? []).map((e) => toCard(e, name, weight, summaryMax, lang));
+    const name = resolveText(src.name, lang, opts.defaultLang);
+    let cards = (cached?.entries ?? []).map((e) => toCard(e, name, weight, summaryMax, lang, opts.defaultLang));
     // latest 栏内时间倒序；curated 保持配置顺序（spec 05：列表顺序即展示顺序）
     if (src.mode === 'latest') cards = sortByDateDesc(cards);
     if (cards.length === 0) continue;

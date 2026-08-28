@@ -11,6 +11,7 @@ import {
   writeSidebarCollapsed,
 } from './layout-state.ts';
 import { api, type PageMeta } from './api.ts';
+import { languageOptions } from '../shared/languages.ts';
 import { updateSideNav } from './navigation.ts';
 import { renderPageEditor } from './views/pages.ts';
 import {
@@ -113,8 +114,17 @@ function openWizard(): void {
   const langs = [...new Set(pages.map((p) => p.lang))].sort();
   const titleInput = el('input', { type: 'text', class: 'input' }) as HTMLInputElement;
   const slugInput = el('input', { type: 'text', class: 'input' }) as HTMLInputElement;
+  // 语言目录：已有语言在前；常用语言（选中即新建语言目录）随后，方便直接加载
   const langSel = el('select', { class: 'input' }) as HTMLSelectElement;
-  for (const l of langs.length ? langs : ['zh']) langSel.append(el('option', { value: l }, l));
+  const options = languageOptions(langs);
+  const existingGroup = el('optgroup', { label: t('wizardLangExisting') });
+  const commonGroup = el('optgroup', { label: t('wizardLangCommon') });
+  for (const o of options) {
+    (o.existing ? existingGroup : commonGroup).append(el('option', { value: o.code }, o.label));
+  }
+  if (existingGroup.childElementCount) langSel.append(existingGroup);
+  if (commonGroup.childElementCount) langSel.append(commonGroup);
+  langSel.value = langs.includes('zh') ? 'zh' : (options[0]?.code ?? 'zh');
   const error = el('div', { class: 'form-error' });
 
   const close = () => overlay.remove();

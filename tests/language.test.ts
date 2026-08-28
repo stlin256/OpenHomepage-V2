@@ -1,13 +1,48 @@
 import { describe, expect, it } from 'vitest';
-import { localizedPathname, normalizeSiteLanguage, orderLangMenu } from '../src/lib/language.ts';
+import {
+  languageDisplayName,
+  localizedPathname,
+  normalizeSiteLanguage,
+  orderLangMenu,
+} from '../src/lib/language.ts';
 
 describe('normalizeSiteLanguage', () => {
-  it('normalizes supported primary language tags', () => {
+  it('normalizes primary language tags（任意语言，不限固定列表）', () => {
     expect(normalizeSiteLanguage('zh-CN')).toBe('zh');
     expect(normalizeSiteLanguage('en_US')).toBe('en');
     expect(normalizeSiteLanguage('fr')).toBe('fr');
     expect(normalizeSiteLanguage('ja-JP')).toBe('ja');
-    expect(normalizeSiteLanguage('de')).toBeNull();
+    expect(normalizeSiteLanguage('de')).toBe('de');
+    expect(normalizeSiteLanguage('pt-BR')).toBe('pt');
+  });
+
+  it('rejects malformed codes', () => {
+    expect(normalizeSiteLanguage('')).toBeNull();
+    expect(normalizeSiteLanguage(null)).toBeNull();
+    expect(normalizeSiteLanguage('x')).toBeNull();
+    expect(normalizeSiteLanguage('1234')).toBeNull();
+    expect(normalizeSiteLanguage('../zh')).toBeNull();
+  });
+
+  it('对照站点语言列表校验（防止跳转到不存在的语言）', () => {
+    const siteLangs = ['zh', 'en', 'ja', 'fr'];
+    expect(normalizeSiteLanguage('de', siteLangs)).toBeNull();
+    expect(normalizeSiteLanguage('fr-FR', siteLangs)).toBe('fr');
+    expect(normalizeSiteLanguage('de', [...siteLangs, 'de'])).toBe('de');
+  });
+});
+
+describe('languageDisplayName', () => {
+  it('返回自称名（Intl.DisplayNames）', () => {
+    expect(languageDisplayName('zh')).toBe('中文');
+    expect(languageDisplayName('en')).toBe('English');
+    expect(languageDisplayName('de')).toBe('Deutsch');
+    expect(languageDisplayName('fr')).toBe('Français');
+  });
+
+  it('无法取名时回退原始语言码', () => {
+    // 结构非法的语言码让 Intl.DisplayNames 抛 RangeError → 回退原始值
+    expect(languageDisplayName('123')).toBe('123');
   });
 });
 

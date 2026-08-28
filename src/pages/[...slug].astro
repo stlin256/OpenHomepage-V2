@@ -67,6 +67,8 @@ interface Props {
   background: BackgroundTheme;
   nav: NavItem[];
   alternates: { lang: string; path: string }[];
+  /** 站点全部语言（detectLanguages 结果，供 BaseLayout 输出 data-site-langs） */
+  langs: string[];
   avatarUrl?: string;
   /** 背景音乐（resolveBgm 归一化 + 文件存在性检查后为 undefined 即不渲染） */
   bgm?: { src: string; volume: number; autoplay: boolean };
@@ -110,7 +112,7 @@ export function getStaticPaths() {
   const rssCache = rssEnabled ? loadRssCache(cacheDir) : null;
   const rssConfig = rssEnabled ? loadRssConfig(dataDir, site.rss?.sources_file) : null;
   const rssViews = new Map(
-    langs.map((l) => [l, rssConfig ? buildRssView(rssCache, rssConfig, { lang: l }) : null]),
+    langs.map((l) => [l, rssConfig ? buildRssView(rssCache, rssConfig, { lang: l, defaultLang }) : null]),
   );
 
   return buildRoutes(pages, langs, defaultLang).map((route) => ({
@@ -124,6 +126,7 @@ export function getStaticPaths() {
       background,
       nav: navPagesForLang(pages, route.lang, defaultLang),
       alternates: alternateLinks(pages, route.slug, langs, defaultLang),
+      langs,
       avatarUrl: avatarUrl ? withBase(avatarUrl) : undefined,
       bgm: bgmSrc && bgm ? { src: withBase(bgmSrc), volume: bgm.volume, autoplay: bgm.autoplay } : undefined,
       favicon: withBase(faviconUrl),
@@ -144,6 +147,7 @@ const {
   background,
   nav,
   alternates,
+  langs,
   avatarUrl,
   bgm,
   favicon,
@@ -157,9 +161,9 @@ const contentLang = route.page.lang;
 // 页脚：默认开启（footer.enabled:false 关闭）；文本按内容语言解析后渲染内联链接
 const footerCfg = resolveFooter(site);
 const footerHtml = footerCfg
-  ? footerTextToHtml(resolveText(footerCfg.text, contentLang))
+  ? footerTextToHtml(resolveText(footerCfg.text, contentLang, defaultLang))
   : null;
-const introCard = resolveIntroCard(site, contentLang);
+const introCard = resolveIntroCard(site, contentLang, defaultLang);
 // 头像布局：side=侧边杂志分栏（默认）；top=头像在姓名/简介上方居顶
 const avatarTop = resolveAvatarPosition(site.profile) === 'top';
 
@@ -181,13 +185,13 @@ const streamTitleCfg = (id: string) => editCfgValue(`streaming_blocks.${id}.titl
 const streamEmbeds = Object.fromEntries(streamBlocks.map((b) => [b.id, streamEmbedHtml(b, streamTitleCfg(b.id))]));
 const editorialById = new Map((site.editorial_blocks ?? []).map((block) => [block.id, block]));
 const editorialEmbeds = Object.fromEntries(
-  (site.editorial_blocks ?? []).map((block) => [block.id, renderEditorialBlock(block, contentLang, localizeHref)]),
+  (site.editorial_blocks ?? []).map((block) => [block.id, renderEditorialBlock(block, contentLang, localizeHref, undefined, defaultLang)]),
 );
 // ::ghcard{repo} 占位 ← pinned 缓存数据（大小写不敏感匹配；1:1 官网仓库卡，随页面语言）
 const ghHtmlByRepo = Object.fromEntries(
   (githubView?.pinned?.repos ?? []).map((r) => [
     r.full_name.toLowerCase(),
-    repoCardHtml(r, { lang: contentLang }),
+    repoCardHtml(r, { lang: contentLang, defaultLang }),
   ]),
 );
 // 可视化编辑（M12a）：OH_EDIT=1 时给正文块注入 data-oh-src 坐标（data/ 相对路径；
@@ -235,8 +239,8 @@ const componentLabels =
 
 <BaseLayout
   title={route.page.title}
-  siteTitle={resolveText(site.site.title, contentLang)}
-  description={route.page.description ?? (site.site.description ? resolveText(site.site.description, contentLang) : undefined)}
+  siteTitle={resolveText(site.site.title, contentLang, defaultLang)}
+  description={route.page.description ?? (site.site.description ? resolveText(site.site.description, contentLang, defaultLang) : undefined)}
   htmlLang={contentLang}
   lang={route.lang}
   defaultLang={defaultLang}
@@ -247,6 +251,7 @@ const componentLabels =
   currentPath={route.path}
   i18n={i18n}
   alternates={alternates}
+  langs={langs}
   bgm={bgm}
   favicon={favicon}
   footer={footerHtml}
@@ -263,6 +268,7 @@ const componentLabels =
               lang={contentLang}
               avatarUrl={avatarUrl}
               avatarTop={avatarTop}
+              defaultLang={defaultLang}
               cfgBlock={editCfgBlockName('profile')}
             />
           ) : b.block === 'markdown' ? (
@@ -283,7 +289,7 @@ const componentLabels =
           ) : b.block === 'rss' ? (
             <RssBlock
               view={rssView}
-              title={resolveText(site.rss?.block_title ?? 'RSS', contentLang)}
+              title={resolveText(site.rss?.block_title ?? 'RSS', contentLang, defaultLang)}
               lang={contentLang}
               cfgBlock={editCfgBlockName('rss')}
             />
@@ -293,6 +299,7 @@ const componentLabels =
                 block={editorialById.get(b.id ?? '')!}
                 lang={contentLang}
                 localizeHref={localizeHref}
+                defaultLang={defaultLang}
                 cfgBlock={editCfgBlockName(`editorial:${b.id}`)}
               />
             ) : null
@@ -312,6 +319,7 @@ const componentLabels =
               lang={contentLang}
               avatarUrl={avatarUrl}
               avatarTop={avatarTop}
+              defaultLang={defaultLang}
             />
             <h2 class="component-demo-title">{componentLabels.github}</h2>
             <GithubBlock
@@ -323,7 +331,7 @@ const componentLabels =
             <h2 class="component-demo-title">{componentLabels.rss}</h2>
             <RssBlock
               view={rssView}
-              title={resolveText(site.rss?.block_title ?? 'RSS', contentLang)}
+              title={resolveText(site.rss?.block_title ?? 'RSS', contentLang, defaultLang)}
               lang={contentLang}
             />
           </>

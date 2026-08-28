@@ -143,11 +143,11 @@ export const TOPICS_MAX = 6;
  */
 export function repoCardHtml(
   repo: GithubPinnedRepo,
-  opts: { lang?: string; now?: number } = {},
+  opts: { lang?: string; now?: number; defaultLang?: string } = {},
 ): string {
   const lang = opts.lang ?? 'en';
   const now = opts.now ?? Date.now();
-  const noteText = repo.note != null ? resolveText(repo.note, lang) : '';
+  const noteText = repo.note != null ? resolveText(repo.note, lang, opts.defaultLang) : '';
   const desc = noteText || repo.description || '';
   const [owner, name] = repo.full_name.split('/');
   const url = repo.html_url ?? `https://github.com/${repo.full_name}`;

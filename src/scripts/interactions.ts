@@ -16,7 +16,14 @@ import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../
 import './lightbox.ts';
 
 const LANGUAGE_STORAGE_KEY = 'oh-language';
-const normalizeLanguage = normalizeSiteLanguage;
+
+/** 站点实际语言列表（构建期由 <html data-site-langs> 注入；语言目录扫描结果，支持任意语言） */
+function siteLanguages(): string[] {
+  return (document.documentElement.dataset.siteLangs ?? '').split(',').filter(Boolean);
+}
+
+const normalizeLanguage = (value: string | null | undefined): SiteLanguage | null =>
+  normalizeSiteLanguage(value, siteLanguages());
 
 function readPreferredLanguage(): SiteLanguage | null {
   try {
@@ -43,7 +50,7 @@ function currentRouteLanguage(): SiteLanguage | null {
 }
 
 function languagePath(lang: SiteLanguage): string {
-  const defaultLang = normalizeLanguage(document.documentElement.dataset.defaultLang) ?? 'zh';
+  const defaultLang = normalizeLanguage(document.documentElement.dataset.defaultLang) ?? siteLanguages()[0] ?? 'zh';
   return (
     localizedPathname(lang, location.pathname, currentRouteLanguage(), defaultLang) +
     location.search +

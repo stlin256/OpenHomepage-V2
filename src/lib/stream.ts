@@ -137,7 +137,7 @@ export async function markdownToStream(
 }
 
 /**
- * streaming 内容文件回退链（spec：页面语言 → en → 默认语言 → content_file 原路径）。
+ * streaming 内容文件回退链（页面语言 → en → 默认语言（网站主语言）→ content_file 原路径）。
  * content_file 形如 "streaming/welcome.md"，实际文件按语言分目录
  * （streaming/<lang>/welcome.md）。找不到返回 null。
  */
@@ -203,7 +203,7 @@ export async function loadStreamingBlock(
   });
   return {
     id: def.id,
-    title: def.title === undefined ? '' : resolveText(def.title, lang),
+    title: def.title === undefined ? '' : resolveText(def.title, lang, defaultLang),
     autoplay: def.autoplay ?? true,
     speed: def.speed ?? DEFAULT_STREAM_SPEED,
     html,

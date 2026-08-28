@@ -1,15 +1,19 @@
-/** 双语映射类型与解析：无 Node 依赖，构建侧与浏览器侧（编辑器 SPA）共用 */
+/** 多语言映射类型与解析：无 Node 依赖，构建侧与浏览器侧（编辑器 SPA）共用 */
 
-/** 支持双语映射的文案字段：纯字符串（所有语言通用）或 { zh, en } 映射 */
+/** 支持多语言映射的文案字段：纯字符串（所有语言通用）或 { zh, en, ... } 映射 */
 export type LocalizedText = string | Record<string, string>;
 
 /**
- * 双语映射解析：纯字符串原样返回；{ zh, en } 映射按语言取值，
- * 缺 key 回退 en → zh → 任意可用值。
+ * 多语言映射解析：纯字符串原样返回；{ zh, en, ... } 映射按语言取值，
+ * 缺 key 回退 en → 网站主语言（传入 defaultLang 时）→ 任意可用值。
  */
-export function resolveText(field: LocalizedText, lang: string): string {
+export function resolveText(field: LocalizedText, lang: string, defaultLang?: string): string {
   if (typeof field === 'string') return field;
-  const value = field[lang] ?? field.en ?? field.zh ?? Object.values(field)[0];
+  const value =
+    field[lang] ??
+    field.en ??
+    (defaultLang ? field[defaultLang] : undefined) ??
+    Object.values(field)[0];
   return value ?? '';
 }
 

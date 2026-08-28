@@ -8,6 +8,7 @@
 import { el, btn, textInput, numberInput, checkbox, select, field } from '../dom.ts';
 import { api } from '../api.ts';
 import { createAutosave } from '../../shared/autosave.ts';
+import { languageOptions, type LanguageOption } from '../../shared/languages.ts';
 import type { AppState } from '../main.ts';
 
 const AUTOSAVE_DELAY = 1500;
@@ -204,19 +205,66 @@ export async function renderPageEditor(
 
   const doTranslate = () => {
     void (async () => {
+      let options: LanguageOption[];
+      let slug: string;
       try {
         const { pages } = await api.pages();
-        const langs = [...new Set(pages.map((p) => p.lang))];
-        const other = langs.find((l) => l !== lang) ?? (lang === 'zh' ? 'en' : 'zh');
-        const slug = String(fm.slug ?? file.replace(/\.md$/, ''));
-        const r = await api.createPage(other, String(fm.title ?? file), slug, sourceEl.value);
-        state.setStatus(t('otherLangCreated'), 'ok');
-        await state.refreshSidebar();
-        state.navigate(`#/page/${other}/${r.file}`);
+        slug = String(fm.slug ?? file.replace(/\.md$/, ''));
+        const existingLangs = [...new Set(pages.map((p) => p.lang))];
+        // 已拥有该页面的语言不再列出（避免冲突）；项目未预制的常用语言列在后面，选中即新建语言目录
+        const takenLangs = [...new Set(pages.filter((p) => p.slug === slug).map((p) => p.lang))];
+        options = languageOptions(existingLangs, takenLangs);
       } catch (e) {
-        const msg = (e as Error).message;
-        state.setStatus(/已存在/.test(msg) ? t('otherLangExists') : msg, 'err');
+        state.setStatus((e as Error).message, 'err');
+        return;
       }
+      if (options.length === 0) {
+        state.setStatus(t('otherLangExists'), 'err');
+        return;
+      }
+
+      const overlay = el('div', { class: 'modal-overlay' });
+      const close = () => overlay.remove();
+      const langSel = el('select', { class: 'input' }) as HTMLSelectElement;
+      const existingGroup = el('optgroup', { label: t('wizardLangExisting') });
+      const commonGroup = el('optgroup', { label: t('wizardLangCommon') });
+      for (const o of options) {
+        (o.existing ? existingGroup : commonGroup).append(el('option', { value: o.code }, o.label));
+      }
+      if (existingGroup.childElementCount) langSel.append(existingGroup);
+      if (commonGroup.childElementCount) langSel.append(commonGroup);
+
+      const submit = async () => {
+        try {
+          const r = await api.createPage(langSel.value, String(fm.title ?? file), slug, sourceEl.value);
+          close();
+          state.setStatus(t('otherLangCreated'), 'ok');
+          await state.refreshSidebar();
+          state.navigate(`#/page/${langSel.value}/${r.file}`);
+        } catch (e) {
+          const msg = (e as Error).message;
+          state.setStatus(/已存在/.test(msg) ? t('otherLangExists') : msg, 'err');
+        }
+      };
+
+      overlay.append(
+        el(
+          'div',
+          { class: 'modal' },
+          el('h3', {}, t('translateTitle')),
+          field(t('translateLang'), langSel),
+          el(
+            'div',
+            { class: 'modal-ops' },
+            btn(t('wizardCreate'), () => void submit(), 'btn-primary'),
+            btn(t('cancel'), close)
+          )
+        )
+      );
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
+      });
+      document.body.append(overlay);
     })();
   };
 

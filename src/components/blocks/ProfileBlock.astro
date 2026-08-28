@@ -10,9 +10,11 @@ interface Props {
   avatarTop: boolean;
   /** 可视化编辑（M12d）：首页配置区块坐标值（profile）；仅 OH_EDIT 下由路由层传入 */
   cfgBlock?: string;
+  /** 网站主语言（多语言字段回退链 当前语言 → en → 主语言） */
+  defaultLang?: string;
 }
 
-const { site, lang, avatarUrl, avatarTop, cfgBlock } = Astro.props;
+const { site, lang, avatarUrl, avatarTop, cfgBlock, defaultLang } = Astro.props;
 const showAvatar = Boolean(avatarUrl);
 ---
 
@@ -22,8 +24,8 @@ const showAvatar = Boolean(avatarUrl);
 >
   <div class:list={['profile-intro', { 'span-7': showAvatar && !avatarTop, 'span-12': !showAvatar && !avatarTop }]}>
     {/* 昵称/简介挂 data-oh-cfg 字段坐标（仅 OH_EDIT 注入，生产零痕迹） */}
-    <h1 class="profile-name" {...editCfgAttr('profile.name', lang)}>{resolveText(site.profile.name, lang)}</h1>
-    {site.profile.tagline && <p class="profile-tagline" {...editCfgAttr('profile.tagline', lang)}>{resolveText(site.profile.tagline, lang)}</p>}
+    <h1 class="profile-name" {...editCfgAttr('profile.name', lang)}>{resolveText(site.profile.name, lang, defaultLang)}</h1>
+    {site.profile.tagline && <p class="profile-tagline" {...editCfgAttr('profile.tagline', lang)}>{resolveText(site.profile.tagline, lang, defaultLang)}</p>}
     {site.profile.links && site.profile.links.length > 0 && (
       <ul class="profile-links">
         {site.profile.links.map((link) => (
@@ -37,7 +39,7 @@ const showAvatar = Boolean(avatarUrl);
       class:list={['profile-avatar', { 'span-5': !avatarTop }]}
       {...(avatarTop ? {} : { 'data-parallax': true })}
     >
-      <img src={avatarUrl} alt={resolveText(site.profile.name, lang)} loading="lazy" />
+      <img src={avatarUrl} alt={resolveText(site.profile.name, lang, defaultLang)} loading="lazy" />
     </div>
   )}
 </section>

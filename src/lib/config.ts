@@ -305,16 +305,17 @@ export interface ResolvedIntroCard {
  */
 export function resolveIntroCard(
   site: SiteConfig,
-  lang: string
+  lang: string,
+  defaultLang?: string
 ): ResolvedIntroCard | null {
   const cfg = site.contact?.intro_card;
   if (!cfg || cfg.enabled === false || !cfg.image?.trim()) return null;
   const delay = Number.isFinite(cfg.delay) ? Math.min(20000, Math.max(1000, cfg.delay!)) : 6000;
   return {
     delay,
-    label: resolveText(cfg.label ?? 'Hello', lang),
-    title: resolveText(cfg.title, lang),
-    description: resolveText(cfg.description ?? '', lang),
+    label: resolveText(cfg.label ?? 'Hello', lang, defaultLang),
+    title: resolveText(cfg.title, lang, defaultLang),
+    description: resolveText(cfg.description ?? '', lang, defaultLang),
     image: cfg.image.trim(),
   };
 }
@@ -365,7 +366,7 @@ export interface ResolvedPage {
 }
 
 /**
- * 按回退链「当前语言 → en → 默认语言 → 任一可用版本」解析页面。
+ * 按回退链「当前语言 → en → 默认语言（网站主语言）→ 任一可用版本」解析页面。
  * 所有语言都没有该 slug 时返回 null。
  */
 export function resolvePageForLang(
@@ -376,7 +377,7 @@ export function resolvePageForLang(
 ): ResolvedPage | null {
   const candidates = pages.filter((p) => p.slug === slug);
   if (candidates.length === 0) return null;
-  const chain = [lang, 'en', defaultLang];
+  const chain = [...new Set([lang, 'en', defaultLang])];
   for (const l of chain) {
     const hit = candidates.find((p) => p.lang === l);
     if (hit) return { page: hit, fallback: hit.lang !== lang };

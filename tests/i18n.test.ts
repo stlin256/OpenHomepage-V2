@@ -25,6 +25,14 @@ describe('resolveText', () => {
   it('映射里两个 key 都缺时回退任意可用值', () => {
     expect(resolveText({ fr: 'français' }, 'zh')).toBe('français');
   });
+
+  it('回退链 en → 默认语言（第三个参数）→ 任意可用值', () => {
+    const field = { de: 'Hauptsprache', fr: 'français' };
+    expect(resolveText(field, 'ja', 'de')).toBe('Hauptsprache');
+    expect(resolveText(field, 'de', 'fr')).toBe('Hauptsprache');
+    expect(resolveText({ en: 'English', de: 'Deutsch' }, 'ja', 'de')).toBe('English');
+    expect(resolveText(field, 'ja')).toBe('Hauptsprache'); // 未传默认语言 → 任意可用值
+  });
 });
 
 describe('resolvePageForLang', () => {
