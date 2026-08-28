@@ -2,7 +2,7 @@
 
 [![演示](https://img.shields.io/badge/演示-在线预览-blue?style=flat-square&logo=github)](https://stlin256.github.io/OpenHomepage-V2/)
 [![Deploy](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg)](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml)
-[![License: ISC](https://img.shields.io/badge/License-ISC-green.svg?style=flat-square)](https://github.com/stlin256/OpenHomepage-V2/blob/master/LICENSE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/stlin256/OpenHomepage-V2)
 
 [English](README.md) · [在线演示 / Live Demo](https://stlin256.github.io/OpenHomepage-V2/)
 
@@ -181,6 +181,3 @@ GitHub Actions 会在代码推送到 `main`/`master` 分支或每 8 小时定时
 └── tests/           # Vitest 自动化测试套件
 ```
 
-## 开源协议
-
-本项目基于 [ISC License](LICENSE) 协议开源。
