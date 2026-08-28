@@ -74,7 +74,7 @@ html.oh-editing body {
   opacity: 1;
 }
 
-/* 顶栏按钮（＋插入 / 退出编辑） */
+/* 顶栏按钮（＋插入 / 撤销 / 重做 / 退出编辑） */
 .oh-topbar button {
   padding: 3px 10px;
   border: 1px solid rgb(255 255 255 / 35%);
@@ -104,6 +104,11 @@ html.oh-editing body {
   background: #23272e;
   color: inherit;
   font: inherit;
+}
+
+/* 撤销/重做按钮组：透明包裹，按钮直接参与顶栏 flex 布局（共享 gap） */
+.oh-history {
+  display: contents;
 }
 
 /* hover 描边高亮：outline 不影响布局 */

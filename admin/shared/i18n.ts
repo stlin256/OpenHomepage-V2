@@ -294,6 +294,12 @@ const zh = {
   profileNameZh: '名字（中文）',
   profileNameEn: '名字（英文，可空）',
   assetRefEmpty: '（未选择）',
+
+  // 可视化编辑 overlay：撤销/重做（快照兜底，admin/server/history.ts）
+  undo: '撤销',
+  redo: '重做',
+  nothingToUndo: '没有可撤销的更改',
+  nothingToRedo: '没有可重做的更改',
 } as const;
 
 export type DictKey = keyof typeof zh;
@@ -587,6 +593,12 @@ const en: Record<DictKey, string> = {
   profileNameZh: 'Name (Chinese)',
   profileNameEn: 'Name (English, optional)',
   assetRefEmpty: '(none)',
+
+  // 可视化编辑 overlay：撤销/重做（快照兜底，admin/server/history.ts）
+  undo: 'Undo',
+  redo: 'Redo',
+  nothingToUndo: 'Nothing to undo',
+  nothingToRedo: 'Nothing to redo',
 };
 
 export const dict: Record<Lang, Record<string, string>> = { zh, en };

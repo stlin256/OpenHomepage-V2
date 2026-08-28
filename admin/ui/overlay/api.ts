@@ -156,3 +156,33 @@ export async function saveConfigField(payload: {
 }): Promise<void> {
   await req('/api/config/field', json('POST', payload));
 }
+
+// ---------------------------------------------------------------------------
+// 撤销/重做（快照兜底）：目标 = 服务端记录的最近写盘文件（块操作→页面 md，
+// 配置保存→site/rss.yaml）；overlay 一律省略 path，走服务端的全局"最近写盘"语义
+// ---------------------------------------------------------------------------
+
+/** GET /api/history 响应：path 为当前目标文件（null = 服务端尚无写盘记录） */
+export interface HistoryState {
+  path: string | null;
+  canUndo: boolean;
+  canRedo: boolean;
+}
+
+/** GET /api/history：撤销/重做可用性（顶栏按钮置灰数据源） */
+export async function fetchHistory(): Promise<HistoryState> {
+  return req('/api/history');
+}
+
+export interface HistoryOpResult extends HistoryState {
+  /** false = 无可撤销/重做（并发兜底），文件未改动 */
+  ok: boolean;
+}
+
+export async function undoHistory(): Promise<HistoryOpResult> {
+  return req('/api/history/undo', json('POST', {}));
+}
+
+export async function redoHistory(): Promise<HistoryOpResult> {
+  return req('/api/history/redo', json('POST', {}));
+}

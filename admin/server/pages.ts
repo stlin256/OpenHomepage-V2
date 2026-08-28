@@ -7,6 +7,7 @@ import path from 'node:path';
 import { load as loadYaml, dump as dumpYaml } from 'js-yaml';
 import { safeResolve } from './paths.ts';
 import { createSnapshot } from './snapshots.ts';
+import { notifyWrite } from './history.ts';
 import { slugify, isValidSlug } from '../shared/slugify.ts';
 
 export interface PageMeta {
@@ -116,6 +117,7 @@ export function writePage(
   const rel = `pages/${lang}/${file}`;
   createSnapshot(dataDir, rel);
   writeFileSync(abs, serializePage(frontmatter, body), 'utf8');
+  notifyWrite(dataDir, rel); // 撤销/重做：新写盘使该文件 redo 栈作废
 }
 
 /**
@@ -157,10 +159,11 @@ export function renamePage(dataDir: string, lang: string, file: string, newFile:
   renameSync(from, to);
 }
 
-/** 删除前先把内容入快照，可经快照列表找回 */
+/** 删除前先把内容入快照，可经快照列表找回（亦登记为撤销/重做的最近写盘文件） */
 export function deletePage(dataDir: string, lang: string, file: string): void {
   const abs = pageAbs(dataDir, lang, file);
   if (!existsSync(abs)) throw new Error(`页面不存在：pages/${lang}/${file}`);
   createSnapshot(dataDir, `pages/${lang}/${file}`);
   rmSync(abs);
+  notifyWrite(dataDir, `pages/${lang}/${file}`);
 }

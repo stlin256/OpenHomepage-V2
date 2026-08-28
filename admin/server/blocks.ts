@@ -20,6 +20,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { safeResolve } from './paths.ts';
 import { parsePage } from './pages.ts';
 import { createSnapshot } from './snapshots.ts';
+import { notifyWrite } from './history.ts';
 import {
   listEditableBlocks,
   parseBody,
@@ -252,5 +253,6 @@ export function applyBlockOp(dataDir: string, payload: Record<string, unknown>):
 
   createSnapshot(dataDir, rel);
   writeFileSync(abs, head + newBody, 'utf8');
+  notifyWrite(dataDir, rel); // 撤销/重做：新写盘使该文件 redo 栈作废
   return { ok: true, blocks: withBlockMeta(newBody) };
 }

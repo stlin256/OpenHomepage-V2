@@ -8,6 +8,8 @@
  * data-oh-cfg-block 首页配置区块原生表单（cfgpanel → GET/PUT /api/config/site|rss）、
  * 页面设置面板（pagesettings → GET/PUT /api/page）、页面切换下拉（pageswitcher → GET /api/pages）。
  * 点击/hover 命中最内层坐标：cfg 字段 > markdown 块 > cfg-block 区块（resolveHitTarget）。
+ * 撤销/重做（history.ts）：顶栏按钮 + Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y，
+ * 目标是服务端记录的最近写盘文件（快照兜底，admin/server/history.ts）。
  * 每次写操作成功后整页刷新（§2.6 既定流程；sessionStorage 保持编辑模式）。
  * M12f：插入成功后按返回的最新块列表写 sessionStorage 回跳标记（oh-open-block），
  * reload 后自动打开新块的检查器（指令）/微编辑器（文本块）；hover 委托实现见 toolbar.ts。
@@ -58,6 +60,7 @@ import { openCfgEditor, type CfgEditSession } from './cfgedit.ts';
 import { renderCfgBlockForm } from './cfgpanel.ts';
 import { renderPageSettings } from './pagesettings.ts';
 import { createPageSwitcher } from './pageswitcher.ts';
+import { createHistoryControls } from './history.ts';
 
 /** 编辑模式会话标记（与 BaseLayout bootstrap 同一 key） */
 const STORAGE_KEY = 'oh-edit';
@@ -87,12 +90,13 @@ function readStored(key: string): string | null {
   }
 }
 
-/** 顶栏：←后台链接（M12e）+ 徽标 + 状态（polite live region）+ 页面下拉 + ＋插入 + 页面设置 + 退出编辑 */
+/** 顶栏：←后台链接（M12e）+ 徽标 + 状态（polite live region）+ 页面下拉 + ＋插入 + 撤销/重做 + 页面设置 + 退出编辑 */
 function createTopBar(
   t: (k: string) => string,
   statusEl: HTMLElement,
   opts: {
     switcher: HTMLElement;
+    history: HTMLElement;
     settingsEnabled: boolean;
     onInsert: () => void;
     onOpenSettings: () => void;
@@ -128,6 +132,7 @@ function createTopBar(
     statusEl,
     opts.switcher,
     insert,
+    opts.history,
     settings,
     exit
   );
@@ -260,6 +265,10 @@ export function initOverlay(doc: Document): OverlayHandle {
       /* 错误已显示在顶栏 */
     });
   };
+
+  // 撤销/重做（快照兜底）：顶栏按钮 + 快捷键在 history.ts；状态在 overlay 初始化时拉取
+  // （每次写操作成功后整页刷新，重新初始化即刷新置灰，无需写后单独刷新）
+  const historyControls = createHistoryControls(doc, { t, runSave });
 
   const inserter = createInserter(doc, {
     t,
@@ -567,11 +576,14 @@ export function initOverlay(doc: Document): OverlayHandle {
   doc.body.append(
     createTopBar(t, statusEl, {
       switcher: switcher.el,
+      history: historyControls.el,
       settingsEnabled: pageSource() !== null,
       onInsert: () => inserter.open(null),
       onOpenSettings: openPageSettings,
     })
   );
+  // 撤销/重做按钮置灰初值（无 admin origin 的托管外环境保持禁用）
+  if (adminOrigin()) void historyControls.refresh();
   bindHover(doc, entryByEl, toolbar);
   bindClickToEdit(
     doc,

@@ -14,6 +14,7 @@ import {
 } from '../../src/lib/config.ts';
 import { parseConfigPath, stepConfigPath } from '../shared/cfgpath.ts';
 import { createSnapshot } from './snapshots.ts';
+import { notifyWrite } from './history.ts';
 
 const HEX_COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -124,4 +125,5 @@ function writeConfig(dataDir: string, name: string, cfg: unknown): void {
   if (!existsSync(abs)) throw new Error(`找不到配置文件：${abs}`);
   createSnapshot(dataDir, name);
   writeFileSync(abs, dumpYaml(cfg), 'utf8');
+  notifyWrite(dataDir, name); // 撤销/重做：新写盘使该文件 redo 栈作废
 }

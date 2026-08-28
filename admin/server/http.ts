@@ -17,6 +17,7 @@ import {
 import { readSiteConfig, writeSiteConfig, readRssConfig, writeRssConfig, writeConfigField } from './configs.ts';
 import { listAssets, saveAsset, readAsset, deleteAsset, MAX_ASSET_BYTES } from './assets.ts';
 import { listSnapshots, restoreSnapshot } from './snapshots.ts';
+import { historyState, undo as historyUndo, redo as historyRedo } from './history.ts';
 import { safeResolve, PathError } from './paths.ts';
 import { createDevServerManager, type DevServerManager } from './devserver.ts';
 import { listPageBlocks, applyBlockOp, HashConflictError } from './blocks.ts';
@@ -171,6 +172,9 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         safeResolve(dataDir, rel);
         sendJson(res, 200, { snapshots: listSnapshots(dataDir, rel) });
       },
+      // 撤销/重做（快照兜底，history.ts）：path 可省略——缺省操作本进程最近写盘文件
+      '/api/history': ({ query, res }) =>
+        sendJson(res, 200, historyState(dataDir, query.get('path') || undefined)),
       '/api/dev-status': async ({ res }) => sendJson(res, 200, await dev.status()),
       // 可视化编辑（M12a）：页面正文可编辑块清单（坐标 + 内容 hash，供 overlay 陈旧检测）
       '/api/page/blocks': ({ query, res }) =>
@@ -243,6 +247,11 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         restoreSnapshot(dataDir, rel, String(body.ts ?? ''));
         sendJson(res, 200, { ok: true });
       },
+      // 撤销/重做：无可撤销/重做时不报错，返回 { ok:false, canUndo, canRedo }
+      '/api/history/undo': ({ body, res }) =>
+        sendJson(res, 200, historyUndo(dataDir, typeof body.path === 'string' && body.path !== '' ? body.path : undefined)),
+      '/api/history/redo': ({ body, res }) =>
+        sendJson(res, 200, historyRedo(dataDir, typeof body.path === 'string' && body.path !== '' ? body.path : undefined)),
       '/api/dev/start': async ({ res }) => sendJson(res, 200, await dev.start()),
       '/api/dev/stop': async ({ res }) => sendJson(res, 200, await dev.stop()),
       // favicon 上传：原始二进制图片 → 居中裁方 → 180/32 PNG 入 assets + 写回 site.favicon
