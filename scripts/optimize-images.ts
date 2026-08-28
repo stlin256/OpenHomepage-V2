@@ -29,6 +29,7 @@ interface ConversionResult {
 
 interface ResponsiveImage {
   naturalWidth: number;
+  naturalHeight: number;
   variantWidths: number[];
 }
 
@@ -152,6 +153,23 @@ function rewriteHtml(html: string, catalog: ResponsiveCatalog, availableWebp: Re
       const replacement = rewriteStyle(style, availableWebp);
       if (replacement) element.setAttribute('style', replacement);
     }
+
+    // 写入真实宽高：浏览器在图片加载前即按宽高比预留同尺寸矩形占位，开始加载时无抖动。
+    // 必须在 sizes 推断之后：注入的是原图自然尺寸而非显示尺寸，不能参与 inferImageSizes。
+    if (
+      element.tagName === 'IMG' &&
+      referenceUrl &&
+      !element.hasAttribute('width') &&
+      !element.hasAttribute('height')
+    ) {
+      const assetPath = localAssetPathFromImageUrl(referenceUrl);
+      const basePath = assetPath ? webpAssetPath(`assets/${assetPath}`) : null;
+      const image = basePath ? catalog.get(basePath) : undefined;
+      if (image && image.naturalHeight > 0) {
+        element.setAttribute('width', String(image.naturalWidth));
+        element.setAttribute('height', String(image.naturalHeight));
+      }
+    }
   }
 
   return dom.serialize();
@@ -223,7 +241,12 @@ export async function optimizeDistImages(
     try {
       const source = readFileSync(file);
       const metadata = await sharp(source).metadata();
-      const naturalWidth = metadata.width ?? 0;
+      let naturalWidth = metadata.width ?? 0;
+      let naturalHeight = metadata.height ?? 0;
+      // 转换时 .rotate() 按 EXIF 方向转正，90/270 度的图宽高互换，占位需与产物一致
+      if (metadata.orientation != null && metadata.orientation >= 5) {
+        [naturalWidth, naturalHeight] = [naturalHeight, naturalWidth];
+      }
       if (!naturalWidth) continue;
 
       const webpFile = path.join(assetsDir, webpRelative);
@@ -261,7 +284,7 @@ export async function optimizeDistImages(
           variantWidths.push(width);
         }
       }
-      catalog.set(`assets/${webpRelative}`, { naturalWidth, variantWidths });
+      catalog.set(`assets/${webpRelative}`, { naturalWidth, naturalHeight, variantWidths });
     } catch (error) {
       console.warn(`[optimize-images] skipped ${relative}: ${(error as Error).message}`);
     }

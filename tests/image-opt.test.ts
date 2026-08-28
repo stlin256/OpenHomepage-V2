@@ -126,5 +126,7 @@ describe('optimizeDistImages', () => {
     expect(html.split(responsiveSrcset).length - 1).toBe(2);
     expect(html).toContain('sizes="(max-width: 768px) calc(100vw - 64px)');
     expect(html).toContain('url(\'/site/assets/hero.webp\')');
+    // 构建期写入真实宽高：加载前即预留同尺寸矩形占位，开始加载不抖动
+    expect(html.split('width="1400" height="900"').length - 1).toBe(2);
   });
 });

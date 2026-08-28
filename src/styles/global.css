@@ -2034,6 +2034,9 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
 /* ---- 图片灯箱（spec 03 §5） ---- */
 .markdown-body img {
   cursor: zoom-in;
+  /* 配合构建期写入的 width/height 属性：加载前即按原图宽高比显示同尺寸矩形占位 */
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
 }
 .lightbox {
   position: fixed;
