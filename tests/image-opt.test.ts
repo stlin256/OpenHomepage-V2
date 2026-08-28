@@ -4,8 +4,12 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import {
+  avifAssetPath,
+  avifImageUrl,
   inferImageSizes,
   isConvertibleAssetPath,
+  responsiveAvifAssetPath,
+  responsiveAvifImageUrl,
   responsiveWebpAssetPath,
   responsiveWebpImageUrl,
   webpAssetPath,
@@ -32,6 +36,26 @@ describe('image path optimization', () => {
     expect(webpAssetPath('assets/hero-full.jpg')).toBeNull();
     expect(responsiveWebpAssetPath('assets/hero.jpg', 768)).toBe('assets/hero.768.webp');
     expect(responsiveWebpAssetPath('assets/hero-full.jpg', 768)).toBeNull();
+  });
+
+  it('derives same-stem AVIF paths', () => {
+    expect(avifAssetPath('assets/hero.jpg')).toBe('assets/hero.avif');
+    expect(avifAssetPath('assets/a.b/c.png')).toBe('assets/a.b/c.avif');
+    expect(avifAssetPath('assets/hero-full.jpg')).toBeNull();
+    expect(responsiveAvifAssetPath('assets/hero.jpg', 768)).toBe('assets/hero.768.avif');
+    expect(responsiveAvifAssetPath('assets/hero-full.jpg', 768)).toBeNull();
+  });
+
+  it('resolves AVIF URLs under the deploy base and preserves query/hash', () => {
+    expect(avifImageUrl('/OpenHomepage-V2/assets/hero.jpg?v=2#top', new Set(['assets/hero.avif']))).toBe(
+      '/OpenHomepage-V2/assets/hero.avif?v=2#top',
+    );
+    expect(avifImageUrl('/assets/hero.jpg', new Set(['assets/hero.avif']))).toBe('/assets/hero.avif');
+    expect(avifImageUrl('/assets/hero-full.jpg', new Set())).toBeNull();
+    expect(avifImageUrl('https://cdn.example/assets/hero.jpg', new Set())).toBeNull();
+    expect(responsiveAvifImageUrl('/site/assets/hero.jpg?v=2#top', 768, new Set(['assets/hero.768.avif']))).toBe(
+      '/site/assets/hero.768.avif?v=2#top',
+    );
   });
 
   it('resolves URLs under the deploy base and preserves query/hash', () => {
@@ -111,13 +135,21 @@ describe('optimizeDistImages', () => {
 
     expect(result.converted).toBe(1);
     expect(result.variantsCreated).toBe(3);
+    expect(result.avifConverted).toBe(1);
+    expect(result.avifVariantsCreated).toBe(3);
     expect(existsSync(path.join(dist, 'assets/hero.webp'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero.480.webp'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero.768.webp'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero.1024.webp'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero.1440.webp'))).toBe(false);
+    expect(existsSync(path.join(dist, 'assets/hero.avif'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.480.avif'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.768.avif'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.1024.avif'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.1440.avif'))).toBe(false);
     expect(existsSync(path.join(dist, 'assets/hero.png'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero-full.webp'))).toBe(false);
+    expect(existsSync(path.join(dist, 'assets/hero-full.avif'))).toBe(false);
     expect(html).toContain('data-original="/site/assets/hero.png"');
     expect(html).toContain('src="/site/assets/hero.webp"');
     // src-only 与自带 srcset 的图片都应获得同一组响应式候选
@@ -125,6 +157,11 @@ describe('optimizeDistImages', () => {
       'srcset="/site/assets/hero.480.webp 480w, /site/assets/hero.768.webp 768w, /site/assets/hero.1024.webp 1024w, /site/assets/hero.webp 1400w"';
     expect(html.split(responsiveSrcset).length - 1).toBe(2);
     expect(html).toContain('sizes="(max-width: 768px) calc(100vw - 64px)');
+    // AVIF 优先：两个 img 都被 <picture> 包裹并前置 image/avif 的 <source>
+    const avifSrcset =
+      '<source type="image/avif" srcset="/site/assets/hero.480.avif 480w, /site/assets/hero.768.avif 768w, /site/assets/hero.1024.avif 1024w, /site/assets/hero.avif 1400w">';
+    expect(html.split('<picture>').length - 1).toBe(2);
+    expect(html.split(avifSrcset).length - 1).toBe(2);
     expect(html).toContain('url(\'/site/assets/hero.webp\')');
     // 构建期写入真实宽高：加载前即预留同尺寸矩形占位，开始加载不抖动
     expect(html.split('width="1400" height="900"').length - 1).toBe(2);

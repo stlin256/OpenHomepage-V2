@@ -1,4 +1,4 @@
-/** Page image optimization helpers shared by the post-build WebP pass. */
+/** Page image optimization helpers shared by the post-build WebP/AVIF pass. */
 
 export const CONVERTIBLE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 export const RESPONSIVE_WEBP_WIDTHS = [480, 768, 1024, 1440, 1920, 2560] as const;
@@ -31,6 +31,20 @@ export function responsiveWebpAssetPath(assetPath: string, width: number): strin
   const match = EXT_RE.exec(assetPath);
   if (!match || !Number.isInteger(width) || width <= 0) return null;
   return `${assetPath.slice(0, match.index)}.${width}.webp${match[2] ?? ''}`;
+}
+
+export function avifAssetPath(assetPath: string): string | null {
+  if (!isConvertibleAssetPath(assetPath)) return null;
+  const match = EXT_RE.exec(assetPath);
+  if (!match) return null;
+  return `${assetPath.slice(0, match.index)}.avif${match[2] ?? ''}`;
+}
+
+export function responsiveAvifAssetPath(assetPath: string, width: number): string | null {
+  if (!isConvertibleAssetPath(assetPath)) return null;
+  const match = EXT_RE.exec(assetPath);
+  if (!match || !Number.isInteger(width) || width <= 0) return null;
+  return `${assetPath.slice(0, match.index)}.${width}.avif${match[2] ?? ''}`;
 }
 
 interface LocalAssetUrl {
@@ -99,6 +113,30 @@ export function responsiveWebpImageUrl(
   if (!local) return null;
   const replacement = responsiveWebpAssetPath(`assets/${local.assetPath}`, width);
   if (!replacement || !availableWebp.has(replacement)) return null;
+  return encodedAssetUrl(replacement, local);
+}
+
+/** Same resolution rules as the WebP helpers, against the AVIF output set. */
+export function avifImageUrl(
+  imageUrl: string,
+  availableAvif: ReadonlySet<string>,
+): string | null {
+  const local = parseLocalAssetUrl(imageUrl);
+  if (!local) return null;
+  const replacement = avifAssetPath(`assets/${local.assetPath}`);
+  if (!replacement || !availableAvif.has(replacement)) return null;
+  return encodedAssetUrl(replacement, local);
+}
+
+export function responsiveAvifImageUrl(
+  imageUrl: string,
+  width: number,
+  availableAvif: ReadonlySet<string>,
+): string | null {
+  const local = parseLocalAssetUrl(imageUrl);
+  if (!local) return null;
+  const replacement = responsiveAvifAssetPath(`assets/${local.assetPath}`, width);
+  if (!replacement || !availableAvif.has(replacement)) return null;
   return encodedAssetUrl(replacement, local);
 }
 

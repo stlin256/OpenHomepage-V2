@@ -12,7 +12,7 @@ OpenHomepage V2 is a static, magazine-style personal homepage generator built wi
 
 - **Markdown & Directive Pipeline** — Standard GFM extended with Shiki dual-theme syntax highlighting, KaTeX mathematics, and expressive custom directives (`::bilibili`, `::youtube`, `:::video`, `:::audio`, `:::figure`, `::::grid`, `::stream`, `::ghcard`, `::editorial`).
 - **Editorial Typography & Magazine Layout** — Asymmetric 12-column grid, restrained transform/opacity animations, configurable accent colors, and automatic light/dark theme switching (follows system preference with session override).
-- **Responsive Image Optimization** — Production builds create multiple WebP widths, select the smallest clear candidate from the current layout and device pixel ratio, and idle-prefetch language alternates and same-language tabs with their matching images (fetched HTML feeds a shared in-memory cache, so language switches are near-instant). Originals and `-full` lightbox sources remain excluded from preloading.
+- **Responsive Image Optimization** — Production builds create multiple WebP + AVIF widths, serve AVIF first via `<picture>` when the browser supports it (WebP as fallback), and select the smallest clear candidate from the current layout and device pixel ratio. Idle-prefetch covers language alternates and same-language tabs with their matching images (fetched HTML feeds a shared in-memory cache, so language switches are near-instant). Originals and `-full` lightbox sources remain excluded from preloading.
 - **Dynamic Content Prefetching** — Build-time fetcher with intelligent cache fallback for GitHub contribution heatmaps, official-style pinned repository cards, and multi-source RSS content streams.
 - **Interactive Multimedia** — Full-screen image lightbox with automatic `-full` resolution detection, persistent background audio across client navigation, and LLM-style typewriter markdown playback.
 - **Zero-Friction Multilingual Architecture** — Add language subdirectories under `data/pages/<lang>/` to automatically activate routing, navigation, and multilingual configuration fields, complete with graceful fallback rendering. The bundled demo ships in 中文 / English / 日本語 / Français.
@@ -135,7 +135,7 @@ npm run build
 | `npm run dev` | Astro dev server with hot module reloading | http://localhost:4321 | Press `Ctrl+C` |
 | `npm run prefetch` | Fetch remote GitHub activity and RSS articles into `.cache/` | — | Exits on completion |
 | `npm test` | Run Vitest unit and integration test suite | — | Exits on completion |
-| `npm run build` | Static production build with automatic WebP image optimization | — | Exits on completion |
+| `npm run build` | Static production build with automatic WebP + AVIF image optimization (`WEBP_QUALITY` 80 / `AVIF_QUALITY` 50 by default) | — | Exits on completion |
 | `npm run preview` | Preview static output in `dist/` | http://localhost:4321 | Press `Ctrl+C` |
 | `npm run serve` | Standalone static server with optional HTTPS | http://localhost:8080 (or https://localhost:8443) | Press `Ctrl+C` |
 | `npm run screenshots` | Regenerate the component gallery images above from `dist/` (requires `npm run build` and a one-time `npx playwright install chromium`) | — | Exits on completion |

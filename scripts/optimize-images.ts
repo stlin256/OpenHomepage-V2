@@ -1,7 +1,8 @@
 /**
- * Post-build image pass: create responsive WebP variants for ordinary page
- * images, then rewrite generated HTML references. Original files and *-full
- * variants remain deployed for the lightbox and direct downloads.
+ * Post-build image pass: create responsive WebP + AVIF variants for ordinary
+ * page images, then rewrite generated HTML references (AVIF via <picture>
+ * sources with WebP <img> fallback). Original files and *-full variants
+ * remain deployed for the lightbox and direct downloads.
  */
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -10,9 +11,11 @@ import sharp from 'sharp';
 import { JSDOM } from 'jsdom';
 import {
   RESPONSIVE_WEBP_WIDTHS,
+  avifImageUrl,
   inferImageSizes,
   isConvertibleAssetPath,
   localAssetPathFromImageUrl,
+  responsiveAvifImageUrl,
   responsiveWebpImageUrl,
   webpAssetPath,
   webpImageUrl,
@@ -23,6 +26,10 @@ interface ConversionResult {
   reused: number;
   variantsCreated: number;
   variantsReused: number;
+  avifConverted: number;
+  avifReused: number;
+  avifVariantsCreated: number;
+  avifVariantsReused: number;
   bytesSaved: number;
   rewrittenReferences: number;
 }
@@ -49,8 +56,8 @@ function toPosix(value: string): string {
   return value.split(path.sep).join('/');
 }
 
-function qualityFromEnv(value: number): number {
-  return Number.isFinite(value) ? Math.min(100, Math.max(1, Math.round(value))) : 80;
+function qualityFromEnv(value: number, fallback = 80): number {
+  return Number.isFinite(value) ? Math.min(100, Math.max(1, Math.round(value))) : fallback;
 }
 
 function firstSrcsetUrl(value: string): string | null {
@@ -95,6 +102,56 @@ function responsiveSrcset(
   return entries.length > 1 ? entries.join(', ') : null;
 }
 
+function responsiveAvifSrcset(
+  referenceUrl: string,
+  catalog: ResponsiveCatalog,
+  availableAvif: ReadonlySet<string>,
+): string | null {
+  const assetPath = localAssetPathFromImageUrl(referenceUrl);
+  const basePath = assetPath ? webpAssetPath(`assets/${assetPath}`) : null;
+  const image = basePath ? catalog.get(basePath) : undefined;
+  if (!image) return null;
+
+  const candidates = [...image.variantWidths, image.naturalWidth].sort((a, b) => a - b);
+  const entries: string[] = [];
+  for (const width of candidates) {
+    const url =
+      width === image.naturalWidth
+        ? avifImageUrl(referenceUrl, availableAvif)
+        : responsiveAvifImageUrl(referenceUrl, width, availableAvif);
+    if (url) entries.push(`${url} ${width}w`);
+  }
+  return entries.length > 1 ? entries.join(', ') : null;
+}
+
+/**
+ * Give an <img> an AVIF-first <picture> wrapper (or prepend the AVIF source
+ * to an existing picture). The <img> keeps its WebP src/srcset as fallback;
+ * sizes stays on the <img> and applies to the <source> per spec.
+ */
+function wrapWithAvifSource(
+  document: Document,
+  img: Element,
+  avifSrcset: string,
+): void {
+  let picture = img.parentElement?.tagName === 'PICTURE' ? img.parentElement : null;
+  if (!picture) {
+    picture = document.createElement('picture');
+    img.parentNode?.insertBefore(picture, img);
+    picture.append(img);
+  }
+  for (const child of picture.children) {
+    if (child.tagName === 'SOURCE' && child.getAttribute('type') === 'image/avif') {
+      child.setAttribute('srcset', avifSrcset);
+      return;
+    }
+  }
+  const source = document.createElement('source');
+  source.setAttribute('type', 'image/avif');
+  source.setAttribute('srcset', avifSrcset);
+  picture.prepend(source);
+}
+
 function rewriteStyle(value: string, availableWebp: ReadonlySet<string>): string | null {
   let changed = false;
   const rewritten = value.replace(
@@ -109,7 +166,12 @@ function rewriteStyle(value: string, availableWebp: ReadonlySet<string>): string
   return changed ? rewritten : null;
 }
 
-function rewriteHtml(html: string, catalog: ResponsiveCatalog, availableWebp: ReadonlySet<string>): string {
+function rewriteHtml(
+  html: string,
+  catalog: ResponsiveCatalog,
+  availableWebp: ReadonlySet<string>,
+  availableAvif: ReadonlySet<string>,
+): string {
   const dom = new JSDOM(html);
   const document = dom.window.document;
 
@@ -170,12 +232,20 @@ function rewriteHtml(html: string, catalog: ResponsiveCatalog, availableWebp: Re
         element.setAttribute('height', String(image.naturalHeight));
       }
     }
+
+    // AVIF 优先：支持 AVIF 的浏览器取 <source>，其余回落 <img> 的 WebP。
+    if (element.tagName === 'IMG' && referenceUrl) {
+      const avifSrcset =
+        responsiveAvifSrcset(referenceUrl, catalog, availableAvif) ??
+        avifImageUrl(referenceUrl, availableAvif);
+      if (avifSrcset) wrapWithAvifSource(document, element, avifSrcset);
+    }
   }
 
   return dom.serialize();
 }
 
-async function validExistingWebp(file: string, expectedWidth: number): Promise<boolean> {
+async function validExistingVariant(file: string, expectedWidth: number): Promise<boolean> {
   const stat = statSync(file, { throwIfNoEntry: false });
   if (!stat?.isFile() || stat.size === 0) return false;
   try {
@@ -201,17 +271,40 @@ async function writeWebp(
   return output;
 }
 
+// AVIF 压缩效率更高：q50 观感约等于 WebP q80，体积再小 30–50%
+async function writeAvif(
+  source: Buffer,
+  target: string,
+  width: number,
+  quality: number,
+): Promise<Buffer> {
+  const output = await sharp(source)
+    .rotate()
+    .resize({ width, withoutEnlargement: true })
+    .avif({ quality, effort: 4 })
+    .toBuffer();
+  mkdirSync(path.dirname(target), { recursive: true });
+  writeFileSync(target, output);
+  return output;
+}
+
 export async function optimizeDistImages(
   distDir: string,
   quality = qualityFromEnv(Number(process.env.WEBP_QUALITY ?? 80)),
+  avifQuality = qualityFromEnv(Number(process.env.AVIF_QUALITY ?? 50), 50),
 ): Promise<ConversionResult> {
   const assetsDir = path.join(distDir, 'assets');
   const availableWebp = new Set<string>();
+  const availableAvif = new Set<string>();
   const catalog: ResponsiveCatalog = new Map();
   let converted = 0;
   let reused = 0;
   let variantsCreated = 0;
   let variantsReused = 0;
+  let avifConverted = 0;
+  let avifReused = 0;
+  let avifVariantsCreated = 0;
+  let avifVariantsReused = 0;
   let bytesSaved = 0;
 
   const files = statSync(assetsDir, { throwIfNoEntry: false })?.isDirectory()
@@ -252,13 +345,13 @@ export async function optimizeDistImages(
       const webpFile = path.join(assetsDir, webpRelative);
       const isWebpSource = /\.webp$/i.test(relative);
       if (isWebpSource) {
-        if (!(await validExistingWebp(webpFile, naturalWidth))) {
+        if (!(await validExistingVariant(webpFile, naturalWidth))) {
           await writeWebp(source, webpFile, naturalWidth, quality);
           converted += 1;
         } else {
           reused += 1;
         }
-      } else if (await validExistingWebp(webpFile, naturalWidth)) {
+      } else if (await validExistingVariant(webpFile, naturalWidth)) {
         reused += 1;
       } else {
         const output = await writeWebp(source, webpFile, naturalWidth, quality);
@@ -267,13 +360,24 @@ export async function optimizeDistImages(
       }
       availableWebp.add(`assets/${webpRelative}`);
 
+      const avifRelative = relative.replace(/\.[a-z0-9]+$/i, '.avif');
+      const avifFile = path.join(assetsDir, avifRelative);
+      if (await validExistingVariant(avifFile, naturalWidth)) {
+        avifReused += 1;
+      } else {
+        const output = await writeAvif(source, avifFile, naturalWidth, avifQuality);
+        avifConverted += 1;
+        bytesSaved += Math.max(0, source.length - output.length);
+      }
+      availableAvif.add(`assets/${avifRelative}`);
+
       const variantWidths: number[] = [];
       if (!metadata.pages || metadata.pages <= 1) {
         for (const width of RESPONSIVE_WEBP_WIDTHS) {
           if (width >= naturalWidth) continue;
           const variantRelative = responsiveWebpRelativePath(webpRelative, width);
           const variantFile = path.join(assetsDir, variantRelative);
-          if (await validExistingWebp(variantFile, width)) {
+          if (await validExistingVariant(variantFile, width)) {
             variantsReused += 1;
           } else {
             const output = await writeWebp(source, variantFile, width, quality);
@@ -281,6 +385,18 @@ export async function optimizeDistImages(
             bytesSaved += Math.max(0, source.length - output.length);
           }
           availableWebp.add(`assets/${variantRelative}`);
+
+          const avifVariantRelative = responsiveAvifRelativePath(avifRelative, width);
+          const avifVariantFile = path.join(assetsDir, avifVariantRelative);
+          if (await validExistingVariant(avifVariantFile, width)) {
+            avifVariantsReused += 1;
+          } else {
+            const output = await writeAvif(source, avifVariantFile, width, avifQuality);
+            avifVariantsCreated += 1;
+            bytesSaved += Math.max(0, source.length - output.length);
+          }
+          availableAvif.add(`assets/${avifVariantRelative}`);
+
           variantWidths.push(width);
         }
       }
@@ -295,7 +411,7 @@ export async function optimizeDistImages(
     for (const file of walkFiles(distDir)) {
       if (!file.endsWith('.html')) continue;
       const html = readFileSync(file, 'utf8');
-      const rewritten = rewriteHtml(html, catalog, availableWebp);
+      const rewritten = rewriteHtml(html, catalog, availableWebp, availableAvif);
       if (rewritten !== html) {
         writeFileSync(file, rewritten, 'utf8');
         rewrittenReferences += 1;
@@ -303,11 +419,26 @@ export async function optimizeDistImages(
     }
   }
 
-  return { converted, reused, variantsCreated, variantsReused, bytesSaved, rewrittenReferences };
+  return {
+    converted,
+    reused,
+    variantsCreated,
+    variantsReused,
+    avifConverted,
+    avifReused,
+    avifVariantsCreated,
+    avifVariantsReused,
+    bytesSaved,
+    rewrittenReferences,
+  };
 }
 
 function responsiveWebpRelativePath(webpRelative: string, width: number): string {
   return webpRelative.replace(/\.webp$/i, `.${width}.webp`);
+}
+
+function responsiveAvifRelativePath(avifRelative: string, width: number): string {
+  return avifRelative.replace(/\.avif$/i, `.${width}.avif`);
 }
 
 async function main(): Promise<void> {
@@ -316,6 +447,8 @@ async function main(): Promise<void> {
   console.log(
     `[optimize-images] WebP: ${result.converted} converted, ${result.reused} already present, ` +
       `${result.variantsCreated} responsive variants created, ${result.variantsReused} reused, ` +
+      `AVIF: ${result.avifConverted} converted, ${result.avifReused} already present, ` +
+      `${result.avifVariantsCreated} responsive variants created, ${result.avifVariantsReused} reused, ` +
       `${(result.bytesSaved / 1024).toFixed(1)} KiB saved, ${result.rewrittenReferences} HTML files rewritten`,
   );
 }

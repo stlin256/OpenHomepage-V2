@@ -12,7 +12,7 @@ OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静
 
 - **Markdown 优先与扩展指令**——原生支持 GFM、Shiki 明暗双主题代码高亮、KaTeX 数学公式解析，并提供丰富的自定义指令（`::bilibili`、`::youtube`、`:::video`、`:::audio`、`:::figure`、`::::grid`、`::stream`、`::ghcard`、`::editorial`）及安全 HTML 混写。
 - **杂志化布局与自适应主题**——采用非对称 12 列网格布局与平滑硬件加速动效；内置明暗双主题（默认跟随系统偏好，支持手动切换与会话记忆）及自定义主题强调色。
-- **自动图片优化与响应式加载**——生产构建自动生成多档分辨率 WebP，按当前布局和设备像素密度选择最小清晰档位；页面加载完成后空闲预取其他语言页面与同语言其他 tab（HTML 进共享内存缓存，语言切换近乎瞬时）及对应尺寸图片，同时保留原图与 `-full` 高清灯箱源且不参与预加载。
+- **自动图片优化与响应式加载**——生产构建自动生成多档分辨率 WebP 与 AVIF，浏览器支持 AVIF 时经 `<picture>` 优先加载更小的 AVIF（WebP 兜底），并按当前布局和设备像素密度选择最小清晰档位；页面加载完成后空闲预取其他语言页面与同语言其他 tab（HTML 进共享内存缓存，语言切换近乎瞬时）及对应尺寸图片，同时保留原图与 `-full` 高清灯箱源且不参与预加载。
 - **动态数据预取与缓存降级**——构建期预取 GitHub 年度贡献热力图、1:1 官网质感 Pinned 仓库卡片以及多源 RSS 文章卡片流，支持网络失败时的本地缓存平滑降级。
 - **拟真交互与多媒体支持**——图片全屏灯箱（自动匹配 `-full` 高清源图）、站内无缝连续播放的背景音乐、以及拟真 LLM 打字机流式呈现的 Markdown 动画区块。
 - **零开销多语言架构**——在 `data/pages/<lang>/` 下增设语言目录即可自动激活对应语言路由、导航与多语言配置，配合智能回退链实现静默兜底渲染。内置示例站点自带 中文 / English / 日本語 / Français 四种语言演示。
@@ -135,7 +135,7 @@ npm run build
 | `npm run dev` | 仅启动 Astro 开发服务器（支持热更新） | http://localhost:4321 | 终端按 `Ctrl+C` 停止 |
 | `npm run prefetch` | 预取远端 GitHub 与 RSS 数据到 `.cache/` | — | 运行完成自动退出 |
 | `npm test` | 运行 Vitest 单元与集成测试套件 | — | 运行完成自动退出 |
-| `npm run build` | 执行正式静态构建，并自动优化页面图片为 WebP | — | 运行完成自动退出 |
+| `npm run build` | 执行正式静态构建，并自动优化页面图片为 WebP + AVIF（默认 `WEBP_QUALITY` 80 / `AVIF_QUALITY` 50） | — | 运行完成自动退出 |
 | `npm run preview` | 预览 `dist/` 生产构建产物 | http://localhost:4321 | 终端按 `Ctrl+C` 停止 |
 | `npm run serve` | 运行生产级独立静态托管服务（可选 HTTPS） | http://localhost:8080（或 https://localhost:8443） | 终端按 `Ctrl+C` 停止 |
 | `npm run screenshots` | 从 `dist/` 重新生成上文组件画廊截图（需先 `npm run build`，首次运行需 `npx playwright install chromium`） | — | 运行完成自动退出 |
