@@ -12,6 +12,7 @@ OpenHomepage V2 is a static, magazine-style personal homepage generator built wi
 
 - **Markdown & Directive Pipeline** — Standard GFM extended with Shiki dual-theme syntax highlighting, KaTeX mathematics, and expressive custom directives (`::bilibili`, `::youtube`, `:::video`, `:::audio`, `:::figure`, `::::grid`, `::stream`, `::ghcard`, `::editorial`).
 - **Editorial Typography & Magazine Layout** — Asymmetric 12-column grid, restrained transform/opacity animations, configurable accent colors, and automatic light/dark theme switching (follows system preference with session override).
+- **Automatic Image Optimization** — Production builds convert ordinary JPG/PNG page images to WebP while retaining originals and `-full` lightbox sources.
 - **Dynamic Content Prefetching** — Build-time fetcher with intelligent cache fallback for GitHub contribution heatmaps, official-style pinned repository cards, and multi-source RSS content streams.
 - **Interactive Multimedia** — Full-screen image lightbox with automatic `-full` resolution detection, persistent background audio across client navigation, and LLM-style typewriter markdown playback.
 - **Zero-Friction Multilingual Architecture** — Add language subdirectories under `data/pages/<lang>/` to automatically activate routing, navigation, and multilingual configuration fields, complete with graceful fallback rendering.
@@ -83,7 +84,7 @@ npm run build
 | `npm run dev` | Astro dev server with hot module reloading | http://localhost:4321 | Press `Ctrl+C` |
 | `npm run prefetch` | Fetch remote GitHub activity and RSS articles into `.cache/` | — | Exits on completion |
 | `npm test` | Run Vitest unit and integration test suite | — | Exits on completion |
-| `npm run build` | Static production build outputting to `dist/` | — | Exits on completion |
+| `npm run build` | Static production build with automatic WebP image optimization | — | Exits on completion |
 | `npm run preview` | Preview static output in `dist/` | http://localhost:4321 | Press `Ctrl+C` |
 | `npm run serve` | Standalone static server with optional HTTPS | http://localhost:8080 (or https://localhost:8443) | Press `Ctrl+C` |
 

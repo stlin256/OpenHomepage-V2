@@ -21,11 +21,47 @@ export function fullVariantUrl(src: string): string | null {
 }
 
 /**
- * 灯箱实际加载地址：hasFull 判定高清变体存在则用变体，否则用原图。
+ * 灯箱候选地址（按优先级尝试）：
+ * 1. 原图的高清变体（assets/hero.jpg → assets/hero-full.jpg）
+ * 2. 原图本体（保留 JPG/PNG，供高清查看与另存为）
+ * 3. 页面图本体（WebP 兜底；原图存在时不再派生页面 -full，避免无效请求）
+ */
+export function lightboxCandidateUrls(inPageSrc: string, originalSrc?: string | null): string[] {
+  const candidates: string[] = [];
+  const seen = new Set<string>();
+  const add = (url: string | null | undefined) => {
+    if (!url) return;
+    if (!seen.has(url)) {
+      seen.add(url);
+      candidates.push(url);
+    }
+  };
+
+  if (originalSrc && originalSrc !== inPageSrc) {
+    add(fullVariantUrl(originalSrc));
+    add(originalSrc);
+    add(inPageSrc);
+    return candidates;
+  }
+  add(fullVariantUrl(inPageSrc));
+  add(inPageSrc);
+
+  return candidates;
+}
+
+/**
+ * 灯箱实际加载地址：hasFull 判定候选存在则选用，否则逐级回退。
  * hasFull 缺省时乐观假定变体存在（调用方负责加载失败回退原图）。
  */
-export function pickLightboxSrc(src: string, hasFull?: (fullUrl: string) => boolean): string {
-  const full = fullVariantUrl(src);
-  if (!full) return src;
-  return !hasFull || hasFull(full) ? full : src;
+export function pickLightboxSrc(
+  src: string,
+  hasFull?: (fullUrl: string) => boolean,
+  originalSrc?: string | null,
+): string {
+  const candidates = lightboxCandidateUrls(src, originalSrc);
+  if (!hasFull) return candidates[0] ?? src;
+  for (const c of candidates) {
+    if (c === src || hasFull(c)) return c;
+  }
+  return src;
 }

@@ -18,7 +18,8 @@
     "test": "vitest run",
     "prefetch": "tsx scripts/prefetch.ts",
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && npm run optimize:images",
+    "optimize:images": "tsx scripts/optimize-images.ts",
     "setup": "node scripts/setup.mjs",
     "admin": "tsx admin/server/index.ts",
     "preview": "astro preview",
@@ -60,6 +61,7 @@
     "remark-rehype": "^11.1.2",
     "rss-parser": "^3.13.0",
     "shiki": "^4.4.3",
+    "sharp": "^0.35.3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0"
   },

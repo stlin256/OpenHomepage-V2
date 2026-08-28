@@ -1,12 +1,12 @@
 /**
  * 图片灯箱（docs/specs/03 §5）：点击正文/网格图片（.markdown-body 内的 img）打开全屏预览。
  * - 灯箱骨架由 BaseLayout 服务端渲染（.lightbox，hidden），本脚本只做交互；
- * - 高分辨率变体按 -full 约定乐观加载（src/lib/lightbox.ts），加载失败回退原图，
+ * - 高分辨率变体按 -full 约定乐观加载（src/lib/lightbox.ts），失败逐级回退；
  *   失败结果缓存于 fullBad，同一会话不重复 404；
  * - 关闭：✕ 按钮 / 点击背景 / Esc；开关动画纯 CSS（global.css .lightbox）。
  * 事件全部挂在 document 上（事件委托），ClientRouter 转场后无需重绑。
  */
-import { fullVariantUrl, pickLightboxSrc } from '../lib/lightbox.ts';
+import { pickLightboxSrc } from '../lib/lightbox.ts';
 
 /** 已知不存在高清变体的 URL（onerror 探测到的 404） */
 const fullBad = new Set<string>();
@@ -19,20 +19,23 @@ function openLightbox(img: HTMLImageElement): void {
   const box = overlay();
   const view = box?.querySelector<HTMLImageElement>('.lightbox-img');
   if (!box || !view) return;
-  const orig = img.currentSrc || img.src;
-  if (!orig) return;
-  const full = fullVariantUrl(orig);
-  // 乐观用变体；已知 404 的走 pickLightboxSrc 的判定直接落回原图
-  const start = pickLightboxSrc(orig, (fullUrl) => !fullBad.has(fullUrl));
-  view.onerror =
-    full && start === full
-      ? () => {
-          fullBad.add(full);
-          view.onerror = null;
-          view.src = orig;
-        }
-      : null;
-  view.src = start;
+  const pageSrc = img.currentSrc || img.src;
+  if (!pageSrc) return;
+  // 构建优化会把非 WebP 原图保存在 data-original；灯箱优先原图及其 -full 版，
+  // 全部失败时才回落到页面已缓存的 WebP。
+  const originalSrc = img.dataset.original || null;
+  const showCandidate = () => {
+    const next = pickLightboxSrc(pageSrc, (url) => !fullBad.has(url), originalSrc);
+    view.onerror =
+      next === pageSrc
+        ? null
+        : () => {
+            fullBad.add(next);
+            showCandidate();
+          };
+    view.src = next;
+  };
+  showCandidate();
   view.alt = img.alt;
   box.hidden = false;
   // 强制 reflow 后再加 .open，保证 opacity/transform 过渡生效

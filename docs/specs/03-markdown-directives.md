@@ -55,6 +55,8 @@
 
 **高分辨率约定**：同名 `-full` 后缀文件为高清版（`assets/hero.jpg` → `assets/hero-full.jpg`）。灯箱运行时乐观加载高清版，404 时回退原图（失败结果会话内缓存，不重复请求）。推导与选用逻辑在 `src/lib/lightbox.ts`（纯函数，有单测）；交互在 `src/scripts/lightbox.ts`（事件委托，ClientRouter 转场无需重绑；链接/按钮内的图片不劫持）。灯箱骨架由 BaseLayout 服务端渲染（无 JS 时无影响）。
 
+**生产 WebP 优化**：`npm run build` 在静态输出后把 `dist/assets` 中常规 JPG/PNG 转 WebP，并重写页面 HTML/内联背景图引用；原 JPG/PNG 与 `*-full` 高清变体继续随站点发布。重写后的 `<img data-original>` 保存原图地址，灯箱优先加载原图/`-full`，失败才回落已缓存的 WebP。
+
 ## 5. 注意事项
 
 - 指令参数一律用 `key="value"` 形式；未识别指令按普通文本段落降级渲染，不报错。

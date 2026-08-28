@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fullVariantUrl, pickLightboxSrc } from '../src/lib/lightbox.ts';
+import { fullVariantUrl, lightboxCandidateUrls, pickLightboxSrc } from '../src/lib/lightbox.ts';
 
 describe('fullVariantUrl（-full 高分辨率变体约定）', () => {
   it('普通相对路径加 -full 后缀', () => {
@@ -38,5 +38,29 @@ describe('pickLightboxSrc（灯箱加载地址决策）', () => {
   it('无变体可派生时一律用原图', () => {
     expect(pickLightboxSrc('data:image/png;base64,x', () => true)).toBe('data:image/png;base64,x');
     expect(pickLightboxSrc('assets/hero-full.jpg')).toBe('assets/hero-full.jpg');
+  });
+});
+
+describe('WebP 页面图的原图回退', () => {
+  it('候选顺序为原图 -full、原图、页面 -full、页面图', () => {
+    expect(lightboxCandidateUrls('/assets/hero.webp', '/assets/hero.jpg')).toEqual([
+      '/assets/hero-full.jpg',
+      '/assets/hero.jpg',
+      '/assets/hero.webp',
+    ]);
+  });
+
+  it('原图 -full 不可用时优先原图，而不是页面 WebP', () => {
+    const bad = new Set(['/assets/hero-full.jpg']);
+    expect(pickLightboxSrc('/assets/hero.webp', (url) => !bad.has(url), '/assets/hero.jpg')).toBe(
+      '/assets/hero.jpg',
+    );
+  });
+
+  it('原图也不可用时才回退页面 WebP', () => {
+    const bad = new Set(['/assets/hero-full.jpg', '/assets/hero.jpg']);
+    expect(pickLightboxSrc('/assets/hero.webp', (url) => !bad.has(url), '/assets/hero.jpg')).toBe(
+      '/assets/hero.webp',
+    );
   });
 });
