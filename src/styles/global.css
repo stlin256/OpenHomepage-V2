@@ -1405,6 +1405,11 @@ a.editorial-item:focus-visible .editorial-item-content {
   gap: 1.5rem;
   margin: 1.5em 0;
 }
+@media (max-width: 768px) {
+  .markdown-body .md-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
 /* bilibili/youtube 播放器：16:9 响应式容器，iframe 直接加载（loading=lazy） */
 .markdown-body .embed-player {
   aspect-ratio: 16 / 9;

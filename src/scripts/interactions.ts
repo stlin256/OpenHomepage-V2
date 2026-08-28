@@ -10,6 +10,7 @@ import { initMotion } from './motion.ts';
 import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
+import { scheduleTabPrefetch } from './tab-prefetch.ts';
 import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
 import './lightbox.ts';
 
@@ -135,6 +136,7 @@ function initAll(): void {
   initEmbeddedMedia();
   initHeatmapTooltips();
   initNoticeBanners();
+  scheduleTabPrefetch();
 }
 
 // ---- 客户端内容交换 ----

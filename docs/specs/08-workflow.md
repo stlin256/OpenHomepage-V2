@@ -55,7 +55,7 @@ steps:
   - run: npm ci
   - run: npm run prefetch -- --force          # scripts/prefetch.ts（tsx 运行）
     env: { GH_PAT: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}, GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }} }
-  - run: npm run build                             # astro build → dist/ → 普通 JPG/PNG 页面图自动转 WebP
+  - run: npm run build                             # astro build → dist/ → 普通页面图生成多档响应式 WebP
 
   - name: 校验产物                                # dist/index.html 非空且含 <html
     run: test -s dist/index.html && grep -q "<html" dist/index.html

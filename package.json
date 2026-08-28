@@ -60,13 +60,14 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "rss-parser": "^3.13.0",
-    "shiki": "^4.4.3",
     "sharp": "^0.35.3",
+    "shiki": "^4.4.3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^26.2.0",
     "esbuild": "^0.28.2",
     "jimp": "^1.6.1",
