@@ -134,12 +134,15 @@ function initAudioPlayer(root: HTMLElement): void {
     root.classList.remove(ACTIVE_ROOT_CLASS);
     resumeBgmIfNeeded();
   });
-  audio.addEventListener('loadedmetadata', () => {
-    if (time) time.textContent = `0:00 / ${fmt(audio.duration)}`;
-  });
+  const updateTime = () => {
+    if (time) time.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+  };
+  // durationchange 在部分浏览器先于 loadedmetadata 触发，或 preload=none 点击后才触发
+  audio.addEventListener('loadedmetadata', updateTime);
+  audio.addEventListener('durationchange', updateTime);
   audio.addEventListener('timeupdate', () => {
     if (fill && audio.duration) fill.style.transform = `scaleX(${audio.currentTime / audio.duration})`;
-    if (time) time.textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+    updateTime();
   });
 }
 

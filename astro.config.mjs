@@ -76,8 +76,17 @@ function dataAssets() {
             res.writeHead(416, { 'Content-Range': `bytes */${size}` });
             return res.end();
           }
-          const start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2] || 0));
-          const end = match[2] ? Number(match[2]) : size - 1;
+          // Range 解析：bytes=start-end / bytes=start- / bytes=-N（后缀，取最后 N 字节）
+          // 后缀范围 bytes=-N 时 end 应为 size-1（而非 N），否则 start > end 触发 416，
+          // 导致浏览器无法读取 MP3/MP4 尾部元数据，时长为 0、无法播放。
+          let start, end;
+          if (match[1]) {
+            start = Number(match[1]);
+            end = match[2] ? Number(match[2]) : size - 1;
+          } else {
+            start = Math.max(0, size - Number(match[2] || 0));
+            end = size - 1;
+          }
           if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || start >= size) {
             res.writeHead(416, { 'Content-Range': `bytes */${size}` });
             return res.end();

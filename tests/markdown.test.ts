@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { renderMarkdown } from '../src/lib/markdown.ts';
 
 // Shiki 首次调用需初始化高亮器（秒级），预热一次避免首个用例超时
@@ -137,6 +137,35 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('class="embed-poster"');
     expect(html).toContain('src="/assets/custom-cover.jpg"');
     expect(html).toContain('自定义测试视频');
+  });
+
+  it('::bilibili 自动异步解析远程封面图与视频标题', async () => {
+    const mockFetch = vi.fn(async (url: string) => {
+      if (url.includes('BV1xx411c7mD')) {
+        return {
+          ok: true,
+          json: async () => ({
+            code: 0,
+            data: {
+              title: '字幕君交流场所',
+              pic: 'https://i0.hdslb.com/bfs/archive/mock-cover.jpg',
+            },
+          }),
+        } as unknown as Response;
+      }
+      return { ok: false, status: 404 } as unknown as Response;
+    });
+
+    const html = await renderMarkdown('::bilibili{bvid="BV1xx411c7mD"}', {
+      localizeAssets: {
+        dataDir: 'data',
+        fetchFn: mockFetch as any,
+      },
+    });
+
+    expect(html).toContain('class="embed-player embed-bilibili"');
+    expect(html).toContain('alt="字幕君交流场所"');
+    expect(html).toContain('字幕君交流场所');
   });
 
   it(':::video 渲染原生 video 标签', async () => {

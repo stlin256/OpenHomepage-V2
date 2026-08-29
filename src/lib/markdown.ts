@@ -33,6 +33,9 @@ import { listEditableBlocks } from './edit-blocks.ts';
 import { localizeRemoteAsset, type RemoteFetchFn } from './remote-assets.ts';
 import { renderPublications, type PublicationsConfig, type PublicationQuery } from './publications.ts';
 import { generateHeadingSlug } from './toc.ts';
+import { fetchBilibiliMeta } from './bilibili.ts';
+import { getUiLabels, normalizeUiLang } from './ui-i18n.ts';
+import path from 'node:path';
 
 export interface MarkdownOptions {
   /** 站点 base URL，用于静态资源与链接补齐前缀（缺省自动读取或为 /） */
@@ -158,13 +161,14 @@ const PLAY_ICON_PATH = 'M8 5v14l11-7z';
 const PAUSE_ICON_PATH = 'M6 5h4v14H6zM14 5h4v14h-4z';
 
 const YT_PLAY_PATH = 'M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z';
-const BILI_TV_PATH = 'M18.8 4l1.6-1.6a1 1 0 00-1.4-1.4L16.4 3.6A11.7 11.7 0 0012 3c-1.6 0-3.1.2-4.4.6L5 1a1 1 0 00-1.4 1.4L5.2 4C2.3 5.7.3 8.6.3 12c0 4.4 3.6 8 8 8h7.4c4.4 0 8-3.6 8-8 0-3.4-2-6.3-4.9-8zM8 14a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z';
+const BILI_TV_PATH = 'M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z';
 
 /** bilibili/youtube 指令：高性能官方门面模式（Facade），呈现与官方播放器一致的首屏封面、标题栏与专属播放按钮，点击才动态装载 iframe，保障极速流畅 */
 function toEmbedDiv(
   kind: 'bilibili' | 'youtube',
   attrs: Record<string, string>,
   baseUrl?: string,
+  lang?: string,
 ): { properties: Properties; children: ElementContent[] } | null {
   let src: string;
   let title: string;
@@ -173,20 +177,12 @@ function toEmbedDiv(
   if (kind === 'bilibili') {
     if (!attrs.bvid) return null;
     src = `https://player.bilibili.com/player.html?bvid=${attrs.bvid}&autoplay=1`;
-    title = attrs.title || (attrs.bvid === 'BV13z421U7cs' ? '【官方双语】GPT是什么？直观解释Transformer | 深度学习第5章' : 'bilibili 视频');
-    // 如果没有指定 poster，对预设示例或通用 bvid 提供默认封面路径与回退
-    if (attrs.bvid === 'BV13z421U7cs') {
-      defaultPoster = withBase('/assets/cover-bilibili-bv13z421u7cs.jpg', baseUrl);
-    }
+    title = attrs.title || getUiLabels(lang).embed.bilibiliTitleFallback;
   } else {
     if (!attrs.id) return null;
     src = `https://www.youtube-nocookie.com/embed/${attrs.id}?autoplay=1`;
-    title = attrs.title || (attrs.id === 'aircAruvnKk' ? 'But what is a neural network? | Chapter 1, Deep learning' : 'YouTube 视频');
-    if (attrs.id === 'aircAruvnKk') {
-      defaultPoster = withBase('/assets/cover-youtube-aircaruvnkk.jpg', baseUrl);
-    } else {
-      defaultPoster = `https://i.ytimg.com/vi/${attrs.id}/hqdefault.jpg`;
-    }
+    title = attrs.title || getUiLabels(lang).embed.youtubeTitleFallback;
+    defaultPoster = `https://i.ytimg.com/vi/${attrs.id}/hqdefault.jpg`;
   }
 
   const customPoster = attrs.poster ?? attrs.cover;
@@ -195,6 +191,7 @@ function toEmbedDiv(
   const properties: Properties = {
     className: ['embed-player', `embed-${kind}`],
     'data-embed-kind': kind,
+    'data-embed-id': kind === 'bilibili' ? attrs.bvid : attrs.id,
     'data-embed-src': src,
     'data-embed-title': title,
     role: 'region',
@@ -245,7 +242,7 @@ function toEmbedDiv(
       {
         type: 'button',
         className: ['embed-play-btn', 'embed-play-btn-yt'],
-        ariaLabel: `播放 YouTube 视频: ${title}`,
+        ariaLabel: `${getUiLabels(lang).embed.youtubePlay}: ${title}`,
       },
       [ytSvg]
     );
@@ -264,7 +261,7 @@ function toEmbedDiv(
       {
         type: 'button',
         className: ['embed-play-btn', 'embed-play-btn-bili'],
-        ariaLabel: `播放 bilibili 视频: ${title}`,
+        ariaLabel: `${getUiLabels(lang).embed.bilibiliPlay}: ${title}`,
       },
       [biliSvg]
     );
@@ -273,7 +270,7 @@ function toEmbedDiv(
 
   // 3. 底部角落标识
   const bottomBar = hEl('div', { className: ['embed-bottombar'] }, [
-    hEl('span', { className: ['embed-corner-badge'] }, [hTxt(kind === 'bilibili' ? 'bilibili' : 'YouTube')]),
+    hEl('span', { className: ['embed-corner-badge'] }, [hTxt(getUiLabels(lang).embed[kind === 'bilibili' ? 'bilibiliBadge' : 'youtubeBadge'])]),
   ]);
   children.push(bottomBar);
 
@@ -390,6 +387,7 @@ function audioPlayPauseSvg(): ElementContent[] {
 function toAudioPlayer(
   attrs: Record<string, string>,
   baseUrl?: string,
+  lang?: string,
 ): { properties: Properties; children: ElementContent[] } {
   const src = withBase(attrs.src, baseUrl);
   const title = attrs.title || '';
@@ -405,7 +403,7 @@ function toAudioPlayer(
     'data-src': src,
     'data-mode': isCard ? 'card' : 'compact',
     role: 'group',
-    ariaLabel: title || 'Audio player',
+    ariaLabel: title || getUiLabels(lang).audio.defaultTitle,
   };
   if (attrs.preload && ['none', 'metadata', 'auto'].includes(attrs.preload)) {
     properties['data-preload'] = attrs.preload;
@@ -414,15 +412,15 @@ function toAudioPlayer(
   if (desc) properties['data-desc'] = desc;
   if (cover) properties['data-cover'] = cover;
 
-  const btn = hEl('button', { className: ['btn-toggle'], type: 'button', ariaLabel: '播放 / Play' }, audioPlayPauseSvg());
+  const btn = hEl('button', { className: ['btn-toggle'], type: 'button', ariaLabel: getUiLabels(lang).audio.play }, audioPlayPauseSvg());
   const track = hEl('div', { className: ['audio-track'] }, [hEl('div', { className: ['audio-fill'] })]);
-  const timeSpan = hEl('span', { className: ['audio-time'] }, [hTxt('--:-- / --:--')]);
+  const timeSpan = hEl('span', { className: ['audio-time'] }, [hTxt(getUiLabels(lang).audio.timeFallback)]);
 
   if (isCard && cover) {
-    const coverImg = hEl('img', { src: cover, alt: title || 'Cover', loading: 'lazy', decoding: 'async' });
+    const coverImg = hEl('img', { src: cover, alt: title || getUiLabels(lang).audio.coverAltFallback, loading: 'lazy', decoding: 'async' });
     const audioCover = hEl('div', { className: ['audio-cover'] }, [coverImg]);
 
-    const titleNode = hEl('span', { className: ['audio-title', 'audio-scroll-text'], dataMarquee: 'true' }, [hTxt(title || '音频播放 / Audio')]);
+    const titleNode = hEl('span', { className: ['audio-title', 'audio-scroll-text'], dataMarquee: 'true' }, [hTxt(title || getUiLabels(lang).audio.defaultTitle)]);
     const titleScroll = hEl('div', { className: ['audio-scroll'] }, [titleNode]);
 
     const contentChildren: ElementContent[] = [titleScroll];
@@ -438,7 +436,7 @@ function toAudioPlayer(
   }
 
   // Compact A mode
-  const titleNode = hEl('span', { className: ['audio-title', 'audio-scroll-text'], dataMarquee: 'true' }, [hTxt(title || '音频播放 / Audio')]);
+  const titleNode = hEl('span', { className: ['audio-title', 'audio-scroll-text'], dataMarquee: 'true' }, [hTxt(title || getUiLabels(lang).audio.defaultTitle)]);
   const titleScroll = hEl('span', { className: ['audio-scroll'] }, [titleNode]);
   const barsSpan = hEl('span', { className: ['audio-bars-mini'], ariaHidden: 'true' }, [
     hEl('span'), hEl('span'), hEl('span'), hEl('span'), hEl('span'),
@@ -489,14 +487,17 @@ function degradeToText(node: Directive, file: VFile): void {
  * （点击打开检查器配参数）。data-oh-directive 记录指令名供样式/脚本识别。
  * 生产模式不走这里（degradeToText 降级为原文文本，行为不变）。
  */
-function setDirectivePlaceholder(  node: ContainerDirective | LeafDirective,
-  reason: 'params' | 'unknown'
+function setDirectivePlaceholder(
+  node: ContainerDirective | LeafDirective,
+  reason: 'params' | 'unknown',
+  lang?: string
 ): void {
   const name = node.name;
+  const labels = getUiLabels(lang).directive;
   const hint =
     reason === 'params'
-      ? `${name}：缺少参数，点击配置 / ${name}: missing params, click to configure`
-      : `未知指令 ${name} / unknown directive: ${name}`;
+      ? labels.missingParams(name)
+      : labels.unknown(name);
   const data = (node.data ??= {});
   data.hName = 'div';
   data.hProperties = {
@@ -530,7 +531,7 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean, 
       // 行内 textDirective 没有独立块，仍走文本降级）；生产模式降级为原文文本
       const degrade = (reason: 'params' | 'unknown'): void => {
         if (editMode && directive.type !== 'textDirective') {
-          setDirectivePlaceholder(directive, reason);
+          setDirectivePlaceholder(directive, reason, lang);
         } else {
           degradeToText(directive, file);
         }
@@ -539,7 +540,7 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean, 
       switch (name) {
         case 'bilibili':
         case 'youtube': {
-          const embed = toEmbedDiv(name, attrs, baseUrl);
+          const embed = toEmbedDiv(name, attrs, baseUrl, lang);
           if (!embed) return degrade('params');
           setElement('div', embed.properties);
           data.hChildren = embed.children;
@@ -558,7 +559,7 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean, 
         }
         case 'audio': {
           if (!attrs.src) return degrade('params');
-          const audio = toAudioPlayer(attrs, baseUrl);
+          const audio = toAudioPlayer(attrs, baseUrl, lang);
           setElement('div', audio.properties);
           data.hChildren = audio.children;
           break;
@@ -881,6 +882,70 @@ function rehypeHeadingSlugs() {
   };
 }
 
+/**
+ * Bilibili 远程封面与视频信息自动解析：
+ * 对未显式指定 poster 的 ::bilibili 指令，自动查询 Bilibili API 获取官方封面与标题，
+ * 插入 <img class="embed-poster"> 并更新标题栏。随后由 rehypeLocalizeRemoteAssets 自动转为本地缓存。
+ */
+function rehypeResolveEmbeds(options: MarkdownOptions) {
+  return async (tree: HastRoot) => {
+    const jobs: Promise<void>[] = [];
+    visit(tree, 'element', (node: Element) => {
+      if (!classesOf(node).includes('embed-player')) return;
+      const kind = node.properties?.['dataEmbedKind'] ?? node.properties?.['data-embed-kind'];
+      const id = node.properties?.['dataEmbedId'] ?? node.properties?.['data-embed-id'];
+      if (kind === 'bilibili' && typeof id === 'string' && id) {
+        const hasPoster = node.children.some(
+          (c) => c.type === 'element' && c.tagName === 'img' && classesOf(c).includes('embed-poster')
+        );
+        if (!hasPoster) {
+          const cacheDir = options.localizeAssets ? path.join(path.dirname(options.localizeAssets.dataDir), '.cache') : undefined;
+          jobs.push(
+            fetchBilibiliMeta(id, {
+              cacheDir,
+              fetchFn: options.localizeAssets?.fetchFn,
+              warn: options.localizeAssets?.warn,
+            }).then((meta) => {
+              if (meta) {
+                if (meta.pic) {
+                  const img = hEl('img', {
+                    className: ['embed-poster'],
+                    src: meta.pic,
+                    alt: meta.title || getUiLabels(options.lang).embed.bilibiliTitleFallback,
+                    loading: 'lazy',
+                    decoding: 'async',
+                  });
+                  node.children.unshift(img);
+                }
+                if (meta.title && (!node.properties?.dataEmbedTitle || node.properties.dataEmbedTitle === getUiLabels(options.lang).embed.bilibiliTitleFallback)) {
+                  node.properties.dataEmbedTitle = meta.title;
+                  node.properties.ariaLabel = meta.title;
+                  const topBar = node.children.find(
+                    (c) => c.type === 'element' && classesOf(c).includes('embed-topbar')
+                  ) as Element | undefined;
+                  const titleSpan = topBar?.children.find(
+                    (c) => c.type === 'element' && classesOf(c).includes('embed-title')
+                  ) as Element | undefined;
+                  if (titleSpan) {
+                    titleSpan.children = [{ type: 'text', value: meta.title }];
+                  }
+                  const playBtn = node.children.find(
+                    (c) => c.type === 'element' && classesOf(c).includes('embed-play-btn')
+                  ) as Element | undefined;
+                  if (playBtn) {
+                    playBtn.properties.ariaLabel = `${getUiLabels(options.lang).embed.bilibiliPlay}: ${meta.title}`;
+                  }
+                }
+              }
+            })
+          );
+        }
+      }
+    });
+    await Promise.all(jobs);
+  };
+}
+
 function rehypeFilterIframes() {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node: Element, index, parent) => {
@@ -1042,6 +1107,9 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   if (options.publications) {
     processor.use(() => rehypePublications(options.publications!, options.lang, options.defaultLang, baseUrl));
   }
+
+  // 自动解析 Bilibili 远程封面并在随后触发本地化下载
+  processor.use(() => rehypeResolveEmbeds(options));
 
   // 远程媒体下载在 sanitize/iframe 过滤之后：只改写 src/poster 属性，不影响结构
   if (options.localizeAssets) {
