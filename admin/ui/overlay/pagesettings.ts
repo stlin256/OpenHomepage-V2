@@ -58,6 +58,7 @@ export async function renderPageSettings(
     () => {}
   );
   const tocInput = checkbox(Boolean(fm.toc), () => {});
+  const readingProgressInput = checkbox(Boolean(fm.reading_progress ?? fm.readingProgress), () => {});
 
   const save = async (): Promise<void> => {
     const next: Record<string, unknown> = { ...page.frontmatter };
@@ -72,6 +73,7 @@ export async function renderPageSettings(
     else if (color === 'accent' || !color) next.notice = text;
     else next.notice = { text, color };
     next.toc = tocInput.checked;
+    next.reading_progress = readingProgressInput.checked;
     await deps.onSave(next, page.body);
   };
 
@@ -89,6 +91,7 @@ export async function renderPageSettings(
     field(t('frontmatterNotice'), noticeTextInput),
     field(t('frontmatterNoticeColor'), noticeColorSelect),
     field(t('frontmatterToc'), tocInput),
+    field(t('frontmatterReadingProgress'), readingProgressInput),
     el('div', { class: 'oh-inspector-ops' }, saveBtn, cancelBtn)
   );
 }

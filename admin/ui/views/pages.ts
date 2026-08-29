@@ -48,7 +48,12 @@ export async function renderPageEditor(
   const tocInput = checkbox(Boolean(fm.toc), (v) => {
     fm.toc = v;
     autosave.touch();
-    updateTocHint();
+    updateHints();
+  });
+  const readingProgressInput = checkbox(Boolean(fm.reading_progress ?? fm.readingProgress), (v) => {
+    fm.reading_progress = v;
+    autosave.touch();
+    updateHints();
   });
   const orderInput = numberInput(fm.order as number | undefined, (v) => {
     fm.order = v;
@@ -103,6 +108,7 @@ export async function renderPageEditor(
     field(t('frontmatterSlug'), slugInput),
     field(t('frontmatterNav'), navInput),
     field(t('frontmatterToc'), tocInput),
+    field(t('frontmatterReadingProgress'), readingProgressInput),
     field(t('frontmatterOrder'), orderInput),
     field(t('frontmatterDescription'), descInput),
     field(t('frontmatterNotice'), noticeTextInput),
@@ -145,17 +151,20 @@ export async function renderPageEditor(
   sourceEl.value = page.body;
   sourceEl.addEventListener('input', () => {
     autosave.touch();
-    updateTocHint();
+    updateHints();
   });
 
   const tocHintEl = el('div', { class: 'page-toc-hint', hidden: true });
+  const readingProgressHintEl = el('div', { class: 'page-toc-hint', hidden: true });
 
   const isLongArticle = (text: string): boolean => {
     return text.length >= 1500 || ((text.match(/^#{2,4}\s+/gm) || []).length >= 4);
   };
 
-  const updateTocHint = () => {
-    const long = isLongArticle(sourceEl ? sourceEl.value : page.body);
+  const updateHints = () => {
+    const text = sourceEl ? sourceEl.value : page.body;
+    const long = isLongArticle(text);
+
     if (long && !fm.toc) {
       tocHintEl.hidden = false;
       tocHintEl.replaceChildren(
@@ -164,12 +173,29 @@ export async function renderPageEditor(
           tocInput.checked = true;
           fm.toc = true;
           autosave.touch();
-          updateTocHint();
+          updateHints();
         }, 'btn-sm')
       );
     } else {
       tocHintEl.hidden = true;
       tocHintEl.replaceChildren();
+    }
+
+    const hasReadingProgress = Boolean(fm.reading_progress ?? fm.readingProgress);
+    if (long && !hasReadingProgress) {
+      readingProgressHintEl.hidden = false;
+      readingProgressHintEl.replaceChildren(
+        el('span', {}, t('readingProgressLongArticleHint')),
+        btn(t('enableReadingProgressAction'), () => {
+          readingProgressInput.checked = true;
+          fm.reading_progress = true;
+          autosave.touch();
+          updateHints();
+        }, 'btn-sm')
+      );
+    } else {
+      readingProgressHintEl.hidden = true;
+      readingProgressHintEl.replaceChildren();
     }
   };
 
@@ -390,9 +416,9 @@ export async function renderPageEditor(
   );
 
   container.replaceChildren(
-    el('div', { class: 'page-editor' }, opsBar, externalHint, form, tocHintEl, sourceEl)
+    el('div', { class: 'page-editor' }, opsBar, externalHint, form, tocHintEl, readingProgressHintEl, sourceEl)
   );
-  updateTocHint();
+  updateHints();
 
   return () => {
     autosave.flush();

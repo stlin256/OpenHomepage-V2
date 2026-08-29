@@ -207,7 +207,7 @@ const tocLabels = {
 };
 const tocTitle = tocLabels[contentLang as keyof typeof tocLabels] ?? tocLabels.en;
 const tocHtml = hasToc ? renderTocHtml(tocItems, { title: tocTitle }) : '';
-const readingProgress = route.page.readingProgress !== false && hasToc;
+const readingProgress = route.page.readingProgress === true || (route.page.readingProgress !== false && hasToc);
 
 // P1 社交卡片（OG Meta）计算
 const resolvedSiteTitle = resolveText(site.site.title, contentLang, defaultLang);

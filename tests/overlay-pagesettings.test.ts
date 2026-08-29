@@ -63,6 +63,8 @@ describe('页面设置表单', () => {
     expect((controlOf(4) as HTMLInputElement).value).toBe('研究页'); // description
     expect((controlOf(5) as HTMLInputElement).value).toBe('更新中'); // notice text
     expect((controlOf(6) as HTMLSelectElement).value).toBe('yellow'); // notice color
+    expect((controlOf(7) as HTMLInputElement).checked).toBe(false); // toc
+    expect((controlOf(8) as HTMLInputElement).checked).toBe(false); // reading_progress
   });
 
   it('保存：合并收集（body 原样回传、自定义键保留、notice 非 accent 存对象）', async () => {
@@ -71,6 +73,7 @@ describe('页面设置表单', () => {
     await renderPageSettings(body, deps);
     const { controlOf } = formInputs(body);
     (controlOf(0) as HTMLInputElement).value = '研究成果';
+    (controlOf(8) as HTMLInputElement).checked = true;
     (body.querySelector('.oh-inspector-ops .oh-primary') as HTMLButtonElement).click();
     await tick();
     expect(deps.onSave).toHaveBeenCalledTimes(1);
@@ -79,6 +82,7 @@ describe('页面设置表单', () => {
     expect(fm.title).toBe('研究成果');
     expect(fm.custom_key).toBe('保留');
     expect(fm.notice).toEqual({ text: '更新中', color: 'yellow' });
+    expect(fm.reading_progress).toBe(true);
   });
 
   it('notice 留空删键；accent 色存纯字符串；取消回调', async () => {

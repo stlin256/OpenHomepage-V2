@@ -111,6 +111,7 @@ describe('页面视图（M12e）', () => {
       '路由 (slug)',
       '进导航 (nav)',
       '文章目录 (toc)',
+      '阅读进度条 (reading_progress)',
       '排序 (order)',
       '描述 (description)',
       '顶端通知 (notice)',
@@ -184,6 +185,25 @@ describe('页面视图（M12e）', () => {
       (b) => b.textContent === '重启为托管预览'
     )!;
     expect(restartBtn.style.display).toBe('');
+    cleanup();
+  });
+  it('长文章提示：检测到长篇幅未开启 toc 或 reading_progress 时展示提醒并支持一键开启', async () => {
+    const { container, cleanup } = await openView();
+    const source = container.querySelector<HTMLTextAreaElement>('.source-editor')!;
+    source.value = '## 章节一\n\n内容\n\n## 章节二\n\n内容\n\n## 章节三\n\n内容\n\n## 章节四\n\n内容\n';
+    source.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const hints = container.querySelectorAll<HTMLElement>('.page-toc-hint:not([hidden])');
+    expect(hints.length).toBe(2);
+    expect(hints[0].textContent).toContain('文章目录');
+    expect(hints[1].textContent).toContain('阅读进度条');
+
+    // 点击一键开启阅读进度条
+    const enableRpBtn = hints[1].querySelector('button')!;
+    enableRpBtn.click();
+    const hiddenHints = container.querySelectorAll<HTMLElement>('.page-toc-hint:not([hidden])');
+    expect(hiddenHints.length).toBe(1);
+
     cleanup();
   });
 });
