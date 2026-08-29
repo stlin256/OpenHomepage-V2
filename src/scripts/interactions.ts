@@ -342,9 +342,12 @@ async function swapContent(
     }
     // 淡出旧内容（两帧即可，不等完整过渡）
     oldMain.style.opacity = '0';
+    oldMain.style.transform = 'translateY(-8px)';
     await nextPaint();
-    // 替换内容
+    // 替换内容；新内容先停在下方位移，遮罩结束后再上移淡入。
     oldMain.replaceChildren(...newMain.children);
+    oldMain.style.opacity = '0';
+    oldMain.style.transform = 'translateY(12px)';
     const newNav = doc.querySelector('nav.site-nav');
     const oldNav = document.querySelector<HTMLElement>('nav.site-nav');
     const newTitle = newNav?.querySelector('.site-title a');
@@ -409,6 +412,7 @@ async function swapContent(
     // 新内容先保持透明，等可见遮罩完全结束再恢复并启动组件计时/动画。
     activatePage = () => {
       oldMain.style.opacity = '';
+      oldMain.style.transform = '';
       // 重新初始化（动效、流式、灯箱等）
       initAll();
       // 客户端内容交换等价于一次页面加载；联系卡等全局组件依赖此事件重绑。
@@ -424,8 +428,8 @@ async function swapContent(
       if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
     }
     hideLoading();
-    // 先让移除遮罩的 class 提交到下一帧，再启动通知横幅、流式输出等计时。
-    if (overlayWasShown) await nextPaint();
+    // 先让移除遮罩 class 与新内容初始位移提交到下一帧，再启动进入动画和组件计时。
+    await nextPaint();
     activatePage?.();
     swapping = false;
   }

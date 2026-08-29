@@ -2183,7 +2183,9 @@ html.js .reveal.revealed {
 
 /* ---- 客户端内容交换：加载遮罩 + 主内容淡入淡出 ---- */
 .site-main {
-  transition: opacity 0.12s ease;
+  transition:
+    opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .page-loading {
   position: fixed;
@@ -2246,6 +2248,10 @@ html.js .reveal.revealed {
   }
   .chrome-fade-out {
     transform: none;
+  }
+  .site-main {
+    transform: none;
+    transition: opacity 0.15s ease;
   }
   .lang-switcher:hover .lang-menu,
   .lang-menu.open {

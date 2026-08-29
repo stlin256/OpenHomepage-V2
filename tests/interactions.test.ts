@@ -264,6 +264,9 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(false);
       expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBeUndefined();
       expect(document.querySelector(".page-loading")?.classList.contains("visible")).toBe(true);
+      const main = document.querySelector<HTMLElement>("main.site-main")!;
+      expect(main.style.opacity).toBe("0");
+      expect(main.style.transform).toBe("translateY(12px)");
 
       await vi.advanceTimersByTimeAsync(209);
       expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(false);
@@ -274,6 +277,8 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       await vi.advanceTimersByTimeAsync(60);
       expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBe("1");
       expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(true);
+      expect(main.style.opacity).toBe("");
+      expect(main.style.transform).toBe("");
     } finally {
       vi.useRealTimers();
     }
