@@ -80,11 +80,35 @@ Each component below is captured individually from the production build (`npm ru
 
 ![ghcard directive](docs/images/components/ghcard-en.webp)
 
+**Callout Cards (`:::note` / `:::tip` / `:::warning` / `:::important` / `:::quote`)** — Zero-JS semantic callout boxes styled with theme accent colors.
+
+![Callout cards](docs/images/components/markdown-callout-en.webp)
+
+**Education & Experience Timeline (`::::timeline` / `:::timeline-item`)** — Clean editorial timeline with node indicators and responsive date layout.
+
+![Timeline](docs/images/components/timeline-en.webp)
+
+**Academic Publications (`::publications`)** — Build-time filtered, grouped, and sorted academic records with smooth BibTeX copy and animated abstract accordion.
+
+![Publications list](docs/images/components/publications-en.webp)
+
+**Table of Contents & Reading Progress (`toc: true`)** — Sticky sidebar on desktop, collapsible drawer on mobile, with real-time scrollspy and reading progress bar.
+
+![TOC sidebar](docs/images/components/toc-sidebar-en.webp)
+
 ### Global UI & Interactions
 
-**Header Tools** — Persistent background music toggle, language switcher, and zero-flash theme toggle.
+**Header Tools** — Persistent background music toggle, language switcher, global search, and zero-flash theme toggle.
 
 ![Header tools](docs/images/components/header-tools-en.webp)
+
+**Global Static Search (`Ctrl+K` / `Cmd+K`)** — Fast magazine-style command palette with multi-language filtering, keyboard navigation, and smooth opening/closing transitions.
+
+![Search dialog](docs/images/components/search-dialog-en.webp)
+
+**BGM Playlist & Mini Player Drawer** — Multi-track playlist with drawer panel, track switching, volume slider, and media interruption auto-resume.
+
+![BGM playlist drawer](docs/images/components/bgm-drawer-en.webp)
 
 **Language Switcher** — One directory per language under `data/pages/`; the demo ships 中文 / English / 日本語 / Français with graceful fallback.
 

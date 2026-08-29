@@ -229,6 +229,38 @@ const SHOTS: Shot[] = [
     },
   },
   { name: 'ghcard', page: 'features', selector: '.page-content .gh-repo', nth: 0 },
+    // —— 特性页：P0 & P1 学术、注记与目录 ——
+  { name: 'markdown-callout', page: 'features', selector: '.page-content .callout', nth: 0 },
+  { name: 'timeline', page: 'features', selector: '.page-content .timeline', nth: 0 },
+  { name: 'publications', page: 'features', selector: '.page-content .publications', nth: 0 },
+  { name: 'toc-sidebar', page: 'features', selector: '.article-layout .toc-sidebar', nth: 0 },
+  {
+    name: 'search-dialog',
+    page: 'home',
+    selector: 'dialog.search-dialog',
+    fullViewport: true,
+    prepare: async (page) => {
+      await page.click('.search-toggle');
+      await page.waitForSelector('.search-dialog:not([hidden])');
+      const input = page.locator('.search-input');
+      await input.fill('system');
+      await page.waitForTimeout(200);
+    },
+  },
+  {
+    name: 'bgm-drawer',
+    page: 'home',
+    selector: '.bgm-drawer',
+    fullViewport: true,
+    prepare: async (page) => {
+      await page.evaluate(() => {
+        const drawer = document.querySelector<HTMLElement>('.bgm-drawer');
+        if (drawer) drawer.hidden = false;
+      });
+      await page.waitForSelector('.bgm-drawer:not([hidden])');
+      await page.waitForTimeout(200);
+    },
+  },
   // —— 画廊页与全局交互 ——
   { name: 'gallery-grid', page: 'gallery', selector: '.page-content .md-grid', nth: 0 },
   {
