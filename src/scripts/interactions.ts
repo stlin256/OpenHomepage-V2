@@ -246,6 +246,35 @@ function animateLangMenuSelection(link: HTMLAnchorElement): boolean {
   return true;
 }
 
+const CHROME_FADE_OUT_MS = 90;
+
+function childNodesChanged(container: Element, nodes: Node[]): boolean {
+  const current = Array.from(container.childNodes);
+  return (
+    current.length !== nodes.length ||
+    nodes.some((node, index) => !node.isEqualNode(current[index] ?? null))
+  );
+}
+
+/**
+ * SPA 语言/页面交换时同步 header 与页脚：先短暂淡出旧 chrome，
+ * 再替换节点并利用基础 transition 淡入。内容不变时不触发动画。
+ */
+async function replaceChildrenWithFade(container: Element, buildNodes: () => Node[]): Promise<void> {
+  const nodes = buildNodes();
+  if (!childNodesChanged(container, nodes)) return;
+  container.classList.add('chrome-fade-out');
+  await new Promise((resolve) => setTimeout(resolve, CHROME_FADE_OUT_MS));
+  container.replaceChildren(...nodes);
+  container.classList.remove('chrome-fade-out');
+}
+
+async function removeWithFade(element: Element): Promise<void> {
+  element.classList.add('chrome-fade-out');
+  await new Promise((resolve) => setTimeout(resolve, CHROME_FADE_OUT_MS));
+  element.remove();
+}
+
 function updateNavActive(path: string): void {
   const current = new URL(path, location.href).pathname.replace(/\/+$/, '') || '/';
   for (const a of document.querySelectorAll<HTMLAnchorElement>('.site-nav a')) {
@@ -316,32 +345,42 @@ async function swapContent(
     await nextPaint();
     // 替换内容
     oldMain.replaceChildren(...newMain.children);
-    if (newFooter && oldFooter) {
-      oldFooter.replaceChildren(
-        ...Array.from(newFooter.childNodes, (node) => node.cloneNode(true)),
+    const newNav = doc.querySelector('nav.site-nav');
+    const oldNav = document.querySelector<HTMLElement>('nav.site-nav');
+    const newTitle = newNav?.querySelector('.site-title a');
+    const oldTitle = oldNav?.querySelector('.site-title');
+    const newList = newNav?.querySelector('ul');
+    const oldList = oldNav?.querySelector('ul');
+
+    const chromeSwaps: Promise<void>[] = [];
+    if (oldTitle) {
+      chromeSwaps.push(
+        replaceChildrenWithFade(oldTitle, () =>
+          newTitle ? [newTitle.cloneNode(true)] : [],
+        ),
       );
-    } else if (newFooter && !oldFooter) {
-      oldMain.after(newFooter.cloneNode(true));
+    }
+    if (oldList && newList) {
+      chromeSwaps.push(
+        replaceChildrenWithFade(oldList, () => Array.from(newList.children, (node) => node.cloneNode(true))),
+      );
+    }
+    if (newFooter && oldFooter) {
+      chromeSwaps.push(
+        replaceChildrenWithFade(oldFooter, () => Array.from(newFooter.childNodes, (node) => node.cloneNode(true))),
+      );
     } else if (!newFooter && oldFooter) {
-      oldFooter.remove();
+      chromeSwaps.push(removeWithFade(oldFooter));
+    }
+    await Promise.all(chromeSwaps);
+
+    if (newFooter && !oldFooter) {
+      const addedFooter = newFooter.cloneNode(true);
+      oldMain.after(addedFooter);
     }
     replaceContactCard(doc);
     updateNavActive(path);
-    // 同步 header 中的导航和语言菜单到新语言（header 不整体替换，保留按钮监听）
-    const newNav = doc.querySelector('nav.site-nav');
-    const oldNav = document.querySelector<HTMLElement>('nav.site-nav');
-    if (newNav && oldNav) {
-      const newTitle = newNav.querySelector('.site-title a');
-      const oldTitle = oldNav.querySelector('.site-title a');
-      // 站点标题链接也必须随语言交换更新；否则 SPA 切换语言后，标题仍指向旧语言/默认语言首页。
-      if (newTitle && oldTitle) {
-        oldTitle.textContent = newTitle.textContent;
-        oldTitle.setAttribute('href', newTitle.getAttribute('href') ?? oldTitle.getAttribute('href') ?? '/');
-      }
-      const newList = newNav.querySelector('ul');
-      const oldList = oldNav.querySelector('ul');
-      if (newList && oldList) oldList.replaceChildren(...newList.children);
-    }
+    // header 的站点标题、导航列表与页脚已在上方按需淡入淡出替换。
     const newLangMenu = doc.querySelector('.lang-menu');
     const oldLangMenu = document.querySelector('.lang-menu');
     // The click-time FLIP pass already owns menu order; preserving equal nodes

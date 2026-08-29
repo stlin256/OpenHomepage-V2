@@ -132,9 +132,9 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     );
 
     await vi.waitFor(() => {
-      expect(document.querySelector<HTMLAnchorElement>("#site-title-link")?.getAttribute("href")).toBe("/en/");
+      expect(document.querySelector<HTMLAnchorElement>(".site-title a")?.getAttribute("href")).toBe("/en/");
     });
-    expect(document.querySelector("#site-title-link")?.textContent).toBe("English Site");
+    expect(document.querySelector(".site-title a")?.textContent).toBe("English Site");
   });
 
   it("语言菜单 A 方案：FLIP 换序并保留动画节点", async () => {
@@ -193,7 +193,7 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       );
 
       await vi.waitFor(() => {
-        expect(document.querySelector("#site-title-link")?.textContent).toBe("English Site");
+        expect(document.querySelector(".site-title a")?.textContent).toBe("English Site");
       });
 
       expect([...document.querySelectorAll(".lang-menu a[hreflang]")].map((link) => link.getAttribute("hreflang")))
