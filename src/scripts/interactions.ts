@@ -641,8 +641,11 @@ document.addEventListener(
   (e) => {
     if (e.target instanceof HTMLImageElement) {
       const cover = e.target.closest<HTMLElement>('.rss-cover');
-      // 失败不移除占位：固定 5.5rem 方位，图片淡出，卡片文本布局不塌陷。
-      if (cover) cover.classList.add('cover-failed');
+      // 外链加载失败前端隐藏图位（spec 05：无图/失败回退纯文字卡片）
+      if (cover) {
+        cover.classList.add('cover-failed');
+        cover.style.display = 'none';
+      }
     }
   },
   true

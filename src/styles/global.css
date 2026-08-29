@@ -2490,11 +2490,7 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
     transform 0.5s ease;
 }
 .rss-cover.cover-failed {
-  border-style: dashed;
-}
-.rss-cover.cover-failed img {
-  opacity: 0;
-  transform: none;
+  display: none !important;
 }
 .rss-card:hover .rss-cover img {
   transform: scale(1.06);
