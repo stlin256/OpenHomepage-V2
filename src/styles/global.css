@@ -228,7 +228,8 @@ body.nav-open .nav-toggle .bar:nth-child(3) {
   position: absolute;
   top: 1rem;
   right: 1.25rem;
-  z-index: 25;
+  /* 高于加载遮罩：语言切换时主内容被遮罩覆盖，右上语言菜单继续可见。 */
+  z-index: 210;
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -2164,7 +2165,7 @@ html.js .reveal.revealed {
   transition: opacity 0.15s ease;
 }
 .page-loading.visible {
-  opacity: 0;
+  opacity: 1;
   pointer-events: auto;
 }
 .page-loading-spinner {

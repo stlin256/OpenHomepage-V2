@@ -16,6 +16,8 @@ import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../
 import './lightbox.ts';
 
 const LANGUAGE_STORAGE_KEY = 'oh-language';
+/** 语言切换可见遮罩的最短时长：给 FLIP 动画足够的呈现窗口。 */
+const LANGUAGE_OVERLAY_MS = 420;
 
 /** 站点实际语言列表（构建期由 <html data-site-langs> 注入；语言目录扫描结果，支持任意语言） */
 function siteLanguages(): string[] {
@@ -206,22 +208,34 @@ function animateLangMenuSelection(link: HTMLAnchorElement): boolean {
     if (delta === 0 || typeof item.animate !== 'function') continue;
 
     if (item === selectedItem) {
+      // 比初版 A 方案更明确：右侧轻微避让 -> 上浮 -> 左侧轻微回弹，
+      // 避免只有一行位移时被用户感知成瞬时换序。
       item.animate(
         [
-          { transform: `translateY(${delta}px) scale(0.985)`, opacity: '0.72' },
-          { transform: 'translateY(0px) scale(1)', opacity: '1' },
+          {
+            transform: `translateY(${delta}px) translateX(12px) scale(0.96)`,
+            opacity: '0.58',
+            offset: 0,
+          },
+          {
+            transform: `translateY(${delta * 0.45}px) translateX(-4px) scale(1.025)`,
+            opacity: '1',
+            offset: 0.58,
+          },
+          { transform: 'translateY(0px) translateX(0px) scale(1)', opacity: '1' },
         ],
-        { duration: 470, easing: 'cubic-bezier(0.2, 1.24, 0.24, 1)' },
+        { duration: 560, easing: 'cubic-bezier(0.2, 1.12, 0.24, 1)' },
       );
     } else {
       item.animate(
         [
-          { transform: `translateY(${delta}px)`, opacity: '0.82' },
+          { transform: `translateY(${delta}px)`, opacity: '0.62' },
+          { transform: `translateY(${delta * 0.52}px)`, opacity: '0.96', offset: 0.55 },
           { transform: 'translateY(0px)', opacity: '1' },
         ],
         {
-          duration: 390,
-          delay: 35 + index * 24,
+          duration: 470,
+          delay: 25 + index * 35,
           easing: 'cubic-bezier(0.24, 0.86, 0.18, 1)',
           fill: 'backwards',
         },
@@ -353,7 +367,7 @@ async function swapContent(
     }
     document.body.classList.remove('nav-open');
     document.querySelector('.nav-toggle')?.setAttribute('aria-expanded', 'false');
-    // 新内容先保持透明，等不可见遮罩完全结束再恢复并启动组件计时/动画。
+    // 新内容先保持透明，等可见遮罩完全结束再恢复并启动组件计时/动画。
     activatePage = () => {
       oldMain.style.opacity = '';
       // 重新初始化（动效、流式、灯箱等）
@@ -469,12 +483,21 @@ document.addEventListener('click', (e) => {
   // 修饰键点击不动
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
+  if (selectedLanguage) {
+    // hover 打开的菜单没有 .open 状态；点击语言项时显式锁定打开，
+    // 保证鼠标稍微移动或页面滚动时 FLIP 动画不会被 hover 断掉。
+    link.closest('.lang-menu')?.classList.add('open');
+    link
+      .closest('.lang-switcher')
+      ?.querySelector('.lang-toggle')
+      ?.setAttribute('aria-expanded', 'true');
+  }
   const langMenuAnimated = selectedLanguage ? animateLangMenuSelection(link) : false;
   if (selectedLanguage) writePreferredLanguage(selectedLanguage);
-  // 语言切换即使命中缓存也保留 0.25s 透明输入门，并延迟组件计时/动画；
-  // 菜单 FLIP 与内容交换并行，不额外增加等待。
+  // 语言切换保留 0.42s 可见遮罩，并延迟组件计时/动画；
+  // 菜单 FLIP 与内容交换并行，遮罩不遮挡右上语言菜单。
   void swapContent(href, {
-    minOverlayMs: selectedLanguage ? 250 : 0,
+    minOverlayMs: selectedLanguage ? LANGUAGE_OVERLAY_MS : 0,
     preserveLangMenu: langMenuAnimated,
   });
 });

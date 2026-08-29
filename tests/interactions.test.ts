@@ -161,7 +161,7 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     localStorage.setItem("oh-language", "zh");
     document.body.innerHTML = [
       "<nav class='site-nav'><p class='site-title'><a id='site-title-link' href='/'>中文站名</a></p></nav>",
-      "<div class='lang-switcher'><ul class='lang-menu open'>",
+      "<div class='lang-switcher'><ul class='lang-menu'>",
       "<li><a id='current-zh' class='active' href='/' hreflang='zh' aria-current='true'>中文</a></li>",
       "<li><a id='switch-en' href='/en/' hreflang='en'>English</a></li>",
       "<li><a id='switch-fr' href='/fr/' hreflang='fr'>Français</a></li>",
@@ -206,9 +206,13 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       expect(document.querySelector("#switch-en")).not.toBeNull();
       expect(animateMock).toHaveBeenCalledTimes(4);
       expect(animateMock.mock.calls[0][0]).toEqual([
-        { transform: "translateY(34px) scale(0.985)", opacity: "0.72" },
-        { transform: "translateY(0px) scale(1)", opacity: "1" },
+        { transform: "translateY(34px) translateX(12px) scale(0.96)", opacity: "0.58", offset: 0 },
+        { transform: "translateY(15.3px) translateX(-4px) scale(1.025)", opacity: "1", offset: 0.58 },
+        { transform: "translateY(0px) translateX(0px) scale(1)", opacity: "1" },
       ]);
+
+      // 等 420ms 遮罩与 560ms FLIP 均结束后再释放本用例，避免污染后续假定时器用例。
+      await new Promise((resolve) => setTimeout(resolve, 700));
     } finally {
       if (descriptor) Object.defineProperty(HTMLElement.prototype, "animate", descriptor);
       else delete (HTMLElement.prototype as { animate?: unknown }).animate;
@@ -252,9 +256,11 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
         new MouseEvent("click", { bubbles: true, cancelable: true })
       );
 
-      // 覆盖 fetch 解析与旧内容淡出的两帧；此时仍处在 250ms 语言切换遮罩内。
+      // 先等目标 HTML 完成解析与替换，再检查仍在 420ms 语言切换遮罩内。
+      await vi.waitFor(() => {
+        expect(document.querySelector("main.site-main")?.textContent).toContain("English notice");
+      });
       await vi.advanceTimersByTimeAsync(40);
-      expect(document.querySelector("main.site-main")?.textContent).toContain("English notice");
       expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(false);
       expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBeUndefined();
       expect(document.querySelector(".page-loading")?.classList.contains("visible")).toBe(true);
@@ -263,8 +269,8 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(false);
       expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBeUndefined();
 
-      // 250ms 最短遮罩结束，再越过移除遮罩后的两帧与横幅自身 10ms 计时。
-      await vi.advanceTimersByTimeAsync(1);
+      // 420ms 最短遮罩结束，再越过移除遮罩后的两帧与横幅自身 10ms 计时。
+      await vi.advanceTimersByTimeAsync(171);
       await vi.advanceTimersByTimeAsync(60);
       expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBe("1");
       expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(true);
