@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <title>Zhiyuan Lin</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-08-29T20:19:02.422Z</updated>
+  <updated>2026-08-29T20:23:39.701Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/en/feed.atom.xml"/>
     <entry>
       <title>Features</title>
@@ -63,7 +63,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Feature&lt;/th&gt;&lt;th&gt;Syntax&lt;/th&gt;&lt;th&gt;Renderer&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Code highlight&lt;/td&gt;&lt;td&gt;&lt;code&gt;```python&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Shiki&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Math&lt;/td&gt;&lt;td&gt;&lt;code&gt;$E=mc^2$&lt;/code&gt;&lt;/td&gt;&lt;td&gt;KaTeX&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Embed player&lt;/td&gt;&lt;td&gt;&lt;code&gt;::bilibili{}&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Custom directive&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Feature&lt;/th&gt;&lt;th&gt;Syntax&lt;/th&gt;&lt;th&gt;Renderer&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Code highlight&lt;/td&gt;&lt;td&gt;&lt;code&gt;```python&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Shiki&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Math&lt;/td&gt;&lt;td&gt;&lt;code&gt;$E=mc^2$&lt;/code&gt;&lt;/td&gt;&lt;td&gt;KaTeX&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Embed player&lt;/td&gt;&lt;td&gt;&lt;code&gt;::bilibili{}&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Custom directive&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;h2&gt;Code highlight&lt;/h2&gt;
 &lt;pre class=&quot;shiki shiki-themes github-light github-dark&quot; style=&quot;--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch&lt;/span&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
@@ -108,7 +108,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Component&lt;/th&gt;&lt;th&gt;Purpose&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GitHub Repo Card&lt;/td&gt;&lt;td&gt;Single repository card from the pinned cache&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Streaming Block&lt;/td&gt;&lt;td&gt;LLM streaming output with replay&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Editorial Block&lt;/td&gt;&lt;td&gt;Actions, list cards, tiles, archive cards, and dividers&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Component&lt;/th&gt;&lt;th&gt;Purpose&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GitHub Repo Card&lt;/td&gt;&lt;td&gt;Single repository card from the pinned cache&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Streaming Block&lt;/td&gt;&lt;td&gt;LLM streaming output with replay&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Editorial Block&lt;/td&gt;&lt;td&gt;Actions, list cards, tiles, archive cards, and dividers&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;GitHub Repo Card&lt;/strong&gt;:&lt;/p&gt;
 &lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;Streaming Block&lt;/strong&gt;:&lt;/p&gt;
@@ -150,7 +150,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Global component&lt;/th&gt;&lt;th&gt;Entry point&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Contact Card / QR Modal&lt;/td&gt;&lt;td&gt;Bottom-right card; click for the QR modal&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Theme Toggle&lt;/td&gt;&lt;td&gt;Sun / moon button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Language Switcher&lt;/td&gt;&lt;td&gt;Language button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM Toggle&lt;/td&gt;&lt;td&gt;Play / pause button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;Click an image in the body&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scroll Reveal&lt;/td&gt;&lt;td&gt;Blocks reveal as the page scrolls&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Global component&lt;/th&gt;&lt;th&gt;Entry point&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Contact Card / QR Modal&lt;/td&gt;&lt;td&gt;Bottom-right card; click for the QR modal&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Theme Toggle&lt;/td&gt;&lt;td&gt;Sun / moon button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Language Switcher&lt;/td&gt;&lt;td&gt;Language button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM Toggle&lt;/td&gt;&lt;td&gt;Play / pause button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;Click an image in the body&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scroll Reveal&lt;/td&gt;&lt;td&gt;Blocks reveal as the page scrolls&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;The homepage-specific Profile Block, GitHub Block, and RSS Block are also rendered in full below; they do not depend on the homepage layout.&lt;/p&gt;
 &lt;h2&gt;Page controls&lt;/h2&gt;
 &lt;p&gt;Page controls are page-level widgets configured on a per-page basis (non-global). Each page can define them independently in its frontmatter; they reappear whenever the page is reopened or revisited, providing page-specific announcements and controls.&lt;/p&gt;
@@ -179,7 +179,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Page control&lt;/th&gt;&lt;th&gt;Configuration&lt;/th&gt;&lt;th&gt;Description&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Notice Banner&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; or &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Pops in 0.5s after page load; supports 4 color modes (&lt;code&gt;accent&lt;/code&gt;, &lt;code&gt;yellow&lt;/code&gt;, &lt;code&gt;red&lt;/code&gt;, &lt;code&gt;custom&lt;/code&gt;); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Table of Contents (TOC)&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;toc: true&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Sticky sidebar on desktop with ScrollSpy active heading tracking, collapsible drawer on mobile for seamless navigation&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Reading Progress Bar&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;reading_progress: true&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Elegant 2px progress bar fixed at the top of the viewport that tracks reading progress in real time as you scroll; enabled on this features demo page&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Page control&lt;/th&gt;&lt;th&gt;Configuration&lt;/th&gt;&lt;th&gt;Description&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Notice Banner&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; or &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Pops in 0.5s after page load; supports 4 color modes (&lt;code&gt;accent&lt;/code&gt;, &lt;code&gt;yellow&lt;/code&gt;, &lt;code&gt;red&lt;/code&gt;, &lt;code&gt;custom&lt;/code&gt;); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Table of Contents (TOC)&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;toc: true&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Sticky sidebar on desktop with ScrollSpy active heading tracking, collapsible drawer on mobile for seamless navigation&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Reading Progress Bar&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;reading_progress: true&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Elegant 2px progress bar fixed at the top of the viewport that tracks reading progress in real time as you scroll; enabled on this features demo page&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;blockquote&gt;
 &lt;p&gt;💡 Example: The &lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/en/&quot;&gt;homepage&lt;/a&gt; of this site features a prominent yellow Notice Banner (&lt;code&gt;notice: { text: &quot;This is a demo page. Content is for displaying project features only.&quot;, color: &quot;yellow&quot; }&lt;/code&gt;) that appears 0.5s after load.&lt;/p&gt;
 &lt;/blockquote&gt;

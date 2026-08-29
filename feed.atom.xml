@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-08-29T20:19:02.231Z</updated>
+  <updated>2026-08-29T20:23:39.514Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/feed.atom.xml"/>
     <entry>
       <title>特性</title>
@@ -63,7 +63,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;特性&lt;/th&gt;&lt;th&gt;语法&lt;/th&gt;&lt;th&gt;渲染方&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;代码高亮&lt;/td&gt;&lt;td&gt;&lt;code&gt;```python&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Shiki&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;数学公式&lt;/td&gt;&lt;td&gt;&lt;code&gt;$E=mc^2$&lt;/code&gt;&lt;/td&gt;&lt;td&gt;KaTeX&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;内嵌播放器&lt;/td&gt;&lt;td&gt;&lt;code&gt;::bilibili{}&lt;/code&gt;&lt;/td&gt;&lt;td&gt;自定义指令&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;特性&lt;/th&gt;&lt;th&gt;语法&lt;/th&gt;&lt;th&gt;渲染方&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;代码高亮&lt;/td&gt;&lt;td&gt;&lt;code&gt;```python&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Shiki&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;数学公式&lt;/td&gt;&lt;td&gt;&lt;code&gt;$E=mc^2$&lt;/code&gt;&lt;/td&gt;&lt;td&gt;KaTeX&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;内嵌播放器&lt;/td&gt;&lt;td&gt;&lt;code&gt;::bilibili{}&lt;/code&gt;&lt;/td&gt;&lt;td&gt;自定义指令&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;h2&gt;代码高亮&lt;/h2&gt;
 &lt;pre class=&quot;shiki shiki-themes github-light github-dark&quot; style=&quot;--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch&lt;/span&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
@@ -108,7 +108,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;组件名称&lt;/th&gt;&lt;th&gt;说明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GitHub Repo Card&lt;/td&gt;&lt;td&gt;单个仓库卡片，读取 pinned 缓存&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Streaming Block&lt;/td&gt;&lt;td&gt;LLM 流式输出效果，支持重播&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Editorial Block&lt;/td&gt;&lt;td&gt;按钮、列表卡、磁贴、归档卡、分割线组合&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;组件名称&lt;/th&gt;&lt;th&gt;说明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GitHub Repo Card&lt;/td&gt;&lt;td&gt;单个仓库卡片，读取 pinned 缓存&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Streaming Block&lt;/td&gt;&lt;td&gt;LLM 流式输出效果，支持重播&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Editorial Block&lt;/td&gt;&lt;td&gt;按钮、列表卡、磁贴、归档卡、分割线组合&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;GitHub Repo Card&lt;/strong&gt;：正文任意位置插入仓库卡片：&lt;/p&gt;
 &lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;Streaming Block&lt;/strong&gt;：插入一个流式区块（定义在 &lt;code&gt;site.yaml&lt;/code&gt; 的 &lt;code&gt;streaming_blocks&lt;/code&gt;）：&lt;/p&gt;
@@ -150,7 +150,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;全局组件名称&lt;/th&gt;&lt;th&gt;入口&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Contact Card / QR Modal&lt;/td&gt;&lt;td&gt;右下角联系卡，点击打开二维码弹层&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Theme Toggle&lt;/td&gt;&lt;td&gt;右上角太阳 / 月亮按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Language Switcher&lt;/td&gt;&lt;td&gt;右上角语言按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM Toggle&lt;/td&gt;&lt;td&gt;右上角播放 / 暂停按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;点击正文中的图片&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scroll Reveal&lt;/td&gt;&lt;td&gt;滚动页面时区块显现&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;全局组件名称&lt;/th&gt;&lt;th&gt;入口&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Contact Card / QR Modal&lt;/td&gt;&lt;td&gt;右下角联系卡，点击打开二维码弹层&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Theme Toggle&lt;/td&gt;&lt;td&gt;右上角太阳 / 月亮按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Language Switcher&lt;/td&gt;&lt;td&gt;右上角语言按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM Toggle&lt;/td&gt;&lt;td&gt;右上角播放 / 暂停按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;点击正文中的图片&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scroll Reveal&lt;/td&gt;&lt;td&gt;滚动页面时区块显现&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;主页专属组件也在下方完整渲染，不依赖主页是否启用：Profile Block、GitHub Block、RSS Block。&lt;/p&gt;
 &lt;h2&gt;页面控件&lt;/h2&gt;
 &lt;p&gt;页面控件是针对单个页面按需添加的部件（非全局组件），每个页面可以在 frontmatter 中独立定义；离开或重新打开该页面时会再次出现，提供针对单页的提示与操作能力。&lt;/p&gt;
@@ -179,7 +179,7 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;页面控件&lt;/th&gt;&lt;th&gt;配置方式&lt;/th&gt;&lt;th&gt;特性说明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;顶端通知横幅（Notice Banner）&lt;/td&gt;&lt;td&gt;页面 frontmatter 设置 &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; 或 &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt;&lt;/td&gt;&lt;td&gt;页面加载完成 0.5s 后延迟弹出，支持 4 种颜色（&lt;code&gt;accent&lt;/code&gt; 主题色、&lt;code&gt;yellow&lt;/code&gt; 黄色、&lt;code&gt;red&lt;/code&gt; 红色、&lt;code&gt;custom&lt;/code&gt; 自定义）；单页独立定义、重新打开页面时再次出现；用户需手动点击右侧 ✕ 关闭；支持内联链接与强调语法&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;文章目录（TOC）&lt;/td&gt;&lt;td&gt;页面 frontmatter 设置 &lt;code&gt;toc: true&lt;/code&gt;&lt;/td&gt;&lt;td&gt;桌面端支持右侧粘性吸顶与 ScrollSpy 当前标题高亮跟随，移动端支持折叠抽屉导航，长文浏览快速跳转&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;阅读进度条（Reading Progress Bar）&lt;/td&gt;&lt;td&gt;页面 frontmatter 设置 &lt;code&gt;reading_progress: true&lt;/code&gt;&lt;/td&gt;&lt;td&gt;页面顶端 2px 细线进度条，随着正文向下滚动实时响应阅读位置，本特性页面已默认开启，可在滚动时观察页面最顶部细线动画&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;页面控件&lt;/th&gt;&lt;th&gt;配置方式&lt;/th&gt;&lt;th&gt;特性说明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;顶端通知横幅（Notice Banner）&lt;/td&gt;&lt;td&gt;页面 frontmatter 设置 &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; 或 &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt;&lt;/td&gt;&lt;td&gt;页面加载完成 0.5s 后延迟弹出，支持 4 种颜色（&lt;code&gt;accent&lt;/code&gt; 主题色、&lt;code&gt;yellow&lt;/code&gt; 黄色、&lt;code&gt;red&lt;/code&gt; 红色、&lt;code&gt;custom&lt;/code&gt; 自定义）；单页独立定义、重新打开页面时再次出现；用户需手动点击右侧 ✕ 关闭；支持内联链接与强调语法&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;文章目录（TOC）&lt;/td&gt;&lt;td&gt;页面 frontmatter 设置 &lt;code&gt;toc: true&lt;/code&gt;&lt;/td&gt;&lt;td&gt;桌面端支持右侧粘性吸顶与 ScrollSpy 当前标题高亮跟随，移动端支持折叠抽屉导航，长文浏览快速跳转&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;阅读进度条（Reading Progress Bar）&lt;/td&gt;&lt;td&gt;页面 frontmatter 设置 &lt;code&gt;reading_progress: true&lt;/code&gt;&lt;/td&gt;&lt;td&gt;页面顶端 2px 细线进度条，随着正文向下滚动实时响应阅读位置，本特性页面已默认开启，可在滚动时观察页面最顶部细线动画&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;blockquote&gt;
 &lt;p&gt;💡 示例：当前站点的&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/&quot;&gt;首页&lt;/a&gt;顶部即配置了醒目的黄色通知横幅（&lt;code&gt;notice: { text: &quot;本页面为示例页面，内容仅为展现项目特性使用。&quot;, color: &quot;yellow&quot; }&lt;/code&gt;），可在首页体验 0.5s 延迟弹出与手动关闭效果。&lt;/p&gt;
 &lt;/blockquote&gt;

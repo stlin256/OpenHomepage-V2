@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远的个人主页：机器学习研究、开源项目与阅读记录]]></description>
     <language>zh</language>
-    <lastBuildDate>Sat, 29 Aug 2026 20:19:02 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 20:23:39 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/feed.xml"/>
     <item>
       <title><![CDATA[特性]]></title>
@@ -66,7 +66,7 @@
 
 
 
-<table><thead><tr><th>特性</th><th>语法</th><th>渲染方</th></tr></thead><tbody><tr><td>代码高亮</td><td><code>```python</code></td><td>Shiki</td></tr><tr><td>数学公式</td><td><code>$E=mc^2$</code></td><td>KaTeX</td></tr><tr><td>内嵌播放器</td><td><code>::bilibili{}</code></td><td>自定义指令</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>特性</th><th>语法</th><th>渲染方</th></tr></thead><tbody><tr><td>代码高亮</td><td><code>```python</code></td><td>Shiki</td></tr><tr><td>数学公式</td><td><code>$E=mc^2$</code></td><td>KaTeX</td></tr><tr><td>内嵌播放器</td><td><code>::bilibili{}</code></td><td>自定义指令</td></tr></tbody></table></div>
 <h2>代码高亮</h2>
 <pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> torch</span></span>
 <span class="line"></span>
@@ -111,7 +111,7 @@
 
 
 
-<table><thead><tr><th>组件名称</th><th>说明</th></tr></thead><tbody><tr><td>GitHub Repo Card</td><td>单个仓库卡片，读取 pinned 缓存</td></tr><tr><td>Streaming Block</td><td>LLM 流式输出效果，支持重播</td></tr><tr><td>Editorial Block</td><td>按钮、列表卡、磁贴、归档卡、分割线组合</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>组件名称</th><th>说明</th></tr></thead><tbody><tr><td>GitHub Repo Card</td><td>单个仓库卡片，读取 pinned 缓存</td></tr><tr><td>Streaming Block</td><td>LLM 流式输出效果，支持重播</td></tr><tr><td>Editorial Block</td><td>按钮、列表卡、磁贴、归档卡、分割线组合</td></tr></tbody></table></div>
 <p><strong>GitHub Repo Card</strong>：正文任意位置插入仓库卡片：</p>
 <div class="gh-card" data-repo="ggml-org/llama.cpp"></div>
 <p><strong>Streaming Block</strong>：插入一个流式区块（定义在 <code>site.yaml</code> 的 <code>streaming_blocks</code>）：</p>
@@ -153,7 +153,7 @@
 
 
 
-<table><thead><tr><th>全局组件名称</th><th>入口</th></tr></thead><tbody><tr><td>Contact Card / QR Modal</td><td>右下角联系卡，点击打开二维码弹层</td></tr><tr><td>Theme Toggle</td><td>右上角太阳 / 月亮按钮</td></tr><tr><td>Language Switcher</td><td>右上角语言按钮</td></tr><tr><td>BGM Toggle</td><td>右上角播放 / 暂停按钮</td></tr><tr><td>Lightbox</td><td>点击正文中的图片</td></tr><tr><td>Scroll Reveal</td><td>滚动页面时区块显现</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>全局组件名称</th><th>入口</th></tr></thead><tbody><tr><td>Contact Card / QR Modal</td><td>右下角联系卡，点击打开二维码弹层</td></tr><tr><td>Theme Toggle</td><td>右上角太阳 / 月亮按钮</td></tr><tr><td>Language Switcher</td><td>右上角语言按钮</td></tr><tr><td>BGM Toggle</td><td>右上角播放 / 暂停按钮</td></tr><tr><td>Lightbox</td><td>点击正文中的图片</td></tr><tr><td>Scroll Reveal</td><td>滚动页面时区块显现</td></tr></tbody></table></div>
 <p>主页专属组件也在下方完整渲染，不依赖主页是否启用：Profile Block、GitHub Block、RSS Block。</p>
 <h2>页面控件</h2>
 <p>页面控件是针对单个页面按需添加的部件（非全局组件），每个页面可以在 frontmatter 中独立定义；离开或重新打开该页面时会再次出现，提供针对单页的提示与操作能力。</p>
@@ -182,7 +182,7 @@
 
 
 
-<table><thead><tr><th>页面控件</th><th>配置方式</th><th>特性说明</th></tr></thead><tbody><tr><td>顶端通知横幅（Notice Banner）</td><td>页面 frontmatter 设置 <code>notice: "..."</code> 或 <code>notice: { text: "...", color: "yellow" }</code></td><td>页面加载完成 0.5s 后延迟弹出，支持 4 种颜色（<code>accent</code> 主题色、<code>yellow</code> 黄色、<code>red</code> 红色、<code>custom</code> 自定义）；单页独立定义、重新打开页面时再次出现；用户需手动点击右侧 ✕ 关闭；支持内联链接与强调语法</td></tr><tr><td>文章目录（TOC）</td><td>页面 frontmatter 设置 <code>toc: true</code></td><td>桌面端支持右侧粘性吸顶与 ScrollSpy 当前标题高亮跟随，移动端支持折叠抽屉导航，长文浏览快速跳转</td></tr><tr><td>阅读进度条（Reading Progress Bar）</td><td>页面 frontmatter 设置 <code>reading_progress: true</code></td><td>页面顶端 2px 细线进度条，随着正文向下滚动实时响应阅读位置，本特性页面已默认开启，可在滚动时观察页面最顶部细线动画</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>页面控件</th><th>配置方式</th><th>特性说明</th></tr></thead><tbody><tr><td>顶端通知横幅（Notice Banner）</td><td>页面 frontmatter 设置 <code>notice: "..."</code> 或 <code>notice: { text: "...", color: "yellow" }</code></td><td>页面加载完成 0.5s 后延迟弹出，支持 4 种颜色（<code>accent</code> 主题色、<code>yellow</code> 黄色、<code>red</code> 红色、<code>custom</code> 自定义）；单页独立定义、重新打开页面时再次出现；用户需手动点击右侧 ✕ 关闭；支持内联链接与强调语法</td></tr><tr><td>文章目录（TOC）</td><td>页面 frontmatter 设置 <code>toc: true</code></td><td>桌面端支持右侧粘性吸顶与 ScrollSpy 当前标题高亮跟随，移动端支持折叠抽屉导航，长文浏览快速跳转</td></tr><tr><td>阅读进度条（Reading Progress Bar）</td><td>页面 frontmatter 设置 <code>reading_progress: true</code></td><td>页面顶端 2px 细线进度条，随着正文向下滚动实时响应阅读位置，本特性页面已默认开启，可在滚动时观察页面最顶部细线动画</td></tr></tbody></table></div>
 <blockquote>
 <p>💡 示例：当前站点的<a href="https://stlin256.github.io/OpenHomepage-V2/">首页</a>顶部即配置了醒目的黄色通知横幅（<code>notice: { text: "本页面为示例页面，内容仅为展现项目特性使用。", color: "yellow" }</code>），可在首页体验 0.5s 延迟弹出与手动关闭效果。</p>
 </blockquote>

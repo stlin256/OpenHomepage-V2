@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[Zhiyuan Lin's homepage: machine learning research, open source, and reading notes]]></description>
     <language>en</language>
-    <lastBuildDate>Sat, 29 Aug 2026 20:19:02 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 20:23:39 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/en/feed.xml"/>
     <item>
       <title><![CDATA[Features]]></title>
@@ -66,7 +66,7 @@
 
 
 
-<table><thead><tr><th>Feature</th><th>Syntax</th><th>Renderer</th></tr></thead><tbody><tr><td>Code highlight</td><td><code>```python</code></td><td>Shiki</td></tr><tr><td>Math</td><td><code>$E=mc^2$</code></td><td>KaTeX</td></tr><tr><td>Embed player</td><td><code>::bilibili{}</code></td><td>Custom directive</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>Feature</th><th>Syntax</th><th>Renderer</th></tr></thead><tbody><tr><td>Code highlight</td><td><code>```python</code></td><td>Shiki</td></tr><tr><td>Math</td><td><code>$E=mc^2$</code></td><td>KaTeX</td></tr><tr><td>Embed player</td><td><code>::bilibili{}</code></td><td>Custom directive</td></tr></tbody></table></div>
 <h2>Code highlight</h2>
 <pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> torch</span></span>
 <span class="line"></span>
@@ -111,7 +111,7 @@
 
 
 
-<table><thead><tr><th>Component</th><th>Purpose</th></tr></thead><tbody><tr><td>GitHub Repo Card</td><td>Single repository card from the pinned cache</td></tr><tr><td>Streaming Block</td><td>LLM streaming output with replay</td></tr><tr><td>Editorial Block</td><td>Actions, list cards, tiles, archive cards, and dividers</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>Component</th><th>Purpose</th></tr></thead><tbody><tr><td>GitHub Repo Card</td><td>Single repository card from the pinned cache</td></tr><tr><td>Streaming Block</td><td>LLM streaming output with replay</td></tr><tr><td>Editorial Block</td><td>Actions, list cards, tiles, archive cards, and dividers</td></tr></tbody></table></div>
 <p><strong>GitHub Repo Card</strong>:</p>
 <div class="gh-card" data-repo="ggml-org/llama.cpp"></div>
 <p><strong>Streaming Block</strong>:</p>
@@ -153,7 +153,7 @@
 
 
 
-<table><thead><tr><th>Global component</th><th>Entry point</th></tr></thead><tbody><tr><td>Contact Card / QR Modal</td><td>Bottom-right card; click for the QR modal</td></tr><tr><td>Theme Toggle</td><td>Sun / moon button in the top-right</td></tr><tr><td>Language Switcher</td><td>Language button in the top-right</td></tr><tr><td>BGM Toggle</td><td>Play / pause button in the top-right</td></tr><tr><td>Lightbox</td><td>Click an image in the body</td></tr><tr><td>Scroll Reveal</td><td>Blocks reveal as the page scrolls</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>Global component</th><th>Entry point</th></tr></thead><tbody><tr><td>Contact Card / QR Modal</td><td>Bottom-right card; click for the QR modal</td></tr><tr><td>Theme Toggle</td><td>Sun / moon button in the top-right</td></tr><tr><td>Language Switcher</td><td>Language button in the top-right</td></tr><tr><td>BGM Toggle</td><td>Play / pause button in the top-right</td></tr><tr><td>Lightbox</td><td>Click an image in the body</td></tr><tr><td>Scroll Reveal</td><td>Blocks reveal as the page scrolls</td></tr></tbody></table></div>
 <p>The homepage-specific Profile Block, GitHub Block, and RSS Block are also rendered in full below; they do not depend on the homepage layout.</p>
 <h2>Page controls</h2>
 <p>Page controls are page-level widgets configured on a per-page basis (non-global). Each page can define them independently in its frontmatter; they reappear whenever the page is reopened or revisited, providing page-specific announcements and controls.</p>
@@ -182,7 +182,7 @@
 
 
 
-<table><thead><tr><th>Page control</th><th>Configuration</th><th>Description</th></tr></thead><tbody><tr><td>Notice Banner</td><td>Set <code>notice: "..."</code> or <code>notice: { text: "...", color: "yellow" }</code> in frontmatter</td><td>Pops in 0.5s after page load; supports 4 color modes (<code>accent</code>, <code>yellow</code>, <code>red</code>, <code>custom</code>); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting</td></tr><tr><td>Table of Contents (TOC)</td><td>Set <code>toc: true</code> in frontmatter</td><td>Sticky sidebar on desktop with ScrollSpy active heading tracking, collapsible drawer on mobile for seamless navigation</td></tr><tr><td>Reading Progress Bar</td><td>Set <code>reading_progress: true</code> in frontmatter</td><td>Elegant 2px progress bar fixed at the top of the viewport that tracks reading progress in real time as you scroll; enabled on this features demo page</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>Page control</th><th>Configuration</th><th>Description</th></tr></thead><tbody><tr><td>Notice Banner</td><td>Set <code>notice: "..."</code> or <code>notice: { text: "...", color: "yellow" }</code> in frontmatter</td><td>Pops in 0.5s after page load; supports 4 color modes (<code>accent</code>, <code>yellow</code>, <code>red</code>, <code>custom</code>); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting</td></tr><tr><td>Table of Contents (TOC)</td><td>Set <code>toc: true</code> in frontmatter</td><td>Sticky sidebar on desktop with ScrollSpy active heading tracking, collapsible drawer on mobile for seamless navigation</td></tr><tr><td>Reading Progress Bar</td><td>Set <code>reading_progress: true</code> in frontmatter</td><td>Elegant 2px progress bar fixed at the top of the viewport that tracks reading progress in real time as you scroll; enabled on this features demo page</td></tr></tbody></table></div>
 <blockquote>
 <p>💡 Example: The <a href="https://stlin256.github.io/OpenHomepage-V2/en/">homepage</a> of this site features a prominent yellow Notice Banner (<code>notice: { text: "This is a demo page. Content is for displaying project features only.", color: "yellow" }</code>) that appears 0.5s after load.</p>
 </blockquote>

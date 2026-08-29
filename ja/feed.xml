@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远の個人ホームページ：機械学習研究、オープンソース、読書記録]]></description>
     <language>ja</language>
-    <lastBuildDate>Sat, 29 Aug 2026 20:19:02 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 20:23:40 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.xml"/>
     <item>
       <title><![CDATA[機能]]></title>
@@ -66,7 +66,7 @@
 
 
 
-<table><thead><tr><th>機能</th><th>構文</th><th>レンダラー</th></tr></thead><tbody><tr><td>コードハイライト</td><td><code>```python</code></td><td>Shiki</td></tr><tr><td>数式</td><td><code>$E=mc^2$</code></td><td>KaTeX</td></tr><tr><td>埋め込みプレイヤー</td><td><code>::bilibili{}</code></td><td>カスタムディレクティブ</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>機能</th><th>構文</th><th>レンダラー</th></tr></thead><tbody><tr><td>コードハイライト</td><td><code>```python</code></td><td>Shiki</td></tr><tr><td>数式</td><td><code>$E=mc^2$</code></td><td>KaTeX</td></tr><tr><td>埋め込みプレイヤー</td><td><code>::bilibili{}</code></td><td>カスタムディレクティブ</td></tr></tbody></table></div>
 <h2>コードハイライト</h2>
 <pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> torch</span></span>
 <span class="line"></span>
@@ -111,7 +111,7 @@
 
 
 
-<table><thead><tr><th>コンポーネント</th><th>用途</th></tr></thead><tbody><tr><td>GitHub リポジトリーカード</td><td>ピン留めキャッシュから生成する単一リポジトリーカード</td></tr><tr><td>ストリーミングブロック</td><td>リプレイ付きの LLM ストリーミング出力</td></tr><tr><td>エディトリアルブロック</td><td>アクション、リストカード、タイル、アーカイブカード、区切り線</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>コンポーネント</th><th>用途</th></tr></thead><tbody><tr><td>GitHub リポジトリーカード</td><td>ピン留めキャッシュから生成する単一リポジトリーカード</td></tr><tr><td>ストリーミングブロック</td><td>リプレイ付きの LLM ストリーミング出力</td></tr><tr><td>エディトリアルブロック</td><td>アクション、リストカード、タイル、アーカイブカード、区切り線</td></tr></tbody></table></div>
 <p><strong>GitHub リポジトリーカード</strong>：</p>
 <div class="gh-card" data-repo="ggml-org/llama.cpp"></div>
 <p><strong>ストリーミングブロック</strong>：</p>
@@ -153,7 +153,7 @@
 
 
 
-<table><thead><tr><th>グローバルコンポーネント</th><th>入口</th></tr></thead><tbody><tr><td>連絡先カード / QR モーダル</td><td>右下のカード。クリックで QR モーダルを表示</td></tr><tr><td>テーマ切替</td><td>右上の太陽／月ボタン</td></tr><tr><td>言語スイッチャー</td><td>右上の言語ボタン</td></tr><tr><td>BGM 切替</td><td>右上の再生／一時停止ボタン</td></tr><tr><td>ライトボックス</td><td>本文中の画像をクリック</td></tr><tr><td>スクロールリビール</td><td>ページのスクロールに合わせてブロックが出現</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>グローバルコンポーネント</th><th>入口</th></tr></thead><tbody><tr><td>連絡先カード / QR モーダル</td><td>右下のカード。クリックで QR モーダルを表示</td></tr><tr><td>テーマ切替</td><td>右上の太陽／月ボタン</td></tr><tr><td>言語スイッチャー</td><td>右上の言語ボタン</td></tr><tr><td>BGM 切替</td><td>右上の再生／一時停止ボタン</td></tr><tr><td>ライトボックス</td><td>本文中の画像をクリック</td></tr><tr><td>スクロールリビール</td><td>ページのスクロールに合わせてブロックが出現</td></tr></tbody></table></div>
 <p>ホームページ専用のプロフィールブロック、GitHub ブロック、RSS ブロックも以下に完全にレンダリングされています。これらはホームページレイアウトに依存しません。</p>
 <h2>ページコントロール</h2>
 <p>ページコントロールはページ単位で設定されるページレベルのウィジェットです（グローバルではありません）。各ページは frontmatter で独立に定義でき、ページを開き直すたびに再表示され、ページ固有のお知らせや操作を提供します。</p>
@@ -182,7 +182,7 @@
 
 
 
-<table><thead><tr><th>ページコントロール</th><th>設定</th><th>説明</th></tr></thead><tbody><tr><td>通知バナー</td><td>frontmatter で <code>notice: "..."</code> または <code>notice: { text: "...", color: "yellow" }</code> を設定</td><td>ページ読み込みから 0.5 秒後にポップイン。4 種のカラーモード（<code>accent</code>、<code>yellow</code>、<code>red</code>、<code>custom</code>）に対応。ページ固有で訪問ごとに再表示。✕ をクリックして手動で閉じる。インラインリンクと書式をサポート</td></tr><tr><td>目次 (TOC)</td><td>frontmatter で <code>toc: true</code> を設定</td><td>デスクトップでは右側に固定され ScrollSpy で現在の見出しを追跡。モバイルでは折りたたみ式ドロワーとして表示</td></tr><tr><td>読書プログレスバー (Reading Progress Bar)</td><td>frontmatter で <code>reading_progress: true</code> を設定</td><td>画面上部に 2px の細線プログレスバーを配置し、スクロールに応じてリアルタイムで読書進捗を表示。この機能ページでも現在有効化されています</td></tr></tbody></table>
+<div class="md-table-wrap"><table><thead><tr><th>ページコントロール</th><th>設定</th><th>説明</th></tr></thead><tbody><tr><td>通知バナー</td><td>frontmatter で <code>notice: "..."</code> または <code>notice: { text: "...", color: "yellow" }</code> を設定</td><td>ページ読み込みから 0.5 秒後にポップイン。4 種のカラーモード（<code>accent</code>、<code>yellow</code>、<code>red</code>、<code>custom</code>）に対応。ページ固有で訪問ごとに再表示。✕ をクリックして手動で閉じる。インラインリンクと書式をサポート</td></tr><tr><td>目次 (TOC)</td><td>frontmatter で <code>toc: true</code> を設定</td><td>デスクトップでは右側に固定され ScrollSpy で現在の見出しを追跡。モバイルでは折りたたみ式ドロワーとして表示</td></tr><tr><td>読書プログレスバー (Reading Progress Bar)</td><td>frontmatter で <code>reading_progress: true</code> を設定</td><td>画面上部に 2px の細線プログレスバーを配置し、スクロールに応じてリアルタイムで読書進捗を表示。この機能ページでも現在有効化されています</td></tr></tbody></table></div>
 <blockquote>
 <p>💡 例：このサイトの<a href="https://stlin256.github.io/OpenHomepage-V2/">ホームページ</a>には、読み込みから 0.5 秒後に表示される目立つ黄色の通知バナー（<code>notice: { text: "これはデモページです。内容はプロジェクト機能の展示のみを目的としています。", color: "yellow" }</code>）が設置されています。</p>
 </blockquote>
