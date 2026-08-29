@@ -70,7 +70,7 @@ OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静
 
 ![网格指令](docs/images/components/markdown-grid-zh.webp)
 
-**原生媒体（`:::audio` / `:::video`）**——杂志宽度播放器；`::bilibili` / `::youtube` 渲染 16:9 响应式嵌入外框。
+**自渲染音频与内嵌媒体（`:::audio` / `:::video`）**——轻量自渲染音频播放器（紧凑标题与封面卡片双模式，带超长文字缓动与独占播放/背景音乐智能续播）；`:::video` 及 16:9 响应式 `::bilibili` / `::youtube` 嵌入。
 
 ![音频指令](docs/images/components/media-audio-zh.webp)
 
@@ -180,3 +180,4 @@ GitHub Actions 会在代码推送到 `main`/`master` 分支或每 8 小时定时
 ├── admin/           # 本地可视化编辑器服务端与前端源码
 └── tests/           # Vitest 自动化测试套件
 ```
+

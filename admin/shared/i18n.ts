@@ -283,6 +283,10 @@ const zh = {
   dirParamVideoId: '视频 ID',
   dirParamRepo: '仓库',
   dirParamBlockId: '区块 id',
+  dirParamAudioSrc: '音频路径 (src)',
+  dirParamAudioTitle: '音频标题 (title)',
+  dirParamAudioDesc: '说明文本 (description)',
+  dirParamAudioCover: '封面素材 (cover，选填)',
 
   // 可视化编辑 overlay（M12d）：就地改字 / 配置区块表单 / 页面设置 / 页面切换
   loading: '加载中…',
@@ -593,6 +597,10 @@ const en: Record<DictKey, string> = {
   dirParamVideoId: 'Video ID',
   dirParamRepo: 'Repository',
   dirParamBlockId: 'Block ID',
+  dirParamAudioSrc: 'Audio source (src)',
+  dirParamAudioTitle: 'Audio title (title)',
+  dirParamAudioDesc: 'Description (description)',
+  dirParamAudioCover: 'Cover asset (cover, optional)',
 
   // 可视化编辑 overlay（M12d）：就地改字 / 配置区块表单 / 页面设置 / 页面切换
   loading: 'Loading…',
@@ -636,3 +644,4 @@ export function detectLang(navigatorLanguage: string, stored: string | null): La
   if (stored === 'zh' || stored === 'en') return stored;
   return navigatorLanguage.toLowerCase().startsWith('en') ? 'en' : 'zh';
 }
+

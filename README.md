@@ -70,7 +70,7 @@ Each component below is captured individually from the production build (`npm ru
 
 ![Grid directive](docs/images/components/markdown-grid-en.webp)
 
-**Native Media (`:::audio` / `:::video`)** — Magazine-width players; `::bilibili` / `::youtube` render responsive 16:9 embed frames.
+**Self-Rendered Audio & Media (`:::audio` / `:::video`)** — Custom lightweight audio players (compact title & cover card variants with marquee support) with single-playback policy & BGM resume; `:::video` and responsive 16:9 `::bilibili` / `::youtube` embeds.
 
 ![Audio directive](docs/images/components/media-audio-en.webp)
 
@@ -180,3 +180,4 @@ GitHub Actions automatically builds and publishes the static site to GitHub Page
 ├── admin/           # Local visual editor application
 └── tests/           # Vitest test suite
 ```
+

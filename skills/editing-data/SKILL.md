@@ -34,7 +34,7 @@ data/
 ## 编辑规则
 
 1. **页面**：改内容直接编辑 `data/pages/<语言>/<slug>.md`。新建页面必须写 frontmatter（`title`/`nav`/`order`，`slug` 可省略=文件名）。多语言：把文件复制到另一语言目录（如 `pages/zh/research.md` → `pages/en/research.md`）并翻译，frontmatter 的 `title` 也要翻译；缺译页面按「当前语言 → en → 默认语言」静默回退渲染，不显示降级提示条。新增整门语言见上文「多语言」一节。
-2. **markdown 扩展**：可用指令 `::bilibili{}` `::youtube{}` `:::video{}` `:::audio{}` `:::figure{}` `:::grid{}` `::stream{}` `::ghcard{}` `::editorial{id="..."}`，语法见 `docs/specs/03-markdown-directives.md`；支持 HTML 混写和 KaTeX（`$...$` / `$$...$$`）。`::editorial` 必须引用 `site.yaml` 中已定义的 `editorial_blocks` id；特性页 `features` 已展示完整组件套件。
+2. **markdown 扩展**：可用指令 `::bilibili{}` `::youtube{}` `:::video{}` `:::audio{src="..." [title="..."] [description="..."] [cover="..."]}`（支持紧凑模式与带封面的卡片模式） `:::figure{}` `:::grid{}` `::stream{}` `::ghcard{}` `::editorial{id="..."}`，语法见 `docs/specs/03-markdown-directives.md`；支持 HTML 混写和 KaTeX（`$...$` / `$$...$$`）。`::editorial` 必须引用 `site.yaml` 中已定义的 `editorial_blocks` id；特性页 `features` 已展示完整组件套件。
 3. **配置文案多语言**：site.yaml / rss.yaml 中面向用户的文案字段可写多语言映射（如 `{zh: ..., en: ...}`，键为语言码、数量不限，按站点实际语言补齐）；存在多语言页面时应主动把区块标题等补齐各语言文案（缺 key 回退 en → 默认语言）。
 4. **主页布局与编辑区块**：顺序改 `site.yaml` 的 `home.layout`。流式区块以 `- block: streaming` + `id:` 引用；编辑风列表/磁贴/归档卡以 `- block: editorial` + `id:` 引用 `editorial_blocks` 中同 id 的定义。文案优先提供 `{zh,en}` 双语值。
 5. **右下联系卡**：配置在 `contact.intro_card`；`image` 必须指向 `data/assets/` 内可访问图片，通常是二维码。`delay` 会被限制到 1000–20000 ms。
@@ -59,3 +59,4 @@ data/
 - 后台“编辑区块”页管理 `editorial_blocks` 与 `contact.intro_card`；“流式块”页管理流式块定义和 `home.layout`。
 - 自动保存停顿约 1.5 秒；界面状态依次提示未保存、保存中、已保存或失败。
 - 编辑区块表单用原生折叠面板组织；主页布局支持拖拽和上移/下移按钮。
+

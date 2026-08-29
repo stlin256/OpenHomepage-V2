@@ -152,7 +152,7 @@ const SHOTS: Shot[] = [
   { name: 'markdown-math', page: 'features', selector: '.page-content .katex-display', nth: 0 },
   { name: 'markdown-figure', page: 'features', selector: '.page-content figure', nth: 0 },
   { name: 'markdown-grid', page: 'features', selector: '.page-content .md-grid', nth: 0 },
-  { name: 'media-audio', page: 'features', selector: '.page-content audio', nth: 0 },
+  { name: 'media-audio', page: 'features', selector: '.page-content .audio-card', nth: 0 },
   { name: 'ghcard', page: 'features', selector: '.page-content .gh-repo', nth: 0 },
   // —— 画廊页与全局交互 ——
   { name: 'gallery-grid', page: 'gallery', selector: '.page-content .md-grid', nth: 0 },
@@ -270,3 +270,4 @@ async function main() {
 }
 
 main();
+
