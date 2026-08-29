@@ -167,7 +167,15 @@ html.js img[data-image-fade='pending'] {
 }
 html.js img[data-image-fade='loaded'] {
   opacity: 1;
-  transition: opacity 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: image-fade-in 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes image-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .site-nav ul {
   list-style: none;
@@ -2279,6 +2287,7 @@ html.js .reveal.revealed {
   html.js img[data-image-fade='loaded'],
   .rss-cover img {
     opacity: 1;
+    animation: none;
     transition: none;
   }
   .theme-toggle .icon,
