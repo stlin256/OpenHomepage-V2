@@ -94,8 +94,13 @@ export function initSearch(): void {
     isClosing = false;
     dialog.hidden = false;
     dialog.classList.remove('closing');
-    dialog.classList.add('open');
-    dialog.showModal?.();
+    if (!dialog.open) {
+      dialog.showModal?.();
+    }
+    void dialog.offsetHeight;
+    requestAnimationFrame(() => {
+      dialog.classList.add('open');
+    });
     syncI18n();
     input?.focus();
     input?.select();
@@ -105,15 +110,15 @@ export function initSearch(): void {
   const closeSearch = () => {
     if (dialog.hidden || isClosing) return;
     isClosing = true;
-    dialog.classList.add('closing');
     dialog.classList.remove('open');
+    dialog.classList.add('closing');
     window.setTimeout(() => {
       dialog.hidden = true;
       dialog.classList.remove('closing');
       dialog.close?.();
       isClosing = false;
       toggleBtn?.focus();
-    }, 180);
+    }, 220);
   };
 
   syncI18n();
@@ -146,6 +151,10 @@ export function initSearch(): void {
   closeBtn?.addEventListener('click', () => closeSearch());
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) closeSearch();
+  });
+  dialog.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    closeSearch();
   });
   dialog.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {

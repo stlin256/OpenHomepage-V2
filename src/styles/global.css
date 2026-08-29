@@ -528,6 +528,18 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   border-top: 0;
 }
 
+/* 当编辑风区块（::editorial）嵌入到 markdown 正文中时，重置主页分段 padding 与 border，与正文流式间距融合 */
+.markdown-body .home-block,
+.markdown-body .block-editorial,
+.editorial-embed .home-block {
+  padding: 0;
+  border-top: none;
+  margin: 2rem 0;
+}
+.markdown-body .block-editorial:has(> .editorial-divider) {
+  padding-bottom: 0;
+}
+
 
 /* ---- 页面通知横幅（Notice Banner） ---- */
 .notice-banner {
@@ -799,14 +811,16 @@ html[data-theme="dark"] .notice-banner-text code {
   align-items: end;
   margin-bottom: 2rem;
 }
-.editorial-heading h2 {
+.editorial-heading h2,
+.markdown-body .editorial-heading h2 {
   margin: 0;
   font-size: clamp(2.25rem, 6vw, 4rem);
   line-height: 1.02;
   font-weight: 250;
   text-transform: uppercase;
 }
-.editorial-heading p {
+.editorial-heading p,
+.markdown-body .editorial-heading p {
   margin: 0;
   color: var(--text-muted);
   max-width: 58ch;
@@ -980,9 +994,11 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-.editorial-item-description {
+.editorial-item-description,
+.markdown-body .editorial-item-description {
   color: var(--text-muted);
   font-size: 0.88rem;
+  margin: 0;
 }
 
 .markdown-body .katex {
@@ -1150,11 +1166,14 @@ a.editorial-item:focus-visible .editorial-item-content {
   font-size: 1.1rem;
   font-weight: 600;
 }
-.archive-description {
+.archive-description,
+.markdown-body .archive-description {
   color: var(--text-muted);
   font-size: 0.85rem;
+  margin: 0;
 }
-.editorial-divider {
+.editorial-divider,
+.markdown-body .editorial-divider {
   width: 100%;
   height: 1px;
   margin: 2.25rem 0 0;
@@ -3095,10 +3114,13 @@ html.js .reveal.revealed {
   inset: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
   margin: 0;
   padding: 0;
   border: none;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.48);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
@@ -3111,17 +3133,23 @@ html.js .reveal.revealed {
   visibility: hidden;
   pointer-events: none;
   transition:
-    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 0s linear 0.2s;
+    opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.search-dialog:not([hidden]).open,
-.search-dialog:not([hidden])[open]:not(.closing) {
+.search-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.search-dialog:not([hidden]).open {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transition:
-    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 0s;
+}
+.search-dialog.closing {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 .search-dialog[hidden] {
   display: none !important;
@@ -3131,7 +3159,7 @@ html.js .reveal.revealed {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -3139,8 +3167,7 @@ html.js .reveal.revealed {
   transform: scale(0.95) translateY(-8px);
   transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.search-dialog:not([hidden]).open .search-panel,
-.search-dialog:not([hidden])[open]:not(.closing) .search-panel {
+.search-dialog:not([hidden]).open .search-panel {
   transform: scale(1) translateY(0);
 }
 .search-dialog.closing .search-panel {
@@ -3182,26 +3209,52 @@ html.js .reveal.revealed {
 .search-scope-btn {
   border: none;
   background: transparent;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: calc(var(--radius-sm) - 2px);
   font-size: 0.75rem;
   color: var(--text-muted);
   cursor: pointer;
+  transition:
+    background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.15s ease;
+}
+.search-scope-btn:hover {
+  color: var(--text);
+  background: rgba(125, 125, 125, 0.08);
+}
+.search-scope-btn:active {
+  transform: scale(0.96);
 }
 .search-scope-btn.active {
   background: var(--card);
   color: var(--accent);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 .search-close {
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle);
   color: var(--text-muted);
   font-size: 0.75rem;
   cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+.search-close:hover,
+.search-close:focus-visible {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--card);
+}
+.search-close:active {
+  transform: scale(0.94);
 }
 .search-status {
   padding: 0.75rem 1.15rem;
@@ -3226,11 +3279,14 @@ html.js .reveal.revealed {
   text-decoration: none;
   color: var(--text);
   border-radius: var(--radius-sm);
-  transition: background 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
 }
 .search-result-link:hover,
 .search-item.active .search-result-link {
   background: var(--bg-subtle);
+  transform: translateX(2px);
 }
 .search-result-header {
   display: flex;
@@ -3282,6 +3338,14 @@ html.js .reveal.revealed {
     width: 100vw;
     max-height: 85vh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: translateY(100%);
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .search-dialog:not([hidden]).open .search-panel {
+    transform: translateY(0);
+  }
+  .search-dialog.closing .search-panel {
+    transform: translateY(100%);
   }
   .search-footer {
     display: none;

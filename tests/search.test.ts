@@ -1,4 +1,5 @@
-﻿import { describe, it, expect } from "vitest";
+// @vitest-environment jsdom
+import { describe, it, expect } from "vitest";
 import { filterSearchResults, type SearchResultItem, buildSearchIndexItem, getSearchI18n } from "../src/lib/search.ts";
 
 const sampleResults: SearchResultItem[] = [
@@ -82,5 +83,43 @@ describe("getSearchI18n", () => {
 
     const fallback = getSearchI18n("es");
     expect(fallback.scopeCurrent).toBe("当前语言");
+  });
+});
+
+describe("initSearch client interactions", () => {
+  it("opens and closes modal with animation classes and supports scope toggling", async () => {
+    const { initSearch } = await import("../src/scripts/search.ts");
+    document.body.innerHTML = "<button class='search-toggle' type='button' aria-label='Search'></button><dialog class='search-dialog' hidden><div class='search-panel'><form class='search-form'><input type='search' class='search-input' /><div class='search-scope-tabs'><button type='button' class='search-scope-btn active' data-scope='current'>当前语言</button><button type='button' class='search-scope-btn' data-scope='all'>全部语言</button></div><button type='button' class='search-close'>Esc</button></form><p class='search-status'></p><ul class='search-results'></ul><div class='search-footer'><span class='search-hint-nav'></span><span class='search-hint-select'></span><span class='search-hint-close'></span></div></div></dialog>";
+    const dialog = document.querySelector(".search-dialog");
+    dialog.showModal = function () {
+      this.open = true;
+    };
+    dialog.close = function () {
+      this.open = false;
+    };
+
+    initSearch();
+    const toggle = document.querySelector(".search-toggle");
+    const closeBtn = document.querySelector(".search-close");
+    const currentBtn = document.querySelector(".search-scope-btn[data-scope='current']");
+    const allBtn = document.querySelector(".search-scope-btn[data-scope='all']");
+
+    // Open modal
+    toggle.click();
+    expect(dialog.hidden).toBe(false);
+
+    // Scope toggling
+    allBtn.click();
+    expect(allBtn.classList.contains("active")).toBe(true);
+    expect(currentBtn.classList.contains("active")).toBe(false);
+
+    currentBtn.click();
+    expect(currentBtn.classList.contains("active")).toBe(true);
+    expect(allBtn.classList.contains("active")).toBe(false);
+
+    // Close modal
+    closeBtn.click();
+    expect(dialog.classList.contains("closing")).toBe(true);
+    expect(dialog.classList.contains("open")).toBe(false);
   });
 });
