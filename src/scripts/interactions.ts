@@ -83,6 +83,13 @@ function hideLoading(): void {
 }
 
 /** 等待两帧（淡出起始帧 + 一帧过渡）；无 rAF 环境退化为短延时。 */
+function scrollToTop(): void {
+  window.scrollTo({
+    top: 0,
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+  });
+}
+
 function nextPaint(): Promise<void> {
   return new Promise((resolve) => {
     if (typeof requestAnimationFrame === 'function') {
@@ -417,7 +424,7 @@ async function swapContent(
       initAll();
       // 客户端内容交换等价于一次页面加载；联系卡等全局组件依赖此事件重绑。
       window.dispatchEvent(new Event('astro:page-load'));
-      window.scrollTo({ top: 0 });
+      scrollToTop();
     };
   } catch {
     location.href = path;

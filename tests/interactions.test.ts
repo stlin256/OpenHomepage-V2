@@ -250,6 +250,7 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     ].join("");
 
     await import("../src/scripts/interactions.ts");
+    const scrollToSpy = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
 
     try {
       document.querySelector<HTMLAnchorElement>("#switch-en")!.dispatchEvent(
@@ -279,6 +280,7 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(true);
       expect(main.style.opacity).toBe("");
       expect(main.style.transform).toBe("");
+      expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
     } finally {
       vi.useRealTimers();
     }
