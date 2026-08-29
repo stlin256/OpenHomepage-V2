@@ -135,6 +135,103 @@ function initNoticeBanners(): void {
   }
 }
 
+function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function langForMenuItem(item: Element): string | null {
+  return item.querySelector('a[hreflang]')?.getAttribute('hreflang') ?? null;
+}
+
+function sameLanguageSet(a: Element, b: Element): boolean {
+  const left = new Set([...a.querySelectorAll('a[hreflang]')].map((link) => link.getAttribute('hreflang')));
+  const right = new Set([...b.querySelectorAll('a[hreflang]')].map((link) => link.getAttribute('hreflang')));
+  if (left.size !== right.size) return false;
+  for (const lang of left) {
+    if (!right.has(lang)) return false;
+  }
+  return true;
+}
+
+/**
+ * Language menu option A: FLIP float-and-settle.
+ * Record old positions, move the selected language to the top immediately, then
+ * animate it back from its old position while sibling rows stagger downward.
+ */
+function animateLangMenuSelection(link: HTMLAnchorElement): boolean {
+  const menu = link.closest('.lang-menu');
+  const selectedItem = link.closest('li');
+  const selectedLang = link.getAttribute('hreflang');
+  if (!menu || !selectedItem || !selectedLang) return false;
+
+  const items = [...menu.children].filter((item): item is HTMLElement => item instanceof HTMLElement);
+  const before = new Map<string, DOMRect>();
+  for (const item of items) {
+    const lang = langForMenuItem(item);
+    if (lang) before.set(lang, item.getBoundingClientRect());
+  }
+
+  // Match build-time orderLangMenu: selected language first, others in site order.
+  const menuLangs = items.map(langForMenuItem).filter((lang): lang is string => Boolean(lang));
+  const baseLangs = siteLanguages().filter((lang) => menuLangs.includes(lang));
+  const extraLangs = menuLangs.filter((lang) => !baseLangs.includes(lang));
+  const byLang = new Map(items.map((item) => [langForMenuItem(item), item] as const));
+  const orderedLangs = [
+    selectedLang,
+    ...baseLangs.filter((lang) => lang !== selectedLang),
+    ...extraLangs.filter((lang) => lang !== selectedLang),
+  ];
+  for (const lang of orderedLangs) {
+    const item = byLang.get(lang);
+    if (item) menu.append(item);
+  }
+
+  for (const item of menu.querySelectorAll('li')) {
+    const itemLink = item.querySelector('a[hreflang]');
+    if (!itemLink) continue;
+    const active = itemLink === link;
+    itemLink.classList.toggle('active', active);
+    if (active) itemLink.setAttribute('aria-current', 'true');
+    else itemLink.removeAttribute('aria-current');
+  }
+
+  if (prefersReducedMotion()) return true;
+
+  for (const [index, item] of [...menu.children].entries()) {
+    if (!(item instanceof HTMLElement)) continue;
+    const lang = langForMenuItem(item);
+    if (!lang) continue;
+    const oldRect = before.get(lang);
+    const delta = oldRect ? oldRect.top - item.getBoundingClientRect().top : 0;
+    if (delta === 0 || typeof item.animate !== 'function') continue;
+
+    if (item === selectedItem) {
+      item.animate(
+        [
+          { transform: `translateY(${delta}px) scale(0.985)`, opacity: '0.72' },
+          { transform: 'translateY(0px) scale(1)', opacity: '1' },
+        ],
+        { duration: 470, easing: 'cubic-bezier(0.2, 1.24, 0.24, 1)' },
+      );
+    } else {
+      item.animate(
+        [
+          { transform: `translateY(${delta}px)`, opacity: '0.82' },
+          { transform: 'translateY(0px)', opacity: '1' },
+        ],
+        {
+          duration: 390,
+          delay: 35 + index * 24,
+          easing: 'cubic-bezier(0.24, 0.86, 0.18, 1)',
+          fill: 'backwards',
+        },
+      );
+    }
+  }
+
+  return true;
+}
+
 function updateNavActive(path: string): void {
   const current = new URL(path, location.href).pathname.replace(/\/+$/, '') || '/';
   for (const a of document.querySelectorAll<HTMLAnchorElement>('.site-nav a')) {
@@ -164,7 +261,7 @@ let swapping = false;
 
 async function swapContent(
   path: string,
-  { push = true, minOverlayMs = 0 }: { push?: boolean; minOverlayMs?: number } = {},
+  { push = true, minOverlayMs = 0, preserveLangMenu = false }: { push?: boolean; minOverlayMs?: number; preserveLangMenu?: boolean } = {},
 ): Promise<void> {
   if (swapping) return;
   swapping = true;
@@ -233,7 +330,13 @@ async function swapContent(
     }
     const newLangMenu = doc.querySelector('.lang-menu');
     const oldLangMenu = document.querySelector('.lang-menu');
-    if (newLangMenu && oldLangMenu) {
+    // The click-time FLIP pass already owns menu order; preserving equal nodes
+    // prevents replacement from cutting the motion halfway. Normal swaps still sync it.
+    if (
+      newLangMenu &&
+      oldLangMenu &&
+      !(preserveLangMenu && sameLanguageSet(newLangMenu, oldLangMenu))
+    ) {
       oldLangMenu.replaceChildren(
         ...Array.from(newLangMenu.children, (node) => node.cloneNode(true)),
       );
@@ -366,9 +469,14 @@ document.addEventListener('click', (e) => {
   // 修饰键点击不动
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
+  const langMenuAnimated = selectedLanguage ? animateLangMenuSelection(link) : false;
   if (selectedLanguage) writePreferredLanguage(selectedLanguage);
-  // 语言切换即使命中缓存也保留 0.25s 透明输入门，并延迟组件计时/动画
-  void swapContent(href, selectedLanguage ? { minOverlayMs: 250 } : {});
+  // 语言切换即使命中缓存也保留 0.25s 透明输入门，并延迟组件计时/动画；
+  // 菜单 FLIP 与内容交换并行，不额外增加等待。
+  void swapContent(href, {
+    minOverlayMs: selectedLanguage ? 250 : 0,
+    preserveLangMenu: langMenuAnimated,
+  });
 });
 
 // ---- 语言切换器菜单 ----
@@ -381,6 +489,8 @@ function setLangMenu(menu: Element, open: boolean): void {
     ?.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 document.addEventListener('click', (e) => {
+  // 点击语言项本身时保持菜单打开：FLIP 换序动画需要菜单继续可见。
+  if (e.target instanceof Element && e.target.closest('.lang-menu')) return;
   const toggle = e.target instanceof Element ? e.target.closest('.lang-toggle') : null;
   const ownMenu = toggle?.closest('.lang-switcher')?.querySelector('.lang-menu');
   for (const menu of document.querySelectorAll('.lang-menu.open')) {

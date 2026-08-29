@@ -312,6 +312,7 @@ body.nav-open .nav-toggle .bar:nth-child(3) {
 .lang-menu a.active {
   color: var(--accent);
   font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 /* 主题切换：小正方形图标按钮，按当前主题显示太阳/月亮 */
 .theme-toggle {

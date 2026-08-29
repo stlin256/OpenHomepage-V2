@@ -137,6 +137,84 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(document.querySelector("#site-title-link")?.textContent).toBe("English Site");
   });
 
+  it("语言菜单 A 方案：FLIP 换序并保留动画节点", async () => {
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='en'><head><title>Home</title></head><body>",
+      "<nav class='site-nav'><p class='site-title'><a href='/en/'>English Site</a></p><ul><li><a href='/en/'>Home</a></li></ul></nav>",
+      "<div class='lang-switcher'><ul class='lang-menu'>",
+      "<li><a href='/en/' hreflang='en'>English</a></li>",
+      "<li><a href='/fr/' hreflang='fr'>Français</a></li>",
+      "<li><a href='/ja/' hreflang='ja'>日本語</a></li>",
+      "<li><a href='/' hreflang='zh'>中文</a></li>",
+      "</ul></div>",
+      "<main class='site-main'><p>English home</p></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => targetHtml,
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.documentElement.dataset.routeLang = "zh";
+    document.documentElement.dataset.siteLangs = "en,fr,ja,zh";
+    localStorage.setItem("oh-language", "zh");
+    document.body.innerHTML = [
+      "<nav class='site-nav'><p class='site-title'><a id='site-title-link' href='/'>中文站名</a></p></nav>",
+      "<div class='lang-switcher'><ul class='lang-menu open'>",
+      "<li><a id='current-zh' class='active' href='/' hreflang='zh' aria-current='true'>中文</a></li>",
+      "<li><a id='switch-en' href='/en/' hreflang='en'>English</a></li>",
+      "<li><a id='switch-fr' href='/fr/' hreflang='fr'>Français</a></li>",
+      "<li><a id='switch-ja' href='/ja/' hreflang='ja'>日本語</a></li>",
+      "</ul></div>",
+      "<main class='site-main'><p>中文页面</p></main>",
+    ].join("");
+
+    const menu = document.querySelector(".lang-menu")!;
+    for (const item of menu.querySelectorAll("li")) {
+      Object.defineProperty(item, "getBoundingClientRect", {
+        configurable: true,
+        // jsdom 没有布局；按当前 DOM 顺序动态返回行顶点，FLIP 前后才能得到位移。
+        value: () => ({ top: [...menu.children].indexOf(item) * 34 }),
+      });
+    }
+    const animateMock = vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation);
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate");
+    Object.defineProperty(HTMLElement.prototype, "animate", {
+      configurable: true,
+      writable: true,
+      value: animateMock,
+    });
+
+    try {
+      await import("../src/scripts/interactions.ts");
+      document.querySelector<HTMLAnchorElement>("#switch-en")!.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true })
+      );
+
+      await vi.waitFor(() => {
+        expect(document.querySelector("#site-title-link")?.textContent).toBe("English Site");
+      });
+
+      expect([...document.querySelectorAll(".lang-menu a[hreflang]")].map((link) => link.getAttribute("hreflang")))
+        .toEqual(["en", "fr", "ja", "zh"]);
+      expect(document.querySelector("#switch-en")?.classList.contains("active")).toBe(true);
+      expect(document.querySelector("#current-zh")?.classList.contains("active")).toBe(false);
+      expect(document.querySelector("#switch-en")?.getAttribute("aria-current")).toBe("true");
+      expect(document.querySelector(".lang-menu")?.classList.contains("open")).toBe(true);
+      // 内容交换后不重建等价菜单，FLIP 动画节点保留。
+      expect(document.querySelector("#switch-en")).not.toBeNull();
+      expect(animateMock).toHaveBeenCalledTimes(4);
+      expect(animateMock.mock.calls[0][0]).toEqual([
+        { transform: "translateY(34px) scale(0.985)", opacity: "0.72" },
+        { transform: "translateY(0px) scale(1)", opacity: "1" },
+      ]);
+    } finally {
+      if (descriptor) Object.defineProperty(HTMLElement.prototype, "animate", descriptor);
+      else delete (HTMLElement.prototype as { animate?: unknown }).animate;
+    }
+  });
+
   it("语言切换遮罩结束前，不启动通知横幅与流式输出", async () => {
     vi.useFakeTimers();
     const targetHtml = [
