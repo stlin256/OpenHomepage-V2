@@ -199,13 +199,26 @@ const rawHeadingsCount = (route.page.body.match(/^#{2,4}\s+/gm) ?? []).length;
 const tocEnabled = shouldEnableToc(route.page.toc, route.page.body.length, rawHeadingsCount);
 const tocItems = tocEnabled ? extractToc(route.page.body, { maxDepth: route.page.tocDepth ?? 3 }) : [];
 const hasToc = tocItems.length > 0;
-const tocLabels = {
+const tocLabels: Record<string, string> = {
   zh: '文章目录',
   en: 'Contents',
   ja: '目次',
   fr: 'Sommaire',
+  de: 'Inhaltsverzeichnis',
+  es: 'Contenido',
+  ko: '목차',
+  pt: 'Conteúdo',
+  ru: 'Содержание',
+  it: 'Indice',
+  nl: 'Inhoud',
+  tr: 'İçindekiler',
+  vi: 'Mục lục',
+  th: 'สารบัญ',
+  id: 'Daftar isi',
+  ar: 'المحتويات',
+  hi: 'विषय-सूची',
 };
-const tocTitle = tocLabels[contentLang as keyof typeof tocLabels] ?? tocLabels.en;
+const tocTitle = tocLabels[contentLang] ?? tocLabels.en;
 const tocHtml = hasToc ? renderTocHtml(tocItems, { title: tocTitle }) : '';
 const readingProgress = route.page.readingProgress === true || (route.page.readingProgress !== false && hasToc);
 
@@ -269,7 +282,7 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   ...(editSource ? { editSource } : {}),
 });
 const isFeaturesPage = route.page.slug === 'features';
-const COMPONENT_LABELS = {
+const COMPONENT_LABELS: Record<string, { profile: string; github: string; rss: string }> = {
   zh: {
     profile: 'Profile Block · 资料区',
     github: 'GitHub Block · 贡献热力图 + 仓库卡',
@@ -290,9 +303,73 @@ const COMPONENT_LABELS = {
     github: 'GitHub Block · heatmap + cartes de dépôts',
     rss: 'RSS Block · cartes de contenu',
   },
-} as const;
-const componentLabels =
-  COMPONENT_LABELS[contentLang as keyof typeof COMPONENT_LABELS] ?? COMPONENT_LABELS.en;
+  de: {
+    profile: 'Profile Block · Profil',
+    github: 'GitHub Block · Heatmap + Repo-Karten',
+    rss: 'RSS Block · Inhaltskarten',
+  },
+  es: {
+    profile: 'Profile Block · Perfil',
+    github: 'GitHub Block · heatmap + tarjetas de repos',
+    rss: 'RSS Block · tarjetas de contenido',
+  },
+  ko: {
+    profile: 'Profile Block · 프로필',
+    github: 'GitHub Block · 히트맵 + 리포지토리 카드',
+    rss: 'RSS Block · 콘텐츠 카드',
+  },
+  pt: {
+    profile: 'Profile Block · Perfil',
+    github: 'GitHub Block · heatmap + cartões de repositórios',
+    rss: 'RSS Block · cartões de conteúdo',
+  },
+  ru: {
+    profile: 'Profile Block · Профиль',
+    github: 'GitHub Block · тепловая карта + карточки репозиториев',
+    rss: 'RSS Block · карточки контента',
+  },
+  it: {
+    profile: 'Profile Block · Profilo',
+    github: 'GitHub Block · heatmap + schede repository',
+    rss: 'RSS Block · schede di contenuto',
+  },
+  nl: {
+    profile: 'Profile Block · Profiel',
+    github: 'GitHub Block · heatmap + repo-kaarten',
+    rss: 'RSS Block · inhoudskaarten',
+  },
+  tr: {
+    profile: 'Profile Block · Profil',
+    github: 'GitHub Block · ısı haritası + depo kartları',
+    rss: 'RSS Block · içerik kartları',
+  },
+  vi: {
+    profile: 'Profile Block · Hồ sơ',
+    github: 'GitHub Block · bản đồ nhiệt + thẻ repo',
+    rss: 'RSS Block · thẻ nội dung',
+  },
+  th: {
+    profile: 'Profile Block · โปรไฟล์',
+    github: 'GitHub Block · heatmap + การ์ด repo',
+    rss: 'RSS Block · การ์ดเนื้อหา',
+  },
+  id: {
+    profile: 'Profile Block · Profil',
+    github: 'GitHub Block · heatmap + kartu repo',
+    rss: 'RSS Block · kartu konten',
+  },
+  ar: {
+    profile: 'Profile Block · ملف شخصي',
+    github: 'GitHub Block · خريطة حرارية + بطاقات المستودعات',
+    rss: 'RSS Block · بطاقات المحتوى',
+  },
+  hi: {
+    profile: 'Profile Block · प्रोफ़ाइल',
+    github: 'GitHub Block · हीटमैप + रेपो कार्ड',
+    rss: 'RSS Block · सामग्री कार्ड',
+  },
+};
+const componentLabels = COMPONENT_LABELS[contentLang] ?? COMPONENT_LABELS.en;
 ---
 
 <BaseLayout

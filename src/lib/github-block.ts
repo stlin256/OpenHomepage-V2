@@ -199,16 +199,83 @@ export function heatTooltip(date: string, count: number, lang: string): string {
     const jaDate = `${y}年${m}月${d}日`;
     return count === 0 ? `${jaDate}、コントリビューションなし` : `${jaDate}、${count} 件のコントリビューション`;
   }
+  if (lang === 'ko') {
+    const koDate = `${y}년 ${m}월 ${d}일`;
+    return count === 0 ? `${koDate}, 기여 없음` : `${koDate}, ${count}회 기여`;
+  }
   if (lang === 'fr') {
     if (count === 0) return `Aucune contribution le ${date}`;
     return `${count} contribution${count === 1 ? '' : 's'} le ${date}`;
+  }
+  if (lang === 'de') {
+    if (count === 0) return `Keine Beiträge am ${date}`;
+    return `${count} Beitrag${count === 1 ? '' : 'e'} am ${date}`;
+  }
+  if (lang === 'es') {
+    if (count === 0) return `Sin contribuciones el ${date}`;
+    return `${count} contribuci${count === 1 ? 'ón' : 'ones'} el ${date}`;
+  }
+  if (lang === 'pt') {
+    if (count === 0) return `Sem contribuições em ${date}`;
+    return `${count} contribuiç${count === 1 ? 'ão' : 'ões'} em ${date}`;
+  }
+  if (lang === 'ru') {
+    if (count === 0) return `Нет вкладов за ${date}`;
+    const pl = count === 1 ? 'вклад' : count < 5 ? 'вклада' : 'вкладов';
+    return `${count} ${pl} за ${date}`;
+  }
+  if (lang === 'it') {
+    if (count === 0) return `Nessun contributo il ${date}`;
+    return `${count} contribut${count === 1 ? 'o' : 'i'} il ${date}`;
+  }
+  if (lang === 'nl') {
+    if (count === 0) return `Geen bijdragen op ${date}`;
+    return `${count} bijdrag${count === 1 ? 'e' : 'en'} op ${date}`;
+  }
+  if (lang === 'tr') {
+    if (count === 0) return `${date} tarihinde katkı yok`;
+    return `${date} tarihinde ${count} katkı`;
+  }
+  if (lang === 'vi') {
+    if (count === 0) return `Không có đóng góp vào ${date}`;
+    return `${count} đóng góp vào ${date}`;
+  }
+  if (lang === 'th') {
+    if (count === 0) return `ไม่มีการสนับสนุนเมื่อ ${date}`;
+    return `${count} การสนับสนุนเมื่อ ${date}`;
+  }
+  if (lang === 'id') {
+    if (count === 0) return `Tidak ada kontribusi pada ${date}`;
+    return `${count} kontribusi pada ${date}`;
+  }
+  if (lang === 'ar') {
+    if (count === 0) return `لا مساهمات في ${date}`;
+    return `${count} مساهم${count === 1 ? 'ة' : 'ات'} في ${date}`;
+  }
+  if (lang === 'hi') {
+    if (count === 0) return `${date} को कोई योगदान नहीं`;
+    return `${date} को ${count} योगदान`;
   }
   if (count === 0) return `No contributions on ${date}`;
   return `${count} contribution${count === 1 ? '' : 's'} on ${date}`;
 }
 
-const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const MONTHS_FR = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const MONTHS: Record<string, string[]> = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  fr: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
+  de: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+  es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+  pt: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'],
+  ru: ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
+  it: ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'],
+  nl: ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'],
+  tr: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+  vi: ['Thg 1', 'Thg 2', 'Thg 3', 'Thg 4', 'Thg 5', 'Thg 6', 'Thg 7', 'Thg 8', 'Thg 9', 'Thg 10', 'Thg 11', 'Thg 12'],
+  th: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
+  id: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+  ar: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+  hi: ['जन', 'फ़र', 'मार्च', 'अप्र', 'मई', 'जून', 'जुल', 'अग', 'सित', 'अक्ट', 'नव', 'दिस'],
+};
 
 /**
  * 月份标签列（GitHub 风）：含某月 1 日的周列标该月（"只标新月起始列"）；
@@ -218,10 +285,12 @@ export function monthLabels(
   weeks: HeatWeek[],
   lang: string,
 ): { weekIndex: number; label: string }[] {
+  const cjkMonths = new Set(['zh', 'ja', 'ko']);
   const monthLabel = (date: string) => {
     const m = Number(date.slice(5, 7));
-    if (lang === 'zh' || lang === 'ja') return `${m}月`;
-    return lang === 'fr' ? MONTHS_FR[m - 1] : MONTHS_EN[m - 1];
+    if (cjkMonths.has(lang)) return `${m}月`;
+    const months = MONTHS[lang] ?? MONTHS.en;
+    return months[m - 1];
   };
   const out: { weekIndex: number; label: string }[] = [];
   weeks.forEach((w, i) => {
@@ -240,6 +309,19 @@ export function monthLabels(
 export function weekdayLabels(lang: string): (string | null)[] {
   if (lang === 'zh') return [null, '一', null, '三', null, '五', null];
   if (lang === 'ja') return [null, '月', null, '水', null, '金', null];
+  if (lang === 'ko') return [null, '월', null, '수', null, '금', null];
   if (lang === 'fr') return [null, 'lun.', null, 'mer.', null, 'ven.', null];
+  if (lang === 'de') return [null, 'Mo', null, 'Mi', null, 'Fr', null];
+  if (lang === 'es') return [null, 'lun', null, 'mié', null, 'vie', null];
+  if (lang === 'pt') return [null, 'seg', null, 'qua', null, 'sex', null];
+  if (lang === 'ru') return [null, 'Пн', null, 'Ср', null, 'Пт', null];
+  if (lang === 'it') return [null, 'lun', null, 'mer', null, 'ven', null];
+  if (lang === 'nl') return [null, 'ma', null, 'wo', null, 'vr', null];
+  if (lang === 'tr') return [null, 'Pzt', null, 'Çar', null, 'Cum', null];
+  if (lang === 'vi') return [null, 'T2', null, 'T4', null, 'T6', null];
+  if (lang === 'th') return [null, 'จ.', null, 'พ.', null, 'ศ.', null];
+  if (lang === 'id') return [null, 'Sen', null, 'Rab', null, 'Jum', null];
+  if (lang === 'ar') return [null, 'إثن', null, 'أرب', null, 'جمع', null];
+  if (lang === 'hi') return [null, 'सोम', null, 'बुध', null, 'शुक्र', null];
   return [null, 'Mon', null, 'Wed', null, 'Fri', null];
 }

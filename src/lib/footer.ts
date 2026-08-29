@@ -14,6 +14,19 @@ export const DEFAULT_FOOTER_TEXT: Record<string, string> = {
   en: `Powered by [OpenHomepage-V2](${FOOTER_REPO_URL})`,
   ja: `Powered by [OpenHomepage-V2](${FOOTER_REPO_URL})`,
   fr: `Propulsé par [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  de: `Betrieben mit [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  es: `Desarrollado con [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  ko: `[OpenHomepage-V2](${FOOTER_REPO_URL}) 제공`,
+  pt: `Desenvolvido com [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  ru: `На базе [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  it: `Powered by [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  nl: `Aangedreven door [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  tr: `[OpenHomepage-V2](${FOOTER_REPO_URL}) ile geliştirildi`,
+  vi: `Sử dụng [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  th: `ขับเคลื่อนโดย [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  id: `Didukung oleh [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  ar: `مدعوم بواسطة [OpenHomepage-V2](${FOOTER_REPO_URL})`,
+  hi: `[OpenHomepage-V2](${FOOTER_REPO_URL}) द्वारा संचालित`,
 };
 
 /**

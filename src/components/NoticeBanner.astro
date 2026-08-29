@@ -27,8 +27,62 @@ const ARIA_LABELS = {
   ja: { region: "ページ通知", close: "通知を閉じる" },
   fr: { region: "Notification de page", close: "Fermer la notification" },
 } as const;
-type LabelLang = keyof typeof ARIA_LABELS;
-const ariaLabels = ARIA_LABELS[(lang as LabelLang) in ARIA_LABELS ? (lang as LabelLang) : "en"];
+const ARIA_EXT: Record<string, { region: string; close: string }> = {
+  'de': {
+    'region': 'Seitenhinweis',
+    'close': 'Hinweis schließen'
+  },
+  'es': {
+    'region': 'Aviso de página',
+    'close': 'Cerrar aviso'
+  },
+  'ko': {
+    'region': '페이지 알림',
+    'close': '알림 닫기'
+  },
+  'pt': {
+    'region': 'Aviso de página',
+    'close': 'Fechar aviso'
+  },
+  'ru': {
+    'region': 'Уведомление страницы',
+    'close': 'Закрыть уведомление'
+  },
+  'it': {
+    'region': 'Avviso pagina',
+    'close': 'Chiudi avviso'
+  },
+  'nl': {
+    'region': 'Paginamelding',
+    'close': 'Melding sluiten'
+  },
+  'tr': {
+    'region': 'Sayfa bildirimi',
+    'close': 'Bildirimi kapat'
+  },
+  'vi': {
+    'region': 'Thông báo trang',
+    'close': 'Đóng thông báo'
+  },
+  'th': {
+    'region': 'การแจ้งเตือนหน้า',
+    'close': 'ปิดการแจ้งเตือน'
+  },
+  'id': {
+    'region': 'Pemberitahuan halaman',
+    'close': 'Tutup pemberitahuan'
+  },
+  'ar': {
+    'region': 'إشعار الصفحة',
+    'close': 'إغلاق الإشعار'
+  },
+  'hi': {
+    'region': 'पृष्ठ सूचना',
+    'close': 'सूचना बंद करें'
+  }
+};
+const ALL_ARIA = { ...ARIA_LABELS, ...ARIA_EXT };
+const ariaLabels = ALL_ARIA[lang as string] ?? ALL_ARIA.en;
 ---
 
 {notice?.text && (

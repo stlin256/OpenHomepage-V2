@@ -284,6 +284,19 @@ const CALLOUT_DEFAULT_TITLES: Record<string, Record<string, string>> = {
   en: { note: 'Note', tip: 'Tip', warning: 'Warning', important: 'Important', quote: 'Quote' },
   ja: { note: '注記', tip: 'ヒント', warning: '警告', important: '重要', quote: '引用' },
   fr: { note: 'Note', tip: 'Astuce', warning: 'Avertissement', important: 'Important', quote: 'Citation' },
+  de: { note: 'Notiz', tip: 'Tipp', warning: 'Warnung', important: 'Wichtig', quote: 'Zitat' },
+  es: { note: 'Nota', tip: 'Consejo', warning: 'Advertencia', important: 'Importante', quote: 'Cita' },
+  ko: { note: '메모', tip: '팁', warning: '경고', important: '중요', quote: '인용' },
+  pt: { note: 'Nota', tip: 'Dica', warning: 'Aviso', important: 'Importante', quote: 'Citação' },
+  ru: { note: 'Заметка', tip: 'Совет', warning: 'Предупреждение', important: 'Важно', quote: 'Цитата' },
+  it: { note: 'Nota', tip: 'Suggerimento', warning: 'Avviso', important: 'Importante', quote: 'Citazione' },
+  nl: { note: 'Notitie', tip: 'Tip', warning: 'Waarschuwing', important: 'Belangrijk', quote: 'Citaat' },
+  tr: { note: 'Not', tip: 'İpucu', warning: 'Uyarı', important: 'Önemli', quote: 'Alıntı' },
+  vi: { note: 'Ghi chú', tip: 'Mẹo', warning: 'Cảnh báo', important: 'Quan trọng', quote: 'Trích dẫn' },
+  th: { note: 'บันทึก', tip: 'เคล็ดลับ', warning: 'คำเตือน', important: 'สำคัญ', quote: 'อ้างอิง' },
+  id: { note: 'Catatan', tip: 'Tips', warning: 'Peringatan', important: 'Penting', quote: 'Kutipan' },
+  ar: { note: 'ملاحظة', tip: 'نصيحة', warning: 'تحذير', important: 'مهم', quote: 'اقتباس' },
+  hi: { note: 'नोट', tip: 'सुझाव', warning: 'चेतावनी', important: 'महत्वपूर्ण', quote: 'उद्धरण' },
 };
 const CALLOUT_ICON_PATHS: Record<string, string> = {
   note: 'M4 4h16v12H8l-4 4V4z',
@@ -306,7 +319,7 @@ function safeTimelineUrl(value: string | undefined): string | null {
   return null;
 }
 function timelineRangeText(start: string, end: string | undefined, lang: string | undefined, defaultLang?: string): string {
-  const nowText: Record<string, string> = { zh: '进行中', en: 'Present', ja: '現在', fr: 'Présent' };
+  const nowText: Record<string, string> = { zh: '进行中', en: 'Present', ja: '現在', fr: 'Présent', de: 'Gegenwart', es: 'Presente', ko: '현재', pt: 'Presente', ru: 'По настоящее время', it: 'Presente', nl: 'Heden', tr: 'Günümüzde', vi: 'Hiện tại', th: 'ปัจจุบัน', id: 'Sekarang', ar: 'حالياً', hi: 'वर्तमान' };
   const key = normalizeContentLang(lang, defaultLang);
   const present = nowText[key] ?? nowText.en;
   return end?.trim() ? `${start}–${end}` : `${start} · ${present}`;

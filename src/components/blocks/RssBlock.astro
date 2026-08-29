@@ -30,8 +30,62 @@ const LABELS = {
   ja: { empty: 'RSS データが未取得です：先に npm run prefetch を実行してください', updated: '最終更新' },
   fr: { empty: 'Données RSS non préchargées : exécutez d’abord npm run prefetch', updated: 'Données mises à jour le' },
 } as const;
-type LabelLang = keyof typeof LABELS;
-const L = LABELS[(lang as LabelLang) in LABELS ? (lang as LabelLang) : 'en'];
+const LABELS_EXT: Record<string, { empty: string; updated: string }> = {
+  'de': {
+    'empty': 'RSS-Daten nicht abgerufen: zuerst npm run prefetch ausführen',
+    'updated': 'Daten aktualisiert am'
+  },
+  'es': {
+    'empty': 'Datos RSS no precargados: ejecuta primero npm run prefetch',
+    'updated': 'Datos actualizados el'
+  },
+  'ko': {
+    'empty': 'RSS 데이터 미가져옴: 먼저 npm run prefetch 실행',
+    'updated': '데이터 업데이트'
+  },
+  'pt': {
+    'empty': 'Dados RSS não pré-carregados: execute npm run prefetch primeiro',
+    'updated': 'Dados atualizados em'
+  },
+  'ru': {
+    'empty': 'Данные RSS не загружены: сначала запустите npm run prefetch',
+    'updated': 'Данные обновлены'
+  },
+  'it': {
+    'empty': 'Dati RSS non precaricati: esegui prima npm run prefetch',
+    'updated': 'Dati aggiornati il'
+  },
+  'nl': {
+    'empty': 'RSS-gegevens niet vooraf geladen: voer eerst npm run prefetch uit',
+    'updated': 'Gegevens bijgewerkt op'
+  },
+  'tr': {
+    'empty': 'RSS verileri önceden yüklenmedi: önce npm run prefetch çalıştırın',
+    'updated': 'Veriler güncellendi'
+  },
+  'vi': {
+    'empty': 'Dữ liệu RSS chưa tải: chạy npm run prefetch trước',
+    'updated': 'Dữ liệu cập nhật'
+  },
+  'th': {
+    'empty': 'ข้อมูล RSS ยังไม่ถูกดึง: รัน npm run prefetch ก่อน',
+    'updated': 'อัปเดตข้อมูล'
+  },
+  'id': {
+    'empty': 'Data RSS belum dimuat: jalankan npm run prefetch terlebih dahulu',
+    'updated': 'Data diperbarui'
+  },
+  'ar': {
+    'empty': 'لم يتم تحميل بيانات RSS: شغّل npm run prefetch أولاً',
+    'updated': 'تحديث البيانات'
+  },
+  'hi': {
+    'empty': 'RSS डेटा प्रीलोड नहीं: पहले npm run prefetch चलाएं',
+    'updated': 'डेटा अपडेट'
+  }
+};
+const ALL_LABELS = { ...LABELS, ...LABELS_EXT };
+const L = ALL_LABELS[lang as string] ?? ALL_LABELS.en;
 
 const hasContent =
   view !== null &&
