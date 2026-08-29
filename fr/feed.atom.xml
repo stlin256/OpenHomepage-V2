@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">
   <title>Zhiyuan Lin</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-08-29T17:42:24.217Z</updated>
+  <updated>2026-08-29T18:00:02.003Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/fr/feed.atom.xml"/>
     <entry>
       <title>Fonctionnalités</title>
@@ -169,7 +169,17 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Contrôle de page&lt;/th&gt;&lt;th&gt;Configuration&lt;/th&gt;&lt;th&gt;Description&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Bannière d&apos;avis&lt;/td&gt;&lt;td&gt;Définir &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; ou &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; dans le frontmatter&lt;/td&gt;&lt;td&gt;Apparaît 0,5 s après le chargement ; prend en charge 4 modes de couleur (&lt;code&gt;accent&lt;/code&gt;, &lt;code&gt;yellow&lt;/code&gt;, &lt;code&gt;red&lt;/code&gt;, &lt;code&gt;custom&lt;/code&gt;) ; propre à la page et réapparaît à chaque visite ; fermée manuellement en cliquant sur ✕ ; prend en charge liens et formatage en ligne&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Contrôle de page&lt;/th&gt;&lt;th&gt;Configuration&lt;/th&gt;&lt;th&gt;Description&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Bannière d&apos;avis&lt;/td&gt;&lt;td&gt;Définir &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; ou &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; dans le frontmatter&lt;/td&gt;&lt;td&gt;Apparaît 0,5 s après le chargement ; prend en charge 4 modes de couleur (&lt;code&gt;accent&lt;/code&gt;, &lt;code&gt;yellow&lt;/code&gt;, &lt;code&gt;red&lt;/code&gt;, &lt;code&gt;custom&lt;/code&gt;) ; propre à la page et réapparaît à chaque visite ; fermée manuellement en cliquant sur ✕ ; prend en charge liens et formatage en ligne&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Sommaire (TOC)&lt;/td&gt;&lt;td&gt;Définir &lt;code&gt;toc: true&lt;/code&gt; dans le frontmatter&lt;/td&gt;&lt;td&gt;Barre latérale sticky sur ordinateur avec suivi ScrollSpy du titre actif, tiroir repliable sur mobile&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Barre de progression de lecture&lt;/td&gt;&lt;td&gt;Définir &lt;code&gt;reading_progress: true&lt;/code&gt; dans le frontmatter&lt;/td&gt;&lt;td&gt;Fine barre de progression de 2 px fixée en haut de page qui suit la lecture en temps réel lors du défilement ; activée par défaut sur cette page de démonstration&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
 &lt;blockquote&gt;
 &lt;p&gt;💡 Exemple : la &lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/&quot;&gt;page d&apos;accueil&lt;/a&gt; de ce site présente une bannière d&apos;avis jaune bien visible (&lt;code&gt;notice: { text: &quot;Ceci est une page de démonstration. Le contenu sert uniquement à présenter les fonctionnalités du projet.&quot;, color: &quot;yellow&quot; }&lt;/code&gt;) qui apparaît 0,5 s après le chargement.&lt;/p&gt;
 &lt;/blockquote&gt;

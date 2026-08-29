@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远的个人主页：机器学习研究、开源项目与阅读记录]]></description>
     <language>zh</language>
-    <lastBuildDate>Sat, 29 Aug 2026 17:42:24 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 18:00:01 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/feed.xml"/>
     <item>
       <title><![CDATA[特性]]></title>
@@ -172,7 +172,17 @@
 
 
 
-<table><thead><tr><th>页面控件</th><th>配置方式</th><th>特性说明</th></tr></thead><tbody><tr><td>顶端通知横幅（Notice Banner）</td><td>页面 frontmatter 设置 <code>notice: "..."</code> 或 <code>notice: { text: "...", color: "yellow" }</code></td><td>页面加载完成 0.5s 后延迟弹出，支持 4 种颜色（<code>accent</code> 主题色、<code>yellow</code> 黄色、<code>red</code> 红色、<code>custom</code> 自定义）；单页独立定义、重新打开页面时再次出现；用户需手动点击右侧 ✕ 关闭；支持内联链接与强调语法</td></tr></tbody></table>
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>页面控件</th><th>配置方式</th><th>特性说明</th></tr></thead><tbody><tr><td>顶端通知横幅（Notice Banner）</td><td>页面 frontmatter 设置 <code>notice: "..."</code> 或 <code>notice: { text: "...", color: "yellow" }</code></td><td>页面加载完成 0.5s 后延迟弹出，支持 4 种颜色（<code>accent</code> 主题色、<code>yellow</code> 黄色、<code>red</code> 红色、<code>custom</code> 自定义）；单页独立定义、重新打开页面时再次出现；用户需手动点击右侧 ✕ 关闭；支持内联链接与强调语法</td></tr><tr><td>文章目录（TOC）</td><td>页面 frontmatter 设置 <code>toc: true</code></td><td>桌面端支持右侧粘性吸顶与 ScrollSpy 当前标题高亮跟随，移动端支持折叠抽屉导航，长文浏览快速跳转</td></tr><tr><td>阅读进度条（Reading Progress Bar）</td><td>页面 frontmatter 设置 <code>reading_progress: true</code></td><td>页面顶端 2px 细线进度条，随着正文向下滚动实时响应阅读位置，本特性页面已默认开启，可在滚动时观察页面最顶部细线动画</td></tr></tbody></table>
 <blockquote>
 <p>💡 示例：当前站点的<a href="https://stlin256.github.io/OpenHomepage-V2/">首页</a>顶部即配置了醒目的黄色通知横幅（<code>notice: { text: "本页面为示例页面，内容仅为展现项目特性使用。", color: "yellow" }</code>），可在首页体验 0.5s 延迟弹出与手动关闭效果。</p>
 </blockquote>

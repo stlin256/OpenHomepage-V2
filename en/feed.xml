@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[Zhiyuan Lin's homepage: machine learning research, open source, and reading notes]]></description>
     <language>en</language>
-    <lastBuildDate>Sat, 29 Aug 2026 17:42:24 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 18:00:02 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/en/feed.xml"/>
     <item>
       <title><![CDATA[Features]]></title>
@@ -172,7 +172,17 @@
 
 
 
-<table><thead><tr><th>Page control</th><th>Configuration</th><th>Description</th></tr></thead><tbody><tr><td>Notice Banner</td><td>Set <code>notice: "..."</code> or <code>notice: { text: "...", color: "yellow" }</code> in frontmatter</td><td>Pops in 0.5s after page load; supports 4 color modes (<code>accent</code>, <code>yellow</code>, <code>red</code>, <code>custom</code>); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting</td></tr></tbody></table>
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Page control</th><th>Configuration</th><th>Description</th></tr></thead><tbody><tr><td>Notice Banner</td><td>Set <code>notice: "..."</code> or <code>notice: { text: "...", color: "yellow" }</code> in frontmatter</td><td>Pops in 0.5s after page load; supports 4 color modes (<code>accent</code>, <code>yellow</code>, <code>red</code>, <code>custom</code>); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting</td></tr><tr><td>Table of Contents (TOC)</td><td>Set <code>toc: true</code> in frontmatter</td><td>Sticky sidebar on desktop with ScrollSpy active heading tracking, collapsible drawer on mobile for seamless navigation</td></tr><tr><td>Reading Progress Bar</td><td>Set <code>reading_progress: true</code> in frontmatter</td><td>Elegant 2px progress bar fixed at the top of the viewport that tracks reading progress in real time as you scroll; enabled on this features demo page</td></tr></tbody></table>
 <blockquote>
 <p>💡 Example: The <a href="https://stlin256.github.io/OpenHomepage-V2/en/">homepage</a> of this site features a prominent yellow Notice Banner (<code>notice: { text: "This is a demo page. Content is for displaying project features only.", color: "yellow" }</code>) that appears 0.5s after load.</p>
 </blockquote>

@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <title>Zhiyuan Lin</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-08-29T17:42:24.168Z</updated>
+  <updated>2026-08-29T18:00:01.963Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/en/feed.atom.xml"/>
     <entry>
       <title>Features</title>
@@ -169,7 +169,17 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Page control&lt;/th&gt;&lt;th&gt;Configuration&lt;/th&gt;&lt;th&gt;Description&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Notice Banner&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; or &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Pops in 0.5s after page load; supports 4 color modes (&lt;code&gt;accent&lt;/code&gt;, &lt;code&gt;yellow&lt;/code&gt;, &lt;code&gt;red&lt;/code&gt;, &lt;code&gt;custom&lt;/code&gt;); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Page control&lt;/th&gt;&lt;th&gt;Configuration&lt;/th&gt;&lt;th&gt;Description&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Notice Banner&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; or &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Pops in 0.5s after page load; supports 4 color modes (&lt;code&gt;accent&lt;/code&gt;, &lt;code&gt;yellow&lt;/code&gt;, &lt;code&gt;red&lt;/code&gt;, &lt;code&gt;custom&lt;/code&gt;); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Table of Contents (TOC)&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;toc: true&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Sticky sidebar on desktop with ScrollSpy active heading tracking, collapsible drawer on mobile for seamless navigation&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Reading Progress Bar&lt;/td&gt;&lt;td&gt;Set &lt;code&gt;reading_progress: true&lt;/code&gt; in frontmatter&lt;/td&gt;&lt;td&gt;Elegant 2px progress bar fixed at the top of the viewport that tracks reading progress in real time as you scroll; enabled on this features demo page&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
 &lt;blockquote&gt;
 &lt;p&gt;💡 Example: The &lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/en/&quot;&gt;homepage&lt;/a&gt; of this site features a prominent yellow Notice Banner (&lt;code&gt;notice: { text: &quot;This is a demo page. Content is for displaying project features only.&quot;, color: &quot;yellow&quot; }&lt;/code&gt;) that appears 0.5s after load.&lt;/p&gt;
 &lt;/blockquote&gt;

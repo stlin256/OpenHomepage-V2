@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[Page personnelle de Zhiyuan Lin : recherche en apprentissage automatique, open source et notes de lecture]]></description>
     <language>fr</language>
-    <lastBuildDate>Sat, 29 Aug 2026 17:42:24 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 18:00:02 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/fr/feed.xml"/>
     <item>
       <title><![CDATA[Fonctionnalités]]></title>
@@ -172,7 +172,17 @@
 
 
 
-<table><thead><tr><th>Contrôle de page</th><th>Configuration</th><th>Description</th></tr></thead><tbody><tr><td>Bannière d'avis</td><td>Définir <code>notice: "..."</code> ou <code>notice: { text: "...", color: "yellow" }</code> dans le frontmatter</td><td>Apparaît 0,5 s après le chargement ; prend en charge 4 modes de couleur (<code>accent</code>, <code>yellow</code>, <code>red</code>, <code>custom</code>) ; propre à la page et réapparaît à chaque visite ; fermée manuellement en cliquant sur ✕ ; prend en charge liens et formatage en ligne</td></tr></tbody></table>
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Contrôle de page</th><th>Configuration</th><th>Description</th></tr></thead><tbody><tr><td>Bannière d'avis</td><td>Définir <code>notice: "..."</code> ou <code>notice: { text: "...", color: "yellow" }</code> dans le frontmatter</td><td>Apparaît 0,5 s après le chargement ; prend en charge 4 modes de couleur (<code>accent</code>, <code>yellow</code>, <code>red</code>, <code>custom</code>) ; propre à la page et réapparaît à chaque visite ; fermée manuellement en cliquant sur ✕ ; prend en charge liens et formatage en ligne</td></tr><tr><td>Sommaire (TOC)</td><td>Définir <code>toc: true</code> dans le frontmatter</td><td>Barre latérale sticky sur ordinateur avec suivi ScrollSpy du titre actif, tiroir repliable sur mobile</td></tr><tr><td>Barre de progression de lecture</td><td>Définir <code>reading_progress: true</code> dans le frontmatter</td><td>Fine barre de progression de 2 px fixée en haut de page qui suit la lecture en temps réel lors du défilement ; activée par défaut sur cette page de démonstration</td></tr></tbody></table>
 <blockquote>
 <p>💡 Exemple : la <a href="https://stlin256.github.io/OpenHomepage-V2/">page d'accueil</a> de ce site présente une bannière d'avis jaune bien visible (<code>notice: { text: "Ceci est une page de démonstration. Le contenu sert uniquement à présenter les fonctionnalités du projet.", color: "yellow" }</code>) qui apparaît 0,5 s après le chargement.</p>
 </blockquote>

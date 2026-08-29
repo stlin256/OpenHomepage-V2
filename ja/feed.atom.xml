@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-08-29T17:42:24.258Z</updated>
+  <updated>2026-08-29T18:00:02.035Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.atom.xml"/>
     <entry>
       <title>機能</title>
@@ -169,7 +169,17 @@
 
 
 
-&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;ページコントロール&lt;/th&gt;&lt;th&gt;設定&lt;/th&gt;&lt;th&gt;説明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;通知バナー&lt;/td&gt;&lt;td&gt;frontmatter で &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; または &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; を設定&lt;/td&gt;&lt;td&gt;ページ読み込みから 0.5 秒後にポップイン。4 種のカラーモード（&lt;code&gt;accent&lt;/code&gt;、&lt;code&gt;yellow&lt;/code&gt;、&lt;code&gt;red&lt;/code&gt;、&lt;code&gt;custom&lt;/code&gt;）に対応。ページ固有で訪問ごとに再表示。✕ をクリックして手動で閉じる。インラインリンクと書式をサポート&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;ページコントロール&lt;/th&gt;&lt;th&gt;設定&lt;/th&gt;&lt;th&gt;説明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;通知バナー&lt;/td&gt;&lt;td&gt;frontmatter で &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; または &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; を設定&lt;/td&gt;&lt;td&gt;ページ読み込みから 0.5 秒後にポップイン。4 種のカラーモード（&lt;code&gt;accent&lt;/code&gt;、&lt;code&gt;yellow&lt;/code&gt;、&lt;code&gt;red&lt;/code&gt;、&lt;code&gt;custom&lt;/code&gt;）に対応。ページ固有で訪問ごとに再表示。✕ をクリックして手動で閉じる。インラインリンクと書式をサポート&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;目次 (TOC)&lt;/td&gt;&lt;td&gt;frontmatter で &lt;code&gt;toc: true&lt;/code&gt; を設定&lt;/td&gt;&lt;td&gt;デスクトップでは右側に固定され ScrollSpy で現在の見出しを追跡。モバイルでは折りたたみ式ドロワーとして表示&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;読書プログレスバー (Reading Progress Bar)&lt;/td&gt;&lt;td&gt;frontmatter で &lt;code&gt;reading_progress: true&lt;/code&gt; を設定&lt;/td&gt;&lt;td&gt;画面上部に 2px の細線プログレスバーを配置し、スクロールに応じてリアルタイムで読書進捗を表示。この機能ページでも現在有効化されています&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
 &lt;blockquote&gt;
 &lt;p&gt;💡 例：このサイトの&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/&quot;&gt;ホームページ&lt;/a&gt;には、読み込みから 0.5 秒後に表示される目立つ黄色の通知バナー（&lt;code&gt;notice: { text: &quot;これはデモページです。内容はプロジェクト機能の展示のみを目的としています。&quot;, color: &quot;yellow&quot; }&lt;/code&gt;）が設置されています。&lt;/p&gt;
 &lt;/blockquote&gt;
