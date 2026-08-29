@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-08-29T15:51:52.228Z</updated>
+  <updated>2026-08-29T17:00:49.264Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.atom.xml"/>
     <entry>
       <title>機能</title>
@@ -191,12 +191,12 @@
         &lt;h3 class=&quot;publication-title&quot;&gt;Efficient Inference with Adaptive Scheduling&lt;/h3&gt;
         &lt;p class=&quot;publication-authors&quot;&gt;&lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;, Alice Doe, Bob Smith&lt;/p&gt;
         &lt;p class=&quot;publication-note&quot;&gt;First author; led scheduler design and evaluation.&lt;/p&gt;
-        &lt;details class=&quot;publication-abstract&quot;&gt;&lt;summary&gt;Abstract&lt;/summary&gt;&lt;p&gt;An adaptive inference scheduler for interactive workloads, evaluated with distribution reports on real traces.&lt;/p&gt;&lt;/details&gt;
-        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;
-        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-efficient-inference-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-efficient-inference-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{lin2026efficient,
+        &lt;details class=&quot;publication-abstract&quot;&gt;&lt;summary&gt;Abstract&lt;/summary&gt;&lt;div class=&quot;abstract-content&quot;&gt;&lt;p&gt;An adaptive inference scheduler for interactive workloads, evaluated with distribution reports on real traces.&lt;/p&gt;&lt;/div&gt;&lt;/details&gt;
+        &lt;div class=&quot;publication-actions&quot;&gt;&lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-efficient-inference-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;/div&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;pre id=&quot;bibtex-efficient-inference-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{lin2026efficient,
   author = {Lin, Zhiyuan and Doe, Alice and Smith, Bob}&lt;/pre&gt;&lt;/div&gt;
       &lt;/div&gt;
-      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-compute.jpg&quot; alt=&quot;Efficient Inference with Adaptive Scheduling figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/publication-01.jpg&quot; alt=&quot;Efficient Inference with Adaptive Scheduling figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
     &lt;/article&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
       &lt;div class=&quot;publication-index&quot;&gt;02&lt;/div&gt;
       &lt;div class=&quot;publication-main&quot;&gt;
@@ -205,11 +205,11 @@
         &lt;p class=&quot;publication-authors&quot;&gt;Alice Doe, &lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;&lt;/p&gt;
         &lt;p class=&quot;publication-note&quot;&gt;Co-author; built the evaluation set and reporting scripts.&lt;/p&gt;
         
-        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;
-        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-reproducible-eval-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-reproducible-eval-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@inproceedings{doe2026reproducible,
+        &lt;div class=&quot;publication-actions&quot;&gt;&lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-reproducible-eval-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;/div&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;pre id=&quot;bibtex-reproducible-eval-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@inproceedings{doe2026reproducible,
   author = {Doe, Alice and Lin, Zhiyuan}&lt;/pre&gt;&lt;/div&gt;
       &lt;/div&gt;
-      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-evaluation.jpg&quot; alt=&quot;Reproducible Evaluation for Open Models figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/publication-02.jpg&quot; alt=&quot;Reproducible Evaluation for Open Models figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
     &lt;/article&gt;&lt;/section&gt;&lt;section class=&quot;publication-group&quot;&gt;&lt;h3 class=&quot;publication-group-title&quot;&gt;2025&lt;/h3&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
       &lt;div class=&quot;publication-index&quot;&gt;01&lt;/div&gt;
       &lt;div class=&quot;publication-main&quot;&gt;
@@ -218,11 +218,11 @@
         &lt;p class=&quot;publication-authors&quot;&gt;Bob Smith, &lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;&lt;/p&gt;
         
         
-        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;/nav&gt;
-        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-edge-cache-2025&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-edge-cache-2025&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{smith2025edge,
+        &lt;div class=&quot;publication-actions&quot;&gt;&lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;/nav&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-edge-cache-2025&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;/div&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;pre id=&quot;bibtex-edge-cache-2025&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{smith2025edge,
   author = {Smith, Bob and Lin, Zhiyuan}&lt;/pre&gt;&lt;/div&gt;
       &lt;/div&gt;
-      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-tooling.jpg&quot; alt=&quot;Edge KV Cache Compression figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/publication-03.jpg&quot; alt=&quot;Edge KV Cache Compression figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
     &lt;/article&gt;&lt;/section&gt;&lt;/section&gt;</content>
     </entry>
 </feed>
