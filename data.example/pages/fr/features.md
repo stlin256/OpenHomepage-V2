@@ -51,7 +51,7 @@ def cosine_lr(step: int, total: int, base: float = 3e-4) -> float:
 En ligne $e^{i\pi} + 1 = 0$, et softmax en bloc :
 
 $$
-\mathrm{softmax}(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^{K} \exp(z_j)}
+\mathrm{softmax}(z_i) = \frac{\exp(z_i)}{\sum\nolimits_{j=1}^{K} \exp(z_j)}
 $$
 
 ## Figures et grilles
@@ -81,7 +81,7 @@ Les lecteurs affichent directement l'iframe officielle dans un conteneur 16:9 re
 
 Médias auto-hébergés (balises natives) :
 
-:::video{src="assets/feature-flower.mp4"}
+:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg"}
 :::
 
 :::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}
