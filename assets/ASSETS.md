@@ -8,6 +8,9 @@
 - `publication-01.jpg`、`publication-02.jpg`、`publication-03.jpg` — 示例学术成果配图（源于 DSC_4255、DSC_9076、DSC_2781，已去 EXIF 并压缩）
 - 页面中引用的本地演示媒体（源文件来自 MDN 的 CC0 示例）：
   - `feature-flower.mp4` — 视频示例
+  - `feature-flower-poster.jpg` — 本地视频示例封面
+  - `cover-bilibili-bv13z421u7cs.jpg` — Bilibili 示例视频高清封面
+  - `cover-youtube-aircaruvnkk.jpg` — YouTube 示例视频高清封面
   - `bgm.mp3` — 背景音乐及自渲染音频播放器示例（Bach: Goldberg Variations, BWV 988 · Aria）
   - `goldberg-aria-cover.jpg` — 音频卡片封面示例
   - YouTube `aircAruvnKk` — 3Blue1Brown, *But what is a neural network?*
