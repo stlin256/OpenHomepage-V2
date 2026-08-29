@@ -516,16 +516,13 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
   }
 }
 
-/* 主页区块：细分割线；相邻区块由前一块提供底部间距，避免上下 padding 叠加 */
+/* 主页区块：细分割线；上下 padding 各自保持留白 */
 .home-block {
-  padding: 3rem 0;
+  padding: 1.5rem 0 3rem;
   border-top: 1px solid var(--border);
 }
 .home-block:first-child {
   border-top: 0;
-  padding-top: 0;
-}
-.home-block + .home-block {
   padding-top: 0;
 }
 .home-block:has(+ .component-demo-title) {
@@ -547,6 +544,7 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 }
 .block-editorial:has(> .editorial-divider) + .home-block {
   border-top: 0;
+  padding-top: 0;
 }
 
 /* 当编辑风区块（::editorial）嵌入到 markdown 正文中时，重置主页分段 padding 与 border，与正文流式间距融合 */
@@ -2042,14 +2040,84 @@ html.js .timeline-item.reveal.revealed {
     grid-template-columns: 1fr !important;
   }
 }
-/* bilibili/youtube 播放器：16:9 响应式容器，iframe 直接加载（loading=lazy） */
+/* bilibili/youtube 播放器：16:9 响应式容器，高性能门面模式（Facade）+ 点击激活 */
 .markdown-body .embed-player {
+  position: relative;
   aspect-ratio: 16 / 9;
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   margin: 1.5em 0;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  contain: layout paint;
+  user-select: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.markdown-body .embed-player:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-soft);
+}
+.markdown-body .embed-player.is-active {
+  cursor: default;
+  border-color: var(--border);
+  box-shadow: none;
+}
+.markdown-body .embed-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.markdown-body .embed-player:hover .embed-poster {
+  transform: scale(1.02);
+  filter: brightness(0.92);
+}
+.markdown-body .embed-play-btn {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem 0.6rem 0.9rem;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.markdown-body .embed-player:hover .embed-play-btn {
+  transform: scale(1.08);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--card);
+}
+.markdown-body .embed-play-icon {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  flex: none;
+}
+.markdown-body .embed-badge {
+  font-size: 0.78rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
 }
 .embed-player iframe {
   width: 100%;
@@ -2058,12 +2126,13 @@ html.js .timeline-item.reveal.revealed {
   display: block;
 }
 /* :::video/:::audio 原生媒体块（修正 C）：裸标签默认是内联元素（300px 宽、
-   贴文本基线、无块间距），与 figure/embed-player 对齐为杂志全宽块 */
+   贴文本基线、无块间距），与 figure/embed-player 对齐为杂志全宽块，增加渲染隔离 */
 .markdown-body video,
 .markdown-body audio {
   display: block;
   width: 100%;
   margin: 1.5em 0;
+  contain: layout paint;
 }
 .markdown-body video {
   background: var(--bg-subtle);
