@@ -132,6 +132,8 @@ Les contrôles de page sont des widgets de niveau page configurés page par page
 | Contrôle de page | Configuration | Description |
 |--------------|---------------|-------------|
 | Bannière d'avis | Définir `notice: "..."` ou `notice: { text: "...", color: "yellow" }` dans le frontmatter | Apparaît 0,5 s après le chargement ; prend en charge 4 modes de couleur (`accent`, `yellow`, `red`, `custom`) ; propre à la page et réapparaît à chaque visite ; fermée manuellement en cliquant sur ✕ ; prend en charge liens et formatage en ligne |
+| Sommaire (TOC) | Définir `toc: true` dans le frontmatter | Barre latérale sticky sur ordinateur avec suivi ScrollSpy du titre actif, tiroir repliable sur mobile |
+| Barre de progression de lecture | Définir `reading_progress: true` dans le frontmatter | Fine barre de progression de 2 px fixée en haut de page qui suit la lecture en temps réel lors du défilement ; activée par défaut sur cette page de démonstration |
 
 > 💡 Exemple : la [page d'accueil](/) de ce site présente une bannière d'avis jaune bien visible (`notice: { text: "Ceci est une page de démonstration. Le contenu sert uniquement à présenter les fonctionnalités du projet.", color: "yellow" }`) qui apparaît 0,5 s après le chargement.
 

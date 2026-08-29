@@ -132,6 +132,8 @@ Page controls are page-level widgets configured on a per-page basis (non-global)
 | Page control | Configuration | Description |
 |--------------|---------------|-------------|
 | Notice Banner | Set `notice: "..."` or `notice: { text: "...", color: "yellow" }` in frontmatter | Pops in 0.5s after page load; supports 4 color modes (`accent`, `yellow`, `red`, `custom`); page-specific and reappears on every visit; manually dismissed by clicking ✕; supports inline links and formatting |
+| Table of Contents (TOC) | Set `toc: true` in frontmatter | Sticky sidebar on desktop with ScrollSpy active heading tracking, collapsible drawer on mobile for seamless navigation |
+| Reading Progress Bar | Set `reading_progress: true` in frontmatter | Elegant 2px progress bar fixed at the top of the viewport that tracks reading progress in real time as you scroll; enabled on this features demo page |
 
 > 💡 Example: The [homepage](/en/) of this site features a prominent yellow Notice Banner (`notice: { text: "This is a demo page. Content is for displaying project features only.", color: "yellow" }`) that appears 0.5s after load.
 
