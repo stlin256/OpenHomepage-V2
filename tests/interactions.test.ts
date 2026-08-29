@@ -124,6 +124,23 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
   });
 
+  it("RSS 封面加载失败时保留占位并标记淡出", async () => {
+    document.body.innerHTML = `
+      <a class="rss-card">
+        <span class="rss-cover" id="rss-cover"><img id="rss-img" src="/missing.webp" alt=""></span>
+        <span class="rss-card-body">内容</span>
+      </a>
+    `;
+    await import("../src/scripts/interactions.ts");
+    document.querySelector<HTMLImageElement>("#rss-img")!.dispatchEvent(
+      new Event("error", { bubbles: true })
+    );
+
+    const cover = document.querySelector<HTMLElement>("#rss-cover")!;
+    expect(cover.isConnected).toBe(true);
+    expect(cover.classList.contains("cover-failed")).toBe(true);
+  });
+
   it("语言切换后，导航栏站点标题链接同步到当前语言首页", async () => {
     const targetHtml = [
       "<!doctype html><html data-route-lang='en'><head><title>Home</title></head><body>",

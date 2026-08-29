@@ -16,7 +16,7 @@ const { card } = Astro.props;
 <a class="rss-card" href={card.link} target="_blank" rel="noopener">
   {card.cover && (
     <span class="rss-cover">
-      <img src={withBase(card.cover)} alt="" loading="lazy" onerror="this.parentElement?.remove()" />
+      <img src={withBase(card.cover)} alt="" loading="lazy" />
     </span>
   )}
   <span class="rss-card-body">

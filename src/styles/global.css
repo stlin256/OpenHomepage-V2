@@ -1980,6 +1980,7 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   border-radius: var(--radius-sm);
   overflow: hidden;
   border: 1px solid var(--border);
+  background: var(--bg-subtle);
 }
 .rss-cover:empty {
   display: none;
@@ -1989,7 +1990,16 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.5s ease;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s ease;
+}
+.rss-cover.cover-failed {
+  border-style: dashed;
+}
+.rss-cover.cover-failed img {
+  opacity: 0;
+  transform: none;
 }
 .rss-card:hover .rss-cover img {
   transform: scale(1.06);
@@ -2260,7 +2270,8 @@ html.js .reveal.revealed {
       visibility 0s linear 0.15s;
   }
   html.js img[data-image-fade='pending'],
-  html.js img[data-image-fade='loaded'] {
+  html.js img[data-image-fade='loaded'],
+  .rss-cover img {
     opacity: 1;
     transition: none;
   }

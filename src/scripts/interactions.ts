@@ -606,7 +606,8 @@ document.addEventListener(
   (e) => {
     if (e.target instanceof HTMLImageElement) {
       const cover = e.target.closest<HTMLElement>('.rss-cover');
-      if (cover) cover.style.display = 'none';
+      // 失败不移除占位：固定 5.5rem 方位，图片淡出，卡片文本布局不塌陷。
+      if (cover) cover.classList.add('cover-failed');
     }
   },
   true
