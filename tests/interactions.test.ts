@@ -136,4 +136,62 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     });
     expect(document.querySelector("#site-title-link")?.textContent).toBe("English Site");
   });
+
+  it("语言切换遮罩结束前，不启动通知横幅与流式输出", async () => {
+    vi.useFakeTimers();
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='en'><head><title>Home</title></head><body>",
+      "<main class='site-main'>",
+      "<div class='notice-banner' data-delay='10'>English notice</div>",
+      "<div class='stream-block' data-stream-id='welcome' data-autoplay='true' data-speed='40'>",
+      "<div class='stream-content markdown-body'></div>",
+      "<noscript><p>English stream</p></noscript>",
+      "<script type='application/json' class='stream-tokens'>[]</script>",
+      "</div>",
+      "</main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => targetHtml,
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.documentElement.dataset.routeLang = "zh";
+    document.documentElement.dataset.siteLangs = "zh,en";
+    localStorage.setItem("oh-language", "zh");
+    document.body.innerHTML = [
+      "<div class='lang-switcher'><ul class='lang-menu'>",
+      "<li><a id='switch-en' href='/en/' hreflang='en'>English</a></li>",
+      "</ul></div>",
+      "<main class='site-main'><p>中文页面</p></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    try {
+      document.querySelector<HTMLAnchorElement>("#switch-en")!.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true })
+      );
+
+      // 覆盖 fetch 解析与旧内容淡出的两帧；此时仍处在 250ms 语言切换遮罩内。
+      await vi.advanceTimersByTimeAsync(40);
+      expect(document.querySelector("main.site-main")?.textContent).toContain("English notice");
+      expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(false);
+      expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBeUndefined();
+      expect(document.querySelector(".page-loading")?.classList.contains("visible")).toBe(true);
+
+      await vi.advanceTimersByTimeAsync(209);
+      expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(false);
+      expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBeUndefined();
+
+      // 250ms 最短遮罩结束，再越过移除遮罩后的两帧与横幅自身 10ms 计时。
+      await vi.advanceTimersByTimeAsync(1);
+      await vi.advanceTimersByTimeAsync(60);
+      expect(document.querySelector<HTMLElement>(".stream-block")?.dataset.streamInit).toBe("1");
+      expect(document.querySelector(".notice-banner")?.classList.contains("visible")).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

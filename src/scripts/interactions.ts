@@ -2,7 +2,7 @@
  * 前端交互入口：首屏加载 + 客户端内容交换后初始化。
  *
  * 导航策略：拦截站内链接点击 → 显示加载遮罩 → fetch 目标页 →
- * 替换 <main> 内容 → 重新初始化动效/交互 → 移除遮罩。
+ * 替换 <main> 内容 → 遮罩结束后再初始化动效/交互。
  * URL 同步更新、header/audio/nav 不动 → BGM 连续播放、刷新/前进后退状态一致。
  */
 import { initStreamBlocks } from './stream-player.ts';
@@ -169,15 +169,22 @@ async function swapContent(
   if (swapping) return;
   swapping = true;
   // 预取/缓存命中时交换几乎瞬时完成；遮罩延迟出现，避免快速切换时闪烁。
-  // minOverlayMs > 0 时（如语言切换）遮罩立即出现并至少停留该时长，给出明确反馈。
+  // minOverlayMs > 0 时（如语言切换）遮罩立即出现并至少停留该时长。
+  // 遮罩自身完全透明，只作为切换期间的输入门；新页组件延迟到遮罩结束后初始化。
   let loadingTimer: ReturnType<typeof setTimeout> | null = null;
   let overlayShownAt = 0;
+  let overlayWasShown = false;
   if (minOverlayMs > 0) {
     showLoading();
+    overlayWasShown = true;
     overlayShownAt = Date.now();
   } else {
-    loadingTimer = setTimeout(showLoading, 150);
+    loadingTimer = setTimeout(() => {
+      showLoading();
+      overlayWasShown = true;
+    }, 150);
   }
+  let activatePage: (() => void) | null = null;
   try {
     const html = await fetchPageHtml(path);
     if (html === null) {
@@ -243,13 +250,15 @@ async function swapContent(
     }
     document.body.classList.remove('nav-open');
     document.querySelector('.nav-toggle')?.setAttribute('aria-expanded', 'false');
-    // 淡入新内容
-    oldMain.style.opacity = '';
-    // 重新初始化（动效、流式、灯箱等）
-    initAll();
-    // 客户端内容交换等价于一次页面加载；联系卡等全局组件依赖此事件重绑。
-    window.dispatchEvent(new Event('astro:page-load'));
-    window.scrollTo({ top: 0 });
+    // 新内容先保持透明，等不可见遮罩完全结束再恢复并启动组件计时/动画。
+    activatePage = () => {
+      oldMain.style.opacity = '';
+      // 重新初始化（动效、流式、灯箱等）
+      initAll();
+      // 客户端内容交换等价于一次页面加载；联系卡等全局组件依赖此事件重绑。
+      window.dispatchEvent(new Event('astro:page-load'));
+      window.scrollTo({ top: 0 });
+    };
   } catch {
     location.href = path;
   } finally {
@@ -259,6 +268,9 @@ async function swapContent(
       if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
     }
     hideLoading();
+    // 先让移除遮罩的 class 提交到下一帧，再启动通知横幅、流式输出等计时。
+    if (overlayWasShown) await nextPaint();
+    activatePage?.();
     swapping = false;
   }
 }
@@ -355,7 +367,7 @@ document.addEventListener('click', (e) => {
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
   if (selectedLanguage) writePreferredLanguage(selectedLanguage);
-  // 语言切换即使命中缓存也至少给 0.25s 转圈遮罩过渡
+  // 语言切换即使命中缓存也保留 0.25s 透明输入门，并延迟组件计时/动画
   void swapContent(href, selectedLanguage ? { minOverlayMs: 250 } : {});
 });
 

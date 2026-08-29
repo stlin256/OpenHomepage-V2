@@ -2163,7 +2163,7 @@ html.js .reveal.revealed {
   transition: opacity 0.15s ease;
 }
 .page-loading.visible {
-  opacity: 1;
+  opacity: 0;
   pointer-events: auto;
 }
 .page-loading-spinner {
