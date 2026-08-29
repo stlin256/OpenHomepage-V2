@@ -78,7 +78,10 @@ $$
 :::video{src="assets/feature-flower.mp4"}
 :::
 
-:::audio{src="assets/feature-t-rex-roar.mp3"}
+:::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}
+:::
+
+:::audio{src="assets/bgm.mp3" cover="assets/goldberg-aria-cover.jpg" title="Bach: The Goldberg Variations, BWV 988 — Aria" description="Johann Sebastian Bach · The 1981 Recordings"}
 :::
 
 ## 機能ディレクティブ
@@ -129,3 +132,4 @@ $$
 ## 生 HTML の混在
 
 <mark>この行はネイティブ HTML の mark タグを使っています</mark>。`<script>` のような危険なタグはホワイトリストでフィルタリングされます。
+

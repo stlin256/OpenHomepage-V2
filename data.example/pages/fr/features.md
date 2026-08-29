@@ -78,7 +78,10 @@ Médias auto-hébergés (balises natives) :
 :::video{src="assets/feature-flower.mp4"}
 :::
 
-:::audio{src="assets/feature-t-rex-roar.mp3"}
+:::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}
+:::
+
+:::audio{src="assets/bgm.mp3" cover="assets/goldberg-aria-cover.jpg" title="Bach: The Goldberg Variations, BWV 988 — Aria" description="Johann Sebastian Bach · The 1981 Recordings"}
 :::
 
 ## Directives fonctionnelles
@@ -129,3 +132,4 @@ Les contrôles de page sont des widgets de niveau page configurés page par page
 ## HTML brut mélangé
 
 <mark>Cette ligne utilise la balise HTML native mark</mark>. Les balises dangereuses comme `<script>` sont filtrées par une liste blanche.
+

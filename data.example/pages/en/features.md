@@ -78,7 +78,10 @@ Self-hosted media (native tags):
 :::video{src="assets/feature-flower.mp4"}
 :::
 
-:::audio{src="assets/feature-t-rex-roar.mp3"}
+:::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}
+:::
+
+:::audio{src="assets/bgm.mp3" cover="assets/goldberg-aria-cover.jpg" title="Bach: The Goldberg Variations, BWV 988 — Aria" description="Johann Sebastian Bach · The 1981 Recordings"}
 :::
 
 ## Functional directives
@@ -129,3 +132,4 @@ Page controls are page-level widgets configured on a per-page basis (non-global)
 ## Raw HTML mixing
 
 <mark>This line uses the native HTML mark tag</mark>. Dangerous tags like `<script>` are filtered by a whitelist.
+

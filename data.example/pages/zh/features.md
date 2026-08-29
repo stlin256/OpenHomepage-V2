@@ -78,7 +78,10 @@ $$
 :::video{src="assets/feature-flower.mp4"}
 :::
 
-:::audio{src="assets/feature-t-rex-roar.mp3"}
+:::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}
+:::
+
+:::audio{src="assets/bgm.mp3" cover="assets/goldberg-aria-cover.jpg" title="Bach: The Goldberg Variations, BWV 988 — Aria" description="Johann Sebastian Bach · The 1981 Recordings"}
 :::
 
 ## 功能指令
@@ -129,3 +132,4 @@ $$
 ## HTML 混写
 
 <mark>这一行是原生 HTML 的 mark 标签</mark>，dangerous 标签（如 `<script>`）会被白名单过滤。
+
