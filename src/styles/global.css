@@ -153,6 +153,9 @@ samp {
   opacity: 0;
   transform: translateY(4px);
 }
+:target {
+  scroll-margin-top: 5rem;
+}
 .site-nav ul {
   list-style: none;
   margin: 0;

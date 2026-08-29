@@ -100,6 +100,30 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(fetchMock).toHaveBeenCalledWith("/features/");
   });
 
+  it("同页锚点链接平滑滚动且不触发 swapContent fetch", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    document.body.innerHTML = [
+      "<a id='anchor-link' href='#target-section'>跳到目标</a>",
+      "<main class='site-main'><section id='target-section'>目标</section></main>",
+    ].join("");
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      writable: true,
+      value: scrollIntoView,
+    });
+
+    await import("../src/scripts/interactions.ts");
+    const clickEvt = new MouseEvent("click", { bubbles: true, cancelable: true });
+    document.querySelector<HTMLAnchorElement>("#anchor-link")!.dispatchEvent(clickEvt);
+
+    expect(clickEvt.defaultPrevented).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(location.hash).toBe("#target-section");
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
+  });
+
   it("语言切换后，导航栏站点标题链接同步到当前语言首页", async () => {
     const targetHtml = [
       "<!doctype html><html data-route-lang='en'><head><title>Home</title></head><body>",

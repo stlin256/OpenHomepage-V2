@@ -528,8 +528,29 @@ document.addEventListener('click', (e) => {
   const href = link.getAttribute('href') ?? '';
   const selectedLanguage = normalizeLanguage(link.getAttribute('hreflang'));
   // 语言切换器也走内容交换（保留当前页面）
-  // 外链 / 锚点不动
-  if (!isInternalLink(href) || href.includes('#')) return;
+  // 同页锚点保持 SPA 行为并平滑滚动；跨页锚点交给浏览器完整导航。
+  if (href.includes('#')) {
+    const url = new URL(href, location.href);
+    if (
+      url.origin === location.origin &&
+      url.pathname === location.pathname &&
+      url.search === location.search
+    ) {
+      const id = decodeURIComponent(url.hash.slice(1));
+      const target = document.getElementById(id) ?? document.getElementsByName(id)[0];
+      if (target) {
+        e.preventDefault();
+        history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`);
+        target.scrollIntoView({
+          behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      }
+    }
+    return;
+  }
+  // 外链不动
+  if (!isInternalLink(href)) return;
   // 修饰键点击不动
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
