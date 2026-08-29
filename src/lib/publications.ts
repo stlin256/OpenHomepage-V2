@@ -235,19 +235,26 @@ export function renderPublications(
     const note = item.note ? resolveText(item.note, lang, defaultLang) : '';
     const badges = (item.badges ?? []).map((b) => `<span class="publication-badge">${esc(b)}</span>`).join('');
     const links = item.links ?? {};
-    const linkRow = [
+    const linkItems = [
       linkHtml('PDF', safeUrl(links.pdf, options.baseUrl)),
       linkHtml('Code', safeUrl(links.code, options.baseUrl)),
       linkHtml('Project', safeUrl(links.project, options.baseUrl)),
       linkHtml('Slides', safeUrl(links.slides, options.baseUrl)),
       linkHtml('Dataset', safeUrl(links.dataset, options.baseUrl)),
-    ].filter(Boolean).join('');
+    ].filter(Boolean);
+    const bibtexId = `bibtex-${esc(item.id)}`;
+    const copyBtn = item.bibtex
+      ? `<button type="button" class="publication-copy" data-copy-bibtex="${bibtexId}">${copyLabel}</button>`
+      : '';
+    const hasActions = linkItems.length > 0 || copyBtn;
+    const actionsRow = hasActions
+      ? `<div class="publication-actions"><nav class="publication-links" aria-label="publication links">${linkItems.join('')}</nav>${copyBtn}</div>`
+      : '';
+    const bibtexBlock = item.bibtex
+      ? `<div class="publication-bibtex"><pre id="${bibtexId}" tabindex="0" data-pagefind-ignore>${esc(item.bibtex)}</pre></div>`
+      : '';
     const teaser = item.teaser
       ? `<picture class="publication-teaser"><img src="${esc(withBase(`/${item.teaser}`, options.baseUrl))}" alt="${esc(item.title)} figure" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 220px"></picture>`
-      : '';
-    const bibtexId = `bibtex-${esc(item.id)}`;
-    const bibtex = item.bibtex
-      ? `<div class="publication-bibtex"><button type="button" class="publication-copy" data-copy-bibtex="${bibtexId}">${copyLabel}</button><pre id="${bibtexId}" tabindex="0" data-pagefind-ignore>${esc(item.bibtex)}</pre></div>`
       : '';
     return `<article class="publication-item"${item.teaser ? ' data-has-teaser="true"' : ''}>
       <div class="publication-index">${String(index + 1).padStart(2, '0')}</div>
@@ -257,8 +264,8 @@ export function renderPublications(
         <p class="publication-authors">${authorsHtml(item, highlights)}</p>
         ${note ? `<p class="publication-note">${esc(note)}</p>` : ''}
         ${abstract ? `<details class="publication-abstract"><summary>${abstractLabel}</summary><div class="abstract-content"><p>${esc(abstract)}</p></div></details>` : ''}
-        ${linkRow ? `<nav class="publication-links" aria-label="publication links">${linkRow}</nav>` : ''}
-        ${bibtex}
+        ${actionsRow}
+        ${bibtexBlock}
       </div>
       ${teaser}
     </article>`;

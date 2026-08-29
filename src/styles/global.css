@@ -1548,17 +1548,17 @@ a.editorial-item:focus-visible .editorial-item-content {
   font-size: 0.875rem;
   text-align: center;
 }
-/* P0 杂志风注记卡片：无 JS、语义 aside、主题语义色驱动 */
+/* P0 杂志风注记卡片：无 JS、语义 aside、紧凑内边距与精致版式 */
 .markdown-body > .callout {
   --callout-accent: var(--accent);
   max-width: 72ch;
-  margin: 1.5em 0;
-  padding: 0.85rem 1.15rem;
-  border: 1px solid color-mix(in srgb, var(--callout-accent) 22%, var(--border));
+  margin: 1.15em 0;
+  padding: 0.6rem 0.95rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--callout-accent) 20%, var(--border));
   border-left: 3.5px solid var(--callout-accent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--callout-accent) 6%, var(--card));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: color-mix(in srgb, var(--callout-accent) 5%, var(--card));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition:
     transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.2s ease,
@@ -1566,8 +1566,8 @@ a.editorial-item:focus-visible .editorial-item-content {
 }
 .markdown-body > .callout:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  border-color: color-mix(in srgb, var(--callout-accent) 40%, var(--border));
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  border-color: color-mix(in srgb, var(--callout-accent) 35%, var(--border));
 }
 .markdown-body .callout-tip { --callout-accent: var(--success); }
 .markdown-body .callout-warning { --callout-accent: var(--warning); }
@@ -1579,14 +1579,15 @@ a.editorial-item:focus-visible .editorial-item-content {
 .callout-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  gap: 0.4rem;
+  margin: 0 0 0.2rem;
   color: var(--callout-accent);
+  line-height: 1.25;
 }
 .callout-icon {
   display: inline-flex;
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 0.95rem;
+  height: 0.95rem;
   flex: 0 0 auto;
 }
 .callout-icon svg {
@@ -1596,21 +1597,22 @@ a.editorial-item:focus-visible .editorial-item-content {
 .callout-title {
   margin: 0;
   color: inherit;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 750;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  line-height: 1.25;
 }
 .callout > p:not(.callout-title):not(.callout-source) {
-  margin: 0.35rem 0 0;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  margin: 0.15rem 0 0;
+  font-size: 0.91rem;
+  line-height: 1.55;
   color: var(--text);
 }
 .callout-source {
-  margin: 0.6rem 0 0;
+  margin: 0.35rem 0 0;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-align: right;
 }
 
