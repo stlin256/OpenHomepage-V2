@@ -114,21 +114,28 @@ describe('HTML 混写与白名单过滤', () => {
 });
 
 describe('自定义指令：内嵌播放器', () => {
-  it('::bilibili 直接渲染播放器 iframe（lazy + 16:9 容器）', async () => {
+  it('::bilibili 渲染高性能门面播放器卡片（Facade）', async () => {
     const html = await renderMarkdown('::bilibili{bvid="BV1xx411c7mD"}');
     expect(html).toContain('class="embed-player embed-bilibili"');
-    expect(html).toContain('<iframe');
-    expect(html).toContain('player.bilibili.com/player.html?bvid=BV1xx411c7mD');
-    expect(html).toContain('loading="lazy"');
-    expect(html).toContain('allowfullscreen');
+    expect(html).toContain('data-embed-src="https://player.bilibili.com/player.html?bvid=BV1xx411c7mD&#x26;autoplay=1"');
+    expect(html).toContain('class="embed-play-btn"');
+    expect(html).toContain('Bilibili');
   });
 
-  it('::youtube 直接渲染播放器 iframe（youtube-nocookie 域名）', async () => {
+  it('::youtube 渲染高性能门面播放器卡片（Facade 带默认缩略图）', async () => {
     const html = await renderMarkdown('::youtube{id="dQw4w9WgXcQ"}');
     expect(html).toContain('class="embed-player embed-youtube"');
-    expect(html).toContain('<iframe');
-    expect(html).toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ');
-    expect(html).toContain('loading="lazy"');
+    expect(html).toContain('data-embed-src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"');
+    expect(html).toContain('class="embed-play-btn"');
+    expect(html).toContain('YouTube');
+    expect(html).toContain('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
+  });
+
+  it('::bilibili 支持自定义封面 poster', async () => {
+    const html = await renderMarkdown('::bilibili{bvid="BV1xx411c7mD" poster="assets/custom-cover.jpg"}');
+    expect(html).toContain('class="embed-player embed-bilibili"');
+    expect(html).toContain('class="embed-poster"');
+    expect(html).toContain('src="/assets/custom-cover.jpg"');
   });
 
   it(':::video 渲染原生 video 标签', async () => {

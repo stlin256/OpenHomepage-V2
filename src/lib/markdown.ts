@@ -145,33 +145,85 @@ function buildSanitizeSchema(): Schema {
 
 type Directive = ContainerDirective | LeafDirective | TextDirective;
 
-/** bilibili/youtube 指令：直接输出官方播放器 iframe（loading=lazy），外层 16:9 响应式容器 */
+function hEl(tagName: string, properties: Properties = {}, children: ElementContent[] = []): ElementContent {
+  return { type: 'element', tagName, properties, children };
+}
+function hTxt(value: string): ElementContent {
+  return { type: 'text', value };
+}
+
+const PLAY_ICON_PATH = 'M8 5v14l11-7z';
+const PAUSE_ICON_PATH = 'M6 5h4v14H6zM14 5h4v14h-4z';
+
+/** bilibili/youtube 指令：高性能门面模式（Facade / Lite-Embed），首屏仅渲染轻量封面与播放按钮，点击或激活时动态装载 iframe，彻底消除快速滚动经过时的进程与渲染阻塞 */
 function toEmbedDiv(
   kind: 'bilibili' | 'youtube',
   attrs: Record<string, string>,
+  baseUrl?: string,
 ): { properties: Properties; children: ElementContent[] } | null {
   let src: string;
   let title: string;
+  let defaultPoster: string | undefined;
   if (kind === 'bilibili') {
     if (!attrs.bvid) return null;
-    src = `https://player.bilibili.com/player.html?bvid=${attrs.bvid}&autoplay=0`;
-    title = 'bilibili 播放器';
+    src = `https://player.bilibili.com/player.html?bvid=${attrs.bvid}&autoplay=1`;
+    title = attrs.title || 'bilibili 播放器';
   } else {
     if (!attrs.id) return null;
-    src = `https://www.youtube-nocookie.com/embed/${attrs.id}`;
-    title = 'YouTube 播放器';
+    src = `https://www.youtube-nocookie.com/embed/${attrs.id}?autoplay=1`;
+    title = attrs.title || 'YouTube 播放器';
+    defaultPoster = `https://i.ytimg.com/vi/${attrs.id}/hqdefault.jpg`;
   }
-  return {
-    properties: { className: ['embed-player', `embed-${kind}`] },
-    children: [
-      {
-        type: 'element',
-        tagName: 'iframe',
-        properties: { src, loading: 'lazy', allowFullScreen: true, title },
-        children: [],
-      },
-    ],
+
+  const customPoster = attrs.poster ?? attrs.cover;
+  const poster = customPoster ? withBase(customPoster, baseUrl) : defaultPoster;
+
+  const properties: Properties = {
+    className: ['embed-player', `embed-${kind}`],
+    'data-embed-kind': kind,
+    'data-embed-src': src,
+    'data-embed-title': title,
+    role: 'region',
+    ariaLabel: title,
+    tabIndex: 0,
   };
+
+  const children: ElementContent[] = [];
+  if (poster) {
+    children.push({
+      type: 'element',
+      tagName: 'img',
+      properties: {
+        className: ['embed-poster'],
+        src: poster,
+        alt: title,
+        loading: 'lazy',
+        decoding: 'async',
+      },
+      children: [],
+    });
+  }
+
+  const playSvg = hEl(
+    'svg',
+    { className: ['embed-play-icon'], viewBox: '0 0 24 24', fill: 'currentColor', ariaHidden: 'true' },
+    [hEl('path', { d: PLAY_ICON_PATH })]
+  );
+  const badgeSpan = hEl('span', { className: ['embed-badge'] }, [
+    hTxt(kind === 'bilibili' ? 'Bilibili' : 'YouTube'),
+  ]);
+  const playBtn = hEl(
+    'button',
+    {
+      type: 'button',
+      className: ['embed-play-btn'],
+      ariaLabel: `播放 / Play: ${title}`,
+    },
+    [playSvg, badgeSpan]
+  );
+  children.push(playBtn);
+
+  return { properties, children };
 }
 
 const WIDTH_RE = /^[\d.]+(%|px|em|rem|vw)$/;
@@ -264,15 +316,6 @@ function toFigure(attrs: Record<string, string>, baseUrl?: string): { properties
  * `cover` 存在时自动切为 B 封面卡。`preload` 默认 metadata，保证播放前可显示时长；
  * `none` 时不主动读元数据，点击后才加载。
  */
-function hEl(tagName: string, properties: Properties = {}, children: ElementContent[] = []): ElementContent {
-  return { type: 'element', tagName, properties, children };
-}
-function hTxt(value: string): ElementContent {
-  return { type: 'text', value };
-}
-
-const PLAY_ICON_PATH = 'M8 5v14l11-7z';
-const PAUSE_ICON_PATH = 'M6 5h4v14H6zM14 5h4v14h-4z';
 
 function audioPlayPauseSvg(): ElementContent[] {
   const playSvg = hEl('svg', { className: ['icon-play'], viewBox: '0 0 24 24', fill: 'currentColor', ariaHidden: 'true' }, [
@@ -442,7 +485,7 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean, 
       switch (name) {
         case 'bilibili':
         case 'youtube': {
-          const embed = toEmbedDiv(name, attrs);
+          const embed = toEmbedDiv(name, attrs, baseUrl);
           if (!embed) return degrade('params');
           setElement('div', embed.properties);
           data.hChildren = embed.children;

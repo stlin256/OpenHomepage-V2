@@ -126,13 +126,50 @@ function initNavToggle(): void {
   });
 }
 
-/** DOMParser 生成后再移入正文的媒体节点需要显式启动资源选择；音频走专用自渲染初始化。 */
+function activateEmbedPlayer(container: HTMLElement): void {
+  if (container.querySelector('iframe')) return;
+  const src = container.dataset.embedSrc;
+  const title = container.dataset.embedTitle || 'Video player';
+  if (!src) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.src = src;
+  iframe.title = title;
+  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  iframe.allowFullscreen = true;
+  iframe.loading = 'eager';
+
+  container.replaceChildren(iframe);
+  container.classList.add('is-active');
+}
+
+function initEmbedPlayers(): void {
+  for (const container of document.querySelectorAll<HTMLElement>('.embed-player[data-embed-src]')) {
+    if (container.dataset.embedInit === '1') continue;
+    container.dataset.embedInit = '1';
+
+    container.addEventListener('click', () => {
+      if (container.classList.contains('is-active')) return;
+      activateEmbedPlayer(container);
+    });
+
+    container.addEventListener('keydown', (e) => {
+      if (container.classList.contains('is-active')) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        activateEmbedPlayer(container);
+      }
+    });
+  }
+}
+
+/** 嵌入式媒体与自渲染播放器初始化（原生视频避免首屏调用 load 抢占解码，按需绑定互斥） */
 function initEmbeddedMedia(): void {
   initAudioPlayers();
+  initEmbedPlayers();
   for (const media of document.querySelectorAll<HTMLMediaElement>('.markdown-body video')) {
     if (media.dataset.mediaLoaded === '1') continue;
     media.dataset.mediaLoaded = '1';
-    media.load();
     ['play', 'playing', 'pause', 'ended'].forEach(evt => {
       media.addEventListener(evt, () => {
         if (evt === 'play' || evt === 'playing') pauseOtherMedia(media);
