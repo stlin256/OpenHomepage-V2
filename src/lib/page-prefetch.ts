@@ -1,4 +1,6 @@
-/** Pure helpers for idle-time prefetching of same-language tab pages. */
+/** Pure helpers for idle-time prefetching of same-language tab pages and lightbox assets. */
+
+import { lightboxCandidateUrls } from './lightbox.ts';
 
 export interface PrefetchImageCandidate {
   src: string;
@@ -82,4 +84,30 @@ export function responsiveImageCandidates(document: Document): PrefetchImageCand
     candidates.push(candidate);
   }
   return candidates;
+}
+
+/**
+ * 提取页面中所有正文/网格图片（.markdown-body 内且非链接/按钮内的 img）的灯箱候选 URL 分组。
+ * 每组按优先级排序（-full 高清变体 -> 原图 -> 页面 WebP）。
+ */
+export function lightboxImageCandidates(document: Document): string[][] {
+  const groups: string[][] = [];
+  const seen = new Set<string>();
+
+  for (const image of document.querySelectorAll<HTMLImageElement>('.markdown-body img')) {
+    if (image.closest('.lightbox-img') || image.closest('a, button')) continue;
+    const inPageSrc = image.getAttribute('src') ?? '';
+    const originalSrc = image.getAttribute('data-original') || null;
+    if (!inPageSrc && !originalSrc) continue;
+
+    const candidates = lightboxCandidateUrls(inPageSrc, originalSrc);
+    if (candidates.length === 0) continue;
+
+    const key = candidates.join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    groups.push(candidates);
+  }
+
+  return groups;
 }

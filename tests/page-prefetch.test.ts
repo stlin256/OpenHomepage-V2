@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
 import {
   languageAlternatePaths,
+  lightboxImageCandidates,
   responsiveImageCandidates,
   sameLanguageTabPaths,
   shouldPrefetchResources,
@@ -71,5 +72,38 @@ describe('page prefetch helpers', () => {
     expect(shouldPrefetchResources({ saveData: true, effectiveType: '4g' })).toBe(false);
     expect(shouldPrefetchResources({ effectiveType: '2g' })).toBe(false);
     expect(shouldPrefetchResources({ effectiveType: '3g' })).toBe(true);
+  });
+});
+
+describe('lightboxImageCandidates helper', () => {
+  it('collects lightbox candidate groups from markdown body images', () => {
+    const dom = new JSDOM(
+      '<div class="markdown-body">' +
+        '<figure><img src="/assets/hero.webp" data-original="/assets/hero.jpg" alt="Hero"></figure>' +
+        '<div class="md-grid"><img src="/assets/grid1.png" alt="Grid 1"></div>' +
+        '<p><img src="/assets/hero.webp" data-original="/assets/hero.jpg" alt="Duplicate"></p>' +
+        '</div>' +
+        '<div class="site-nav"><img src="/assets/logo.png"></div>' +
+        '<div class="lightbox"><img class="lightbox-img" src="/assets/prev.jpg"></div>',
+    );
+    const groups = lightboxImageCandidates(dom.window.document);
+    expect(groups).toEqual([
+      ['/assets/hero-full.jpg', '/assets/hero.jpg', '/assets/hero.webp'],
+      ['/assets/grid1-full.png', '/assets/grid1.png'],
+    ]);
+  });
+
+  it('ignores images inside links or buttons', () => {
+    const dom = new JSDOM(
+      '<div class="markdown-body">' +
+        '<a href="/other"><img src="/assets/linked.webp" data-original="/assets/linked.jpg"></a>' +
+        '<button><img src="/assets/btn.png"></button>' +
+        '<img src="/assets/valid.webp" data-original="/assets/valid.jpg">' +
+        '</div>',
+    );
+    const groups = lightboxImageCandidates(dom.window.document);
+    expect(groups).toEqual([
+      ['/assets/valid-full.jpg', '/assets/valid.jpg', '/assets/valid.webp'],
+    ]);
   });
 });

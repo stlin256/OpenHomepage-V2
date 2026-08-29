@@ -2,14 +2,11 @@
  * 图片灯箱（docs/specs/03 §5）：点击正文/网格图片（.markdown-body 内的 img）打开全屏预览。
  * - 灯箱骨架由 BaseLayout 服务端渲染（.lightbox，hidden），本脚本只做交互；
  * - 高分辨率变体按 -full 约定乐观加载（src/lib/lightbox.ts），失败逐级回退；
- *   失败结果缓存于 fullBad，同一会话不重复 404；
+ *   失败结果缓存于 fullBad，同一会话不重复 404；与 tab-prefetch.ts 共享；
  * - 关闭：✕ 按钮 / 点击背景 / Esc；开关动画纯 CSS（global.css .lightbox）。
  * 事件全部挂在 document 上（事件委托），ClientRouter 转场后无需重绑。
  */
-import { pickLightboxSrc } from '../lib/lightbox.ts';
-
-/** 已知不存在高清变体的 URL（onerror 探测到的 404） */
-const fullBad = new Set<string>();
+import { pickLightboxSrc, fullBad } from '../lib/lightbox.ts';
 
 function overlay(): HTMLElement | null {
   return document.querySelector<HTMLElement>('.lightbox');

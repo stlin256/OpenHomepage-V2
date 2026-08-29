@@ -1,5 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { fullVariantUrl, lightboxCandidateUrls, pickLightboxSrc } from '../src/lib/lightbox.ts';
+import { describe, it, expect, beforeEach } from 'vitest';
+import {
+  fullBad,
+  fullVariantUrl,
+  isLightboxBad,
+  lightboxCandidateUrls,
+  markLightboxBad,
+  pickLightboxSrc,
+  resetLightboxBad,
+} from '../src/lib/lightbox.ts';
 
 describe('fullVariantUrl（-full 高分辨率变体约定）', () => {
   it('普通相对路径加 -full 后缀', () => {
@@ -62,5 +70,34 @@ describe('WebP 页面图的原图回退', () => {
     expect(pickLightboxSrc('/assets/hero.webp', (url) => !bad.has(url), '/assets/hero.jpg')).toBe(
       '/assets/hero.webp',
     );
+  });
+});
+
+describe('fullBad 共享失败缓存与辅助函数', () => {
+  beforeEach(() => {
+    resetLightboxBad();
+  });
+
+  it('markLightboxBad 记录失败 URL 并在 isLightboxBad 返回', () => {
+    expect(isLightboxBad('/assets/missing-full.jpg')).toBe(false);
+    markLightboxBad('/assets/missing-full.jpg');
+    expect(isLightboxBad('/assets/missing-full.jpg')).toBe(true);
+    expect(fullBad.has('/assets/missing-full.jpg')).toBe(true);
+  });
+
+  it('resetLightboxBad 清空失败集合', () => {
+    markLightboxBad('/assets/bad1.jpg');
+    markLightboxBad('/assets/bad2.jpg');
+    expect(fullBad.size).toBe(2);
+    resetLightboxBad();
+    expect(fullBad.size).toBe(0);
+    expect(isLightboxBad('/assets/bad1.jpg')).toBe(false);
+  });
+
+  it('结合 fullBad 执行 pickLightboxSrc', () => {
+    markLightboxBad('/assets/hero-full.jpg');
+    expect(
+      pickLightboxSrc('/assets/hero.webp', (url) => !fullBad.has(url), '/assets/hero.jpg')
+    ).toBe('/assets/hero.jpg');
   });
 });

@@ -7,6 +7,21 @@
 
 const EXT_RE = /(\.[a-z0-9]+)((?:\?|#).*)?$/i;
 
+/** 已知不存在高清变体的 URL（onerror 探测到的 404 或预加载失败），供灯箱与空闲预加载共享 */
+export const fullBad = new Set<string>();
+
+export function markLightboxBad(url: string): void {
+  fullBad.add(url);
+}
+
+export function isLightboxBad(url: string): boolean {
+  return fullBad.has(url);
+}
+
+export function resetLightboxBad(): void {
+  fullBad.clear();
+}
+
 /**
  * 原图 URL → 高清变体 URL。
  * 无扩展名、data:/blob: URL、或本身已是 -full 变体时返回 null（不再二次派生）。
