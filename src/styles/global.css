@@ -1558,9 +1558,18 @@ a.editorial-item:focus-visible .editorial-item-content {
   font-size: 0.875rem;
   line-height: 1.6;
 }
+.markdown-body .md-table-wrap {
+  overflow-x: auto;
+  margin: 1.5em 0;
+  -webkit-overflow-scrolling: touch;
+}
+.markdown-body .md-table-wrap table {
+  margin: 0;
+  min-width: 100%;
+  width: max-content;
+}
 .markdown-body table {
   border-collapse: collapse;
-  width: 100%;
   margin: 1.5em 0;
 }
 .markdown-body th,

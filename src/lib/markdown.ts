@@ -756,6 +756,28 @@ function rehypeLazyImages() {
   };
 }
 
+/**
+ * 表格横向滚动包裹：将 <table> 包进 <div class="md-table-wrap">（overflow-x: auto），
+ * 防止移动端窄屏下表格被过度压缩或溢出视口；桌面端表格宽度仍自适应容器。
+ */
+function rehypeWrapTables() {
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node: Element, index, parent) => {
+      if (node.tagName !== 'table' || parent == null || index == null) return;
+      // 已在表格包裹容器内则跳过（避免重复嵌套）
+      if (parent.type === 'element' && (parent as Element).tagName === 'div' &&
+        classesOf(parent as Element).includes('md-table-wrap')) return;
+      const wrapper: Element = {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['md-table-wrap'] },
+        children: [node],
+      };
+      parent.children[index] = wrapper;
+    });
+  };
+}
+
 function calloutHeader(node: Element): void {
   const type = classesOf(node).find((c) => c.startsWith('callout-'))?.slice('callout-'.length);
   if (!type) return;
@@ -1102,7 +1124,8 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(rehypeLazyImages)
     .use(rehypeSanitize, buildSanitizeSchema())
     .use(() => rehypeContentDecorations(options.lang, options.defaultLang))
-    .use(rehypeFilterIframes);
+    .use(rehypeFilterIframes)
+    .use(rehypeWrapTables);
   if (options.headingSlugs || options.toc) processor.use(rehypeHeadingSlugs);
   if (options.publications) {
     processor.use(() => rehypePublications(options.publications!, options.lang, options.defaultLang, baseUrl));
