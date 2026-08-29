@@ -289,11 +289,26 @@ body.nav-open .nav-toggle .bar:nth-child(3) {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-soft);
-  display: none;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  transform-origin: top right;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.18s;
 }
 .lang-switcher:hover .lang-menu,
 .lang-menu.open {
-  display: block;
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
 }
 .lang-menu a {
   display: block;
@@ -2193,6 +2208,19 @@ html.js .reveal.revealed {
   html.js .reveal.reveal-pending {
     transform: none;
     transition: opacity 0.2s ease;
+  }
+  .lang-menu {
+    transform: none;
+    transition:
+      opacity 0.15s ease,
+      visibility 0s linear 0.15s;
+  }
+  .lang-switcher:hover .lang-menu,
+  .lang-menu.open {
+    transform: none;
+    transition:
+      opacity 0.15s ease,
+      visibility 0s;
   }
   html.js .block-github .heat-cell:not(.heat-empty) {
     opacity: 1;
