@@ -71,12 +71,17 @@ contact:
       fr: "Scannez pour discuter de ML et de systèmes"
     image: "assets/contact-qr.svg"
 
-# ---- 背景音乐 ----
+# ---- 背景音乐与多曲目播放列表 ----
 bgm:
   autoplay: true
   enabled: true
-  file: "assets/bgm.mp3"   # Aria（你提供的音源，已压缩为 160kbps MP3）
   volume: 0.4
+  show_panel: true
+  tracks:
+    - title: "Goldberg Variations · Aria"
+      artist: "J.S. Bach"
+      src: "assets/bgm.mp3"
+      cover: "assets/favicon.svg"
 
 # ---- GitHub 区块 ----
 github:

@@ -24,7 +24,7 @@ items:
       code: "https://github.com/stlin256/OpenHomepage-V2"
       project: "/research"
     bibtex_key: lin2026efficient
-    teaser: "assets/research-compute.jpg"
+    teaser: "assets/publication-01.jpg"
     order: 10
   - id: reproducible-eval-2026
     title: "Reproducible Evaluation for Open Models"
@@ -41,7 +41,7 @@ items:
       pdf: "assets/figure-2.jpg"
       project: "/research"
     bibtex_key: doe2026reproducible
-    teaser: "assets/research-evaluation.jpg"
+    teaser: "assets/publication-02.jpg"
   - id: edge-cache-2025
     title: "Edge KV Cache Compression"
     authors: ["Bob Smith", "Zhiyuan Lin"]
@@ -55,7 +55,7 @@ items:
     links:
       code: "https://github.com/stlin256/OpenHomepage-V2"
     bibtex_key: smith2025edge
-    teaser: "assets/research-tooling.jpg"
+    teaser: "assets/publication-03.jpg"
   - id: visual-archive-2025
     title: "A Visual Archive for Research Notes"
     authors: ["Zhiyuan Lin"]
