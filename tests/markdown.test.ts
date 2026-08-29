@@ -118,24 +118,25 @@ describe('自定义指令：内嵌播放器', () => {
     const html = await renderMarkdown('::bilibili{bvid="BV1xx411c7mD"}');
     expect(html).toContain('class="embed-player embed-bilibili"');
     expect(html).toContain('data-embed-src="https://player.bilibili.com/player.html?bvid=BV1xx411c7mD&#x26;autoplay=1"');
-    expect(html).toContain('class="embed-play-btn"');
-    expect(html).toContain('Bilibili');
+    expect(html).toContain('embed-play-btn-bili');
+    expect(html).toContain('bilibili');
   });
 
   it('::youtube 渲染高性能门面播放器卡片（Facade 带默认缩略图）', async () => {
     const html = await renderMarkdown('::youtube{id="dQw4w9WgXcQ"}');
     expect(html).toContain('class="embed-player embed-youtube"');
     expect(html).toContain('data-embed-src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"');
-    expect(html).toContain('class="embed-play-btn"');
+    expect(html).toContain('embed-play-btn-yt');
     expect(html).toContain('YouTube');
     expect(html).toContain('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
   });
 
-  it('::bilibili 支持自定义封面 poster', async () => {
-    const html = await renderMarkdown('::bilibili{bvid="BV1xx411c7mD" poster="assets/custom-cover.jpg"}');
+  it('::bilibili 支持自定义封面 poster 与标题', async () => {
+    const html = await renderMarkdown('::bilibili{bvid="BV1xx411c7mD" poster="assets/custom-cover.jpg" title="自定义测试视频"}');
     expect(html).toContain('class="embed-player embed-bilibili"');
     expect(html).toContain('class="embed-poster"');
     expect(html).toContain('src="/assets/custom-cover.jpg"');
+    expect(html).toContain('自定义测试视频');
   });
 
   it(':::video 渲染原生 video 标签', async () => {

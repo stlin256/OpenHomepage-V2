@@ -75,9 +75,9 @@ $$
 
 播放器以响应式 16:9 容器直接渲染官方 iframe（`loading="lazy"` 惰性加载，不拖慢首屏）：
 
-::youtube{id="aircAruvnKk"}
+::youtube{id="aircAruvnKk" poster="assets/cover-youtube-aircaruvnkk.jpg" title="But what is a neural network? | Chapter 1, Deep learning"}
 
-::bilibili{bvid="BV13z421U7cs"}
+::bilibili{bvid="BV13z421U7cs" poster="assets/cover-bilibili-bv13z421u7cs.jpg" title="【官方双语】GPT是什么？直观解释Transformer | 深度学习第5章"}
 
 自建媒体（原生标签）：
 

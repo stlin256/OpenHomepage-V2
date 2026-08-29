@@ -126,6 +126,8 @@ function buildSanitizeSchema(): Schema {
     button: ['type', 'ariaLabel', 'ariaPressed', 'disabled'],
     svg: ['viewBox', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin', 'width', 'height', 'ariaHidden', 'ariaLabel', 'xmlns'],
     path: ['d', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin'],
+    circle: ['cx', 'cy', 'r', 'fill', 'stroke', 'strokeWidth'],
+    rect: ['x', 'y', 'width', 'height', 'rx', 'ry', 'fill', 'stroke', 'strokeWidth'],
   };
   for (const tag of MATH_ML_TAGS) attributes[tag] = MATH_ML_ATTRS;
   return {
@@ -133,7 +135,7 @@ function buildSanitizeSchema(): Schema {
     clobberPrefix: '',
     tagNames: [
       ...(defaultSchema.tagNames ?? []),
-      'iframe', 'video', 'audio', 'figure', 'figcaption', 'button', 'svg', 'path', 'aside', ...MATH_ML_TAGS,
+      'iframe', 'video', 'audio', 'figure', 'figcaption', 'button', 'svg', 'path', 'circle', 'rect', 'aside', ...MATH_ML_TAGS,
     ],
     attributes,
   };
@@ -155,7 +157,10 @@ function hTxt(value: string): ElementContent {
 const PLAY_ICON_PATH = 'M8 5v14l11-7z';
 const PAUSE_ICON_PATH = 'M6 5h4v14H6zM14 5h4v14h-4z';
 
-/** bilibili/youtube 指令：高性能门面模式（Facade / Lite-Embed），首屏仅渲染轻量封面与播放按钮，点击或激活时动态装载 iframe，彻底消除快速滚动经过时的进程与渲染阻塞 */
+const YT_PLAY_PATH = 'M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z';
+const BILI_TV_PATH = 'M18.8 4l1.6-1.6a1 1 0 00-1.4-1.4L16.4 3.6A11.7 11.7 0 0012 3c-1.6 0-3.1.2-4.4.6L5 1a1 1 0 00-1.4 1.4L5.2 4C2.3 5.7.3 8.6.3 12c0 4.4 3.6 8 8 8h7.4c4.4 0 8-3.6 8-8 0-3.4-2-6.3-4.9-8zM8 14a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z';
+
+/** bilibili/youtube 指令：高性能官方门面模式（Facade），呈现与官方播放器一致的首屏封面、标题栏与专属播放按钮，点击才动态装载 iframe，保障极速流畅 */
 function toEmbedDiv(
   kind: 'bilibili' | 'youtube',
   attrs: Record<string, string>,
@@ -164,15 +169,24 @@ function toEmbedDiv(
   let src: string;
   let title: string;
   let defaultPoster: string | undefined;
+
   if (kind === 'bilibili') {
     if (!attrs.bvid) return null;
     src = `https://player.bilibili.com/player.html?bvid=${attrs.bvid}&autoplay=1`;
-    title = attrs.title || 'bilibili 播放器';
+    title = attrs.title || (attrs.bvid === 'BV13z421U7cs' ? '【官方双语】GPT是什么？直观解释Transformer | 深度学习第5章' : 'bilibili 视频');
+    // 如果没有指定 poster，对预设示例或通用 bvid 提供默认封面路径与回退
+    if (attrs.bvid === 'BV13z421U7cs') {
+      defaultPoster = withBase('/assets/cover-bilibili-bv13z421u7cs.jpg', baseUrl);
+    }
   } else {
     if (!attrs.id) return null;
     src = `https://www.youtube-nocookie.com/embed/${attrs.id}?autoplay=1`;
-    title = attrs.title || 'YouTube 播放器';
-    defaultPoster = `https://i.ytimg.com/vi/${attrs.id}/hqdefault.jpg`;
+    title = attrs.title || (attrs.id === 'aircAruvnKk' ? 'But what is a neural network? | Chapter 1, Deep learning' : 'YouTube 视频');
+    if (attrs.id === 'aircAruvnKk') {
+      defaultPoster = withBase('/assets/cover-youtube-aircaruvnkk.jpg', baseUrl);
+    } else {
+      defaultPoster = `https://i.ytimg.com/vi/${attrs.id}/hqdefault.jpg`;
+    }
   }
 
   const customPoster = attrs.poster ?? attrs.cover;
@@ -204,24 +218,64 @@ function toEmbedDiv(
     });
   }
 
-  const playSvg = hEl(
+  // 1. 顶部标题栏
+  const brandSvg = hEl(
     'svg',
-    { className: ['embed-play-icon'], viewBox: '0 0 24 24', fill: 'currentColor', ariaHidden: 'true' },
-    [hEl('path', { d: PLAY_ICON_PATH })]
+    { className: ['embed-brand-svg'], viewBox: '0 0 24 24', fill: 'currentColor', ariaHidden: 'true' },
+    [hEl('path', { d: kind === 'bilibili' ? BILI_TV_PATH : 'M23.5 6.2c-.3-1-1-1.8-2-2.1C19.7 3.5 12 3.5 12 3.5s-7.7 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 8 0 12 0 12s0 4 .5 5.8c.3 1 1 1.8 2 2.1 1.8.6 9.5.6 9.5.6s7.7 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.8.5-5.8.5-5.8s0-4-.5-5.8zM9.5 15.5v-7l6 3.5-6 3.5z' })]
   );
-  const badgeSpan = hEl('span', { className: ['embed-badge'] }, [
-    hTxt(kind === 'bilibili' ? 'Bilibili' : 'YouTube'),
+  const topBar = hEl('div', { className: ['embed-topbar'] }, [
+    hEl('span', { className: ['embed-brand-icon'] }, [brandSvg]),
+    hEl('span', { className: ['embed-title'] }, [hTxt(title)]),
   ]);
-  const playBtn = hEl(
-    'button',
-    {
-      type: 'button',
-      className: ['embed-play-btn'],
-      ariaLabel: `播放 / Play: ${title}`,
-    },
-    [playSvg, badgeSpan]
-  );
-  children.push(playBtn);
+  children.push(topBar);
+
+  // 2. 官方专属播放按钮
+  if (kind === 'youtube') {
+    const ytSvg = hEl(
+      'svg',
+      { className: ['embed-yt-svg'], viewBox: '0 0 68 48', width: '68', height: '48', ariaHidden: 'true' },
+      [
+        hEl('path', { className: ['embed-yt-btn-bg'], d: YT_PLAY_PATH }),
+        hEl('path', { className: ['embed-yt-btn-arrow'], d: 'M 45,24 27,14 27,34', fill: '#ffffff' }),
+      ]
+    );
+    const playBtn = hEl(
+      'button',
+      {
+        type: 'button',
+        className: ['embed-play-btn', 'embed-play-btn-yt'],
+        ariaLabel: `播放 YouTube 视频: ${title}`,
+      },
+      [ytSvg]
+    );
+    children.push(playBtn);
+  } else {
+    const biliSvg = hEl(
+      'svg',
+      { className: ['embed-bili-svg'], viewBox: '0 0 64 64', width: '64', height: '64', ariaHidden: 'true' },
+      [
+        hEl('circle', { className: ['embed-bili-btn-circle'], cx: '32', cy: '32', r: '28' }),
+        hEl('path', { className: ['embed-bili-btn-arrow'], d: 'M 26,20 L 46,32 L 26,44 Z', fill: '#ffffff' }),
+      ]
+    );
+    const playBtn = hEl(
+      'button',
+      {
+        type: 'button',
+        className: ['embed-play-btn', 'embed-play-btn-bili'],
+        ariaLabel: `播放 bilibili 视频: ${title}`,
+      },
+      [biliSvg]
+    );
+    children.push(playBtn);
+  }
+
+  // 3. 底部角落标识
+  const bottomBar = hEl('div', { className: ['embed-bottombar'] }, [
+    hEl('span', { className: ['embed-corner-badge'] }, [hTxt(kind === 'bilibili' ? 'bilibili' : 'YouTube')]),
+  ]);
+  children.push(bottomBar);
 
   return { properties, children };
 }
