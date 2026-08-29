@@ -5,6 +5,7 @@
  * （bilibili/youtube/video/audio/figure/grid/cell/stream/ghcard，见 docs/specs/03）、
  * HTML 混写白名单过滤（剔除 script/事件属性/非白名单 iframe）。
  */
+
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -210,6 +211,35 @@ function toFigure(attrs: Record<string, string>, baseUrl?: string): { properties
  * 渲染为网格/正文里的残留 ":::" 文本（曾出现在画廊页图片右上角，形似拖动手柄）。
  * 这类段落没有合法内容语义，管线容错直接移除。
  */
+/**
+ * `:::audio` 自渲染播放器结构：真实 `<audio>` 保留原生内核（不隐藏节点本身，
+ * 仅 CSS 收缩为 1px 无障碍占位），外层卡片由前端交互接管；A 默认卡片，
+ * `cover` 存在时自动切为 B 封面卡。`preload` 默认 metadata，保证播放前可显示时长；
+ * `none` 时不主动读元数据，点击后才加载。
+ */
+function toAudioPlayer(attrs: Record<string, string>, baseUrl?: string): Properties {  const src = withBase(attrs.src, baseUrl);
+  const className = ['audio-player', 'md-audio'];
+  if (attrs.cover) className.push('audio-card');
+  const properties: Properties = {
+    className,
+    'data-src': src,
+    'data-mode': attrs.cover ? 'card' : 'compact',
+    'role': 'group',
+    'aria-label': attrs.title || 'Audio player'
+  };
+  if (attrs.preload && ['none', 'metadata', 'auto'].includes(attrs.preload)) {
+    properties['data-preload'] = attrs.preload;
+  }
+  if (attrs.title) properties['data-title'] = attrs.title;
+  if (attrs.description ?? attrs.desc) properties['data-desc'] = attrs.description ?? attrs.desc;
+  if (attrs.cover) properties['data-cover'] = withBase(attrs.cover, baseUrl);
+  return properties;
+}
+
+/**
+ * 纯冒号段落判定：嵌套容器指令未遵守「外层冒号数多于内层」时，多余的闭合围栏
+ * 会解析成普通文本段落（如 <p>:::</p>），这类残留没有内容语义，直接移除。
+ */
 function isStrayFenceParagraph(node: Content): boolean {
   if (node.type !== 'paragraph' || node.children.length !== 1) return false;
   const child = node.children[0];
@@ -245,8 +275,7 @@ function degradeToText(node: Directive, file: VFile): void {
  * （点击打开检查器配参数）。data-oh-directive 记录指令名供样式/脚本识别。
  * 生产模式不走这里（degradeToText 降级为原文文本，行为不变）。
  */
-function setDirectivePlaceholder(
-  node: ContainerDirective | LeafDirective,
+function setDirectivePlaceholder(  node: ContainerDirective | LeafDirective,
   reason: 'params' | 'unknown'
 ): void {
   const name = node.name;
@@ -302,16 +331,20 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean) 
           data.hChildren = embed.children;
           break;
         }
-        case 'video':
-        case 'audio': {
+        case 'video': {
           if (!attrs.src) return degrade('params');
           const properties: Properties = {
             src: withBase(attrs.src, baseUrl),
             controls: true,
             preload: attrs.preload ?? 'metadata',
           };
-          if (name === 'video' && attrs.poster) properties.poster = withBase(attrs.poster, baseUrl);
+          if (attrs.poster) properties.poster = withBase(attrs.poster, baseUrl);
           setElement(name, properties);
+          break;
+        }
+        case 'audio': {
+          if (!attrs.src) return degrade('params');
+          setElement('div', toAudioPlayer(attrs, baseUrl));
           break;
         }
         case 'figure': {
@@ -376,8 +409,7 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean) 
  * 行内 textDirective 降级成的文本落在宿主段落内，随段落坐标覆盖。
  * html 块的 data.hProperties 不会生效（raw 直出无元素可挂），DOM 中无对应物。
  */
-function remarkEditSpans(editSource: string) {
-  return (tree: Root, file: VFile) => {
+function remarkEditSpans(editSource: string) {  return (tree: Root, file: VFile) => {
     const valueByPos = new Map(
       listEditableBlocks(String(file)).map((b) => [
         `${b.start}:${b.end}`,
@@ -497,8 +529,7 @@ function escapeAttrValue(value: string): string {
  * 而是包一层 <div data-oh-src class="oh-embed">，保留坐标供 overlay 锚定；
  * 生产模式（无坐标）返回 null，调用方维持整段替换。
  */
-function wrapFragmentForEdit(node: Element, html: string): string | null {
-  const src = node.properties?.dataOhSrc ?? node.properties?.['data-oh-src'];
+function wrapFragmentForEdit(node: Element, html: string): string | null {  const src = node.properties?.dataOhSrc ?? node.properties?.['data-oh-src'];
   if (typeof src !== 'string' || src === '') return null;
   return `<div data-oh-src="${escapeAttrValue(src)}" class="oh-embed">${html}</div>`;
 }
@@ -651,3 +682,8 @@ export async function renderMarkdown(
   }
   return String(await processor.process(markdown));
 }
+
+
+
+
+

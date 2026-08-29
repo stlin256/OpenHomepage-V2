@@ -10,6 +10,7 @@ import { initMotion } from './motion.ts';
 import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
+import { initAudioPlayers, pauseOtherMedia, resumeBgmIfNeeded } from './audio-player.ts';
 import { initImageFade } from './image-fade.ts';
 import { scheduleTabPrefetch } from './tab-prefetch.ts';
 import { fetchPageHtml } from './page-cache.ts';
@@ -123,12 +124,21 @@ function initNavToggle(): void {
   });
 }
 
-/** DOMParser 生成后再移入正文的媒体节点需要显式启动资源选择。 */
+/** DOMParser 生成后再移入正文的媒体节点需要显式启动资源选择；音频走专用自渲染初始化。 */
 function initEmbeddedMedia(): void {
-  for (const media of document.querySelectorAll<HTMLMediaElement>('.markdown-body video, .markdown-body audio')) {
+  initAudioPlayers();
+  for (const media of document.querySelectorAll<HTMLMediaElement>('.markdown-body video')) {
     if (media.dataset.mediaLoaded === '1') continue;
     media.dataset.mediaLoaded = '1';
     media.load();
+    ['play', 'playing', 'pause', 'ended'].forEach(evt => {
+      media.addEventListener(evt, () => {
+        if (evt === 'play' || evt === 'playing') pauseOtherMedia(media);
+        else {
+          resumeBgmIfNeeded();
+        }
+      });
+    });
   }
 }
 
@@ -630,3 +640,5 @@ void bootstrapLanguage();
 window.addEventListener('popstate', () => {
   void swapContent(location.pathname + location.search, { push: false });
 });
+
+
