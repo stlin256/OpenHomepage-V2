@@ -6,6 +6,11 @@
  * 热力图 5 档色阶由 GithubBlock 构建时计算为 --heat-0..4（明暗两套，见 src/lib/github-block.ts）。
  */
 
+html {
+  /* 方案 A：滚动锁开启时保留经典滚动条的布局宽度，避免灯箱打开时页面居中内容横跳。 */
+  scrollbar-gutter: stable;
+}
+
 :root {
   --bg: var(--site-bg-light, #f8f7f2);
   --bg-subtle: #f2efe7;
