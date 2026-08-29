@@ -9,6 +9,8 @@ export interface TocItem {
   id: string;
 }
 
+import { getUiLabels, normalizeUiLang } from './ui-i18n.ts';
+
 export interface TocOptions {
   maxDepth?: number;
   title?: string;
@@ -102,9 +104,9 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
-export function renderTocHtml(items: TocItem[], options: { title?: string } = {}): string {
+export function renderTocHtml(items: TocItem[], options: { title?: string; lang?: string } = {}): string {
   if (items.length === 0) return '';
-  const title = options.title ?? 'Contents';
+  const title = options.title ?? getUiLabels(normalizeUiLang(options.lang)).toc.title;
   const listItems = items
     .map(
       (item) =>

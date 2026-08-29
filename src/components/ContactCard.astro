@@ -1,5 +1,6 @@
 ---
 import { withBase } from '../lib/base-url.ts';
+import { getUiLabels } from '../lib/ui-i18n.ts';
 
 interface Props {
   card: {
@@ -9,14 +10,16 @@ interface Props {
     description: string;
     image: string;
   };
+  lang?: string;
 }
 
-const { card } = Astro.props;
+const { card, lang = 'en' } = Astro.props;
 const image = withBase(card.image);
+const ui = getUiLabels(lang);
 ---
 
 <aside class="intro-card" data-delay={card.delay} aria-live="polite">
-  <button class="intro-close" type="button" aria-label="关闭联系卡 / Close contact card">
+  <button class="intro-close" type="button" aria-label={ui.contactCard.close}>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
       <path d="M6 6l12 12M18 6L6 18" />
     </svg>
@@ -39,7 +42,7 @@ const image = withBase(card.image);
     <img class="qr-modal-image" src={image} alt="" />
     {card.description && <p>{card.description}</p>}
     <button class="editorial-button outline" type="button" data-qr-close>
-      <span>关闭 / Close</span>
+      <span>{ui.contactCard.qrClose}</span>
     </button>
   </div>
 </dialog>

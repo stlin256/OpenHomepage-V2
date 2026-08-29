@@ -46,7 +46,7 @@ describe('data-oh-src 坐标注入', () => {
 
   it('缺参指令在编辑模式渲染占位卡（节点类型不变，坐标照常注入）', async () => {
     const md = '::bilibili{}\n';
-    const html = await renderMarkdown(md, { editSource: SRC });
+    const html = await renderMarkdown(md, { editSource: SRC, lang: 'zh' });
     // 占位卡：class + data-oh-directive + data-oh-src 坐标（与 listEditableBlocks 一致）
     expect(html).toContain(
       `<div class="oh-directive-placeholder oh-directive-params" data-oh-directive="bilibili" data-oh-src="${spanValue(md, 0)}">`
@@ -57,11 +57,11 @@ describe('data-oh-src 坐标注入', () => {
   });
 
   it('未知指令同样渲染占位卡（unknown 变体）；容器指令缺参也是占位卡', async () => {
-    const unknown = await renderMarkdown('::whatisthis{a=1}\n', { editSource: SRC });
+    const unknown = await renderMarkdown('::whatisthis{a=1}\n', { editSource: SRC, lang: 'zh' });
     expect(unknown).toContain('oh-directive-placeholder oh-directive-unknown');
     expect(unknown).toContain('data-oh-directive="whatisthis"');
     expect(unknown).toContain('未知指令 whatisthis');
-    const figure = await renderMarkdown(':::figure{}\n:::\n', { editSource: SRC });
+    const figure = await renderMarkdown(':::figure{}\n:::\n', { editSource: SRC, lang: 'zh' });
     expect(figure).toContain('oh-directive-placeholder oh-directive-params');
     expect(figure).toContain('data-oh-directive="figure"');
     expect(figure).toContain(`data-oh-src="${spanValue(':::figure{}\n:::\n', 0)}"`);

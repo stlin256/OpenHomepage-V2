@@ -21,6 +21,7 @@ import { editCfgAttr } from '../lib/edit-cfg.ts';
 import { languageDisplayName, orderLangMenu } from '../lib/language.ts';
 import { speculationRulesFor } from '../lib/speculation-rules.ts';
 import { getSearchI18n } from '../lib/search.ts';
+import { getUiLabels } from '../lib/ui-i18n.ts';
 
 interface Props {
   /** 页面标题（<title> 为 `${title} · ${siteTitle}`） */
@@ -96,6 +97,7 @@ const xDefault = alternates.find((a) => a.lang === defaultLang) ?? alternates[0]
 // 语言菜单：当前语言置顶，其余保持站点语言顺序（仅菜单显示顺序，hreflang 不受影响）
 const menuAlternates = orderLangMenu(alternates, lang);
 const searchI18n = getSearchI18n(lang);
+const ui = getUiLabels(lang);
 // Chromium 预热 HTML 缓存；Firefox/Safari 会忽略该 type，不产生兼容分支。
 const speculationRules =
   import.meta.env.PROD && !editAdminOrigin
@@ -236,12 +238,12 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
   <body>
     {readingProgress && <div class="reading-progress" style="transform: scaleX(0)" aria-hidden="true" />}
     <header class="site-header">
-      <button class="nav-toggle" type="button" aria-label="打开导航菜单 / Menu" aria-expanded="false" aria-controls="site-nav">
+      <button class="nav-toggle" type="button" aria-label={ui.header.navToggle} aria-expanded="false" aria-controls="site-nav">
         <span class="bar" aria-hidden="true"></span>
         <span class="bar" aria-hidden="true"></span>
         <span class="bar" aria-hidden="true"></span>
       </button>
-      <nav class="site-nav" id="site-nav" aria-label="站点导航">
+      <nav class="site-nav" id="site-nav" aria-label={ui.header.siteNav}>
         {/* 可视化编辑（M12d）：站点标题挂 data-oh-cfg 坐标（site.title@内容语言，仅 OH_EDIT 注入） */}
         <p class="site-title" {...editCfgAttr('site.title', htmlLang)}><a href={homeHref}>{siteTitle}</a></p>
         <ul>
@@ -260,14 +262,14 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
       </nav>
       <div class="header-tools">
         <!-- P1 静态全局搜索快捷按钮 -->
-        <button class="search-toggle icon-btn" type="button" aria-label={searchI18n.toggleLabel} aria-keyshortcuts="Control+K Meta+K" data-pagefind-ignore>
+        <button class="search-toggle icon-btn" type="button" aria-label={ui.header.search} aria-keyshortcuts="Control+K Meta+K" data-pagefind-ignore>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
         </button>
         {activePlaylist && (
-          <button class="bgm-toggle icon-btn" type="button" aria-pressed="false" aria-label="播放/暂停背景音乐 / Toggle background music" aria-haspopup={activePlaylist.showPanel ? 'dialog' : undefined}>
+          <button class="bgm-toggle icon-btn" type="button" aria-pressed="false" aria-label={ui.header.bgmToggle} aria-haspopup={activePlaylist.showPanel ? 'dialog' : undefined}>
             <svg class="icon icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M11 5 6 9H2v6h4l5 4V5z" />
             </svg>
@@ -280,7 +282,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
         )}
         {i18n && alternates.length > 1 && (
           <div class="lang-switcher">
-            <button class="lang-toggle icon-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="语言切换 / Switch language">
+            <button class="lang-toggle icon-btn" type="button" aria-haspopup="menu" aria-expanded="false" aria-label={ui.header.langSwitch}>
               {/* Material translate 图标（fill，与主题按钮同款小方块风格） */}
               <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
@@ -303,7 +305,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
             </ul>
           </div>
         )}
-        <button class="theme-toggle icon-btn" type="button" aria-label="切换亮色/暗色主题 / Toggle theme">
+        <button class="theme-toggle icon-btn" type="button" aria-label={ui.header.themeToggle}>
           <svg class="icon icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
             <circle cx="12" cy="12" r="4" />
             <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
@@ -338,8 +340,8 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
         {activePlaylist.showPanel && (
           <div class="bgm-drawer" role="dialog" aria-label="BGM Playlist" hidden data-pagefind-ignore>
             <div class="bgm-drawer-header">
-              <p class="bgm-drawer-title">Playlist · 背景音乐</p>
-              <button class="bgm-drawer-close" type="button" aria-label="关闭 / Close">
+              <p class="bgm-drawer-title">{ui.bgm.drawerTitle}</p>
+              <button class="bgm-drawer-close" type="button" aria-label={ui.bgm.close}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -349,25 +351,25 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
             <div class="bgm-current-info">
               <img class="bgm-current-cover" src={withBase(activePlaylist.tracks[0]?.cover ?? 'favicon.svg')} alt="" width="48" height="48" loading="lazy" />
               <div class="bgm-current-text">
-                <p class="bgm-current-title">{activePlaylist.tracks[0]?.title ?? 'Track 1'}</p>
+                <p class="bgm-current-title">{activePlaylist.tracks[0]?.title ?? ui.bgm.trackFallback}</p>
                 <p class="bgm-current-artist">{activePlaylist.tracks[0]?.artist || siteTitle}</p>
               </div>
             </div>
             <div class="bgm-drawer-controls">
-              <button class="bgm-ctrl-btn bgm-prev-btn" type="button" aria-label="上一首 / Previous">
+              <button class="bgm-ctrl-btn bgm-prev-btn" type="button" aria-label={ui.bgm.prev}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
               </button>
-              <button class="bgm-ctrl-btn play-btn bgm-play-btn" type="button" aria-label="播放/暂停 / Play/Pause">
+              <button class="bgm-ctrl-btn play-btn bgm-play-btn" type="button" aria-label={ui.bgm.playPause}>
                 <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                 <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               </button>
-              <button class="bgm-ctrl-btn bgm-next-btn" type="button" aria-label="下一首 / Next">
+              <button class="bgm-ctrl-btn bgm-next-btn" type="button" aria-label={ui.bgm.next}>
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="m6 18 8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
               </button>
             </div>
             <div class="bgm-volume-bar">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="color:var(--text-muted);"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-              <input type="range" class="bgm-volume-slider" min="0" max="1" step="0.05" value={activePlaylist.volume} aria-label="音量调节 / Volume" />
+              <input type="range" class="bgm-volume-slider" min="0" max="1" step="0.05" value={activePlaylist.volume} aria-label={ui.bgm.volume} />
             </div>
             <ul class="bgm-tracklist">
               {activePlaylist.tracks.map((t, idx) => (
@@ -383,7 +385,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
     )}
 
     <!-- P1 搜索模态框 -->
-    <dialog class="search-dialog" aria-label={searchI18n.toggleLabel} data-pagefind-ignore hidden>
+    <dialog class="search-dialog" aria-label={ui.header.search} data-pagefind-ignore hidden>
       <div class="search-panel">
         <form class="search-form" role="search" onsubmit="return false;">
           <span class="search-icon" aria-hidden="true">
@@ -418,10 +420,10 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
     </dialog>
 
     {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 global.css */}
-    {introCard && <ContactCard card={introCard} />}
-    <div class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览 / Image preview" data-pagefind-ignore hidden>
+    {introCard && <ContactCard card={introCard} lang={lang} />}
+    <div class="lightbox" role="dialog" aria-modal="true" aria-label={ui.lightbox.dialog} data-pagefind-ignore hidden>
       <img class="lightbox-img" alt="" />
-      <button class="lightbox-close" type="button" aria-label="关闭 / Close">
+      <button class="lightbox-close" type="button" aria-label={ui.lightbox.close}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <path d="M6 6l12 12M18 6L6 18" />
         </svg>

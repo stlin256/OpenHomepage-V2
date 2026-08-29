@@ -8,6 +8,7 @@ import path from 'node:path';
 import { load as loadYaml } from 'js-yaml';
 import { type LocalizedText, resolveText } from './localize.ts';
 import { withBase } from './base-url.ts';
+import { getUiLabels, normalizeUiLang } from './ui-i18n.ts';
 
 export type PublicationType = 'conference' | 'journal' | 'workshop' | 'demo' | 'preprint' | 'thesis';
 
@@ -219,16 +220,13 @@ export function renderPublications(
 ): string {
   const lang = options.lang;
   const defaultLang = options.defaultLang;
-  const isZh = (lang ?? defaultLang ?? 'zh').toLowerCase().startsWith('zh');
-  const abstractLabel = isZh ? '摘要' : 'Abstract';
-  const copyLabel = isZh ? '复制 BibTeX' : 'Copy BibTeX';
-  const emptyLabel = isZh ? '没有匹配的成果 / No publications matched' : 'No publications matched';
+  const ui = getUiLabels(normalizeUiLang(lang ?? defaultLang));
 
   const highlights = new Set([...(options.highlightAuthors ?? []), ...[]].map((v) => v.trim().toLowerCase()));
   const matched = filterPublications(items, query);
   const group = query.group ?? 'year';
   if (!matched.length) {
-    return `<section class="publications" data-group="none"><p class="publication-empty">${esc(emptyLabel)}</p></section>`;
+    return `<section class="publications" data-group="none"><p class="publication-empty">${esc(ui.publications.empty)}</p></section>`;
   }
   const renderArticle = (item: PublicationItem, index: number): string => {
     const abstract = item.abstract ? resolveText(item.abstract, lang, defaultLang) : '';
@@ -244,11 +242,11 @@ export function renderPublications(
     ].filter(Boolean);
     const bibtexId = `bibtex-${esc(item.id)}`;
     const copyBtn = item.bibtex
-      ? `<button type="button" class="publication-copy" data-copy-bibtex="${bibtexId}">${copyLabel}</button>`
+      ? `<button type="button" class="publication-copy" data-copy-bibtex="${bibtexId}">${ui.publications.copyBibtex}</button>`
       : '';
     const hasActions = linkItems.length > 0 || copyBtn;
     const actionsRow = hasActions
-      ? `<div class="publication-actions"><nav class="publication-links" aria-label="publication links">${linkItems.join('')}${copyBtn}</nav></div>`
+      ? `<div class="publication-actions"><nav class="publication-links" aria-label="${ui.publications.linksAria}">${linkItems.join('')}${copyBtn}</nav></div>`
       : '';
     const bibtexBlock = item.bibtex
       ? `<div class="publication-bibtex"><pre id="${bibtexId}" tabindex="0" data-pagefind-ignore>${esc(item.bibtex)}</pre></div>`
@@ -263,7 +261,7 @@ export function renderPublications(
         <h3 class="publication-title">${esc(item.title)}</h3>
         <p class="publication-authors">${authorsHtml(item, highlights)}</p>
         ${note ? `<p class="publication-note">${esc(note)}</p>` : ''}
-        ${abstract ? `<details class="publication-abstract"><summary>${abstractLabel}</summary><div class="abstract-content"><p>${esc(abstract)}</p></div></details>` : ''}
+        ${abstract ? `<details class="publication-abstract"><summary>${ui.publications.abstract}</summary><div class="abstract-content"><p>${esc(abstract)}</p></div></details>` : ''}
         ${actionsRow}
         ${bibtexBlock}
       </div>

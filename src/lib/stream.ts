@@ -15,6 +15,7 @@ import { toHtml } from 'hast-util-to-html';
 import type { Root, Element, ElementContent, RootContent } from 'hast';
 import { createMarkdownProcessor, type MarkdownOptions } from './markdown.ts';
 import { resolveText, type LocalizedText } from './config.ts';
+import { getUiLabels } from './ui-i18n.ts';
 
 export type StreamToken =
   | { t: 'open'; tag: string; h: string }
@@ -231,7 +232,7 @@ const REPLAY_ICON =
  * titleCfgAttr（M12d，可选）：data-oh-cfg 完整属性值（<yaml路径>@<lang>），仅编辑模式
  * 由调用方（editCfgValue）传入，挂到 .stream-title 上；本函数输出在 sanitize 之后注入，属性可存活。
  */
-export function streamEmbedHtml(block: LoadedStreamBlock, titleCfgAttr?: string): string {
+export function streamEmbedHtml(block: LoadedStreamBlock, titleCfgAttr?: string, lang?: string): string {
   const cfgAttr =
     titleCfgAttr && block.title ? ` data-oh-cfg="${escapeHtml(titleCfgAttr)}"` : '';
   const title = block.title
@@ -241,7 +242,7 @@ export function streamEmbedHtml(block: LoadedStreamBlock, titleCfgAttr?: string)
     `<div class="stream-block" data-stream-id="${escapeHtml(block.id)}"` +
     ` data-autoplay="${block.autoplay ? 'true' : 'false'}" data-speed="${block.speed}">` +
     `<div class="stream-head">${title}` +
-    `<button class="stream-replay" type="button" aria-label="重播 / Replay">${REPLAY_ICON}</button>` +
+    `<button class="stream-replay" type="button" aria-label="${getUiLabels(lang).stream.replay}">${REPLAY_ICON}</button>` +
     `</div>` +
     `<div class="stream-content markdown-body"></div>` +
     `<noscript><div class="stream-content markdown-body">${block.html}</div></noscript>` +

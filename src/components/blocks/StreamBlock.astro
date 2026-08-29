@@ -13,13 +13,15 @@ interface Props {
   cfgBlock?: string;
   /** 标题字段坐标完整值（streaming_blocks.<id>.title@<lang>） */
   titleCfg?: string;
+  /** 内容语言（UI 文案本地化用） */
+  lang?: string;
 }
 
-const { block, cfgBlock, titleCfg } = Astro.props;
+const { block, cfgBlock, titleCfg, lang = 'en' } = Astro.props;
 ---
 
 <section
   class="home-block block-streaming reveal"
   {...(cfgBlock ? { 'data-oh-cfg-block': cfgBlock } : {})}
-  set:html={streamEmbedHtml(block, titleCfg)}
+  set:html={streamEmbedHtml(block, titleCfg, lang)}
 />
