@@ -82,6 +82,37 @@ function updateMediaSession(track: Track, audio: HTMLAudioElement, onPrev?: () =
   }
 }
 
+function toggleDrawer(drawer: HTMLElement): void {
+  if (drawer.hidden || drawer.classList.contains('closing')) {
+    openDrawer(drawer);
+  } else {
+    closeDrawer(drawer);
+  }
+}
+
+function openDrawer(drawer: HTMLElement): void {
+  drawer.classList.remove('closing');
+  drawer.hidden = false;
+  // Re-trigger animation by reflow
+  void drawer.offsetWidth;
+  drawer.style.animation = '';
+}
+
+function closeDrawer(drawer: HTMLElement): void {
+  if (drawer.hidden || drawer.classList.contains('closing')) return;
+  drawer.classList.add('closing');
+  const done = () => {
+    drawer.hidden = true;
+    drawer.classList.remove('closing');
+    drawer.removeEventListener('animationend', done);
+  };
+  drawer.addEventListener('animationend', done);
+  // Fallback timeout in case animationend doesn't fire
+  setTimeout(() => {
+    if (!drawer.hidden) done();
+  }, 250);
+}
+
 export function initBgm(): void {
   const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio');
   const btn = document.querySelector<HTMLElement>('.bgm-toggle');
@@ -131,7 +162,13 @@ export function initBgm(): void {
 
     if (titleEl) titleEl.textContent = current.title;
     if (artistEl) artistEl.textContent = current.artist || '';
-    if (coverEl && current.cover) coverEl.src = current.cover;
+    if (coverEl) {
+      if (current.cover) {
+        coverEl.src = current.cover;
+      } else if (!coverEl.classList.contains('bgm-cover-placeholder')) {
+        coverEl.src = '';
+      }
+    }
     if (slider) slider.value = String(audio.volume);
     if (playIcon && pauseIcon) {
       playIcon.style.display = audio.paused ? '' : 'none';
@@ -208,7 +245,7 @@ export function initBgm(): void {
     btn.addEventListener('contextmenu', (e) => {
       if (drawer) {
         e.preventDefault();
-        drawer.hidden = !drawer.hidden;
+        toggleDrawer(drawer);
         syncDrawer();
       }
     });
@@ -219,7 +256,7 @@ export function initBgm(): void {
     drawer.dataset.drawerInit = '1';
 
     drawer.querySelector('.bgm-drawer-close')?.addEventListener('click', () => {
-      drawer.hidden = true;
+      closeDrawer(drawer);
     });
 
     drawer.querySelector('.bgm-play-btn')?.addEventListener('click', () => {

@@ -81,7 +81,7 @@ bgm:
     - title: "Goldberg Variations · Aria"
       artist: "J.S. Bach"
       src: "assets/bgm.mp3"
-      cover: "assets/favicon.svg"
+      cover: "assets/goldberg-aria-cover.jpg"
 
 # ---- GitHub 区块 ----
 github:

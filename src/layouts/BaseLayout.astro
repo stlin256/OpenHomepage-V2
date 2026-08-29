@@ -349,7 +349,13 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
               </button>
             </div>
             <div class="bgm-current-info">
-              <img class="bgm-current-cover" src={withBase(activePlaylist.tracks[0]?.cover ?? 'favicon.svg')} alt="" width="48" height="48" loading="lazy" />
+              {activePlaylist.tracks[0]?.cover ? (
+                <img class="bgm-current-cover" src={withBase(activePlaylist.tracks[0].cover)} alt="" width="48" height="48" loading="lazy" />
+              ) : (
+                <span class="bgm-current-cover bgm-cover-placeholder" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+                </span>
+              )}
               <div class="bgm-current-text">
                 <p class="bgm-current-title">{activePlaylist.tracks[0]?.title ?? ui.bgm.trackFallback}</p>
                 <p class="bgm-current-artist">{activePlaylist.tracks[0]?.artist || siteTitle}</p>

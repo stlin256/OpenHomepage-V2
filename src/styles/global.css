@@ -3715,6 +3715,16 @@ html.js .reveal.revealed {
   padding: 0.2rem;
   font-size: 1.1rem;
   line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.bgm-drawer-close:hover {
+  color: var(--text);
+  background: var(--bg-subtle);
+  transform: scale(1.1);
+}
+.bgm-drawer-close:active {
+  transform: scale(0.92);
 }
 .bgm-current-info {
   display: flex;
@@ -3729,6 +3739,12 @@ html.js .reveal.revealed {
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   flex-shrink: 0;
+}
+.bgm-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
 }
 .bgm-current-text {
   min-width: 0;
@@ -3768,10 +3784,15 @@ html.js .reveal.revealed {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 .bgm-ctrl-btn:hover {
   color: var(--accent);
   border-color: var(--accent);
+  transform: scale(1.1);
+}
+.bgm-ctrl-btn:active {
+  transform: scale(0.92);
 }
 .bgm-ctrl-btn.play-btn {
   width: 42px;
@@ -3779,6 +3800,14 @@ html.js .reveal.revealed {
   background: var(--accent);
   color: var(--bg);
   border-color: var(--accent);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.bgm-ctrl-btn.play-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.bgm-ctrl-btn.play-btn:active {
+  transform: scale(0.92);
 }
 .bgm-volume-bar {
   display: flex;
@@ -3789,6 +3818,7 @@ html.js .reveal.revealed {
   flex: 1;
   accent-color: var(--accent);
   cursor: pointer;
+  transition: opacity 0.15s ease;
 }
 .bgm-tracklist {
   list-style: none;
