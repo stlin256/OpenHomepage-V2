@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { filterSearchResults, type SearchResultItem, buildSearchIndexItem } from "../src/lib/search.ts";
+﻿import { describe, it, expect } from "vitest";
+import { filterSearchResults, type SearchResultItem, buildSearchIndexItem, getSearchI18n } from "../src/lib/search.ts";
 
 const sampleResults: SearchResultItem[] = [
   {
@@ -64,5 +64,23 @@ describe("buildSearchIndexItem", () => {
     expect(item.excerpt).toContain("Main content");
     expect(item.excerpt).toContain("and more text.");
     expect(item.excerpt).not.toContain("@article");
+  });
+});
+
+describe("getSearchI18n", () => {
+  it("provides localized strings for zh, en, ja, fr and falls back to zh", () => {
+    const zh = getSearchI18n("zh");
+    expect(zh.scopeCurrent).toBe("当前语言");
+    expect(zh.statusMatches(3)).toBe("找到 3 条结果");
+
+    const en = getSearchI18n("en");
+    expect(en.scopeCurrent).toBe("This language");
+    expect(en.statusMatches(3)).toBe("3 matches found");
+
+    const ja = getSearchI18n("ja");
+    expect(ja.scopeCurrent).toBe("現在の言語");
+
+    const fallback = getSearchI18n("es");
+    expect(fallback.scopeCurrent).toBe("当前语言");
   });
 });

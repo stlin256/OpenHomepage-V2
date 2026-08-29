@@ -20,6 +20,7 @@ import { withBase, getBaseUrl } from '../lib/base-url.ts';
 import { editCfgAttr } from '../lib/edit-cfg.ts';
 import { languageDisplayName, orderLangMenu } from '../lib/language.ts';
 import { speculationRulesFor } from '../lib/speculation-rules.ts';
+import { getSearchI18n } from '../lib/search.ts';
 
 interface Props {
   /** 页面标题（<title> 为 `${title} · ${siteTitle}`） */
@@ -94,6 +95,7 @@ const editAdminOrigin = process.env.OH_EDIT === '1' ? (process.env.OH_ADMIN_ORIG
 const xDefault = alternates.find((a) => a.lang === defaultLang) ?? alternates[0];
 // 语言菜单：当前语言置顶，其余保持站点语言顺序（仅菜单显示顺序，hreflang 不受影响）
 const menuAlternates = orderLangMenu(alternates, lang);
+const searchI18n = getSearchI18n(lang);
 // Chromium 预热 HTML 缓存；Firefox/Safari 会忽略该 type，不产生兼容分支。
 const speculationRules =
   import.meta.env.PROD && !editAdminOrigin
@@ -258,7 +260,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
       </nav>
       <div class="header-tools">
         <!-- P1 静态全局搜索快捷按钮 -->
-        <button class="search-toggle icon-btn" type="button" aria-label="搜索 / Search (Ctrl+K)" aria-keyshortcuts="Control+K Meta+K" data-pagefind-ignore>
+        <button class="search-toggle icon-btn" type="button" aria-label={searchI18n.toggleLabel} aria-keyshortcuts="Control+K Meta+K" data-pagefind-ignore>
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -376,7 +378,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
     )}
 
     <!-- P1 搜索模态框 -->
-    <dialog class="search-dialog" aria-label="Search" data-pagefind-ignore hidden>
+    <dialog class="search-dialog" aria-label={searchI18n.toggleLabel} data-pagefind-ignore hidden>
       <div class="search-panel">
         <form class="search-form" role="search" onsubmit="return false;">
           <span class="search-icon" aria-hidden="true">
@@ -385,19 +387,19 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </span>
-          <input type="search" class="search-input" placeholder="Search / 搜索 (Ctrl+K)..." autocomplete="off" spellcheck="false" aria-label="搜索框 / Search box" />
+          <input type="search" class="search-input" placeholder={searchI18n.placeholder} autocomplete="off" spellcheck="false" aria-label={searchI18n.placeholder} />
           <div class="search-scope-tabs">
-            <button type="button" class="search-scope-btn active" data-scope="current">当前语言</button>
-            <button type="button" class="search-scope-btn" data-scope="all">全部语言</button>
+            <button type="button" class="search-scope-btn active" data-scope="current">{searchI18n.scopeCurrent}</button>
+            <button type="button" class="search-scope-btn" data-scope="all">{searchI18n.scopeAll}</button>
           </div>
-          <button type="button" class="search-close" aria-label="关闭 / Close">Esc</button>
+          <button type="button" class="search-close" aria-label={searchI18n.closeLabel}>Esc</button>
         </form>
-        <p class="search-status" role="status">输入关键词开始搜索...</p>
+        <p class="search-status" role="status">{searchI18n.statusInitial}</p>
         <ul class="search-results" role="listbox"></ul>
         <div class="search-footer">
-          <span><kbd>↑</kbd> <kbd>↓</kbd> 切换</span>
-          <span><kbd>Enter</kbd> 跳转</span>
-          <span><kbd>Esc</kbd> 关闭</span>
+          <span><kbd>↑</kbd> <kbd>↓</kbd> <span class="search-hint-nav">{searchI18n.navHint}</span></span>
+          <span><kbd>Enter</kbd> <span class="search-hint-select">{searchI18n.selectHint}</span></span>
+          <span><kbd>Esc</kbd> <span class="search-hint-close">{searchI18n.closeHint}</span></span>
         </div>
       </div>
     </dialog>

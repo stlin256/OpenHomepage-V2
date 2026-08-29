@@ -1,10 +1,11 @@
-/**
+﻿/**
  * P1 全局静态搜索客户端（Cmd+K / Ctrl+K）：
  * - 拦截快捷键与搜索按钮，呼出杂志风毛玻璃搜索框；
  * - 支持 Pagefind 分片静态索引与本地轻量索引渐进增强回退；
- * - 支持中英文分词检索、多语言作用域切换、键盘上下键导航与回车跳转。
+ * - 支持中英文分词检索、多语言作用域切换、键盘上下键导航与回车跳转；
+ * - 支持弹窗打开/关闭平滑动画过渡与多语言 i18n 动态同步。
  */
-import { filterSearchResults, type SearchResultItem } from '../lib/search.ts';
+import { filterSearchResults, getSearchI18n, type SearchResultItem } from '../lib/search.ts';
 
 let pagefindInstance: any = null;
 let pagefindLoaded = false;
@@ -14,7 +15,6 @@ async function loadPagefind(): Promise<any> {
   try {
     const base = document.documentElement.dataset.base || '/';
     const cleanBase = base.replace(/\/+$/, '');
-    // Dynamic import pagefind
     const pagefindModule = await import(/* @vite-ignore */ `${cleanBase}/pagefind/pagefind.js`);
     if (pagefindModule && pagefindModule.search) {
       await pagefindModule.init?.();
@@ -29,7 +29,6 @@ async function loadPagefind(): Promise<any> {
 
 function collectLocalSearchItems(): SearchResultItem[] {
   const items: SearchResultItem[] = [];
-  // Scan navigation links and visible page cards for instant preview
   document.querySelectorAll<HTMLAnchorElement>('.site-nav a, .home-block a, .publication-item, .timeline-item').forEach((el, idx) => {
     const link = el instanceof HTMLAnchorElement ? el : el.querySelector<HTMLAnchorElement>('a');
     const titleEl = el.querySelector('h2, h3, .publication-title, .timeline-item-title') || el;
@@ -65,20 +64,59 @@ export function initSearch(): void {
   let currentResults: SearchResultItem[] = [];
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let searchGeneration = 0;
+  let isClosing = false;
+
+  const syncI18n = () => {
+    const lang = document.documentElement.dataset.routeLang || 'zh';
+    const dict = getSearchI18n(lang);
+    if (input) {
+      input.placeholder = dict.placeholder;
+      input.setAttribute('aria-label', dict.placeholder);
+    }
+    if (toggleBtn) toggleBtn.setAttribute('aria-label', dict.toggleLabel);
+    const currentBtn = dialog.querySelector<HTMLButtonElement>('.search-scope-btn[data-scope="current"]');
+    const allBtn = dialog.querySelector<HTMLButtonElement>('.search-scope-btn[data-scope="all"]');
+    if (currentBtn) currentBtn.textContent = dict.scopeCurrent;
+    if (allBtn) allBtn.textContent = dict.scopeAll;
+    if (closeBtn) closeBtn.setAttribute('aria-label', dict.closeLabel);
+    const navHint = dialog.querySelector('.search-hint-nav');
+    const selectHint = dialog.querySelector('.search-hint-select');
+    const closeHint = dialog.querySelector('.search-hint-close');
+    if (navHint) navHint.textContent = dict.navHint;
+    if (selectHint) selectHint.textContent = dict.selectHint;
+    if (closeHint) closeHint.textContent = dict.closeHint;
+    if (!input?.value.trim() && statusEl) {
+      statusEl.textContent = dict.statusInitial;
+    }
+  };
 
   const openSearch = () => {
+    isClosing = false;
     dialog.hidden = false;
+    dialog.classList.remove('closing');
+    dialog.classList.add('open');
     dialog.showModal?.();
+    syncI18n();
     input?.focus();
     input?.select();
-    void loadPagefind(); // preload pagefind on open
+    void loadPagefind();
   };
 
   const closeSearch = () => {
-    dialog.hidden = true;
-    dialog.close?.();
-    toggleBtn?.focus();
+    if (dialog.hidden || isClosing) return;
+    isClosing = true;
+    dialog.classList.add('closing');
+    dialog.classList.remove('open');
+    window.setTimeout(() => {
+      dialog.hidden = true;
+      dialog.classList.remove('closing');
+      dialog.close?.();
+      isClosing = false;
+      toggleBtn?.focus();
+    }, 180);
   };
+
+  syncI18n();
 
   if (!toggleBtn?.dataset.searchInit) {
     if (toggleBtn) {
@@ -127,16 +165,18 @@ export function initSearch(): void {
 
   const renderResults = () => {
     if (!resultsList) return;
+    const lang = document.documentElement.dataset.routeLang || 'zh';
+    const dict = getSearchI18n(lang);
     if (currentResults.length === 0) {
       resultsList.innerHTML = '';
       if (statusEl && input?.value.trim()) {
-        statusEl.textContent = '未找到匹配结果 / No results matched';
+        statusEl.textContent = dict.statusNoMatch;
       }
       return;
     }
 
     if (statusEl) {
-      statusEl.textContent = `找到 ${currentResults.length} 条结果 / ${currentResults.length} matches`;
+      statusEl.textContent = dict.statusMatches(currentResults.length);
     }
 
     resultsList.innerHTML = currentResults
@@ -165,15 +205,17 @@ export function initSearch(): void {
   const performSearch = async (queryText: string) => {
     const generation = ++searchGeneration;
     const query = queryText.trim();
+    const lang = document.documentElement.dataset.routeLang || 'zh';
+    const dict = getSearchI18n(lang);
     if (!query) {
       currentResults = [];
       activeIndex = -1;
-      if (statusEl) statusEl.textContent = '输入关键词开始搜索...';
+      if (statusEl) statusEl.textContent = dict.statusInitial;
       renderResults();
       return;
     }
 
-    const currentLang = document.documentElement.dataset.routeLang || 'zh';
+    const currentLang = lang;
     const scopeLang = currentScope === 'current' ? currentLang : 'all';
 
     const pagefind = await loadPagefind();
