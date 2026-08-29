@@ -1,6 +1,6 @@
-/**
+﻿/**
  * 页面设置面板（M12d，docs/specs/12 §3）：顶栏「页面设置」→ 右侧检查器显示当前页
- * frontmatter 表单（标题/slug/nav/order/描述/notice，字段与 admin 页面视图一致）。
+ * frontmatter 表单（标题/slug/nav/order/描述/notice/toc，字段与 admin 页面视图一致）。
  * 读取走 GET /api/page（body 原样带回），保存走 PUT /api/page（只动 frontmatter，
  * body 原样回传）；保存成功由调用方整页刷新（§2.6）。
  * 空值约定与 admin 页面视图一致：slug/描述/order 留空由服务端序列化时丢弃
@@ -57,6 +57,7 @@ export async function renderPageSettings(
     noticeColor,
     () => {}
   );
+  const tocInput = checkbox(Boolean(fm.toc), () => {});
 
   const save = async (): Promise<void> => {
     const next: Record<string, unknown> = { ...page.frontmatter };
@@ -70,6 +71,7 @@ export async function renderPageSettings(
     if (!text) delete next.notice;
     else if (color === 'accent' || !color) next.notice = text;
     else next.notice = { text, color };
+    next.toc = tocInput.checked;
     await deps.onSave(next, page.body);
   };
 
@@ -86,6 +88,7 @@ export async function renderPageSettings(
     field(t('frontmatterDescription'), descInput),
     field(t('frontmatterNotice'), noticeTextInput),
     field(t('frontmatterNoticeColor'), noticeColorSelect),
+    field(t('frontmatterToc'), tocInput),
     el('div', { class: 'oh-inspector-ops' }, saveBtn, cancelBtn)
   );
 }

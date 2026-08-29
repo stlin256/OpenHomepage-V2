@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 页面视图（M12e 重写，docs/specs/12 §4）：
  * frontmatter 纵向表单（标题/slug/nav/order/描述/notice）+ 整页源码 textarea（等宽，
  * 1.5s 停顿自动保存，兜底编辑面）+「可视化编辑」主按钮（确保 dev server 运行后打开
@@ -44,6 +44,11 @@ export async function renderPageEditor(
   const navInput = checkbox(Boolean(fm.nav), (v) => {
     fm.nav = v;
     autosave.touch();
+  });
+  const tocInput = checkbox(Boolean(fm.toc), (v) => {
+    fm.toc = v;
+    autosave.touch();
+    updateTocHint();
   });
   const orderInput = numberInput(fm.order as number | undefined, (v) => {
     fm.order = v;
@@ -97,6 +102,7 @@ export async function renderPageEditor(
     field(t('frontmatterTitle'), titleInput),
     field(t('frontmatterSlug'), slugInput),
     field(t('frontmatterNav'), navInput),
+    field(t('frontmatterToc'), tocInput),
     field(t('frontmatterOrder'), orderInput),
     field(t('frontmatterDescription'), descInput),
     field(t('frontmatterNotice'), noticeTextInput),
@@ -137,7 +143,35 @@ export async function renderPageEditor(
     spellcheck: 'false',
   }) as HTMLTextAreaElement;
   sourceEl.value = page.body;
-  sourceEl.addEventListener('input', () => autosave.touch());
+  sourceEl.addEventListener('input', () => {
+    autosave.touch();
+    updateTocHint();
+  });
+
+  const tocHintEl = el('div', { class: 'page-toc-hint', hidden: true });
+
+  const isLongArticle = (text: string): boolean => {
+    return text.length >= 1500 || ((text.match(/^#{2,4}\s+/gm) || []).length >= 4);
+  };
+
+  const updateTocHint = () => {
+    const long = isLongArticle(sourceEl ? sourceEl.value : page.body);
+    if (long && !fm.toc) {
+      tocHintEl.hidden = false;
+      tocHintEl.replaceChildren(
+        el('span', {}, t('tocLongArticleHint')),
+        btn(t('enableTocAction'), () => {
+          tocInput.checked = true;
+          fm.toc = true;
+          autosave.touch();
+          updateTocHint();
+        }, 'btn-sm')
+      );
+    } else {
+      tocHintEl.hidden = true;
+      tocHintEl.replaceChildren();
+    }
+  };
 
   // ---- 页面操作（快照 / 重命名 / 删除 / 创建另一语言版）----
   const openSnapshots = async () => {
@@ -269,8 +303,6 @@ export async function renderPageEditor(
   };
 
   // ---- 「可视化编辑」主按钮：确保托管 dev server 运行后新标签打开 ?edit=1 ----
-  // up 且 managed → 直接打开；down → devStart 后轮询至就绪（~45s）再打开；
-  // up 但非 managed（外部手动启动，无 OH_EDIT 注入）→ 提示用户手动停掉外部进程后改为托管启动。
   const DEV_FALLBACK_ORIGIN = 'http://127.0.0.1:4321';
   const editUrl = (origin: string) =>
     `${origin.replace(/\/+$/, '')}${page.previewPath ?? '/'}?edit=1`;
@@ -299,7 +331,6 @@ export async function renderPageEditor(
           return;
         }
         if (s.up && !s.managed) {
-          // 端口被外部 dev server 占用：提示用户手动停止后重试（不强杀外部进程）
           showExternalHint(true);
           return;
         }
@@ -359,8 +390,9 @@ export async function renderPageEditor(
   );
 
   container.replaceChildren(
-    el('div', { class: 'page-editor' }, opsBar, externalHint, form, sourceEl)
+    el('div', { class: 'page-editor' }, opsBar, externalHint, form, tocHintEl, sourceEl)
   );
+  updateTocHint();
 
   return () => {
     autosave.flush();

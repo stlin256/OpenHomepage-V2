@@ -110,6 +110,7 @@ describe('页面视图（M12e）', () => {
       '标题 (title)',
       '路由 (slug)',
       '进导航 (nav)',
+      '文章目录 (toc)',
       '排序 (order)',
       '描述 (description)',
       '顶端通知 (notice)',

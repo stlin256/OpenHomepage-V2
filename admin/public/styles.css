@@ -153,6 +153,8 @@ a { color: var(--accent); text-decoration: none; }
   flex-wrap: wrap;
 }
 .page-edit-hint { margin: 0 0 10px; max-width: 60em; }
+.page-toc-hint { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; padding: 8px 12px; background: var(--hover); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 0.85rem; }
+.page-toc-hint[hidden] { display: none; }
 
 /* 列表编辑器（链接/pinned/源/文章/流式块） */
 .list-editor { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
