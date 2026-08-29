@@ -154,15 +154,20 @@ samp {
   color: var(--text);
 }
 .site-title,
-.site-nav ul,
 .site-footer {
   transition:
     opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.site-nav ul {
+  transition: opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
 .chrome-fade-out {
   opacity: 0;
   transform: translateY(4px);
+}
+.site-nav ul.chrome-fade-out {
+  transform: none;
 }
 :target {
   scroll-margin-top: 5rem;
@@ -194,12 +199,13 @@ html.js img[data-image-fade='loaded'] {
   display: block;
   padding: 0.35rem 0.75rem;
   color: var(--text-muted);
-  border-left: 2px solid transparent;
+  border-left: 2.5px solid transparent;
   border-radius: var(--radius-sm);
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+    background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .site-nav ul a:hover {
   color: var(--text);
@@ -209,7 +215,22 @@ html.js img[data-image-fade='loaded'] {
 .site-nav ul a.active {
   color: var(--accent);
   border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   font-weight: 600;
+  animation: navTabActive 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes navTabActive {
+  0% {
+    transform: translateX(-3px);
+    opacity: 0.85;
+  }
+  60% {
+    transform: translateX(1.5px);
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* 汉堡按钮（仅移动端显示） */
@@ -1954,17 +1975,17 @@ html.js .timeline-item.reveal.revealed {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-subtle);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
-}
-.publication-teaser:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
 .publication-teaser img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transform: scale(1.001);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.publication-teaser:hover img {
+  transform: scale(1.06);
 }
 .publication-empty {
   margin: 0;
@@ -1986,6 +2007,7 @@ html.js .timeline-item.reveal.revealed {
   .timeline-item.reveal,
   .publication-item,
   .publication-teaser,
+  .publication-teaser img,
   .publication-abstract .abstract-content {
     transition: none !important;
     transform: none !important;
@@ -2782,6 +2804,9 @@ html.js .reveal.revealed {
   .site-footer {
     transform: none;
     transition: opacity 0.12s ease;
+  }
+  .site-nav ul a.active {
+    animation: none !important;
   }
   .chrome-fade-out {
     transform: none;

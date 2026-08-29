@@ -266,6 +266,20 @@ function animateLangMenuSelection(link: HTMLAnchorElement): boolean {
   return true;
 }
 
+function navLinksEqual(a: Element | null, b: Element | null): boolean {
+  if (!a || !b) return a === b;
+  const linksA = a.querySelectorAll<HTMLAnchorElement>("a");
+  const linksB = b.querySelectorAll<HTMLAnchorElement>("a");
+  if (linksA.length !== linksB.length) return false;
+  for (let i = 0; i < linksA.length; i++) {
+    const la = linksA[i];
+    const lb = linksB[i];
+    if (la.getAttribute("href") !== lb.getAttribute("href")) return false;
+    if (la.textContent?.trim() !== lb.textContent?.trim()) return false;
+  }
+  return true;
+}
+
 const CHROME_FADE_OUT_MS = 90;
 
 function childNodesChanged(container: Element, nodes: Node[]): boolean {
@@ -386,7 +400,7 @@ async function swapContent(
         ),
       );
     }
-    if (oldList && newList) {
+    if (oldList && newList && !navLinksEqual(oldList, newList)) {
       chromeSwaps.push(
         replaceChildrenWithFade(oldList, () => Array.from(newList.children, (node) => node.cloneNode(true))),
       );
@@ -570,6 +584,9 @@ document.addEventListener('click', (e) => {
   // 修饰键点击不动
   if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
+  if (link.closest(".site-nav")) {
+    updateNavActive(href);
+  }
   if (selectedLanguage) {
     // hover 打开的菜单没有 .open 状态；点击语言项时显式锁定打开，
     // 保证鼠标稍微移动或页面滚动时 FLIP 动画不会被 hover 断掉。
