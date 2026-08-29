@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">
+  <title>Zhiyuan Lin</title>
+  <id>https://stlin256.github.io/OpenHomepage-V2/</id>
+  <updated>2026-08-29T15:51:52.190Z</updated>
+  <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/fr/feed.atom.xml"/>
+    <entry>
+      <title>Fonctionnalités</title>
+      <id>https://stlin256.github.io/OpenHomepage-V2/fr/features</id>
+      <link href="https://stlin256.github.io/OpenHomepage-V2/fr/features"/>
+      <published>2026-08-29T00:00:00.000Z</published>
+      <updated>2026-08-29T00:00:00.000Z</updated>
+      <summary>Un tour complet des capacités de rendu markdown de ce site</summary>
+      <content type="html">&lt;p&gt;Cette page présente chaque type de contenu pris en charge par le site. La source est un simple fichier markdown (&lt;code&gt;data/pages/fr/features.md&lt;/code&gt;) — ouvrez-le dans l&apos;éditeur pour comparer.&lt;/p&gt;
+&lt;h2&gt;Texte et typographie&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Gras&lt;/strong&gt;, &lt;em&gt;italique&lt;/em&gt;, &lt;del&gt;barré&lt;/del&gt;, &lt;code&gt;code inline&lt;/code&gt;, et &lt;a href=&quot;https://example.com&quot; title=&quot;hover me&quot;&gt;liens avec titre&lt;/a&gt;.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;En typographie de magazine, les citations sont l&apos;espace pour respirer.
+— un amateur de typographie&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul class=&quot;contains-task-list&quot;&gt;
+&lt;li&gt;
+&lt;p&gt;Élément à puces A&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Élément à puces B&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Élément imbriqué&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li class=&quot;task-list-item&quot;&gt;
+&lt;p&gt;&lt;input type=&quot;checkbox&quot; checked disabled&gt; Fait : pipeline de site statique&lt;/p&gt;
+&lt;/li&gt;
+&lt;li class=&quot;task-list-item&quot;&gt;
+&lt;p&gt;&lt;input type=&quot;checkbox&quot; checked disabled&gt; Fait : rendu markdown&lt;/p&gt;
+&lt;/li&gt;
+&lt;li class=&quot;task-list-item&quot;&gt;
+&lt;p&gt;&lt;input type=&quot;checkbox&quot; disabled&gt; En cours : écrire plus de contenu&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Fonctionnalité&lt;/th&gt;&lt;th&gt;Syntaxe&lt;/th&gt;&lt;th&gt;Moteur de rendu&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Coloration de code&lt;/td&gt;&lt;td&gt;&lt;code&gt;```python&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Shiki&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Mathématiques&lt;/td&gt;&lt;td&gt;&lt;code&gt;$E=mc^2$&lt;/code&gt;&lt;/td&gt;&lt;td&gt;KaTeX&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lecteur intégré&lt;/td&gt;&lt;td&gt;&lt;code&gt;::bilibili{}&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Directive personnalisée&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;h2&gt;Coloration de code&lt;/h2&gt;
+&lt;pre class=&quot;shiki shiki-themes github-light github-dark&quot; style=&quot;--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;--shiki-light:#6F42C1;--shiki-dark:#B392F0&quot;&gt; cosine_lr&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;(step: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;int&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;, total: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;int&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;, base: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; 3e-4&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;) -&gt; &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#032F62;--shiki-dark:#9ECBFF&quot;&gt;    &quot;&quot;&quot;Cosine-annealed learning rate.&quot;&quot;&quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;    t &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; min&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;(step &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; total, &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;1.0&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; base &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; 0.5&lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt; *&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; (&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt; +&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch.cos(torch.tensor(t &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; 3.14159&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;)))&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;Mathématiques&lt;/h2&gt;
+&lt;p&gt;En ligne &lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;msup&gt;&lt;mi&gt;e&lt;/mi&gt;&lt;mrow&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;π&lt;/mi&gt;&lt;/mrow&gt;&lt;/msup&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;0&lt;/mn&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;e^{i\pi} + 1 = 0&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.908em;vertical-align:-0.0833em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.8247em;&quot;&gt;&lt;span style=&quot;top:-3.063em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0359em;&quot;&gt;iπ&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2222em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mbin&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2222em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6444em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mrel&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6444em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;0&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;, et softmax en bloc :&lt;/p&gt;
+&lt;span class=&quot;katex-display&quot;&gt;&lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mrow&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;s&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;o&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;f&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;t&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;m&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;a&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;x&lt;/mi&gt;&lt;/mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;exp&lt;/mi&gt;&lt;mo&gt;⁡&lt;/mo&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;munderover&gt;&lt;mo&gt;∑&lt;/mo&gt;&lt;mrow&gt;&lt;mi&gt;j&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/mrow&gt;&lt;mi&gt;K&lt;/mi&gt;&lt;/munderover&gt;&lt;mi&gt;exp&lt;/mi&gt;&lt;mo&gt;⁡&lt;/mo&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;j&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;\mathrm{softmax}(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^{K} \exp(z_j)}&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:1em;vertical-align:-0.25em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathrm&quot;&gt;softmax&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mopen&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.044em;&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.3117em;&quot;&gt;&lt;span style=&quot;top:-2.55em;margin-left:-0.044em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot;&gt;i&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.15em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mrel&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:2.734em;vertical-align:-1.307em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mopen nulldelimiter&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mfrac&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:1.427em;&quot;&gt;&lt;span style=&quot;top:-2.1288em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mop&quot;&gt;&lt;span class=&quot;mop op-symbol small-op&quot; style=&quot;position:relative;top:0em;&quot;&gt;∑&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.9812em;&quot;&gt;&lt;span style=&quot;top:-2.4003em;margin-left:0em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0572em;&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;mrel mtight&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mord mtight&quot;&gt;1&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;top:-3.2029em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0715em;&quot;&gt;K&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.4358em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.1667em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mop&quot;&gt;exp&lt;/span&gt;&lt;span class=&quot;mopen&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.044em;&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.3117em;&quot;&gt;&lt;span style=&quot;top:-2.55em;margin-left:-0.044em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0572em;&quot;&gt;j&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.2861em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;top:-3.23em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;frac-line&quot; style=&quot;border-bottom-width:0.04em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;top:-3.677em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mop&quot;&gt;exp&lt;/span&gt;&lt;span class=&quot;mopen&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.044em;&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.3117em;&quot;&gt;&lt;span style=&quot;top:-2.55em;margin-left:-0.044em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot;&gt;i&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.15em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:1.307em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose nulldelimiter&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+&lt;h2&gt;Figures et grilles&lt;/h2&gt;
+&lt;figure style=&quot;width:72%&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg&quot; alt=&quot;Fig. 1 : un COMAC C909 volant bas au-dessus de moi (directive figure avec largeur et légende)&quot; loading=&quot;lazy&quot;&gt;&lt;figcaption&gt;Fig. 1 : un COMAC C909 volant bas au-dessus de moi (directive figure avec largeur et légende)&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;Grille à deux colonnes (se replie en une colonne sur mobile) :&lt;/p&gt;
+&lt;div class=&quot;md-grid&quot; style=&quot;grid-template-columns:repeat(2,1fr)&quot;&gt;&lt;div class=&quot;md-grid-cell&quot;&gt;&lt;p&gt;Texte à gauche. La typographie de magazine, c&apos;est &lt;strong&gt;les blancs et l&apos;alignement&lt;/strong&gt;, pas la décoration.&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;md-grid-cell&quot;&gt;&lt;figure style=&quot;width:100%&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg&quot; alt=&quot;Coucher de soleil sur le pont Haixin&quot; loading=&quot;lazy&quot;&gt;&lt;figcaption&gt;Coucher de soleil sur le pont Haixin&lt;/figcaption&gt;&lt;/figure&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2&gt;Lecteurs intégrés&lt;/h2&gt;
+&lt;p&gt;Les lecteurs affichent directement l&apos;iframe officielle dans un conteneur 16:9 responsive (&lt;code&gt;loading=&quot;lazy&quot;&lt;/code&gt;, pour que le premier affichage reste rapide) :&lt;/p&gt;
+&lt;div class=&quot;embed-player embed-youtube&quot;&gt;&lt;iframe src=&quot;https://www.youtube-nocookie.com/embed/aircAruvnKk&quot; loading=&quot;lazy&quot; allowfullscreen title=&quot;YouTube 播放器&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;
+&lt;div class=&quot;embed-player embed-bilibili&quot;&gt;&lt;iframe src=&quot;https://player.bilibili.com/player.html?bvid=BV13z421U7cs&amp;#x26;autoplay=0&quot; loading=&quot;lazy&quot; allowfullscreen title=&quot;bilibili 播放器&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;
+&lt;p&gt;Médias auto-hébergés (balises natives) :&lt;/p&gt;
+&lt;video src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/feature-flower.mp4&quot; controls preload=&quot;metadata&quot;&gt;&lt;/video&gt;
+&lt;div class=&quot;audio-player md-audio&quot; data-src=&quot;/OpenHomepage-V2/assets/bgm.mp3&quot; data-mode=&quot;compact&quot; role=&quot;group&quot; aria-label=&quot;Goldberg Variations, BWV 988 · Aria&quot; data-title=&quot;Goldberg Variations, BWV 988 · Aria&quot;&gt;&lt;div class=&quot;audio-user&quot;&gt;&lt;button class=&quot;btn-toggle&quot; type=&quot;button&quot; aria-label=&quot;播放 / Play&quot;&gt;&lt;svg class=&quot;icon-play&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 5v14l11-7z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;svg class=&quot;icon-pause&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 5h4v14H6zM14 5h4v14h-4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/button&gt;&lt;div class=&quot;audio-meta&quot;&gt;&lt;span class=&quot;audio-scroll&quot;&gt;&lt;span class=&quot;audio-title audio-scroll-text&quot; data-marquee=&quot;true&quot;&gt;Goldberg Variations, BWV 988 · Aria&lt;/span&gt;&lt;/span&gt;&lt;div class=&quot;audio-bottom&quot;&gt;&lt;span class=&quot;audio-time&quot;&gt;--:-- / --:--&lt;/span&gt;&lt;span class=&quot;audio-bars-mini&quot; aria-hidden=&quot;true&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;audio-track&quot;&gt;&lt;div class=&quot;audio-fill&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;audio-player md-audio audio-card&quot; data-src=&quot;/OpenHomepage-V2/assets/bgm.mp3&quot; data-mode=&quot;card&quot; role=&quot;group&quot; aria-label=&quot;Bach: The Goldberg Variations, BWV 988 — Aria&quot; data-title=&quot;Bach: The Goldberg Variations, BWV 988 — Aria&quot; data-desc=&quot;Johann Sebastian Bach · The 1981 Recordings&quot; data-cover=&quot;/OpenHomepage-V2/assets/goldberg-aria-cover.jpg&quot;&gt;&lt;div class=&quot;audio-cover&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/goldberg-aria-cover.jpg&quot; alt=&quot;Bach: The Goldberg Variations, BWV 988 — Aria&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/div&gt;&lt;div class=&quot;audio-content&quot;&gt;&lt;div class=&quot;audio-scroll&quot;&gt;&lt;span class=&quot;audio-title audio-scroll-text&quot; data-marquee=&quot;true&quot;&gt;Bach: The Goldberg Variations, BWV 988 — Aria&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;audio-scroll&quot;&gt;&lt;span class=&quot;audio-desc audio-scroll-text&quot; data-marquee=&quot;true&quot;&gt;Johann Sebastian Bach · The 1981 Recordings&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;audio-bottom&quot;&gt;&lt;button class=&quot;btn-toggle&quot; type=&quot;button&quot; aria-label=&quot;播放 / Play&quot;&gt;&lt;svg class=&quot;icon-play&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 5v14l11-7z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;svg class=&quot;icon-pause&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 5h4v14H6zM14 5h4v14h-4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/button&gt;&lt;span class=&quot;audio-time&quot;&gt;--:-- / --:--&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;audio-track&quot;&gt;&lt;div class=&quot;audio-fill&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2&gt;Directives fonctionnelles&lt;/h2&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Composant&lt;/th&gt;&lt;th&gt;Rôle&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Carte de dépôt GitHub&lt;/td&gt;&lt;td&gt;Carte d&apos;un dépôt unique issue du cache épinglé&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Bloc de streaming&lt;/td&gt;&lt;td&gt;Sortie LLM en streaming avec relecture&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Bloc éditorial&lt;/td&gt;&lt;td&gt;Actions, cartes liste, tuiles, cartes archive et séparateurs&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;Carte de dépôt GitHub&lt;/strong&gt; :&lt;/p&gt;
+&lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;Bloc de streaming&lt;/strong&gt; :&lt;/p&gt;
+&lt;div class=&quot;stream-block&quot; data-stream-id=&quot;welcome&quot;&gt;&lt;/div&gt;
+&lt;h2&gt;Composants éditoriaux&lt;/h2&gt;
+&lt;p&gt;Le kit complet ci-dessous est intégré par &lt;code&gt;::editorial{id=&quot;features&quot;}&lt;/code&gt; depuis &lt;code&gt;editorial_blocks&lt;/code&gt; dans &lt;code&gt;site.yaml&lt;/code&gt;. Il couvre les actions, les cartes liste numérotées, les tuiles, les cartes archive et un séparateur :&lt;/p&gt;
+&lt;div class=&quot;editorial-embed&quot; data-editorial-id=&quot;features&quot;&gt;&lt;/div&gt;
+&lt;p&gt;La carte de contact, la modale QR, le thème clair/sombre, le sélecteur de langue, la musique de fond, la lightbox d&apos;images et la révélation au défilement sont des composants globaux ; interagissez avec cette page pour les voir.&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Composant global&lt;/th&gt;&lt;th&gt;Point d&apos;entrée&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Carte de contact / modale QR&lt;/td&gt;&lt;td&gt;Carte en bas à droite ; cliquez pour ouvrir la modale QR&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Bascule de thème&lt;/td&gt;&lt;td&gt;Bouton soleil / lune en haut à droite&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Sélecteur de langue&lt;/td&gt;&lt;td&gt;Bouton de langue en haut à droite&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Bascule BGM&lt;/td&gt;&lt;td&gt;Bouton lecture / pause en haut à droite&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;Cliquez sur une image dans le corps&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Révélation au défilement&lt;/td&gt;&lt;td&gt;Les blocs apparaissent au fil du défilement&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;Les blocs Profil, GitHub et RSS propres à la page d&apos;accueil sont également rendus intégralement ci-dessous ; ils ne dépendent pas de la mise en page de l&apos;accueil.&lt;/p&gt;
+&lt;h2&gt;Contrôles de page&lt;/h2&gt;
+&lt;p&gt;Les contrôles de page sont des widgets de niveau page configurés page par page (non globaux). Chaque page peut les définir indépendamment dans son frontmatter ; ils réapparaissent à chaque ouverture ou nouvelle visite de la page, offrant des annonces et des contrôles propres à la page.&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Contrôle de page&lt;/th&gt;&lt;th&gt;Configuration&lt;/th&gt;&lt;th&gt;Description&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Bannière d&apos;avis&lt;/td&gt;&lt;td&gt;Définir &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; ou &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt; dans le frontmatter&lt;/td&gt;&lt;td&gt;Apparaît 0,5 s après le chargement ; prend en charge 4 modes de couleur (&lt;code&gt;accent&lt;/code&gt;, &lt;code&gt;yellow&lt;/code&gt;, &lt;code&gt;red&lt;/code&gt;, &lt;code&gt;custom&lt;/code&gt;) ; propre à la page et réapparaît à chaque visite ; fermée manuellement en cliquant sur ✕ ; prend en charge liens et formatage en ligne&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;💡 Exemple : la &lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/&quot;&gt;page d&apos;accueil&lt;/a&gt; de ce site présente une bannière d&apos;avis jaune bien visible (&lt;code&gt;notice: { text: &quot;Ceci est une page de démonstration. Le contenu sert uniquement à présenter les fonctionnalités du projet.&quot;, color: &quot;yellow&quot; }&lt;/code&gt;) qui apparaît 0,5 s après le chargement.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;HTML brut mélangé&lt;/h2&gt;
+&lt;p&gt;Cette ligne utilise la balise HTML native mark. Les balises dangereuses comme &lt;code&gt;&amp;#x3C;script&gt;&lt;/code&gt; sont filtrées par une liste blanche.&lt;/p&gt;
+&lt;h2&gt;Callouts &amp;#x26; timeline&lt;/h2&gt;
+&lt;p&gt;Les directives de contenu P0 n’ajoutent aucun script au chargement : les callouts expliquent ou alertent, la timeline présente parcours et étapes clés.&lt;/p&gt;
+&lt;aside class=&quot;callout callout-note&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4 4h16v12H8l-4 4V4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;Entrée reproductible&lt;/p&gt;&lt;/div&gt;&lt;p&gt;Articles, outils et expériences restent dans un même index.&lt;/p&gt;&lt;/aside&gt;
+&lt;aside class=&quot;callout callout-tip&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M12 2l2.4 6.1L21 9.3l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.7 3 9.3l6.6-1.2L12 2z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;Limite de performance&lt;/p&gt;&lt;/div&gt;&lt;p&gt;Les nouvelles directives sont rendues à la construction, sans JavaScript initial supplémentaire.&lt;/p&gt;&lt;/aside&gt;
+&lt;aside class=&quot;callout callout-warning&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M12 3l9 16H3l9-16zm-1 6v5h2V9h-2zm0 7v2h2v-2h-2z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;Conclusions prudentes&lt;/p&gt;&lt;/div&gt;&lt;p&gt;Un score unique ne remplace pas un rapport de distribution.&lt;/p&gt;&lt;/aside&gt;
+&lt;aside class=&quot;callout callout-quote&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M7 6c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4zm10 0c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;Field Note&lt;/p&gt;&lt;/div&gt;&lt;p&gt;La valeur d’une optimisation vient de mesures reproductibles.&lt;/p&gt;&lt;p class=&quot;callout-source&quot;&gt;Zhiyuan Lin, 2026&lt;/p&gt;&lt;/aside&gt;
+&lt;section class=&quot;timeline&quot;&gt;&lt;h2 class=&quot;timeline-title&quot;&gt;Education &amp;#x26; Experience&lt;/h2&gt;&lt;ol class=&quot;timeline-items&quot;&gt;&lt;li class=&quot;timeline-item&quot; data-highlight=&quot;true&quot;&gt;&lt;p class=&quot;timeline-range&quot;&gt;2022–2026&lt;/p&gt;&lt;div class=&quot;timeline-item-meta&quot;&gt;&lt;a class=&quot;timeline-item-title&quot; href=&quot;https://stlin256.github.io/OpenHomepage-V2/research&quot;&gt;PhD Candidate&lt;/a&gt;&lt;p class=&quot;timeline-org&quot;&gt;Example University&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;timeline-item-body&quot;&gt;&lt;p&gt;Machine learning et systèmes : ordonnancement d’inférence et évaluation reproductible.&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;&lt;li class=&quot;timeline-item&quot;&gt;&lt;p class=&quot;timeline-range&quot;&gt;2026 · Présent&lt;/p&gt;&lt;div class=&quot;timeline-item-meta&quot;&gt;&lt;h3 class=&quot;timeline-item-title&quot;&gt;Research Intern&lt;/h3&gt;&lt;p class=&quot;timeline-org&quot;&gt;Example Lab&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;timeline-item-body&quot;&gt;&lt;p&gt;Expériences d’inférence LLM sur appareils embarqués.&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/section&gt;
+&lt;h2&gt;Publications&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;data/publications.yaml&lt;/code&gt; est la source canonique ; &lt;code&gt;publications.bib&lt;/code&gt; fournit le BibTeX brut par clé. Le filtrage, le tri et le regroupement sont réalisés à la construction.&lt;/p&gt;
+&lt;section class=&quot;publications&quot; data-group=&quot;year&quot;&gt;&lt;section class=&quot;publication-group&quot;&gt;&lt;h3 class=&quot;publication-group-title&quot;&gt;2026&lt;/h3&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
+      &lt;div class=&quot;publication-index&quot;&gt;01&lt;/div&gt;
+      &lt;div class=&quot;publication-main&quot;&gt;
+        &lt;p class=&quot;publication-meta&quot;&gt;&lt;span&gt;OSDI 2026&lt;/span&gt;&lt;span class=&quot;publication-badge&quot;&gt;oral&lt;/span&gt;&lt;/p&gt;
+        &lt;h3 class=&quot;publication-title&quot;&gt;Efficient Inference with Adaptive Scheduling&lt;/h3&gt;
+        &lt;p class=&quot;publication-authors&quot;&gt;&lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;, Alice Doe, Bob Smith&lt;/p&gt;
+        &lt;p class=&quot;publication-note&quot;&gt;First author; led scheduler design and evaluation.&lt;/p&gt;
+        &lt;details class=&quot;publication-abstract&quot;&gt;&lt;summary&gt;Abstract&lt;/summary&gt;&lt;p&gt;An adaptive inference scheduler for interactive workloads, evaluated with distribution reports on real traces.&lt;/p&gt;&lt;/details&gt;
+        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-efficient-inference-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-efficient-inference-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{lin2026efficient,
+  author = {Lin, Zhiyuan and Doe, Alice and Smith, Bob}&lt;/pre&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-compute.jpg&quot; alt=&quot;Efficient Inference with Adaptive Scheduling figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+    &lt;/article&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
+      &lt;div class=&quot;publication-index&quot;&gt;02&lt;/div&gt;
+      &lt;div class=&quot;publication-main&quot;&gt;
+        &lt;p class=&quot;publication-meta&quot;&gt;&lt;span&gt;MLSys Evaluation Workshop&lt;/span&gt;&lt;/p&gt;
+        &lt;h3 class=&quot;publication-title&quot;&gt;Reproducible Evaluation for Open Models&lt;/h3&gt;
+        &lt;p class=&quot;publication-authors&quot;&gt;Alice Doe, &lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;&lt;/p&gt;
+        &lt;p class=&quot;publication-note&quot;&gt;Co-author; built the evaluation set and reporting scripts.&lt;/p&gt;
+        
+        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-reproducible-eval-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-reproducible-eval-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@inproceedings{doe2026reproducible,
+  author = {Doe, Alice and Lin, Zhiyuan}&lt;/pre&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-evaluation.jpg&quot; alt=&quot;Reproducible Evaluation for Open Models figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+    &lt;/article&gt;&lt;/section&gt;&lt;section class=&quot;publication-group&quot;&gt;&lt;h3 class=&quot;publication-group-title&quot;&gt;2025&lt;/h3&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
+      &lt;div class=&quot;publication-index&quot;&gt;01&lt;/div&gt;
+      &lt;div class=&quot;publication-main&quot;&gt;
+        &lt;p class=&quot;publication-meta&quot;&gt;&lt;span&gt;Journal of Machine Learning Systems&lt;/span&gt;&lt;span class=&quot;publication-badge&quot;&gt;artifact&lt;/span&gt;&lt;/p&gt;
+        &lt;h3 class=&quot;publication-title&quot;&gt;Edge KV Cache Compression&lt;/h3&gt;
+        &lt;p class=&quot;publication-authors&quot;&gt;Bob Smith, &lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;&lt;/p&gt;
+        
+        
+        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;/nav&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-edge-cache-2025&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-edge-cache-2025&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{smith2025edge,
+  author = {Smith, Bob and Lin, Zhiyuan}&lt;/pre&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-tooling.jpg&quot; alt=&quot;Edge KV Cache Compression figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+    &lt;/article&gt;&lt;/section&gt;&lt;/section&gt;</content>
+    </entry>
+</feed>

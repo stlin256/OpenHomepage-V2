@@ -1,0 +1,33 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2005/svg">
+  <defs>
+    <style>
+      .bg { fill: #f8f7f2; }
+      .site { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; font-size: 28px; font-weight: 700; fill: #3a7bd5; letter-spacing: 0.05em; text-transform: uppercase; }
+      .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Serif SC", serif; font-size: 58px; font-weight: 800; fill: #1c1b18; line-height: 1.25; }
+      .desc { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; font-size: 26px; fill: #5c584e; line-height: 1.45; }
+      .bar { fill: #3a7bd5; }
+    </style>
+  </defs>
+  <rect width="1200" height="630" class="bg" />
+  <rect x="0" y="0" width="16" height="630" class="bar" />
+  
+  <g transform="translate(100, 110)">
+    <text x="0" y="0" class="site">林知远</text>
+  </g>
+  
+  <g transform="translate(100, 240)">
+    <text x="0" y="0" class="title" width="1000">
+      <tspan x="0" dy="0">機能</tspan>
+    </text>
+  </g>
+
+  <g transform="translate(100, 390)">
+    <text x="0" y="0" class="desc" width="1000">
+      <tspan x="0" dy="0">このサイトのマークダウンレンダリングでできることの全機能ツアー</tspan>
+    </text>
+  </g>
+
+  <g transform="translate(100, 540)">
+    <rect x="0" y="0" width="80" height="4" class="bar" />
+  </g>
+</svg>

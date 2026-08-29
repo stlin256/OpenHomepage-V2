@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh">
+  <title>林知远</title>
+  <id>https://stlin256.github.io/OpenHomepage-V2/</id>
+  <updated>2026-08-29T15:51:51.963Z</updated>
+  <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/feed.atom.xml"/>
+    <entry>
+      <title>特性</title>
+      <id>https://stlin256.github.io/OpenHomepage-V2/features</id>
+      <link href="https://stlin256.github.io/OpenHomepage-V2/features"/>
+      <published>2026-08-29T00:00:00.000Z</published>
+      <updated>2026-08-29T00:00:00.000Z</updated>
+      <summary>本站点 markdown 渲染能力的完整演示</summary>
+      <content type="html">&lt;p&gt;这一页集中演示站点支持的所有内容形态。源文件就是一个普通的 markdown 文件（&lt;code&gt;data/pages/zh/features.md&lt;/code&gt;），你可以在编辑器里打开它对照查看。&lt;/p&gt;
+&lt;h2&gt;文本与排版&lt;/h2&gt;
+&lt;p&gt;支持 &lt;strong&gt;加粗&lt;/strong&gt;、&lt;em&gt;斜体&lt;/em&gt;、&lt;del&gt;删除线&lt;/del&gt;、&lt;code&gt;行内代码&lt;/code&gt;、以及&lt;a href=&quot;https://example.com&quot; title=&quot;悬停看我&quot;&gt;带标题的链接&lt;/a&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;杂志式排版里，引用块是最好的呼吸节奏。
+—— 某位排版爱好者&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul class=&quot;contains-task-list&quot;&gt;
+&lt;li&gt;
+&lt;p&gt;无序列表项甲&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;无序列表项乙&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;嵌套一项&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li class=&quot;task-list-item&quot;&gt;
+&lt;p&gt;&lt;input type=&quot;checkbox&quot; checked disabled&gt; 已完成：搭建静态站点&lt;/p&gt;
+&lt;/li&gt;
+&lt;li class=&quot;task-list-item&quot;&gt;
+&lt;p&gt;&lt;input type=&quot;checkbox&quot; checked disabled&gt; 已完成：markdown 渲染管线&lt;/p&gt;
+&lt;/li&gt;
+&lt;li class=&quot;task-list-item&quot;&gt;
+&lt;p&gt;&lt;input type=&quot;checkbox&quot; disabled&gt; 进行中：写更多内容&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;特性&lt;/th&gt;&lt;th&gt;语法&lt;/th&gt;&lt;th&gt;渲染方&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;代码高亮&lt;/td&gt;&lt;td&gt;&lt;code&gt;```python&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Shiki&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;数学公式&lt;/td&gt;&lt;td&gt;&lt;code&gt;$E=mc^2$&lt;/code&gt;&lt;/td&gt;&lt;td&gt;KaTeX&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;内嵌播放器&lt;/td&gt;&lt;td&gt;&lt;code&gt;::bilibili{}&lt;/code&gt;&lt;/td&gt;&lt;td&gt;自定义指令&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;h2&gt;代码高亮&lt;/h2&gt;
+&lt;pre class=&quot;shiki shiki-themes github-light github-dark&quot; style=&quot;--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;--shiki-light:#6F42C1;--shiki-dark:#B392F0&quot;&gt; cosine_lr&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;(step: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;int&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;, total: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;int&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;, base: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; 3e-4&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;) -&gt; &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#032F62;--shiki-dark:#9ECBFF&quot;&gt;    &quot;&quot;&quot;余弦退火学习率。&quot;&quot;&quot;&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;    t &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;=&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; min&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;(step &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;/&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; total, &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;1.0&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;)&lt;/span&gt;&lt;/span&gt;
+&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;    return&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; base &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; 0.5&lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt; *&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; (&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;1&lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt; +&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch.cos(torch.tensor(t &lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;*&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; 3.14159&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;)))&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;数学公式&lt;/h2&gt;
+&lt;p&gt;行内公式 &lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;msup&gt;&lt;mi&gt;e&lt;/mi&gt;&lt;mrow&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;mi&gt;π&lt;/mi&gt;&lt;/mrow&gt;&lt;/msup&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;0&lt;/mn&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;e^{i\pi} + 1 = 0&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.908em;vertical-align:-0.0833em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.8247em;&quot;&gt;&lt;span style=&quot;top:-3.063em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0359em;&quot;&gt;iπ&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2222em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mbin&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2222em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6444em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mrel&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6444em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;0&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;，以及块级的 softmax：&lt;/p&gt;
+&lt;span class=&quot;katex-display&quot;&gt;&lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot; display=&quot;block&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mrow&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;s&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;o&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;f&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;t&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;m&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;a&lt;/mi&gt;&lt;mi mathvariant=&quot;normal&quot;&gt;x&lt;/mi&gt;&lt;/mrow&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfrac&gt;&lt;mrow&gt;&lt;mi&gt;exp&lt;/mi&gt;&lt;mo&gt;⁡&lt;/mo&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;i&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/mrow&gt;&lt;mrow&gt;&lt;munderover&gt;&lt;mo&gt;∑&lt;/mo&gt;&lt;mrow&gt;&lt;mi&gt;j&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;/mrow&gt;&lt;mi&gt;K&lt;/mi&gt;&lt;/munderover&gt;&lt;mi&gt;exp&lt;/mi&gt;&lt;mo&gt;⁡&lt;/mo&gt;&lt;mo stretchy=&quot;false&quot;&gt;(&lt;/mo&gt;&lt;msub&gt;&lt;mi&gt;z&lt;/mi&gt;&lt;mi&gt;j&lt;/mi&gt;&lt;/msub&gt;&lt;mo stretchy=&quot;false&quot;&gt;)&lt;/mo&gt;&lt;/mrow&gt;&lt;/mfrac&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;\mathrm{softmax}(z_i) = \frac{\exp(z_i)}{\sum_{j=1}^{K} \exp(z_j)}&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:1em;vertical-align:-0.25em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathrm&quot;&gt;softmax&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mopen&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.044em;&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.3117em;&quot;&gt;&lt;span style=&quot;top:-2.55em;margin-left:-0.044em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot;&gt;i&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.15em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mrel&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:2.734em;vertical-align:-1.307em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mopen nulldelimiter&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mfrac&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:1.427em;&quot;&gt;&lt;span style=&quot;top:-2.1288em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mop&quot;&gt;&lt;span class=&quot;mop op-symbol small-op&quot; style=&quot;position:relative;top:0em;&quot;&gt;∑&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.9812em;&quot;&gt;&lt;span style=&quot;top:-2.4003em;margin-left:0em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0572em;&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;mrel mtight&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mord mtight&quot;&gt;1&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;top:-3.2029em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0715em;&quot;&gt;K&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.4358em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.1667em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mop&quot;&gt;exp&lt;/span&gt;&lt;span class=&quot;mopen&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.044em;&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.3117em;&quot;&gt;&lt;span style=&quot;top:-2.55em;margin-left:-0.044em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot; style=&quot;margin-right:0.0572em;&quot;&gt;j&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.2861em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;top:-3.23em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;frac-line&quot; style=&quot;border-bottom-width:0.04em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;top:-3.677em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mop&quot;&gt;exp&lt;/span&gt;&lt;span class=&quot;mopen&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.044em;&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;msupsub&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.3117em;&quot;&gt;&lt;span style=&quot;top:-2.55em;margin-left:-0.044em;margin-right:0.05em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:2.7em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;sizing reset-size6 size3 mtight&quot;&gt;&lt;span class=&quot;mord mathnormal mtight&quot;&gt;i&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.15em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose&quot;&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:1.307em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mclose nulldelimiter&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+&lt;h2&gt;图文排版&lt;/h2&gt;
+&lt;figure style=&quot;width:72%&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg&quot; alt=&quot;图 1：国产大飞机 C909 低空掠过（figure 指令，带宽度和图注）&quot; loading=&quot;lazy&quot;&gt;&lt;figcaption&gt;图 1：国产大飞机 C909 低空掠过（figure 指令，带宽度和图注）&lt;/figcaption&gt;&lt;/figure&gt;
+&lt;p&gt;多栏网格（移动端自动塌缩为单列）：&lt;/p&gt;
+&lt;div class=&quot;md-grid&quot; style=&quot;grid-template-columns:repeat(2,1fr)&quot;&gt;&lt;div class=&quot;md-grid-cell&quot;&gt;&lt;p&gt;左栏是一段文字。杂志化排版的关键在于&lt;strong&gt;留白与对齐&lt;/strong&gt;，而不是装饰。&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;md-grid-cell&quot;&gt;&lt;figure style=&quot;width:100%&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg&quot; alt=&quot;海心桥的晚霞&quot; loading=&quot;lazy&quot;&gt;&lt;figcaption&gt;海心桥的晚霞&lt;/figcaption&gt;&lt;/figure&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2&gt;内嵌播放器&lt;/h2&gt;
+&lt;p&gt;播放器以响应式 16:9 容器直接渲染官方 iframe（&lt;code&gt;loading=&quot;lazy&quot;&lt;/code&gt; 惰性加载，不拖慢首屏）：&lt;/p&gt;
+&lt;div class=&quot;embed-player embed-youtube&quot;&gt;&lt;iframe src=&quot;https://www.youtube-nocookie.com/embed/aircAruvnKk&quot; loading=&quot;lazy&quot; allowfullscreen title=&quot;YouTube 播放器&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;
+&lt;div class=&quot;embed-player embed-bilibili&quot;&gt;&lt;iframe src=&quot;https://player.bilibili.com/player.html?bvid=BV13z421U7cs&amp;#x26;autoplay=0&quot; loading=&quot;lazy&quot; allowfullscreen title=&quot;bilibili 播放器&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;
+&lt;p&gt;自建媒体（原生标签）：&lt;/p&gt;
+&lt;video src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/feature-flower.mp4&quot; controls preload=&quot;metadata&quot;&gt;&lt;/video&gt;
+&lt;div class=&quot;audio-player md-audio&quot; data-src=&quot;/OpenHomepage-V2/assets/bgm.mp3&quot; data-mode=&quot;compact&quot; role=&quot;group&quot; aria-label=&quot;Goldberg Variations, BWV 988 · Aria&quot; data-title=&quot;Goldberg Variations, BWV 988 · Aria&quot;&gt;&lt;div class=&quot;audio-user&quot;&gt;&lt;button class=&quot;btn-toggle&quot; type=&quot;button&quot; aria-label=&quot;播放 / Play&quot;&gt;&lt;svg class=&quot;icon-play&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 5v14l11-7z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;svg class=&quot;icon-pause&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 5h4v14H6zM14 5h4v14h-4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/button&gt;&lt;div class=&quot;audio-meta&quot;&gt;&lt;span class=&quot;audio-scroll&quot;&gt;&lt;span class=&quot;audio-title audio-scroll-text&quot; data-marquee=&quot;true&quot;&gt;Goldberg Variations, BWV 988 · Aria&lt;/span&gt;&lt;/span&gt;&lt;div class=&quot;audio-bottom&quot;&gt;&lt;span class=&quot;audio-time&quot;&gt;--:-- / --:--&lt;/span&gt;&lt;span class=&quot;audio-bars-mini&quot; aria-hidden=&quot;true&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;audio-track&quot;&gt;&lt;div class=&quot;audio-fill&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;audio-player md-audio audio-card&quot; data-src=&quot;/OpenHomepage-V2/assets/bgm.mp3&quot; data-mode=&quot;card&quot; role=&quot;group&quot; aria-label=&quot;Bach: The Goldberg Variations, BWV 988 — Aria&quot; data-title=&quot;Bach: The Goldberg Variations, BWV 988 — Aria&quot; data-desc=&quot;Johann Sebastian Bach · The 1981 Recordings&quot; data-cover=&quot;/OpenHomepage-V2/assets/goldberg-aria-cover.jpg&quot;&gt;&lt;div class=&quot;audio-cover&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/goldberg-aria-cover.jpg&quot; alt=&quot;Bach: The Goldberg Variations, BWV 988 — Aria&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot;&gt;&lt;/div&gt;&lt;div class=&quot;audio-content&quot;&gt;&lt;div class=&quot;audio-scroll&quot;&gt;&lt;span class=&quot;audio-title audio-scroll-text&quot; data-marquee=&quot;true&quot;&gt;Bach: The Goldberg Variations, BWV 988 — Aria&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;audio-scroll&quot;&gt;&lt;span class=&quot;audio-desc audio-scroll-text&quot; data-marquee=&quot;true&quot;&gt;Johann Sebastian Bach · The 1981 Recordings&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;audio-bottom&quot;&gt;&lt;button class=&quot;btn-toggle&quot; type=&quot;button&quot; aria-label=&quot;播放 / Play&quot;&gt;&lt;svg class=&quot;icon-play&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M8 5v14l11-7z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;svg class=&quot;icon-pause&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M6 5h4v14H6zM14 5h4v14h-4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/button&gt;&lt;span class=&quot;audio-time&quot;&gt;--:-- / --:--&lt;/span&gt;&lt;/div&gt;&lt;div class=&quot;audio-track&quot;&gt;&lt;div class=&quot;audio-fill&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2&gt;功能指令&lt;/h2&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;组件名称&lt;/th&gt;&lt;th&gt;说明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;GitHub Repo Card&lt;/td&gt;&lt;td&gt;单个仓库卡片，读取 pinned 缓存&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Streaming Block&lt;/td&gt;&lt;td&gt;LLM 流式输出效果，支持重播&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Editorial Block&lt;/td&gt;&lt;td&gt;按钮、列表卡、磁贴、归档卡、分割线组合&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;GitHub Repo Card&lt;/strong&gt;：正文任意位置插入仓库卡片：&lt;/p&gt;
+&lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;Streaming Block&lt;/strong&gt;：插入一个流式区块（定义在 &lt;code&gt;site.yaml&lt;/code&gt; 的 &lt;code&gt;streaming_blocks&lt;/code&gt;）：&lt;/p&gt;
+&lt;div class=&quot;stream-block&quot; data-stream-id=&quot;welcome&quot;&gt;&lt;/div&gt;
+&lt;h2&gt;编辑风组件&lt;/h2&gt;
+&lt;p&gt;下面的完整组件套件由 &lt;code&gt;::editorial{id=&quot;features&quot;}&lt;/code&gt; 从 &lt;code&gt;site.yaml&lt;/code&gt; 的 &lt;code&gt;editorial_blocks&lt;/code&gt; 嵌入，覆盖按钮组、编号列表、磁贴、归档卡和分割线：&lt;/p&gt;
+&lt;div class=&quot;editorial-embed&quot; data-editorial-id=&quot;features&quot;&gt;&lt;/div&gt;
+&lt;p&gt;右下角联系卡、二维码弹层、亮/暗主题、语言切换、背景音乐、图片灯箱和滚动显现是全局组件；在本页直接交互就能看到。&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;全局组件名称&lt;/th&gt;&lt;th&gt;入口&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Contact Card / QR Modal&lt;/td&gt;&lt;td&gt;右下角联系卡，点击打开二维码弹层&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Theme Toggle&lt;/td&gt;&lt;td&gt;右上角太阳 / 月亮按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Language Switcher&lt;/td&gt;&lt;td&gt;右上角语言按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM Toggle&lt;/td&gt;&lt;td&gt;右上角播放 / 暂停按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;点击正文中的图片&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scroll Reveal&lt;/td&gt;&lt;td&gt;滚动页面时区块显现&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;p&gt;主页专属组件也在下方完整渲染，不依赖主页是否启用：Profile Block、GitHub Block、RSS Block。&lt;/p&gt;
+&lt;h2&gt;页面控件&lt;/h2&gt;
+&lt;p&gt;页面控件是针对单个页面按需添加的部件（非全局组件），每个页面可以在 frontmatter 中独立定义；离开或重新打开该页面时会再次出现，提供针对单页的提示与操作能力。&lt;/p&gt;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;页面控件&lt;/th&gt;&lt;th&gt;配置方式&lt;/th&gt;&lt;th&gt;特性说明&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;顶端通知横幅（Notice Banner）&lt;/td&gt;&lt;td&gt;页面 frontmatter 设置 &lt;code&gt;notice: &quot;...&quot;&lt;/code&gt; 或 &lt;code&gt;notice: { text: &quot;...&quot;, color: &quot;yellow&quot; }&lt;/code&gt;&lt;/td&gt;&lt;td&gt;页面加载完成 0.5s 后延迟弹出，支持 4 种颜色（&lt;code&gt;accent&lt;/code&gt; 主题色、&lt;code&gt;yellow&lt;/code&gt; 黄色、&lt;code&gt;red&lt;/code&gt; 红色、&lt;code&gt;custom&lt;/code&gt; 自定义）；单页独立定义、重新打开页面时再次出现；用户需手动点击右侧 ✕ 关闭；支持内联链接与强调语法&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;💡 示例：当前站点的&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/&quot;&gt;首页&lt;/a&gt;顶部即配置了醒目的黄色通知横幅（&lt;code&gt;notice: { text: &quot;本页面为示例页面，内容仅为展现项目特性使用。&quot;, color: &quot;yellow&quot; }&lt;/code&gt;），可在首页体验 0.5s 延迟弹出与手动关闭效果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;HTML 混写&lt;/h2&gt;
+&lt;p&gt;这一行是原生 HTML 的 mark 标签，dangerous 标签（如 &lt;code&gt;&amp;#x3C;script&gt;&lt;/code&gt;）会被白名单过滤。&lt;/p&gt;
+&lt;h2&gt;注记卡片与时间线&lt;/h2&gt;
+&lt;p&gt;P0 内容指令保持零前端脚本：callout 用于解释、警示和引用，时间线用于教育、经历与里程碑。&lt;/p&gt;
+&lt;aside class=&quot;callout callout-note&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M4 4h16v12H8l-4 4V4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;复现入口&lt;/p&gt;&lt;/div&gt;&lt;p&gt;论文、工具与实验记录保留在同一个索引中，方便后续复核。&lt;/p&gt;&lt;/aside&gt;
+&lt;aside class=&quot;callout callout-tip&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M12 2l2.4 6.1L21 9.3l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.7 3 9.3l6.6-1.2L12 2z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;性能边界&lt;/p&gt;&lt;/div&gt;&lt;p&gt;新增内容指令默认在构建期渲染，不增加首屏 JavaScript。&lt;/p&gt;&lt;/aside&gt;
+&lt;aside class=&quot;callout callout-warning&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M12 3l9 16H3l9-16zm-1 6v5h2V9h-2zm0 7v2h2v-2h-2z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;谨慎结论&lt;/p&gt;&lt;/div&gt;&lt;p&gt;单次评测分数不能替代分布报告。&lt;/p&gt;&lt;/aside&gt;
+&lt;aside class=&quot;callout callout-quote&quot; role=&quot;note&quot;&gt;&lt;div class=&quot;callout-header&quot;&gt;&lt;span class=&quot;callout-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;currentColor&quot; aria-hidden=&quot;true&quot;&gt;&lt;path d=&quot;M7 6c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4zm10 0c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4z&quot;&gt;&lt;/path&gt;&lt;/svg&gt;&lt;/span&gt;&lt;p class=&quot;callout-title&quot;&gt;Field Note&lt;/p&gt;&lt;/div&gt;&lt;p&gt;系统优化的价值来自可重复的测量，而不是一次偶然的加速。&lt;/p&gt;&lt;p class=&quot;callout-source&quot;&gt;Zhiyuan Lin, 2026&lt;/p&gt;&lt;/aside&gt;
+&lt;section class=&quot;timeline&quot;&gt;&lt;h2 class=&quot;timeline-title&quot;&gt;Education &amp;#x26; Experience&lt;/h2&gt;&lt;ol class=&quot;timeline-items&quot;&gt;&lt;li class=&quot;timeline-item&quot; data-highlight=&quot;true&quot;&gt;&lt;p class=&quot;timeline-range&quot;&gt;2022–2026&lt;/p&gt;&lt;div class=&quot;timeline-item-meta&quot;&gt;&lt;a class=&quot;timeline-item-title&quot; href=&quot;https://stlin256.github.io/OpenHomepage-V2/research&quot;&gt;PhD Candidate&lt;/a&gt;&lt;p class=&quot;timeline-org&quot;&gt;Example University&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;timeline-item-body&quot;&gt;&lt;p&gt;研究方向为机器学习与系统，重点关注推理调度与可复现评测。&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;&lt;li class=&quot;timeline-item&quot;&gt;&lt;p class=&quot;timeline-range&quot;&gt;2026 · 进行中&lt;/p&gt;&lt;div class=&quot;timeline-item-meta&quot;&gt;&lt;h3 class=&quot;timeline-item-title&quot;&gt;Research Intern&lt;/h3&gt;&lt;p class=&quot;timeline-org&quot;&gt;Example Lab&lt;/p&gt;&lt;/div&gt;&lt;div class=&quot;timeline-item-body&quot;&gt;&lt;p&gt;参与边缘设备上的大模型推理实验。&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/section&gt;
+&lt;h2&gt;学术成果列表&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;data/publications.yaml&lt;/code&gt; 是成果数据的权威来源，&lt;code&gt;publications.bib&lt;/code&gt; 按 key 合并原始 BibTeX。下面的列表在构建期完成筛选、排序与分组；BibTeX 复制是唯一渐进增强交互。&lt;/p&gt;
+&lt;section class=&quot;publications&quot; data-group=&quot;year&quot;&gt;&lt;section class=&quot;publication-group&quot;&gt;&lt;h3 class=&quot;publication-group-title&quot;&gt;2026&lt;/h3&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
+      &lt;div class=&quot;publication-index&quot;&gt;01&lt;/div&gt;
+      &lt;div class=&quot;publication-main&quot;&gt;
+        &lt;p class=&quot;publication-meta&quot;&gt;&lt;span&gt;OSDI 2026&lt;/span&gt;&lt;span class=&quot;publication-badge&quot;&gt;oral&lt;/span&gt;&lt;/p&gt;
+        &lt;h3 class=&quot;publication-title&quot;&gt;Efficient Inference with Adaptive Scheduling&lt;/h3&gt;
+        &lt;p class=&quot;publication-authors&quot;&gt;&lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;, Alice Doe, Bob Smith&lt;/p&gt;
+        &lt;p class=&quot;publication-note&quot;&gt;第一作者，负责调度器设计与评测。&lt;/p&gt;
+        &lt;details class=&quot;publication-abstract&quot;&gt;&lt;summary&gt;Abstract&lt;/summary&gt;&lt;p&gt;提出一个面向交互负载的自适应推理调度器，在多组真实轨迹上报告分布结果。&lt;/p&gt;&lt;/details&gt;
+        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-efficient-inference-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-efficient-inference-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{lin2026efficient,
+  author = {Lin, Zhiyuan and Doe, Alice and Smith, Bob}&lt;/pre&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-compute.jpg&quot; alt=&quot;Efficient Inference with Adaptive Scheduling figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+    &lt;/article&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
+      &lt;div class=&quot;publication-index&quot;&gt;02&lt;/div&gt;
+      &lt;div class=&quot;publication-main&quot;&gt;
+        &lt;p class=&quot;publication-meta&quot;&gt;&lt;span&gt;MLSys Evaluation Workshop&lt;/span&gt;&lt;/p&gt;
+        &lt;h3 class=&quot;publication-title&quot;&gt;Reproducible Evaluation for Open Models&lt;/h3&gt;
+        &lt;p class=&quot;publication-authors&quot;&gt;Alice Doe, &lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;&lt;/p&gt;
+        &lt;p class=&quot;publication-note&quot;&gt;共同作者，负责评测集与报告脚本。&lt;/p&gt;
+        
+        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;PDF&lt;/a&gt;&lt;span aria-hidden=&quot;true&quot;&gt;·&lt;/span&gt;&lt;a href=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Project&lt;/a&gt;&lt;/nav&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-reproducible-eval-2026&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-reproducible-eval-2026&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@inproceedings{doe2026reproducible,
+  author = {Doe, Alice and Lin, Zhiyuan}&lt;/pre&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-evaluation.jpg&quot; alt=&quot;Reproducible Evaluation for Open Models figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+    &lt;/article&gt;&lt;/section&gt;&lt;section class=&quot;publication-group&quot;&gt;&lt;h3 class=&quot;publication-group-title&quot;&gt;2025&lt;/h3&gt;&lt;article class=&quot;publication-item&quot; data-has-teaser=&quot;true&quot;&gt;
+      &lt;div class=&quot;publication-index&quot;&gt;01&lt;/div&gt;
+      &lt;div class=&quot;publication-main&quot;&gt;
+        &lt;p class=&quot;publication-meta&quot;&gt;&lt;span&gt;Journal of Machine Learning Systems&lt;/span&gt;&lt;span class=&quot;publication-badge&quot;&gt;artifact&lt;/span&gt;&lt;/p&gt;
+        &lt;h3 class=&quot;publication-title&quot;&gt;Edge KV Cache Compression&lt;/h3&gt;
+        &lt;p class=&quot;publication-authors&quot;&gt;Bob Smith, &lt;strong&gt;Zhiyuan Lin&lt;/strong&gt;&lt;/p&gt;
+        
+        
+        &lt;nav class=&quot;publication-links&quot; aria-label=&quot;publication links&quot;&gt;&lt;a href=&quot;https://github.com/stlin256/OpenHomepage-V2&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Code&lt;/a&gt;&lt;/nav&gt;
+        &lt;div class=&quot;publication-bibtex&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;publication-copy&quot; data-copy-bibtex=&quot;bibtex-edge-cache-2025&quot;&gt;Copy BibTeX&lt;/button&gt;&lt;pre id=&quot;bibtex-edge-cache-2025&quot; tabindex=&quot;0&quot; data-pagefind-ignore&gt;@article{smith2025edge,
+  author = {Smith, Bob and Lin, Zhiyuan}&lt;/pre&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/research-tooling.jpg&quot; alt=&quot;Edge KV Cache Compression figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
+    &lt;/article&gt;&lt;/section&gt;&lt;/section&gt;</content>
+    </entry>
+</feed>
