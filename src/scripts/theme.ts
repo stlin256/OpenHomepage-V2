@@ -32,6 +32,19 @@ export function applyTheme(theme: ThemeName): void {
   document.documentElement.dataset.theme = theme;
 }
 
+let themeTransitionTimer: number | undefined;
+
+/** 主题变化期间临时启用全站颜色过渡，结束后移除，避免常驻全局 transition。 */
+export function applyThemeWithTransition(theme: ThemeName): void {
+  const root = document.documentElement;
+  window.clearTimeout(themeTransitionTimer);
+  root.classList.add('theme-switching');
+  applyTheme(theme);
+  themeTransitionTimer = window.setTimeout(() => {
+    root.classList.remove('theme-switching');
+  }, 220);
+}
+
 export function currentTheme(): ThemeName {
   return initialTheme(readSaved(), siteDefaultMode(), systemDark());
 }
@@ -47,7 +60,7 @@ export function initThemeToggle(): void {
     } catch {
       /* 存储不可用时仍当页生效 */
     }
-    applyTheme(next);
+    applyThemeWithTransition(next);
   });
 }
 
@@ -55,6 +68,6 @@ export function initThemeToggle(): void {
 const media = window.matchMedia('(prefers-color-scheme: dark)');
 if (media.addEventListener) {
   media.addEventListener('change', () => {
-    if (readSaved() === null) applyTheme(currentTheme());
+    if (readSaved() === null) applyThemeWithTransition(currentTheme());
   });
 }

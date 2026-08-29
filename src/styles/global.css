@@ -93,17 +93,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 主题切换仅颜色 200ms 过渡，不动布局（spec 10 §3） */
-body,
-.site-nav,
-.icon-btn,
-.home-block,
-.markdown-body pre,
-.site-footer {
+/* 主题切换仅颜色 200ms 过渡，不动布局（spec 10 §3）。
+   transition class 由 theme.ts 在切换期间临时添加，避免常驻全局选择器。 */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
   transition:
     background-color 0.2s ease,
+    border-color 0.2s ease,
     color 0.2s ease,
-    border-color 0.2s ease;
+    fill 0.2s ease,
+    stroke 0.2s ease,
+    box-shadow 0.2s ease !important;
 }
 
 a {
@@ -343,19 +344,26 @@ body.nav-open .nav-toggle .bar:nth-child(3) {
 }
 /* 主题切换：小正方形图标按钮，按当前主题显示太阳/月亮 */
 .theme-toggle {
+  display: grid;
+  place-items: center;
   width: 2rem;
   height: 2rem;
   padding: 0;
-  justify-content: center;
 }
 .theme-toggle .icon {
-  display: none;
+  grid-area: 1 / 1;
   width: 1rem;
   height: 1rem;
+  opacity: 0;
+  transform: rotate(-35deg) scale(0.82);
+  transition:
+    opacity 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
 }
 html[data-theme='light'] .theme-toggle .icon-light,
 html[data-theme='dark'] .theme-toggle .icon-dark {
-  display: block;
+  opacity: 1;
+  transform: none;
 }
 
 /* BGM 播放/暂停：与主题按钮同款方块按钮，按播放态切换图标 */
@@ -2225,6 +2233,10 @@ html.js .reveal.revealed {
     transition:
       opacity 0.15s ease,
       visibility 0s linear 0.15s;
+  }
+  .theme-toggle .icon {
+    transform: none;
+    transition: opacity 0.12s ease;
   }
   .site-title,
   .site-nav ul,
