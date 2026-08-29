@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 自渲染音频播放器（:::audio）：保留原生 <audio> 内核、隐藏 UI 交给本地 JS。
  * 主题变量继承 global.css；播放前置 metadata 预载时长，点击才拉流。
  * 独占播放策略：页面同时只允许一个媒体播放（音频 / 视频 / BGM 互斥），
@@ -29,24 +29,31 @@ function fadeBgm(audio: HTMLAudioElement, target: number): void {
 }
 
 export function pauseOtherMedia(current: HTMLMediaElement): void {
-  for (const media of document.querySelectorAll<HTMLMediaElement>('audio, video')) {
-    if (media === current || media.paused) continue;
-    media.pause();
-    const root = media.closest('.audio-player');
-    if (root) root.classList.remove(ACTIVE_ROOT_CLASS);
-  }
   const bgm = document.querySelector(BGM_SELECTOR);
-  if (!(bgm instanceof HTMLAudioElement)) return;
-  if (!bgm.paused) {
+  if (bgm instanceof HTMLAudioElement && !bgm.paused) {
     bgmWasPlaying = true;
     bgmVolume = bgm.volume;
     fadeBgm(bgm, 0);
+  }
+
+  for (const media of document.querySelectorAll<HTMLMediaElement>('audio, video')) {
+    if (media === current || media === bgm || media.paused) continue;
+    media.pause();
+    const root = media.closest('.audio-player');
+    if (root) root.classList.remove(ACTIVE_ROOT_CLASS);
   }
 }
 
 export function resumeBgmIfNeeded(): void {
   const bgm = document.querySelector(BGM_SELECTOR);
   if (!(bgm instanceof HTMLAudioElement) || !bgmWasPlaying) return;
+
+  // 如果页面上还有其他音频或视频正在播放，暂不恢复
+  const isOtherPlaying = Array.from(document.querySelectorAll<HTMLMediaElement>('audio, video')).some(
+    (m) => m !== bgm && !m.paused && !m.ended
+  );
+  if (isOtherPlaying) return;
+
   bgmWasPlaying = false;
   bgm.volume = 0;
   bgm.play().then(() => fadeBgm(bgm, bgmVolume)).catch(() => {});
@@ -110,7 +117,7 @@ function initAudioPlayer(root: HTMLElement): void {
   track?.addEventListener('click', (e: MouseEvent) => {
     if (!audio.duration) return;
     const rect = track.getBoundingClientRect();
-    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / Math.max(1, rect.width)));
     audio.currentTime = ratio * audio.duration;
   });
 
@@ -120,6 +127,10 @@ function initAudioPlayer(root: HTMLElement): void {
     resumeBgmIfNeeded();
   });
   audio.addEventListener('ended', () => {
+    root.classList.remove(ACTIVE_ROOT_CLASS);
+    resumeBgmIfNeeded();
+  });
+  audio.addEventListener('error', () => {
     root.classList.remove(ACTIVE_ROOT_CLASS);
     resumeBgmIfNeeded();
   });

@@ -1,11 +1,13 @@
-/**
- * BGM 自动播放回归：首屏先机会性开播；被策略拦截时才交互加载。
+﻿/**
+ * BGM 自动播放回归与媒体打断恢复测试。
  *
  * @vitest-environment jsdom
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 let initBgm: () => void;
+let pauseOtherMedia: (current: HTMLMediaElement) => void;
+let resumeBgmIfNeeded: () => void;
 
 beforeEach(async () => {
   localStorage.clear();
@@ -19,6 +21,7 @@ beforeEach(async () => {
   });
   vi.resetModules();
   ({ initBgm } = await import('../src/scripts/bgm.ts'));
+  ({ pauseOtherMedia, resumeBgmIfNeeded } = await import('../src/scripts/audio-player.ts'));
 });
 
 describe('initBgm', () => {
@@ -47,5 +50,44 @@ describe('initBgm', () => {
     expect(audio.play).toHaveBeenCalledTimes(2);
     expect(loads).toEqual(['load']);
     expect(audio.preload).toBe('none');
+  });
+});
+
+describe('media interruption & auto-resume', () => {
+  it('smoothly pauses BGM when another media starts, and automatically resumes BGM when other media ends', async () => {
+    vi.useFakeTimers();
+    const bgm = document.querySelector<HTMLAudioElement>('audio.bgm-audio')!;
+    bgm.volume = 0.4;
+    bgm.play = vi.fn(() => {
+      Object.defineProperty(bgm, 'paused', { value: false, configurable: true });
+      return Promise.resolve();
+    });
+    bgm.pause = vi.fn(() => {
+      Object.defineProperty(bgm, 'paused', { value: true, configurable: true });
+    });
+
+    // Start playing BGM
+    await bgm.play();
+    expect(bgm.paused).toBe(false);
+
+    // Create a content video/audio element
+    const video = document.createElement('video');
+    document.body.appendChild(video);
+    Object.defineProperty(video, 'paused', { value: false, configurable: true });
+
+    // When video starts playing, pauseOtherMedia is called
+    pauseOtherMedia(video);
+    vi.advanceTimersByTime(1000);
+    expect(bgm.pause).toHaveBeenCalled();
+
+    // Now video pauses/ends
+    Object.defineProperty(video, 'paused', { value: true, configurable: true });
+    resumeBgmIfNeeded();
+    await Promise.resolve();
+    vi.advanceTimersByTime(1000);
+
+    // BGM should be resumed
+    expect(bgm.play).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 });
