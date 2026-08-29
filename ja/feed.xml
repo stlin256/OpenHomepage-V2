@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远の個人ホームページ：機械学習研究、オープンソース、読書記録]]></description>
     <language>ja</language>
-    <lastBuildDate>Sat, 29 Aug 2026 17:32:54 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 29 Aug 2026 17:42:24 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.xml"/>
     <item>
       <title><![CDATA[機能]]></title>
@@ -184,7 +184,7 @@
 <aside class="callout callout-tip" role="note"><div class="callout-header"><span class="callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 6.1L21 9.3l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.7 3 9.3l6.6-1.2L12 2z"></path></svg></span><p class="callout-title">性能の境界</p></div><p>新しいコンテンツディレクティブはビルド時に描画され、初画面の JavaScript を増やしません。</p></aside>
 <aside class="callout callout-warning" role="note"><div class="callout-header"><span class="callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l9 16H3l9-16zm-1 6v5h2V9h-2zm0 7v2h2v-2h-2z"></path></svg></span><p class="callout-title">慎重な結論</p></div><p>単一のベンチマークスコアは分布報告の代わりになりません。</p></aside>
 <aside class="callout callout-quote" role="note"><div class="callout-header"><span class="callout-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 6c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4zm10 0c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4z"></path></svg></span><p class="callout-title">Field Note</p></div><p>システム最適化の価値は、再現できる測定にあります。</p><p class="callout-source">Zhiyuan Lin, 2026</p></aside>
-<section class="timeline"><h2 class="timeline-title">Education &#x26; Experience</h2><ol class="timeline-items"><li class="timeline-item" data-highlight="true"><p class="timeline-range">2022–2026</p><div class="timeline-item-meta"><a class="timeline-item-title" href="https://stlin256.github.io/OpenHomepage-V2/research">PhD Candidate</a><p class="timeline-org">Example University</p></div><div class="timeline-item-body"><p>機械学習とシステム、特に推論スケジューリングと再現可能な評価を研究。</p></div></li><li class="timeline-item"><p class="timeline-range">2026 · 現在</p><div class="timeline-item-meta"><h3 class="timeline-item-title">Research Intern</h3><p class="timeline-org">Example Lab</p></div><div class="timeline-item-body"><p>エッジデバイスでの LLM 推論実験に参加。</p></div></li></ol></section>
+<section class="timeline reveal"><h2 class="timeline-title">Education &#x26; Experience</h2><ol class="timeline-items"><li class="timeline-item reveal" data-highlight="true" style="--delay:0ms"><p class="timeline-range">2022–2026</p><div class="timeline-item-meta"><a class="timeline-item-title" href="https://stlin256.github.io/OpenHomepage-V2/research">PhD Candidate</a><p class="timeline-org">Example University</p></div><div class="timeline-item-body"><p>機械学習とシステム、特に推論スケジューリングと再現可能な評価を研究。</p></div></li><li class="timeline-item reveal" style="--delay:90ms"><p class="timeline-range">2026 · 現在</p><div class="timeline-item-meta"><h3 class="timeline-item-title">Research Intern</h3><p class="timeline-org">Example Lab</p></div><div class="timeline-item-body"><p>エッジデバイスでの LLM 推論実験に参加。</p></div></li></ol></section>
 <h2>论文リスト</h2>
 <p><code>data/publications.yaml</code> が権威あるデータソースで、<code>publications.bib</code> がキーごとに元の BibTeX を提供します。絞り込み・並べ替え・グループ化はビルド時に完了します。</p>
 <section class="publications" data-group="year"><section class="publication-group"><h3 class="publication-group-title">2026</h3><article class="publication-item" data-has-teaser="true">
@@ -195,7 +195,7 @@
         <p class="publication-authors"><strong>Zhiyuan Lin</strong>, Alice Doe, Bob Smith</p>
         <p class="publication-note">First author; led scheduler design and evaluation.</p>
         <details class="publication-abstract"><summary>Abstract</summary><div class="abstract-content"><p>An adaptive inference scheduler for interactive workloads, evaluated with distribution reports on real traces.</p></div></details>
-        <div class="publication-actions"><nav class="publication-links" aria-label="publication links"><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg" target="_blank" rel="noopener">PDF</a><a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener">Code</a><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research" target="_blank" rel="noopener">Project</a></nav><button type="button" class="publication-copy" data-copy-bibtex="bibtex-efficient-inference-2026">Copy BibTeX</button></div>
+        <div class="publication-actions"><nav class="publication-links" aria-label="publication links"><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-1.jpg" target="_blank" rel="noopener">PDF</a><a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener">Code</a><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research" target="_blank" rel="noopener">Project</a><button type="button" class="publication-copy" data-copy-bibtex="bibtex-efficient-inference-2026">Copy BibTeX</button></nav></div>
         <div class="publication-bibtex"><pre id="bibtex-efficient-inference-2026" tabindex="0" data-pagefind-ignore>@article{lin2026efficient,
   author = {Lin, Zhiyuan and Doe, Alice and Smith, Bob}</pre></div>
       </div>
@@ -208,7 +208,7 @@
         <p class="publication-authors">Alice Doe, <strong>Zhiyuan Lin</strong></p>
         <p class="publication-note">Co-author; built the evaluation set and reporting scripts.</p>
         
-        <div class="publication-actions"><nav class="publication-links" aria-label="publication links"><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg" target="_blank" rel="noopener">PDF</a><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research" target="_blank" rel="noopener">Project</a></nav><button type="button" class="publication-copy" data-copy-bibtex="bibtex-reproducible-eval-2026">Copy BibTeX</button></div>
+        <div class="publication-actions"><nav class="publication-links" aria-label="publication links"><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/figure-2.jpg" target="_blank" rel="noopener">PDF</a><a href="https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/research" target="_blank" rel="noopener">Project</a><button type="button" class="publication-copy" data-copy-bibtex="bibtex-reproducible-eval-2026">Copy BibTeX</button></nav></div>
         <div class="publication-bibtex"><pre id="bibtex-reproducible-eval-2026" tabindex="0" data-pagefind-ignore>@inproceedings{doe2026reproducible,
   author = {Doe, Alice and Lin, Zhiyuan}</pre></div>
       </div>
@@ -221,7 +221,7 @@
         <p class="publication-authors">Bob Smith, <strong>Zhiyuan Lin</strong></p>
         
         
-        <div class="publication-actions"><nav class="publication-links" aria-label="publication links"><a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener">Code</a></nav><button type="button" class="publication-copy" data-copy-bibtex="bibtex-edge-cache-2025">Copy BibTeX</button></div>
+        <div class="publication-actions"><nav class="publication-links" aria-label="publication links"><a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener">Code</a><button type="button" class="publication-copy" data-copy-bibtex="bibtex-edge-cache-2025">Copy BibTeX</button></nav></div>
         <div class="publication-bibtex"><pre id="bibtex-edge-cache-2025" tabindex="0" data-pagefind-ignore>@article{smith2025edge,
   author = {Smith, Bob and Lin, Zhiyuan}</pre></div>
       </div>
