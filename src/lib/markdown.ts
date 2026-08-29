@@ -112,14 +112,17 @@ function buildSanitizeSchema(): Schema {
     iframe: ['src', 'width', 'height', 'allowFullScreen', 'loading', 'referrerPolicy', 'title'],
     video: ['src', 'poster', 'controls', 'preload', 'width', 'height'],
     audio: ['src', 'controls', 'preload'],
-    img: [...(defaultSchema.attributes?.img ?? ['src', 'alt', 'title']), 'loading', 'width', 'height'],
+    img: [...(defaultSchema.attributes?.img ?? ['src', 'alt', 'title']), 'loading', 'decoding', 'sizes', 'width', 'height'],
+    button: ['type', 'ariaLabel', 'ariaPressed', 'disabled'],
+    svg: ['viewBox', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin', 'width', 'height', 'ariaHidden', 'ariaLabel', 'xmlns'],
+    path: ['d', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin'],
   };
   for (const tag of MATH_ML_TAGS) attributes[tag] = MATH_ML_ATTRS;
   return {
     ...defaultSchema,
     tagNames: [
       ...(defaultSchema.tagNames ?? []),
-      'iframe', 'video', 'audio', 'figure', 'figcaption', ...MATH_ML_TAGS,
+      'iframe', 'video', 'audio', 'figure', 'figcaption', 'button', 'svg', 'path', ...MATH_ML_TAGS,
     ],
     attributes,
   };
@@ -217,23 +220,93 @@ function toFigure(attrs: Record<string, string>, baseUrl?: string): { properties
  * `cover` 存在时自动切为 B 封面卡。`preload` 默认 metadata，保证播放前可显示时长；
  * `none` 时不主动读元数据，点击后才加载。
  */
-function toAudioPlayer(attrs: Record<string, string>, baseUrl?: string): Properties {  const src = withBase(attrs.src, baseUrl);
+function hEl(tagName: string, properties: Properties = {}, children: ElementContent[] = []): ElementContent {
+  return { type: 'element', tagName, properties, children };
+}
+function hTxt(value: string): ElementContent {
+  return { type: 'text', value };
+}
+
+const PLAY_ICON_PATH = 'M8 5v14l11-7z';
+const PAUSE_ICON_PATH = 'M6 5h4v14H6zM14 5h4v14h-4z';
+
+function audioPlayPauseSvg(): ElementContent[] {
+  const playSvg = hEl('svg', { className: ['icon-play'], viewBox: '0 0 24 24', fill: 'currentColor', ariaHidden: 'true' }, [
+    hEl('path', { d: PLAY_ICON_PATH }),
+  ]);
+  const pauseSvg = hEl('svg', { className: ['icon-pause'], viewBox: '0 0 24 24', fill: 'currentColor', ariaHidden: 'true' }, [
+    hEl('path', { d: PAUSE_ICON_PATH }),
+  ]);
+  return [playSvg, pauseSvg];
+}
+
+/**
+ * `:::audio` 自渲染播放器结构：真实 `<audio>` 保留原生内核（不隐藏节点本身，
+ * 仅 CSS 收缩为 1px 无障碍占位），外层卡片由前端交互接管；A 默认卡片，
+ * `cover` 存在时自动切为 B 封面卡。`preload` 默认 metadata，保证播放前可显示时长；
+ * `none` 时不主动读元数据，点击后才加载。
+ */
+function toAudioPlayer(
+  attrs: Record<string, string>,
+  baseUrl?: string,
+): { properties: Properties; children: ElementContent[] } {
+  const src = withBase(attrs.src, baseUrl);
+  const title = attrs.title || '';
+  const desc = attrs.description ?? attrs.desc ?? '';
+  const cover = attrs.cover ? withBase(attrs.cover, baseUrl) : undefined;
+  const isCard = Boolean(cover);
+
   const className = ['audio-player', 'md-audio'];
-  if (attrs.cover) className.push('audio-card');
+  if (isCard) className.push('audio-card');
+
   const properties: Properties = {
     className,
     'data-src': src,
-    'data-mode': attrs.cover ? 'card' : 'compact',
-    'role': 'group',
-    'aria-label': attrs.title || 'Audio player'
+    'data-mode': isCard ? 'card' : 'compact',
+    role: 'group',
+    ariaLabel: title || 'Audio player',
   };
   if (attrs.preload && ['none', 'metadata', 'auto'].includes(attrs.preload)) {
     properties['data-preload'] = attrs.preload;
   }
-  if (attrs.title) properties['data-title'] = attrs.title;
-  if (attrs.description ?? attrs.desc) properties['data-desc'] = attrs.description ?? attrs.desc;
-  if (attrs.cover) properties['data-cover'] = withBase(attrs.cover, baseUrl);
-  return properties;
+  if (title) properties['data-title'] = title;
+  if (desc) properties['data-desc'] = desc;
+  if (cover) properties['data-cover'] = cover;
+
+  const btn = hEl('button', { className: ['btn-toggle'], type: 'button', ariaLabel: '播放 / Play' }, audioPlayPauseSvg());
+  const track = hEl('div', { className: ['audio-track'] }, [hEl('div', { className: ['audio-fill'] })]);
+  const timeSpan = hEl('span', { className: ['audio-time'] }, [hTxt('--:-- / --:--')]);
+
+  if (isCard && cover) {
+    const coverImg = hEl('img', { src: cover, alt: title || 'Cover', loading: 'lazy', decoding: 'async' });
+    const audioCover = hEl('div', { className: ['audio-cover'] }, [coverImg]);
+
+    const titleNode = hEl('span', { className: ['audio-title', 'audio-scroll-text'], dataMarquee: 'true' }, [hTxt(title || '音频播放 / Audio')]);
+    const titleScroll = hEl('div', { className: ['audio-scroll'] }, [titleNode]);
+
+    const contentChildren: ElementContent[] = [titleScroll];
+    if (desc) {
+      const descNode = hEl('span', { className: ['audio-desc', 'audio-scroll-text'], dataMarquee: 'true' }, [hTxt(desc)]);
+      contentChildren.push(hEl('div', { className: ['audio-scroll'] }, [descNode]));
+    }
+    const audioBottom = hEl('div', { className: ['audio-bottom'] }, [btn, timeSpan]);
+    contentChildren.push(audioBottom, track);
+    const audioContent = hEl('div', { className: ['audio-content'] }, contentChildren);
+
+    return { properties, children: [audioCover, audioContent] };
+  }
+
+  // Compact A mode
+  const titleNode = hEl('span', { className: ['audio-title', 'audio-scroll-text'], dataMarquee: 'true' }, [hTxt(title || '音频播放 / Audio')]);
+  const titleScroll = hEl('span', { className: ['audio-scroll'] }, [titleNode]);
+  const barsSpan = hEl('span', { className: ['audio-bars-mini'], ariaHidden: 'true' }, [
+    hEl('span'), hEl('span'), hEl('span'), hEl('span'), hEl('span'),
+  ]);
+  const audioBottom = hEl('div', { className: ['audio-bottom'] }, [timeSpan, barsSpan]);
+  const audioMeta = hEl('div', { className: ['audio-meta'] }, [titleScroll, audioBottom]);
+  const audioUser = hEl('div', { className: ['audio-user'] }, [btn, audioMeta]);
+
+  return { properties, children: [audioUser, track] };
 }
 
 /**
@@ -344,7 +417,9 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean) 
         }
         case 'audio': {
           if (!attrs.src) return degrade('params');
-          setElement('div', toAudioPlayer(attrs, baseUrl));
+          const audio = toAudioPlayer(attrs, baseUrl);
+          setElement('div', audio.properties);
+          data.hChildren = audio.children;
           break;
         }
         case 'figure': {
@@ -682,6 +757,8 @@ export async function renderMarkdown(
   }
   return String(await processor.process(markdown));
 }
+
+
 
 
 

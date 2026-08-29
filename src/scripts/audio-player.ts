@@ -10,6 +10,7 @@ const ACTIVE_ROOT_CLASS = 'is-playing';
 let bgmWasPlaying = false;
 let bgmVolume = 0.4;
 let fadeTimer: number | null = null;
+let marqueeBound = false;
 
 function fadeBgm(audio: HTMLAudioElement, target: number): void {
   if (fadeTimer !== null) window.clearInterval(fadeTimer);
@@ -43,7 +44,7 @@ export function pauseOtherMedia(current: HTMLMediaElement): void {
   }
 }
 
-export function resumeBgmIfNeeded() {
+export function resumeBgmIfNeeded(): void {
   const bgm = document.querySelector(BGM_SELECTOR);
   if (!(bgm instanceof HTMLAudioElement) || !bgmWasPlaying) return;
   bgmWasPlaying = false;
@@ -51,11 +52,28 @@ export function resumeBgmIfNeeded() {
   bgm.play().then(() => fadeBgm(bgm, bgmVolume)).catch(() => {});
 }
 
-function initAudioPlayer(root: HTMLElement) {
+export function setupAudioMarquee(root?: ParentNode): void {
+  const scope = root ?? document;
+  for (const el of scope.querySelectorAll<HTMLElement>('[data-marquee]')) {
+    const holder = el.closest<HTMLElement>('.audio-scroll');
+    if (!holder) continue;
+    const overflow = el.scrollWidth - holder.clientWidth;
+    if (overflow > 4) {
+      holder.style.setProperty('--shift', `${overflow + 12}px`);
+      holder.classList.add('scrolling');
+    } else {
+      holder.classList.remove('scrolling');
+      holder.style.removeProperty('--shift');
+    }
+  }
+}
+
+function initAudioPlayer(root: HTMLElement): void {
   if (root.dataset.audioInit) return;
   root.dataset.audioInit = '1';
   const src = root.dataset.src;
   if (!src) return;
+
   const audio = document.createElement('audio');
   audio.className = 'audio-native';
   const allowed = ['auto', 'metadata', 'none'] as const;
@@ -67,7 +85,7 @@ function initAudioPlayer(root: HTMLElement) {
   const fill = root.querySelector<HTMLElement>('.audio-fill');
   const time = root.querySelector<HTMLElement>('.audio-time');
   const btn = root.querySelector<HTMLElement>('.btn-toggle');
-  if (!btn) return;
+  const track = root.querySelector<HTMLElement>('.audio-track');
 
   const fmt = (s: number): string => {
     if (!isFinite(s)) return '--:--';
@@ -76,7 +94,7 @@ function initAudioPlayer(root: HTMLElement) {
     return `${m}:${String(ss).padStart(2, '0')}`;
   };
 
-  btn.addEventListener('click', async () => {
+  btn?.addEventListener('click', async () => {
     if (audio.paused) {
       pauseOtherMedia(audio);
       try {
@@ -88,6 +106,14 @@ function initAudioPlayer(root: HTMLElement) {
       resumeBgmIfNeeded();
     }
   });
+
+  track?.addEventListener('click', (e: MouseEvent) => {
+    if (!audio.duration) return;
+    const rect = track.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audio.currentTime = ratio * audio.duration;
+  });
+
   audio.addEventListener('play', () => root.classList.add(ACTIVE_ROOT_CLASS));
   audio.addEventListener('pause', () => {
     root.classList.remove(ACTIVE_ROOT_CLASS);
@@ -106,10 +132,14 @@ function initAudioPlayer(root: HTMLElement) {
   });
 }
 
-export function initAudioPlayers() {
+export function initAudioPlayers(): void {
   const bgm = document.querySelector<HTMLMediaElement>(BGM_SELECTOR);
   bgmVolume = Number(bgm?.dataset?.volume ?? '0.4') || 0.4;
-  for (const root of document.querySelectorAll<HTMLElement>(document.documentElement.classList.contains('oh-edit') ? '.markdown-body .audio-player:not([data-audio-init])' : '.audio-player')) {
+  for (const root of document.querySelectorAll<HTMLElement>(
+    document.documentElement.classList.contains('oh-edit')
+      ? '.markdown-body .audio-player:not([data-audio-init])'
+      : '.audio-player',
+  )) {
     if (document.documentElement.classList.contains('oh-edit')) {
       // 编辑模式：不初始化播放，仍保留 DOM 供 overlay 检查器编辑
       root.dataset.audioInit = '1';
@@ -117,7 +147,10 @@ export function initAudioPlayers() {
     }
     initAudioPlayer(root);
   }
+
+  setupAudioMarquee();
+  if (!marqueeBound) {
+    marqueeBound = true;
+    window.addEventListener('resize', () => setupAudioMarquee(), { passive: true });
+  }
 }
-
-
-

@@ -219,7 +219,7 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
         value: () => ({ top: [...menu.children].indexOf(item) * 34 }),
       });
     }
-    const animateMock = vi.fn(() => ({ cancel: vi.fn() }) as unknown as Animation);
+    const animateMock = vi.fn((..._args: unknown[]) => ({ cancel: vi.fn() }) as unknown as Animation);
     const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "animate");
     Object.defineProperty(HTMLElement.prototype, "animate", {
       configurable: true,
@@ -327,3 +327,4 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     }
   });
 });
+

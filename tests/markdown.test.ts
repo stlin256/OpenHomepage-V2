@@ -142,21 +142,28 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('poster="/assets/cover.png"');
   });
 
-  it(':::audio 渲染自渲染播放器容器（原生 audio 延迟创建）', async () => {
+  it(':::audio 渲染自渲染播放器容器（A 紧凑标题模式，结构完整）', async () => {
     const html = await renderMarkdown(':::audio{src="assets/podcast.mp3" title="示例音频"}\n:::');
     expect(html).toContain('class="audio-player md-audio"');
     expect(html).toContain('data-src="/assets/podcast.mp3"');
     expect(html).toContain('data-mode="compact"');
+    expect(html).toContain('class="btn-toggle"');
+    expect(html).toContain('class="audio-track"');
+    expect(html).toContain('class="audio-time"');
+    expect(html).toContain('示例音频');
     expect(html).not.toContain('<audio');
   });
 
-  it(':::audio 带 cover 时渲染 B 模式卡片', async () => {
+  it(':::audio 带 cover 时渲染 B 封面卡片模式', async () => {
     const html = await renderMarkdown(':::audio{src="assets/podcast.mp3" cover="assets/cover.jpg" title="Aria" description="Goldberg Variations"}\n:::');
-    expect(html).toContain('audio-player md-audio audio-card');
+    expect(html).toContain('class="audio-player md-audio audio-card"');
     expect(html).toContain('data-mode="card"');
     expect(html).toContain('data-cover="/assets/cover.jpg"');
     expect(html).toContain('data-title="Aria"');
     expect(html).toContain('data-desc="Goldberg Variations"');
+    expect(html).toContain('<img src="/assets/cover.jpg"');
+    expect(html).toContain('Aria');
+    expect(html).toContain('Goldberg Variations');
   });
 
   it('指令缺必需参数时降级为普通文本', async () => {
@@ -410,4 +417,5 @@ describe('构建期占位替换（M4b）', () => {
     expect(html).toContain('<p>前面 <strong>混写</strong> 后面</p>');
   });
 });
+
 
