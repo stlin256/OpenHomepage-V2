@@ -48,7 +48,7 @@ describe('时间线指令', () => {
 
   it('渲染语义 section/ol/li 与安全链接', async () => {
     const html = await renderMarkdown(md, { lang: 'zh', defaultLang: 'zh' });
-    expect(html).toContain('<section class="timeline"');
+    expect(html).toContain('<section class="timeline');
     expect(html).toContain('Education &#x26; Experience');
     expect(html).toContain('<ol class="timeline-items">');
     expect(html).toContain('<li class="timeline-item');

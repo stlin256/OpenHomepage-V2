@@ -248,7 +248,7 @@ export function renderPublications(
       : '';
     const hasActions = linkItems.length > 0 || copyBtn;
     const actionsRow = hasActions
-      ? `<div class="publication-actions"><nav class="publication-links" aria-label="publication links">${linkItems.join('')}</nav>${copyBtn}</div>`
+      ? `<div class="publication-actions"><nav class="publication-links" aria-label="publication links">${linkItems.join('')}${copyBtn}</nav></div>`
       : '';
     const bibtexBlock = item.bibtex
       ? `<div class="publication-bibtex"><pre id="${bibtexId}" tabindex="0" data-pagefind-ignore>${esc(item.bibtex)}</pre></div>`

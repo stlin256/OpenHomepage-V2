@@ -682,7 +682,7 @@ function rehypeContentDecorations(lang: string | undefined, defaultLang?: string
         return;
       }
       if (node.tagName !== 'section' || !(node.properties?.dataTimeline === 'true' || classesOf(node).includes('timeline'))) return;
-      node.properties.className = ['timeline'];
+      node.properties.className = ['timeline', 'reveal'];
       delete node.properties.dataTimeline;
       const title = String(node.properties?.dataTimelineTitle ?? '');
       if (title) node.children.unshift(hEl('h2', { className: ['timeline-title'] }, [hTxt(title)]));
@@ -691,9 +691,11 @@ function rehypeContentDecorations(lang: string | undefined, defaultLang?: string
         child.type === 'element' && child.tagName === 'div' && (child.properties?.dataTimelineItem === 'true' || classesOf(child).includes('timeline-item'))
       );
       if (items.length === 0) return;
-      for (const item of items) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
         item.tagName = 'li';
-        item.properties.className = ['timeline-item'];
+        item.properties.className = ['timeline-item', 'reveal'];
+        item.properties.style = "--delay:" + (i * 90) + "ms";
         delete item.properties.dataTimelineItem;
         const start = String(item.properties?.dataStart ?? '');
         const end = item.properties?.dataEnd == null ? undefined : String(item.properties.dataEnd);

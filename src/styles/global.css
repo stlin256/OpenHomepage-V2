@@ -1572,20 +1572,15 @@ a.editorial-item:focus-visible .editorial-item-content {
   --callout-accent: var(--accent);
   max-width: 72ch;
   margin: 1.15em 0;
-  padding: 0.6rem 0.95rem 0.65rem;
+  padding: 0.65rem 0.95rem 0.75rem;
   border: 1px solid color-mix(in srgb, var(--callout-accent) 20%, var(--border));
   border-left: 3.5px solid var(--callout-accent);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--callout-accent) 5%, var(--card));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition:
-    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 .markdown-body > .callout:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   border-color: color-mix(in srgb, var(--callout-accent) 35%, var(--border));
 }
 .markdown-body .callout-tip { --callout-accent: var(--success); }
@@ -1598,8 +1593,8 @@ a.editorial-item:focus-visible .editorial-item-content {
 .callout-header {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0 0 0.2rem;
+  gap: 0.45rem;
+  margin: 0 0 0.3rem;
   color: var(--callout-accent);
   line-height: 1.25;
 }
@@ -1613,35 +1608,39 @@ a.editorial-item:focus-visible .editorial-item-content {
   width: 100%;
   height: 100%;
 }
-.callout-title {
-  margin: 0;
+.callout-title,
+.markdown-body .callout-title {
+  margin: 0 !important;
   color: inherit;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 750;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1.25;
 }
-.callout > p:not(.callout-title):not(.callout-source) {
-  margin: 0.15rem 0 0;
+.callout > p:not(.callout-title):not(.callout-source),
+.markdown-body .callout > p:not(.callout-title):not(.callout-source) {
+  margin: 0 !important;
   font-size: 0.91rem;
   line-height: 1.55;
   color: var(--text);
 }
-.callout-source {
-  margin: 0.35rem 0 0;
+.callout-source,
+.markdown-body .callout-source {
+  margin: 0.35rem 0 0 !important;
   color: var(--text-muted);
   font-size: 0.78rem;
   text-align: right;
 }
 
-/* P0 时间线：紧凑连贯竖线、清晰层级 */
+/* P0 时间线：紧凑连贯竖线、对齐时间点与向下层叠展开动效 */
 .timeline {
   max-width: 72ch;
   margin: 2rem 0;
 }
-.timeline-title {
-  margin: 0 0 1.25rem;
+.timeline-title,
+.markdown-body .timeline-title {
+  margin: 0 0 1.15rem !important;
   font-size: 1.05rem;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -1652,7 +1651,7 @@ a.editorial-item:focus-visible .editorial-item-content {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  gap: 1.25rem;
   margin: 0;
   padding: 0 0 0 1.5rem;
   list-style: none;
@@ -1660,15 +1659,14 @@ a.editorial-item:focus-visible .editorial-item-content {
 }
 .timeline-item {
   position: relative;
-  transition: transform 0.2s ease;
 }
 .timeline-item::before {
   content: '';
   position: absolute;
-  top: 0.25rem;
+  top: 0.18rem;
   left: -1.88rem;
-  width: 0.7rem;
-  height: 0.7rem;
+  width: 0.65rem;
+  height: 0.65rem;
   border: 2px solid var(--accent);
   border-radius: 50%;
   background: var(--bg);
@@ -1683,23 +1681,26 @@ a.editorial-item:focus-visible .editorial-item-content {
   transform: scale(1.25);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 28%, transparent);
 }
-.timeline-range {
-  margin: 0 0 0.2rem;
+.timeline-range,
+.markdown-body .timeline-range {
+  margin: 0 0 0.15rem !important;
   color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-family: inherit;
+  font-size: 0.82rem;
   font-weight: 600;
+  line-height: 1.25;
   letter-spacing: 0.02em;
 }
 .timeline-item-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.5rem 0.85rem;
-  margin-bottom: 0.2rem;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.15rem;
 }
-.timeline-item-title {
-  margin: 0;
+.timeline-item-title,
+.markdown-body .timeline-item-title {
+  margin: 0 !important;
   color: var(--text);
   font-size: 1rem;
   font-weight: 750;
@@ -1710,17 +1711,22 @@ a.timeline-item-title:hover,
 a.timeline-item-title:focus-visible {
   color: var(--accent);
 }
-.timeline-org {
+.timeline-org,
+.markdown-body .timeline-org {
   flex: 0 0 auto;
-  margin: 0;
+  margin: 0 !important;
   color: var(--text-muted);
   font-size: 0.85rem;
 }
 .timeline-item-body {
-  margin-top: 0.3rem;
+  margin-top: 0.15rem;
   color: var(--text-muted);
   font-size: 0.92rem;
-  line-height: 1.6;
+  line-height: 1.55;
+}
+.timeline-item-body p,
+.markdown-body .timeline-item-body p {
+  margin: 0.15rem 0 !important;
 }
 .timeline-item-body > :first-child {
   margin-top: 0;
@@ -1729,16 +1735,33 @@ a.timeline-item-title:focus-visible {
   margin-bottom: 0;
 }
 
-/* P0 论文列表：构建期渲染，BibTeX 复制与摘要折叠平滑过渡 */
+html.js .timeline-item.reveal {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--delay, 0ms);
+}
+html.js .timeline-item.reveal.reveal-pending {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+html.js .timeline-item.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* P0 论文列表：构建期渲染，紧凑单行按钮、消除年份双线与 BibTeX 空间优化 */
 .publications {
   max-width: none;
   margin: 2rem 0;
 }
 .publication-group {
-  margin-bottom: 2.25rem;
+  margin-bottom: 2rem;
 }
 .publication-group-title {
-  margin: 0 0 1rem;
+  margin: 0 0 0.85rem;
   padding-bottom: 0.35rem;
   border-bottom: 1px solid var(--border);
   color: var(--text-muted);
@@ -1747,36 +1770,45 @@ a.timeline-item-title:focus-visible {
   font-weight: 600;
   letter-spacing: 0.08em;
 }
+.publication-group .publication-item:first-of-type {
+  border-top: none;
+}
 .publication-item {
   display: grid;
   grid-template-columns: 2rem minmax(0, 1fr);
   gap: 1.25rem;
-  padding: 1.25rem 0;
+  padding: 0.85rem 0 0.65rem;
   border-top: 1px solid var(--border);
   transition: background-color 0.2s ease;
 }
 .publication-item[data-has-teaser='true'] {
   grid-template-columns: 2rem minmax(0, 1fr) 200px;
 }
-.publication-index {
+.publication-index,
+.markdown-body .publication-index {
   color: var(--accent);
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  padding-top: 0.15rem;
+  line-height: 1.2;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 .publication-main {
   min-width: 0;
 }
-.publication-meta {
+.publication-meta,
+.markdown-body .publication-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 0.3rem;
+  gap: 0.45rem;
+  margin: 0 0 0.2rem !important;
+  padding: 0 !important;
   color: var(--accent);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
+  line-height: 1.2;
 }
 .publication-badge {
   padding: 0.1rem 0.4rem;
@@ -1786,21 +1818,26 @@ a.timeline-item-title:focus-visible {
   font-size: 0.68rem;
   text-transform: uppercase;
 }
-.publication-title {
-  margin: 0 0 0.35rem;
+.publication-title,
+.markdown-body .publication-title {
+  margin: 0 0 0.25rem !important;
+  padding: 0 !important;
   color: var(--text);
   font-size: 1.05rem;
   font-weight: 750;
   line-height: 1.35;
 }
-.publication-authors {
-  margin: 0 0 0.35rem;
+.publication-authors,
+.markdown-body .publication-authors {
+  margin: 0 0 0.25rem !important;
+  padding: 0 !important;
   color: var(--text);
   font-size: 0.88rem;
   line-height: 1.5;
 }
-.publication-note {
-  margin: 0 0 0.45rem;
+.publication-note,
+.markdown-body .publication-note {
+  margin: 0 0 0.35rem !important;
   padding-left: 0.65rem;
   border-left: 2.5px solid color-mix(in srgb, var(--accent) 40%, var(--border));
   color: var(--text-muted);
@@ -1808,7 +1845,7 @@ a.timeline-item-title:focus-visible {
   line-height: 1.5;
 }
 .publication-abstract {
-  margin: 0.55rem 0 0;
+  margin: 0.45rem 0 0;
 }
 .publication-abstract summary {
   display: inline-flex;
@@ -1826,8 +1863,8 @@ a.timeline-item-title:focus-visible {
 }
 .publication-abstract .abstract-content {
   overflow: hidden;
-  margin-top: 0.45rem;
-  padding: 0.65rem 0.85rem;
+  margin-top: 0.35rem;
+  padding: 0.55rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle);
@@ -1849,66 +1886,63 @@ a.timeline-item-title:focus-visible {
     transform: translateY(0);
   }
 }
+.publication-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
 .publication-links {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.6rem;
-  font-size: 0.8rem;
+  gap: 0.35rem;
 }
-.publication-links a {
+.publication-actions a,
+.publication-links a,
+.publication-copy {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.55rem;
+  min-height: unset;
+  padding: 0.18rem 0.55rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle);
   color: var(--text);
   text-decoration: none;
-  font-size: 0.78rem;
-  font-weight: 600;
-  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
-}
-.publication-links a:hover,
-.publication-links a:focus-visible {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, var(--bg));
-}
-.publication-bibtex {
-  margin-top: 0.55rem;
-}
-.publication-copy {
-  display: inline-flex;
-  align-items: center;
-  min-height: unset;
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  color: var(--text);
   font: inherit;
   font-size: 0.78rem;
   font-weight: 600;
+  line-height: 1.35;
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
+.publication-actions a:hover,
+.publication-actions a:focus-visible,
+.publication-links a:hover,
+.publication-links a:focus-visible,
 .publication-copy:hover,
 .publication-copy:focus-visible {
   border-color: var(--accent);
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 8%, var(--bg));
 }
-.publication-bibtex pre {
+.publication-bibtex,
+.markdown-body .publication-bibtex {
+  margin-top: 0.35rem !important;
+  margin-bottom: 0 !important;
+}
+.publication-bibtex pre,
+.markdown-body .publication-bibtex pre {
   max-height: 9.5rem;
-  margin: 0.45rem 0 0;
-  padding: 0.65rem 0.85rem;
+  margin: 0.25rem 0 0 !important;
+  padding: 0.45rem 0.65rem !important;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle);
   font-size: 0.76rem;
-  line-height: 1.45;
+  line-height: 1.4;
   overflow-x: auto;
 }
 .publication-teaser {
@@ -1949,6 +1983,7 @@ a.timeline-item-title:focus-visible {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .timeline-item.reveal,
   .publication-item,
   .publication-teaser,
   .publication-abstract .abstract-content {
@@ -1974,7 +2009,8 @@ a.timeline-item-title:focus-visible {
     flex-wrap: nowrap;
     padding-bottom: 0.25rem;
   }
-}.markdown-body .md-grid {
+}
+.markdown-body .md-grid {
   display: grid;
   gap: 1.5rem;
   margin: 1.5em 0;
