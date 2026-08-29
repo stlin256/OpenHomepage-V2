@@ -1,4 +1,4 @@
-/**
+﻿/**
  * P0 学术成果数据层：publications.yaml + 可选 BibTeX 文件。
  * 纯 Node/纯函数实现，构建期完成过滤、排序、分组与 HTML 生成，页面运行时零脚本
  * （仅 BibTeX 复制按钮通过事件委托渐进增强）。
@@ -179,7 +179,6 @@ export function filterPublications(items: PublicationItem[], query: PublicationQ
     const itemTags = new Set((item.tags ?? []).map((t) => t.toLowerCase()));
     return tags.every((tag) => itemTags.has(tag));
   });
-  const order = query.order ?? {};
   result = [...result].sort((a, b) => {
     if (query.sort === 'date-asc') return itemDate(a) - itemDate(b) || a.id.localeCompare(b.id);
     if (query.sort === 'venue') return a.venue.localeCompare(b.venue) || itemDate(b) - itemDate(a);
@@ -220,11 +219,16 @@ export function renderPublications(
 ): string {
   const lang = options.lang;
   const defaultLang = options.defaultLang;
+  const isZh = (lang ?? defaultLang ?? 'zh').toLowerCase().startsWith('zh');
+  const abstractLabel = isZh ? '摘要' : 'Abstract';
+  const copyLabel = isZh ? '复制 BibTeX' : 'Copy BibTeX';
+  const emptyLabel = isZh ? '没有匹配的成果 / No publications matched' : 'No publications matched';
+
   const highlights = new Set([...(options.highlightAuthors ?? []), ...[]].map((v) => v.trim().toLowerCase()));
   const matched = filterPublications(items, query);
   const group = query.group ?? 'year';
   if (!matched.length) {
-    return '<section class="publications" data-group="none"><p class="publication-empty">No publications matched / 没有匹配的成果</p></section>';
+    return `<section class="publications" data-group="none"><p class="publication-empty">${esc(emptyLabel)}</p></section>`;
   }
   const renderArticle = (item: PublicationItem, index: number): string => {
     const abstract = item.abstract ? resolveText(item.abstract, lang, defaultLang) : '';
@@ -237,13 +241,13 @@ export function renderPublications(
       linkHtml('Project', safeUrl(links.project, options.baseUrl)),
       linkHtml('Slides', safeUrl(links.slides, options.baseUrl)),
       linkHtml('Dataset', safeUrl(links.dataset, options.baseUrl)),
-    ].filter(Boolean).join('<span aria-hidden="true">·</span>');
+    ].filter(Boolean).join('');
     const teaser = item.teaser
       ? `<picture class="publication-teaser"><img src="${esc(withBase(`/${item.teaser}`, options.baseUrl))}" alt="${esc(item.title)} figure" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 220px"></picture>`
       : '';
     const bibtexId = `bibtex-${esc(item.id)}`;
     const bibtex = item.bibtex
-      ? `<div class="publication-bibtex"><button type="button" class="publication-copy" data-copy-bibtex="${bibtexId}">Copy BibTeX</button><pre id="${bibtexId}" tabindex="0" data-pagefind-ignore>${esc(item.bibtex)}</pre></div>`
+      ? `<div class="publication-bibtex"><button type="button" class="publication-copy" data-copy-bibtex="${bibtexId}">${copyLabel}</button><pre id="${bibtexId}" tabindex="0" data-pagefind-ignore>${esc(item.bibtex)}</pre></div>`
       : '';
     return `<article class="publication-item"${item.teaser ? ' data-has-teaser="true"' : ''}>
       <div class="publication-index">${String(index + 1).padStart(2, '0')}</div>
@@ -252,7 +256,7 @@ export function renderPublications(
         <h3 class="publication-title">${esc(item.title)}</h3>
         <p class="publication-authors">${authorsHtml(item, highlights)}</p>
         ${note ? `<p class="publication-note">${esc(note)}</p>` : ''}
-        ${abstract ? `<details class="publication-abstract"><summary>Abstract</summary><p>${esc(abstract)}</p></details>` : ''}
+        ${abstract ? `<details class="publication-abstract"><summary>${abstractLabel}</summary><div class="abstract-content"><p>${esc(abstract)}</p></div></details>` : ''}
         ${linkRow ? `<nav class="publication-links" aria-label="publication links">${linkRow}</nav>` : ''}
         ${bibtex}
       </div>

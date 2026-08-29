@@ -620,17 +620,18 @@ document.addEventListener('click', async (e) => {
   const source = document.getElementById(btn.dataset.copyBibtex ?? '');
   if (!source) return;
   const text = source.textContent ?? '';
+  const isZh = (document.documentElement.dataset.routeLang || 'zh').startsWith('zh');
   const original = btn.textContent;
   try {
     await navigator.clipboard.writeText(text);
-    btn.textContent = 'Copied';
+    btn.textContent = isZh ? '已复制' : 'Copied';
   } catch {
     source.focus();
-    btn.textContent = 'Press Ctrl/Cmd+C';
+    btn.textContent = isZh ? '按 Ctrl/Cmd+C 复制' : 'Press Ctrl/Cmd+C';
   }
   btn.setAttribute('aria-live', 'polite');
   window.setTimeout(() => {
-    btn.textContent = original || 'Copy BibTeX';
+    btn.textContent = original || (isZh ? '复制 BibTeX' : 'Copy BibTeX');
   }, 1800);
 });
 // ---- RSS 封面加载失败 ----
