@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 自定义指令元数据（与 docs/specs/03 一一对应，M12b 从旧编辑器 directive-nodes.ts
  * 抽离到 shared；M12e 旧编辑器已移除，本文件是唯一来源）：
  * overlay 插入抽屉与右侧检查器共用。
@@ -39,6 +39,27 @@ export const DIRECTIVE_DEFS: DirectiveDef[] = [
   { id: 'stream', name: 'stream', kind: 'leaf', icon: '💬', params: [{ key: 'id', label: '区块 id', labelKey: 'dirParamBlockId', placeholder: 'welcome' }] },
   { id: 'ghcard', name: 'ghcard', kind: 'leaf', icon: '🐙', params: [{ key: 'repo', label: '仓库', labelKey: 'dirParamRepo', placeholder: 'owner/repo' }] },
   { id: 'editorial', name: 'editorial', kind: 'leaf', icon: '🧩', params: [{ key: 'id', label: '区块 id', labelKey: 'dirParamBlockId', placeholder: 'features' }] },
+  { id: 'note', name: 'note', kind: 'container', icon: '📝', params: [{ key: 'title', label: '标题' }] },
+  { id: 'tip', name: 'tip', kind: 'container', icon: '✨', params: [{ key: 'title', label: '标题' }] },
+  { id: 'warning', name: 'warning', kind: 'container', icon: '⚠️', params: [{ key: 'title', label: '标题' }] },
+  { id: 'important', name: 'important', kind: 'container', icon: '❗', params: [{ key: 'title', label: '标题' }] },
+  { id: 'quote', name: 'quote', kind: 'container', icon: '❝', params: [{ key: 'title', label: '标题' }, { key: 'source', label: '来源' }] },
+  { id: 'timeline', name: 'timeline', kind: 'container', icon: '🕒', params: [{ key: 'title', label: '标题' }] },
+  { id: 'publications', name: 'publications', kind: 'leaf', icon: '📚', params: [
+    { key: 'tag', label: '标签（逗号分隔，AND）' },
+    { key: 'type', label: '类型', options: ['conference', 'journal', 'workshop', 'demo', 'preprint', 'thesis'] },
+    { key: 'year', label: '年份' },
+    { key: 'group', label: '分组', options: ['year', 'type', 'none'] },
+    { key: 'sort', label: '排序', options: ['date-desc', 'date-asc', 'venue', 'order'] },
+    { key: 'limit', label: '数量上限' },
+  ] },  { id: 'timeline-item', name: 'timeline-item', kind: 'container', icon: '📌', params: [
+    { key: 'start', label: '开始时间' },
+    { key: 'end', label: '结束时间' },
+    { key: 'title', label: '标题' },
+    { key: 'org', label: '机构' },
+    { key: 'url', label: '链接' },
+    { key: 'highlight', label: '强调', options: ['true', 'false'] },
+  ] },
 ];
 
 /** 指令名 → 展示名 i18n 键（admin/shared/i18n.ts；overlay 插入抽屉与 M12c 检查器标题共用） */
@@ -52,6 +73,14 @@ export const DIRECTIVE_LABEL_KEYS: Record<string, string> = {
   stream: 'dirStream',
   ghcard: 'dirGhcard',
   editorial: 'dirEditorial',
+  note: 'dirNote',
+  tip: 'dirTip',
+  warning: 'dirWarning',
+  important: 'dirImportant',
+  quote: 'dirQuote',
+  timeline: 'dirTimeline',
+  publications: 'dirPublications',
+  'timeline-item': 'dirTimelineItem',
 };
 
 /** 插入用示例片段（overlay 插入抽屉；占位参数由检查器编辑） */
@@ -65,5 +94,12 @@ export const INSERT_SNIPPETS: Record<string, string> = {
   stream: '::stream{id=""}\n',
   ghcard: '::ghcard{repo=""}\n',
   editorial: '::editorial{id=""}\n',
+  note: ':::note{title=""}\n\n:::\n',
+  tip: ':::tip{title=""}\n\n:::\n',
+  warning: ':::warning{title=""}\n\n:::\n',
+  important: ':::important{title=""}\n\n:::\n',
+  quote: ':::quote{title="" source=""}\n\n:::\n',
+  timeline: '::::timeline{title=""}\n::::\n',
+  'timeline-item': ':::timeline-item{start="" end="" title="" org=""}\n\n:::\n',
+  publications: '::publications{tag="" limit="20" group="year"}\n',
 };
-

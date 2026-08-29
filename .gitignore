@@ -11,6 +11,7 @@ reusable-components.md
 node_modules/
 dist/
 dist-*/
+/public/assets/og/
 
 # 系统文件
 .DS_Store

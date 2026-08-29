@@ -10,7 +10,9 @@ OpenHomepage V2 is a static, magazine-style personal homepage generator built wi
 
 ## Core Capabilities
 
-- **Markdown & Directive Pipeline** — Standard GFM extended with Shiki dual-theme syntax highlighting, KaTeX mathematics, and expressive custom directives (`::bilibili`, `::youtube`, `:::video`, `:::audio`, `:::figure`, `::::grid`, `::stream`, `::ghcard`, `::editorial`).
+- **Markdown & Academic Pipeline** — Standard GFM extended with Shiki dual-theme syntax highlighting, KaTeX mathematics, structured academic publications (`::publications` with BibTeX 1-click copy), milestone timelines (`::::timeline` / `:::timeline-item`), magazine callouts (`:::note`, `:::tip`, `:::warning`, `:::important`, `:::quote`), and rich media directives (`::bilibili`, `::youtube`, `:::video`, `:::audio`, `:::figure`, `::::grid`, `::stream`, `::ghcard`, `::editorial`).
+- **Global Search & Feed Syndication** — Instant client-side search dialog (`Ctrl+K` / `Cmd+K`) with CJK tokenizer and language scope switcher; native build-time RSS 2.0 (`/feed.xml`), Atom 1.0 (`/feed.atom.xml`), and JSON Feed 1.1 (`/feed.json`) generation.
+- **Dynamic OG Cards & Article Navigation** — Automated 1200×630 social preview card generation cached by content hash; sticky/collapsible Table of Contents (TOC) with ScrollSpy and top 2px reading progress bar; multi-track BGM playlist with slide-out drawer and MediaSession support.
 - **Editorial Typography & Magazine Layout** — Asymmetric 12-column grid, restrained transform/opacity animations, configurable accent colors, and automatic light/dark theme switching (follows system preference with session override).
 - **Responsive Image Optimization** — Production builds create multiple WebP + AVIF widths, serve AVIF first via `<picture>` when the browser supports it (WebP as fallback), and select the smallest clear candidate from the current layout and device pixel ratio. Aggressive idle prefetch covers language alternates and same-language tabs plus their AVIF candidates without a byte cap, while prefetch-only Speculation Rules warm hover targets in Chromium. Fetched HTML feeds a shared in-memory cache, so language switches are near-instant; originals and `-full` lightbox sources remain excluded from preloading.
 - **Dynamic Content Prefetching** — Build-time fetcher with intelligent cache fallback for GitHub contribution heatmaps, official-style pinned repository cards, and multi-source RSS content streams.
@@ -180,4 +182,3 @@ GitHub Actions automatically builds and publishes the static site to GitHub Page
 ├── admin/           # Local visual editor application
 └── tests/           # Vitest test suite
 ```
-

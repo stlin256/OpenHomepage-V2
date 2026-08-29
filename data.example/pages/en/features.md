@@ -3,6 +3,12 @@ title: "Features"
 nav: true
 order: 3
 slug: "features"
+date: 2026-08-29
+updated: 2026-08-29
+feed:
+  enabled: true
+toc: true
+reading_progress: true
 description: "A full tour of what this site's markdown rendering can do"
 ---
 
@@ -132,4 +138,40 @@ Page controls are page-level widgets configured on a per-page basis (non-global)
 ## Raw HTML mixing
 
 <mark>This line uses the native HTML mark tag</mark>. Dangerous tags like `<script>` are filtered by a whitelist.
+
+
+## Callouts & timeline
+
+The P0 content directives remain script-free at runtime: callouts explain and warn, while timelines present education, experience, and milestones.
+
+:::note{title="Reproducible entry"}
+Papers, tools, and experiments stay in one index for later verification.
+:::
+
+:::tip{title="Performance boundary"}
+New content directives render at build time and add no first-screen JavaScript.
+:::
+
+:::warning{title="Careful conclusions"}
+A single benchmark score is not a substitute for a distribution report.
+:::
+
+:::quote{title="Field Note" source="Zhiyuan Lin, 2026"}
+Systems optimization comes from repeatable measurement, not one lucky speedup.
+:::
+
+::::timeline{title="Education & Experience"}
+:::timeline-item{start="2022" end="2026" title="PhD Candidate" org="Example University" url="/research" highlight="true"}
+Focused on machine learning and systems, especially inference scheduling and reproducible evaluation.
+:::
+:::timeline-item{start="2026" title="Research Intern" org="Example Lab"}
+Worked on on-device LLM inference experiments.
+:::
+::::
+
+## Publications
+
+`data/publications.yaml` is the canonical source, while `publications.bib` supplies raw BibTeX by key. Filtering, sorting, and grouping happen at build time; copying BibTeX is the only progressive enhancement.
+
+::publications{tag="systems" limit="3" group="year" sort="date-desc"}
 

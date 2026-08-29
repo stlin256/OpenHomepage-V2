@@ -13,6 +13,7 @@ import '../styles/global.css';
 import type { AccentTheme } from '../lib/theme.ts';
 import type { BackgroundTheme } from '../lib/theme.ts';
 import type { ResolvedIntroCard } from '../lib/config.ts';
+import type { ResolvedBgmPlaylist } from '../lib/bgm-playlist.ts';
 import ContactCard from '../components/ContactCard.astro';
 import type { NavItem } from '../lib/routes.ts';
 import { withBase, getBaseUrl } from '../lib/base-url.ts';
@@ -39,13 +40,21 @@ interface Props {
   alternates: { lang: string; path: string }[];
   /** 站点全部语言（页面目录扫描；data-site-langs 供客户端语言偏好校验） */
   langs: string[];
-  /** 背景音乐（site.yaml bgm 段，缺省不渲染；交互见 src/scripts/bgm.ts） */
+  /** 背景音乐多曲目播放列表（P1） */
+  bgmPlaylist?: ResolvedBgmPlaylist | null;
+  /** 背景音乐（向后兼容） */
   bgm?: { src: string; volume: number; autoplay: boolean };
   /** favicon URL（路由层已决定：配置的文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
   favicon: string;
   /** 页脚 HTML（路由层 resolveFooter + footerTextToHtml 渲染；null = 关闭） */
   footer?: string | null;
   introCard?: ResolvedIntroCard | null;
+  /** 原创内容 Feed 链接（P0） */
+  feedLinks?: { type: 'rss' | 'atom' | 'json'; href: string }[];
+  /** 社交分享卡片元数据（P1） */
+  ogMeta?: { title: string; description?: string; imageUrl?: string };
+  /** 是否启用顶部细线阅读进度指示（P1） */
+  readingProgress?: boolean;
   /** 可视化编辑（M12b）：当前页正文的 data/ 相对路径，注入 bootstrap 供 overlay 定位插入目标（空页面无块坐标时必需） */
   editPageSource?: string;
 }
@@ -65,10 +74,14 @@ const {
   i18n,
   alternates,
   langs,
+  bgmPlaylist,
   bgm,
   favicon,
   footer,
   introCard,
+  feedLinks,
+  ogMeta,
+  readingProgress,
   editPageSource,
 } = Astro.props;
 
@@ -95,6 +108,15 @@ const FAVICON_MIME: Record<string, string> = {
 };
 const faviconType = FAVICON_MIME[favicon.slice(favicon.lastIndexOf('.')).toLowerCase()];
 const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
+
+// BGM 归一化：bgmPlaylist 优先，其次 bgm 兜底
+const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
+  tracks: [{ title: 'BGM', artist: '', src: bgm.src }],
+  volume: bgm.volume,
+  autoplay: bgm.autoplay,
+  resume: 'state',
+  showPanel: false,
+} : null);
 ---
 
 <html
@@ -104,6 +126,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
   data-default-mode={defaultMode}
   data-default-lang={defaultLang}
   data-site-langs={langs.join(',')}
+  data-pagefind-lang={htmlLang}
   data-base={baseUrl}
   style={themeVars}
 >
@@ -114,6 +137,34 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
     <link rel="icon" href={withBase(favicon)} type={faviconType} />
     {description && <meta name="description" content={description} />}
     {speculationRules && <script type="speculationrules" set:html={speculationRules} />}
+
+    <!-- P1 OG & Twitter 卡片 -->
+    <meta property="og:type" content={currentPath === '/' ? 'website' : 'article'} />
+    <meta property="og:title" content={ogMeta?.title ?? `${title} · ${siteTitle}`} />
+    {ogMeta?.description && <meta property="og:description" content={ogMeta.description} />}
+    <meta property="og:url" content={new URL(withBase(currentPath), Astro.site)} />
+    {ogMeta?.imageUrl && (
+      <>
+        <meta property="og:image" content={new URL(ogMeta.imageUrl, Astro.site)} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogMeta.title} />
+        {ogMeta.description && <meta name="twitter:description" content={ogMeta.description} />}
+        <meta name="twitter:image" content={new URL(ogMeta.imageUrl, Astro.site)} />
+      </>
+    )}
+
+    <!-- P0 原创内容 Feed alternate -->
+    {feedLinks?.map((f) => (
+      <link
+        rel="alternate"
+        type={f.type === 'rss' ? 'application/rss+xml' : f.type === 'atom' ? 'application/atom+xml' : 'application/feed+json'}
+        title={`${siteTitle} (${f.type.toUpperCase()})`}
+        href={new URL(f.href, Astro.site)}
+      />
+    ))}
+
     <script is:inline define:vars={{ defaultMode }}>
       // 首帧绘制前确定主题，避免闪烁：sessionStorage 用户选择 > site.yaml default_mode > 跟随系统。
       // 与 src/scripts/theme.ts 的 currentTheme 同一套规则（is:inline 无法 import，此处内联镜像）。
@@ -181,6 +232,7 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
     {i18n && xDefault && <link rel="alternate" hreflang="x-default" href={new URL(withBase(xDefault.path), Astro.site)} />}
   </head>
   <body>
+    {readingProgress && <div class="reading-progress" style="transform: scaleX(0)" aria-hidden="true" />}
     <header class="site-header">
       <button class="nav-toggle" type="button" aria-label="打开导航菜单 / Menu" aria-expanded="false" aria-controls="site-nav">
         <span class="bar" aria-hidden="true"></span>
@@ -205,8 +257,15 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
         </ul>
       </nav>
       <div class="header-tools">
-        {bgm && (
-          <button class="bgm-toggle icon-btn" type="button" aria-pressed="false" aria-label="播放/暂停背景音乐 / Toggle background music">
+        <!-- P1 静态全局搜索快捷按钮 -->
+        <button class="search-toggle icon-btn" type="button" aria-label="搜索 / Search (Ctrl+K)" aria-keyshortcuts="Control+K Meta+K" data-pagefind-ignore>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        {activePlaylist && (
+          <button class="bgm-toggle icon-btn" type="button" aria-pressed="false" aria-label="播放/暂停背景音乐 / Toggle background music" aria-haspopup={activePlaylist.showPanel ? 'dialog' : undefined}>
             <svg class="icon icon-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M11 5 6 9H2v6h4l5 4V5z" />
             </svg>
@@ -253,27 +312,99 @@ const homeHref = withBase(nav.find((item) => item.slug === '/')?.path ?? '/');
         </button>
       </div>
     </header>
-    <main class="site-main">
+    <main class="site-main" data-pagefind-body>
       <slot />
     </main>
     {/* 页脚（默认开启，site.yaml footer.enabled:false 关闭；文本支持内联链接，见 src/lib/footer.ts）。
         M12d：data-oh-cfg 坐标挂在包裹元素上（footer 内部是经 footerTextToHtml 渲染的链接 HTML，
         就地改字编辑的是 yaml 原文而非渲染后的 textContent） */}
     {footer && <footer class="site-footer" {...editCfgAttr('footer.text', htmlLang)} set:html={footer} />}
-    {/* 背景音乐：audio 不参与内容交换，天然连续播放 */}
-    {bgm && (
-      <audio
-        class="bgm-audio"
-        src={withBase(bgm.src)}
-        loop
-        preload="none"
-        data-volume={bgm.volume}
-        data-autoplay={bgm.autoplay ? 'true' : 'false'}
-      />
+
+    {/* 背景音乐与播放列表抽屉 */}
+    {activePlaylist && (
+      <>
+        <audio
+          class="bgm-audio"
+          src={withBase(activePlaylist.tracks[0]?.src ?? '')}
+          loop={activePlaylist.tracks.length === 1}
+          preload="none"
+          data-volume={activePlaylist.volume}
+          data-autoplay={activePlaylist.autoplay ? 'true' : 'false'}
+          data-resume={activePlaylist.resume}
+          data-tracks={JSON.stringify(activePlaylist.tracks.map((t) => ({ ...t, src: withBase(t.src), cover: t.cover ? withBase(t.cover) : undefined })))}
+        />
+        {activePlaylist.showPanel && (
+          <div class="bgm-drawer" role="dialog" aria-label="BGM Playlist" hidden data-pagefind-ignore>
+            <div class="bgm-drawer-header">
+              <p class="bgm-drawer-title">Playlist · 背景音乐</p>
+              <button class="bgm-drawer-close" type="button" aria-label="关闭 / Close">×</button>
+            </div>
+            <div class="bgm-current-info">
+              <img class="bgm-current-cover" src={withBase(activePlaylist.tracks[0]?.cover ?? 'favicon.svg')} alt="" width="48" height="48" loading="lazy" />
+              <div class="bgm-current-text">
+                <p class="bgm-current-title">{activePlaylist.tracks[0]?.title ?? 'Track 1'}</p>
+                <p class="bgm-current-artist">{activePlaylist.tracks[0]?.artist || siteTitle}</p>
+              </div>
+            </div>
+            <div class="bgm-drawer-controls">
+              <button class="bgm-ctrl-btn bgm-prev-btn" type="button" aria-label="上一首 / Previous">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+              </button>
+              <button class="bgm-ctrl-btn play-btn bgm-play-btn" type="button" aria-label="播放/暂停 / Play/Pause">
+                <svg class="icon-play" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="icon-pause" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button class="bgm-ctrl-btn bgm-next-btn" type="button" aria-label="下一首 / Next">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="m6 18 8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              </button>
+            </div>
+            <div class="bgm-volume-bar">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true" style="color:var(--text-muted);"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              <input type="range" class="bgm-volume-slider" min="0" max="1" step="0.05" value={activePlaylist.volume} aria-label="音量调节 / Volume" />
+            </div>
+            <ul class="bgm-tracklist">
+              {activePlaylist.tracks.map((t, idx) => (
+                <li class:list={['bgm-track-item', { active: idx === 0 }]} data-track-index={idx}>
+                  <span class="bgm-track-name">{t.title}</span>
+                  {t.artist && <span class="bgm-track-by" style="font-size:0.72rem; color:var(--text-muted);">{t.artist}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </>
     )}
+
+    <!-- P1 搜索模态框 -->
+    <dialog class="search-dialog" aria-label="Search" data-pagefind-ignore hidden>
+      <div class="search-panel">
+        <form class="search-form" role="search" onsubmit="return false;">
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <input type="search" class="search-input" placeholder="Search / 搜索 (Ctrl+K)..." autocomplete="off" spellcheck="false" aria-label="搜索框 / Search box" />
+          <div class="search-scope-tabs">
+            <button type="button" class="search-scope-btn active" data-scope="current">当前语言</button>
+            <button type="button" class="search-scope-btn" data-scope="all">全部语言</button>
+          </div>
+          <button type="button" class="search-close" aria-label="关闭 / Close">Esc</button>
+        </form>
+        <p class="search-status" role="status">输入关键词开始搜索...</p>
+        <ul class="search-results" role="listbox"></ul>
+        <div class="search-footer">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> 切换</span>
+          <span><kbd>Enter</kbd> 跳转</span>
+          <span><kbd>Esc</kbd> 关闭</span>
+        </div>
+      </div>
+    </dialog>
+
     {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 global.css */}
     {introCard && <ContactCard card={introCard} />}
-    <div class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览 / Image preview" hidden>
+    <div class="lightbox" role="dialog" aria-modal="true" aria-label="图片预览 / Image preview" data-pagefind-ignore hidden>
       <img class="lightbox-img" alt="" />
       <button class="lightbox-close" type="button" aria-label="关闭 / Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">

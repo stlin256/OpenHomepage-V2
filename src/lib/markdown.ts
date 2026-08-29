@@ -1,4 +1,4 @@
-/**
+﻿/**
  * markdown → HTML 渲染管线：纯函数式，不依赖 Astro 运行时，供构建期页面与单测复用。
  *
  * 能力：GFM、Shiki 明暗双主题代码高亮、KaTeX 数学公式、自定义指令
@@ -31,6 +31,8 @@ import { localizeInternalHref } from './routes.ts';
 import { withBase, getBaseUrl } from './base-url.ts';
 import { listEditableBlocks } from './edit-blocks.ts';
 import { localizeRemoteAsset, type RemoteFetchFn } from './remote-assets.ts';
+import { renderPublications, type PublicationsConfig, type PublicationQuery } from './publications.ts';
+import { generateHeadingSlug } from './toc.ts';
 
 export interface MarkdownOptions {
   /** 站点 base URL，用于静态资源与链接补齐前缀（缺省自动读取或为 /） */
@@ -44,6 +46,14 @@ export interface MarkdownOptions {
    * 不变、坐标照常注入，overlay 可点击打开检查器）。生产渲染（无 editSource）零注入。
    */
   editSource?: string;
+  /** 当前内容语言：callout/timeline 缺省文案使用；缺省按 en 处理 */
+  lang?: string;
+  /** 站点默认语言：多语言回退链使用 */
+  defaultLang?: string;
+  /** 学术成果配置（data/publications.yaml 归一化结果） */
+  publications?: PublicationsConfig;
+  headingSlugs?: boolean;
+  toc?: boolean | 'auto';
   /** Shiki 明暗双主题（CSS 变量双写方案，前端按主题切换 var） */
   shikiThemes?: { light: string; dark: string };
   /**
@@ -120,9 +130,10 @@ function buildSanitizeSchema(): Schema {
   for (const tag of MATH_ML_TAGS) attributes[tag] = MATH_ML_ATTRS;
   return {
     ...defaultSchema,
+    clobberPrefix: '',
     tagNames: [
       ...(defaultSchema.tagNames ?? []),
-      'iframe', 'video', 'audio', 'figure', 'figcaption', 'button', 'svg', 'path', ...MATH_ML_TAGS,
+      'iframe', 'video', 'audio', 'figure', 'figcaption', 'button', 'svg', 'path', 'aside', ...MATH_ML_TAGS,
     ],
     attributes,
   };
@@ -164,6 +175,39 @@ function toEmbedDiv(
 }
 
 const WIDTH_RE = /^[\d.]+(%|px|em|rem|vw)$/;
+const CALLOUT_TYPES = new Set(['note', 'tip', 'warning', 'important', 'quote']);
+const CALLOUT_DEFAULT_TITLES: Record<string, Record<string, string>> = {
+  zh: { note: '备注', tip: '提示', warning: '警告', important: '重要', quote: '引用' },
+  en: { note: 'Note', tip: 'Tip', warning: 'Warning', important: 'Important', quote: 'Quote' },
+  ja: { note: '注記', tip: 'ヒント', warning: '警告', important: '重要', quote: '引用' },
+  fr: { note: 'Note', tip: 'Astuce', warning: 'Avertissement', important: 'Important', quote: 'Citation' },
+};
+const CALLOUT_ICON_PATHS: Record<string, string> = {
+  note: 'M4 4h16v12H8l-4 4V4z',
+  tip: 'M12 2l2.4 6.1L21 9.3l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.7 3 9.3l6.6-1.2L12 2z',
+  warning: 'M12 3l9 16H3l9-16zm-1 6v5h2V9h-2zm0 7v2h2v-2h-2z',
+  important: 'M12 2a10 10 0 100 20 10 10 0 000-20zm-1 5h2v7h-2V7zm0 9h2v2h-2v-2z',
+  quote: 'M7 6c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4zm10 0c-2.2 0-4 1.8-4 4s1.8 4 4 4c0 2-1 3-3 3v2c3.3 0 5-2.3 5-6V10c0-2.2-1.8-4-4-4z',
+};
+function normalizeContentLang(lang: string | undefined, defaultLang?: string): string {
+  const value = (lang ?? defaultLang ?? 'en').toLowerCase().split(/[-_]/)[0];
+  return CALLOUT_DEFAULT_TITLES[value] ? value : 'en';
+}
+function calloutDefaultTitle(type: string, lang: string | undefined, defaultLang?: string): string {
+  return CALLOUT_DEFAULT_TITLES[normalizeContentLang(lang, defaultLang)][type] ?? type;
+}
+function safeTimelineUrl(value: string | undefined): string | null {
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value;
+  if (value.startsWith('/') && !value.startsWith('//')) return value;
+  return null;
+}
+function timelineRangeText(start: string, end: string | undefined, lang: string | undefined, defaultLang?: string): string {
+  const nowText: Record<string, string> = { zh: '进行中', en: 'Present', ja: '現在', fr: 'Présent' };
+  const key = normalizeContentLang(lang, defaultLang);
+  const present = nowText[key] ?? nowText.en;
+  return end?.trim() ? `${start}–${end}` : `${start} · ${present}`;
+}
 const FIGURE_ALIGNS = ['left', 'center', 'right'] as const;
 type FigureAlign = (typeof FIGURE_ALIGNS)[number];
 
@@ -365,7 +409,7 @@ function setDirectivePlaceholder(  node: ContainerDirective | LeafDirective,
   data.hChildren = [{ type: 'text', value: hint }];
 }
 
-function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean) {
+function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean, lang?: string, defaultLang?: string, publications?: PublicationsConfig) {
   return (tree: Root, file: VFile) => {
     visit(tree, (node) => {
       if (
@@ -455,6 +499,50 @@ function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean) 
         case 'editorial': {
           if (!attrs.id) return degrade('params');
           setElement('div', { className: ['editorial-embed'], dataEditorialId: attrs.id });
+          break;
+        }
+        case 'note':
+        case 'tip':
+        case 'warning':
+        case 'important':
+        case 'quote': {
+          const properties: Properties = {
+            className: ['callout', `callout-${name}`],
+            role: 'note',
+            dataCalloutTitle: attrs.title ?? calloutDefaultTitle(name, lang, defaultLang),
+          };
+          if (name === 'quote' && attrs.source) properties.dataCalloutSource = attrs.source;
+          setElement('aside', properties);
+          break;
+        }
+        case 'timeline': {
+          const properties: Properties = { className: ['timeline'], dataTimeline: 'true' };
+          if (attrs.title) properties.dataTimelineTitle = attrs.title;
+          setElement('section', properties);
+          break;
+        }
+        case 'timeline-item': {
+          if (!attrs.start?.trim()) return degrade('params');
+          const properties: Properties = { className: ['timeline-item'], dataTimelineItem: 'true', dataStart: attrs.start.trim() };
+          if (attrs.end?.trim()) properties.dataEnd = attrs.end.trim();
+          if (attrs.title?.trim()) properties.dataTimelineTitle = attrs.title.trim();
+          if (attrs.org?.trim()) properties.dataOrg = attrs.org.trim();
+          if (safeTimelineUrl(attrs.url)) properties.dataUrl = safeTimelineUrl(attrs.url);
+          if (attrs.highlight === 'true') properties.dataHighlight = 'true';
+          setElement('div', properties);
+          break;
+        }
+        case 'publications': {
+          if (!publications) return degrade('params');
+          const properties: Properties = { className: ['publications'], dataPublications: 'true' };
+          if (attrs.tag) properties.dataTag = attrs.tag;
+          if (attrs.type) properties.dataType = attrs.type;
+          if (attrs.year) properties.dataYear = attrs.year;
+          if (attrs.group) properties.dataGroup = attrs.group;
+          if (attrs.sort) properties.dataSort = attrs.sort;
+          const limit = Number(attrs.limit);
+          if (Number.isInteger(limit) && limit > 0) properties.dataLimit = String(limit);
+          setElement('div', properties);
           break;
         }
         default:
@@ -566,6 +654,130 @@ function rehypeLazyImages() {
       if (node.tagName === 'img' && node.properties && node.properties.loading == null) {
         node.properties.loading = 'lazy';
       }
+    });
+  };
+}
+
+function calloutHeader(node: Element): void {
+  const type = classesOf(node).find((c) => c.startsWith('callout-'))?.slice('callout-'.length);
+  if (!type) return;
+  const title = String(node.properties?.dataCalloutTitle ?? '');
+  const source = String(node.properties?.dataCalloutSource ?? '');
+  const icon = hEl('span', { className: ['callout-icon'], ariaHidden: 'true' }, [
+    hEl('svg', { viewBox: '0 0 24 24', fill: 'currentColor', ariaHidden: 'true' }, [
+      hEl('path', { d: CALLOUT_ICON_PATHS[type] ?? CALLOUT_ICON_PATHS.note }),
+    ]),
+  ]);
+  const heading = hEl('p', { className: ['callout-title'] }, [hTxt(title)]);
+  node.children.unshift(hEl('div', { className: ['callout-header'] }, [icon, heading]));
+  if (source) node.children.push(hEl('p', { className: ['callout-source'] }, [hTxt(source)]));
+  delete node.properties?.dataCalloutTitle;
+  delete node.properties?.dataCalloutSource;
+}
+function rehypeContentDecorations(lang: string | undefined, defaultLang?: string) {
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node) => {
+      if (node.tagName === 'aside' && classesOf(node).includes('callout')) {
+        calloutHeader(node);
+        return;
+      }
+      if (node.tagName !== 'section' || !(node.properties?.dataTimeline === 'true' || classesOf(node).includes('timeline'))) return;
+      node.properties.className = ['timeline'];
+      delete node.properties.dataTimeline;
+      const title = String(node.properties?.dataTimelineTitle ?? '');
+      if (title) node.children.unshift(hEl('h2', { className: ['timeline-title'] }, [hTxt(title)]));
+      delete node.properties?.dataTimelineTitle;
+      const items = node.children.filter((child): child is Element =>
+        child.type === 'element' && child.tagName === 'div' && (child.properties?.dataTimelineItem === 'true' || classesOf(child).includes('timeline-item'))
+      );
+      if (items.length === 0) return;
+      for (const item of items) {
+        item.tagName = 'li';
+        item.properties.className = ['timeline-item'];
+        delete item.properties.dataTimelineItem;
+        const start = String(item.properties?.dataStart ?? '');
+        const end = item.properties?.dataEnd == null ? undefined : String(item.properties.dataEnd);
+        const range = hEl('p', { className: ['timeline-range'] }, [hTxt(timelineRangeText(start, end, lang, defaultLang))]);
+        const itemTitle = String(item.properties?.dataTimelineTitle ?? '');
+        const org = String(item.properties?.dataOrg ?? '');
+        const url = safeTimelineUrl(item.properties?.dataUrl == null ? undefined : String(item.properties.dataUrl));
+        const heading = hEl(
+          url ? 'a' : 'h3',
+          url ? { className: ['timeline-item-title'], href: url } : { className: ['timeline-item-title'] },
+          itemTitle ? [hTxt(itemTitle)] : []
+        );
+        const meta = hEl('div', { className: ['timeline-item-meta'] }, [
+          heading,
+          ...(org ? [hEl('p', { className: ['timeline-org'] }, [hTxt(org)])] : []),
+        ]);
+        const content = hEl('div', { className: ['timeline-item-body'] }, item.children);
+        item.children = [range, meta, content];
+        delete item.properties?.dataStart;
+        delete item.properties?.dataEnd;
+        delete item.properties?.dataTimelineTitle;
+        delete item.properties?.dataOrg;
+        delete item.properties?.dataUrl;
+      }
+      const list = hEl('ol', { className: ['timeline-items'] }, items);
+      node.children = node.children.filter((child) => !items.includes(child as Element));
+      node.children.push(list);
+    });
+  };
+}function publicationQueryOf(node: Element): PublicationQuery {
+  const value = (key: string): string | undefined => {
+    const v = node.properties?.[key];
+    return typeof v === 'string' && v ? v : undefined;
+  };
+  const group = value('dataGroup');
+  const sort = value('dataSort');
+  const limit = Number(value('dataLimit'));
+  return {
+    tag: value('dataTag'),
+    type: value('dataType'),
+    year: value('dataYear'),
+    group: group === 'none' || group === 'type' ? group : 'year',
+    sort: sort === 'date-asc' || sort === 'venue' || sort === 'order' ? sort : 'date-desc',
+    limit: Number.isInteger(limit) && limit > 0 ? limit : undefined,
+  };
+}
+function rehypePublications(ctx: PublicationsConfig, lang?: string, defaultLang?: string, baseUrl?: string) {
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node: Element, index, parent) => {
+      if (node.properties?.dataPublications !== 'true' || parent == null || index == null) return;
+      const html = renderPublications(
+        ctx.items,
+        { lang, defaultLang, baseUrl, highlightAuthors: ctx.highlight_authors },
+        publicationQueryOf(node),
+      );
+      parent.children[index] = {
+        type: 'raw',
+        value: wrapFragmentForEdit(node, html) ?? html,
+      } as unknown as ElementContent;
+      return [SKIP, index];
+    });
+  };
+}function hastToText(node: ElementContent): string {
+  if (node.type === 'text') return node.value;
+  if ('children' in node && Array.isArray(node.children)) {
+    return node.children.map(hastToText).join('');
+  }
+  return '';
+}
+
+function rehypeHeadingSlugs() {
+  return (tree: HastRoot) => {
+    const existing = new Set<string>();
+    let index = 1;
+    visit(tree, 'element', (node: Element) => {
+      if (!['h2', 'h3', 'h4'].includes(node.tagName)) return;
+      if (node.properties?.id) {
+        existing.add(String(node.properties.id));
+        return;
+      }
+      const text = hastToText(node);
+      const slug = generateHeadingSlug(text, existing, index++);
+      node.properties = node.properties || {};
+      node.properties.id = slug;
     });
   };
 }
@@ -713,7 +925,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(remarkGfm)
     .use(remarkDirective)
     .use(remarkMath)
-    .use(() => remarkCustomDirectives(baseUrl, !!options.editSource));
+    .use(() => remarkCustomDirectives(baseUrl, !!options.editSource, options.lang, options.defaultLang, options.publications));
   // 编辑模式坐标注入必须在 remarkRehype 之前（mdast 阶段），且晚于自定义指令映射
   // （指令的 hProperties 先建好，这里合并 data-oh-src）
   if (options.editSource) processor.use(() => remarkEditSpans(options.editSource!));
@@ -725,7 +937,12 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(() => rehypeNormalizeAssetPaths(baseUrl))
     .use(rehypeLazyImages)
     .use(rehypeSanitize, buildSanitizeSchema())
+    .use(() => rehypeContentDecorations(options.lang, options.defaultLang))
     .use(rehypeFilterIframes);
+  if (options.headingSlugs || options.toc) processor.use(rehypeHeadingSlugs);
+  if (options.publications) {
+    processor.use(() => rehypePublications(options.publications!, options.lang, options.defaultLang, baseUrl));
+  }
 
   // 远程媒体下载在 sanitize/iframe 过滤之后：只改写 src/poster 属性，不影响结构
   if (options.localizeAssets) {
@@ -757,10 +974,3 @@ export async function renderMarkdown(
   }
   return String(await processor.process(markdown));
 }
-
-
-
-
-
-
-

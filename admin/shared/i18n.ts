@@ -86,6 +86,14 @@ const zh = {
   dirStream: '流式区块',
   dirGhcard: 'GitHub 卡片',
   dirEditorial: '编辑区块',
+  dirNote: '备注卡片',
+  dirTip: '提示卡片',
+  dirWarning: '警告卡片',
+  dirImportant: '重要卡片',
+  dirQuote: '引用卡片',
+  dirTimeline: '时间线',
+  dirTimelineItem: '时间线条目',
+  dirPublications: '论文列表',
   editParams: '参数',
   siteSection: '站点信息',
   siteTitle: '站点标题',
@@ -400,6 +408,14 @@ const en: Record<DictKey, string> = {
   dirStream: 'Streaming block',
   dirGhcard: 'GitHub card',
   dirEditorial: 'Editorial block',
+  dirNote: 'Note callout',
+  dirTip: 'Tip callout',
+  dirWarning: 'Warning callout',
+  dirImportant: 'Important callout',
+  dirQuote: 'Quote callout',
+  dirTimeline: 'Timeline',
+  dirTimelineItem: 'Timeline item',
+  dirPublications: 'Publications',
   editParams: 'Parameters',
   siteSection: 'Site',
   siteTitle: 'Site title',
@@ -644,4 +660,3 @@ export function detectLang(navigatorLanguage: string, stored: string | null): La
   if (stored === 'zh' || stored === 'en') return stored;
   return navigatorLanguage.toLowerCase().startsWith('en') ? 'en' : 'zh';
 }
-

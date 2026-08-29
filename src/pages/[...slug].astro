@@ -10,6 +10,12 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { renderMarkdown } from '../lib/markdown.ts';
+import { loadPublications } from '../lib/publications.ts';
+import { normalizeFeedConfig } from '../lib/feed.ts';
+import { feedPathFor } from '../lib/feed-document.ts';
+import { resolveBgmPlaylist, type ResolvedBgmPlaylist } from '../lib/bgm-playlist.ts';
+import { resolvePageOgMeta } from '../lib/og-image.ts';
+import { extractToc, renderTocHtml, shouldEnableToc } from '../lib/toc.ts';
 import {
   loadSiteConfig,
   loadPages,
@@ -18,7 +24,6 @@ import {
   isI18nEnabled,
   resolveText,
   resolveAvatarPosition,
-  resolveBgm,
   resolveFavicon,
   resolveIntroCard,
   type SiteConfig,
@@ -70,9 +75,9 @@ interface Props {
   /** 站点全部语言（detectLanguages 结果，供 BaseLayout 输出 data-site-langs） */
   langs: string[];
   avatarUrl?: string;
-  /** 背景音乐（resolveBgm 归一化 + 文件存在性检查后为 undefined 即不渲染） */
-  bgm?: { src: string; volume: number; autoplay: boolean };
-  /** favicon URL（site.favicon 指向的真实文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
+  /** 背景音乐多曲目播放列表（P1） */
+  bgmPlaylist: ResolvedBgmPlaylist | null;
+  /** favicon URL（路由层已决定：配置的文件存在时为 /assets/...，否则内置默认 /favicon.svg） */
   favicon: string;
   blocks: PlannedHomeBlock[];
   /** 全站 slug 集合，用于把内容里的无语言链接改写成当前路由语言 */
@@ -81,6 +86,8 @@ interface Props {
   githubView: GithubView | null;
   /** .cache/rss.json 视图；null = 缓存缺失或 rss 未启用 */
   rssView: RssView | null;
+  /** 原创内容 Feed alternate 链接（P0） */
+  feedLinks: { type: 'rss' | 'atom' | 'json'; href: string }[];
 }
 
 export function getStaticPaths() {
@@ -95,9 +102,17 @@ export function getStaticPaths() {
   // 头像：仅在文件真实存在时输出 <img>，避免示例数据下 404
   const avatar = site.profile.avatar;
   const avatarUrl = avatar && existsSync(path.join(dataDir, avatar)) ? `/${avatar}` : undefined;
-  // 背景音乐：仅在文件真实存在时输出 <audio>，避免示例数据下 404
-  const bgm = resolveBgm(site);
-  const bgmSrc = bgm && existsSync(path.join(dataDir, bgm.file)) ? `/${bgm.file}` : undefined;
+
+  // 背景音乐多曲目播放列表（P1）
+  const playlist = resolveBgmPlaylist(site);
+  const bgmPlaylist = playlist
+    ? {
+        ...playlist,
+        tracks: playlist.tracks.filter((t) => existsSync(path.join(dataDir, t.src))),
+      }
+    : null;
+  const validPlaylist = bgmPlaylist && bgmPlaylist.tracks.length > 0 ? bgmPlaylist : null;
+
   // favicon：配置了且文件真实存在用之；否则回退内置默认（public/favicon.svg → /favicon.svg）
   const favicon = resolveFavicon(site);
   const faviconUrl = favicon && existsSync(path.join(dataDir, favicon)) ? `/${favicon}` : '/favicon.svg';
@@ -111,31 +126,41 @@ export function getStaticPaths() {
   // 源名 / curated 推荐语按路由语言解析（多语言映射），每种语言各建一份视图
   const rssCache = rssEnabled ? loadRssCache(cacheDir) : null;
   const rssConfig = rssEnabled ? loadRssConfig(dataDir, site.rss?.sources_file) : null;
+  const feedCfg = normalizeFeedConfig(site.feed);
   const rssViews = new Map(
     langs.map((l) => [l, rssConfig ? buildRssView(rssCache, rssConfig, { lang: l, defaultLang }) : null]),
   );
 
-  return buildRoutes(pages, langs, defaultLang).map((route) => ({
-    params: { slug: route.param },
-    props: {
-      route,
-      site,
-      i18n,
-      defaultLang,
-      accent,
-      background,
-      nav: navPagesForLang(pages, route.lang, defaultLang),
-      alternates: alternateLinks(pages, route.slug, langs, defaultLang),
-      langs,
-      avatarUrl: avatarUrl ? withBase(avatarUrl) : undefined,
-      bgm: bgmSrc && bgm ? { src: withBase(bgmSrc), volume: bgm.volume, autoplay: bgm.autoplay } : undefined,
-      favicon: withBase(faviconUrl),
-      blocks,
-      slugs: [...new Set(pages.map((page) => page.slug))],
-      githubView,
-      rssView: rssViews.get(route.lang) ?? null,
-    } satisfies Props,
-  }));
+  return buildRoutes(pages, langs, defaultLang).map((route) => {
+    const feedLinks = feedCfg.enabled
+      ? feedCfg.formats.map((type) => ({
+          type,
+          href: withBase(feedPathFor(route.lang, defaultLang, type)),
+        }))
+      : [];
+    return {
+      params: { slug: route.param },
+      props: {
+        route,
+        site,
+        i18n,
+        defaultLang,
+        accent,
+        background,
+        nav: navPagesForLang(pages, route.lang, defaultLang),
+        alternates: alternateLinks(pages, route.slug, langs, defaultLang),
+        langs,
+        avatarUrl: avatarUrl ? withBase(avatarUrl) : undefined,
+        bgmPlaylist: validPlaylist,
+        favicon: withBase(faviconUrl),
+        blocks,
+        slugs: [...new Set(pages.map((page) => page.slug))],
+        githubView,
+        rssView: rssViews.get(route.lang) ?? null,
+        feedLinks,
+      } satisfies Props,
+    };
+  });
 }
 
 const {
@@ -149,13 +174,15 @@ const {
   alternates,
   langs,
   avatarUrl,
-  bgm,
+  bgmPlaylist,
   favicon,
   blocks,
   slugs,
   githubView,
   rssView,
+  feedLinks,
 } = Astro.props;
+
 const isHome = route.slug === '/';
 const contentLang = route.page.lang;
 // 页脚：默认开启（footer.enabled:false 关闭）；文本按内容语言解析后渲染内联链接
@@ -167,11 +194,38 @@ const introCard = resolveIntroCard(site, contentLang, defaultLang);
 // 头像布局：side=侧边杂志分栏（默认）；top=头像在姓名/简介上方居顶
 const avatarTop = resolveAvatarPosition(site.profile) === 'top';
 
+// P1 目录（TOC）计算
+const rawHeadingsCount = (route.page.body.match(/^#{2,4}\s+/gm) ?? []).length;
+const tocEnabled = shouldEnableToc(route.page.toc, route.page.body.length, rawHeadingsCount);
+const tocItems = tocEnabled ? extractToc(route.page.body, { maxDepth: route.page.tocDepth ?? 3 }) : [];
+const hasToc = tocItems.length > 0;
+const tocLabels = {
+  zh: '文章目录',
+  en: 'Contents',
+  ja: '目次',
+  fr: 'Sommaire',
+};
+const tocTitle = tocLabels[contentLang as keyof typeof tocLabels] ?? tocLabels.en;
+const tocHtml = hasToc ? renderTocHtml(tocItems, { title: tocTitle }) : '';
+const readingProgress = route.page.readingProgress !== false && hasToc;
+
+// P1 社交卡片（OG Meta）计算
+const resolvedSiteTitle = resolveText(site.site.title, contentLang, defaultLang);
+const baseUrl = getBaseUrl();
+const ogMeta = resolvePageOgMeta({
+  page: route.page,
+  siteTitle: resolvedSiteTitle,
+  baseUrl,
+  siteOgConfig: site.og_images,
+});
+
 // 流式区块：按内容语言沿回退链加载全部定义（页面语言 → en → 默认语言）；
 // 主页 streaming 区块与正文 ::stream{id} 占位共用同一份加载结果
 const dataDir = resolveDataDir(process.cwd());
+const publications = existsSync(path.join(dataDir, 'publications.yaml'))
+  ? loadPublications(dataDir)
+  : undefined;
 const slugSet = new Set(slugs);
-const baseUrl = getBaseUrl();
 const localizeHref = (href: string) => withBase(localizeInternalHref(href, route.lang, defaultLang, slugSet), baseUrl);
 const streamBlocks: LoadedStreamBlock[] = [];
 for (const def of site.streaming_blocks ?? []) {
@@ -202,6 +256,10 @@ const editSource =
     : undefined;
 const bodyHtml = await renderMarkdown(route.page.body, {
   baseUrl,
+  lang: contentLang,
+  defaultLang,
+  headingSlugs: hasToc,
+  ...(publications?.enabled === false ? {} : publications ? { publications } : {}),
   streamEmbeds,
   ghCards: { htmlByRepo: ghHtmlByRepo },
   editorialEmbeds,
@@ -239,7 +297,7 @@ const componentLabels =
 
 <BaseLayout
   title={route.page.title}
-  siteTitle={resolveText(site.site.title, contentLang, defaultLang)}
+  siteTitle={resolvedSiteTitle}
   description={route.page.description ?? (site.site.description ? resolveText(site.site.description, contentLang, defaultLang) : undefined)}
   htmlLang={contentLang}
   lang={route.lang}
@@ -252,10 +310,13 @@ const componentLabels =
   i18n={i18n}
   alternates={alternates}
   langs={langs}
-  bgm={bgm}
+  bgmPlaylist={bgmPlaylist}
   favicon={favicon}
   footer={footerHtml}
   introCard={introCard}
+  feedLinks={feedLinks}
+  ogMeta={ogMeta}
+  readingProgress={readingProgress}
   editPageSource={editSource}
 >
   {isHome ? (
@@ -310,7 +371,18 @@ const componentLabels =
       <article class="page-content">
         {route.page.notice && <NoticeBanner notice={route.page.notice} lang={contentLang} />}
         <h1>{route.page.title}</h1>
-        <div class="markdown-body" set:html={bodyHtml} />
+        {hasToc ? (
+          <div class="article-layout">
+            <details class="toc-collapsible" data-pagefind-ignore>
+              <summary>{tocTitle}</summary>
+              <div set:html={tocHtml} />
+            </details>
+            <div class="markdown-body" set:html={bodyHtml} />
+            <aside class="toc-sidebar" data-pagefind-ignore set:html={tocHtml} />
+          </div>
+        ) : (
+          <div class="markdown-body" set:html={bodyHtml} />
+        )}
         {isFeaturesPage && (
           <>
             <h2 class="component-demo-title">{componentLabels.profile}</h2>

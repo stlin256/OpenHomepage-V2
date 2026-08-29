@@ -113,6 +113,18 @@ rss:
     fr: "Radar de pointe"
   sources_file: "rss.yaml"
 
+# ---- 社交分享卡片（OG Image）----
+og_images:
+  enabled: true
+  layout: "editorial"
+  cache: true
+
+# ---- 本站原创内容 Feed ----
+feed:
+  enabled: true
+  formats: ["rss", "atom", "json"]
+  limit: 50
+  include_home: false
 # ---- 主页布局：区块顺序完全可配置（调整列表顺序即可重排主页）----
 home:
   layout:

@@ -3,6 +3,12 @@ title: "Fonctionnalités"
 nav: true
 order: 3
 slug: "features"
+date: 2026-08-29
+updated: 2026-08-29
+feed:
+  enabled: true
+toc: true
+reading_progress: true
 description: "Un tour complet des capacités de rendu markdown de ce site"
 ---
 
@@ -132,4 +138,40 @@ Les contrôles de page sont des widgets de niveau page configurés page par page
 ## HTML brut mélangé
 
 <mark>Cette ligne utilise la balise HTML native mark</mark>. Les balises dangereuses comme `<script>` sont filtrées par une liste blanche.
+
+
+## Callouts & timeline
+
+Les directives de contenu P0 n’ajoutent aucun script au chargement : les callouts expliquent ou alertent, la timeline présente parcours et étapes clés.
+
+:::note{title="Entrée reproductible"}
+Articles, outils et expériences restent dans un même index.
+:::
+
+:::tip{title="Limite de performance"}
+Les nouvelles directives sont rendues à la construction, sans JavaScript initial supplémentaire.
+:::
+
+:::warning{title="Conclusions prudentes"}
+Un score unique ne remplace pas un rapport de distribution.
+:::
+
+:::quote{title="Field Note" source="Zhiyuan Lin, 2026"}
+La valeur d’une optimisation vient de mesures reproductibles.
+:::
+
+::::timeline{title="Education & Experience"}
+:::timeline-item{start="2022" end="2026" title="PhD Candidate" org="Example University" url="/research" highlight="true"}
+Machine learning et systèmes : ordonnancement d’inférence et évaluation reproductible.
+:::
+:::timeline-item{start="2026" title="Research Intern" org="Example Lab"}
+Expériences d’inférence LLM sur appareils embarqués.
+:::
+::::
+
+## Publications
+
+`data/publications.yaml` est la source canonique ; `publications.bib` fournit le BibTeX brut par clé. Le filtrage, le tri et le regroupement sont réalisés à la construction.
+
+::publications{tag="systems" limit="3" group="year" sort="date-desc"}
 

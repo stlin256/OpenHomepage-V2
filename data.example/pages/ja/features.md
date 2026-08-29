@@ -3,6 +3,12 @@ title: "機能"
 nav: true
 order: 3
 slug: "features"
+date: 2026-08-29
+updated: 2026-08-29
+feed:
+  enabled: true
+toc: true
+reading_progress: true
 description: "このサイトのマークダウンレンダリングでできることの全機能ツアー"
 ---
 
@@ -132,4 +138,40 @@ $$
 ## 生 HTML の混在
 
 <mark>この行はネイティブ HTML の mark タグを使っています</mark>。`<script>` のような危険なタグはホワイトリストでフィルタリングされます。
+
+
+## Callout & Timeline
+
+P0 のコンテンツディレクティブは実行時にスクリプトを追加しません。Callout は説明と警告、Timeline は学歴・経歴・マイルストーンに使います。
+
+:::note{title="再現可能な入口"}
+論文、ツール、実験記録を同じインデックスに残します。
+:::
+
+:::tip{title="性能の境界"}
+新しいコンテンツディレクティブはビルド時に描画され、初画面の JavaScript を増やしません。
+:::
+
+:::warning{title="慎重な結論"}
+単一のベンチマークスコアは分布報告の代わりになりません。
+:::
+
+:::quote{title="Field Note" source="Zhiyuan Lin, 2026"}
+システム最適化の価値は、再現できる測定にあります。
+:::
+
+::::timeline{title="Education & Experience"}
+:::timeline-item{start="2022" end="2026" title="PhD Candidate" org="Example University" url="/research" highlight="true"}
+機械学習とシステム、特に推論スケジューリングと再現可能な評価を研究。
+:::
+:::timeline-item{start="2026" title="Research Intern" org="Example Lab"}
+エッジデバイスでの LLM 推論実験に参加。
+:::
+::::
+
+## 论文リスト
+
+`data/publications.yaml` が権威あるデータソースで、`publications.bib` がキーごとに元の BibTeX を提供します。絞り込み・並べ替え・グループ化はビルド時に完了します。
+
+::publications{tag="systems" limit="3" group="year" sort="date-desc"}
 

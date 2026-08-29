@@ -1,15 +1,24 @@
 /**
- * 背景音乐（site.yaml bgm 段）：
+ * 背景音乐与播放列表控制（P1 升级）：
  * - <audio class="bgm-audio"> 在 BaseLayout 渲染，客户端内容交换不触碰它；
- * - 播放/暂停按钮在 header 内，header 不参与内容交换，监听持久；
- * - 音频始终 preload=none；autoplay 或 localStorage 记忆播放态时，初始化即调用
- *   play() 机会性开播；若被浏览器自动播放策略拦截，再在首次用户交互后兜底播放。
+ * - 播放/暂停按钮在 header 内；
+ * - 支持多曲目播放列表、切歌、音量调节抽屉、MediaSession API 与连续播放。
  */
 
-const STORAGE_KEY = 'bgm';
+interface Track {
+  title: string;
+  artist?: string;
+  src: string;
+  cover?: string;
+}
 
-/** 模块级标记：kick 是否已挂（防止重复挂监听） */
+const STORAGE_KEY = 'bgm';
+const STORAGE_VOLUME_KEY = 'oh-bgm-volume';
+const STORAGE_TRACK_KEY = 'oh-bgm-track';
+
 let kickArmed = false;
+let currentTrackIndex = 0;
+let tracks: Track[] = [];
 
 function readSaved(): '1' | '0' | null {
   try {
@@ -28,44 +37,159 @@ function writeSaved(v: '1' | '0'): void {
   }
 }
 
-function clampVolume(raw: string | undefined): number {
+function readSavedTrackIndex(): number {
+  try {
+    const idx = Number(localStorage.getItem(STORAGE_TRACK_KEY));
+    return Number.isInteger(idx) && idx >= 0 ? idx : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeSavedTrackIndex(idx: number): void {
+  try {
+    localStorage.setItem(STORAGE_TRACK_KEY, String(idx));
+  } catch {
+    /* ignore */
+  }
+}
+
+function clampVolume(raw: number | string | undefined): number {
   const v = Number(raw);
   if (!Number.isFinite(v)) return 0.4;
   return Math.min(1, Math.max(0, v));
 }
 
 function playAudio(audio: HTMLAudioElement, loadFirst = true): void {
-  // 交互触发的播放先显式进入资源加载流程，避免 preload=none 的惰性调度拖延；
-  // 首屏机会性播放则直接调用 play()，让浏览器只在允许自动播放时才开始取媒体。
   if (loadFirst && audio.networkState === HTMLMediaElement.NETWORK_EMPTY) audio.load();
   void audio.play().catch(() => {});
+}
+
+function updateMediaSession(track: Track, audio: HTMLAudioElement, onPrev?: () => void, onNext?: () => void): void {
+  if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.title,
+      artist: track.artist || '',
+      artwork: track.cover ? [{ src: track.cover }] : [],
+    });
+    navigator.mediaSession.setActionHandler('play', () => playAudio(audio));
+    navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+    if (onPrev) navigator.mediaSession.setActionHandler('previoustrack', onPrev);
+    if (onNext) navigator.mediaSession.setActionHandler('nexttrack', onNext);
+  } catch {
+    /* MediaSession optional */
+  }
 }
 
 export function initBgm(): void {
   const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio');
   const btn = document.querySelector<HTMLElement>('.bgm-toggle');
+  const drawer = document.querySelector<HTMLElement>('.bgm-drawer');
   if (!audio || !btn) return;
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     btn.hidden = true;
+    if (drawer) drawer.hidden = true;
     if (!audio.paused) audio.pause();
     return;
   }
   btn.hidden = false;
-  audio.volume = clampVolume(audio.dataset.volume);
+
+  // Parse playlist tracks
+  try {
+    const rawTracks = JSON.parse(audio.dataset.tracks ?? '[]');
+    tracks = Array.isArray(rawTracks) && rawTracks.length > 0 ? rawTracks : [{ title: 'BGM', artist: '', src: audio.src }];
+  } catch {
+    tracks = [{ title: 'BGM', artist: '', src: audio.src }];
+  }
+
+  // Load saved volume
+  let initialVolume = clampVolume(audio.dataset.volume);
+  try {
+    const savedVol = localStorage.getItem(STORAGE_VOLUME_KEY);
+    if (savedVol !== null) initialVolume = clampVolume(savedVol);
+  } catch {
+    /* ignore */
+  }
+  audio.volume = initialVolume;
+
+  // Load saved track
+  if (audio.dataset.resume !== 'none') {
+    currentTrackIndex = Math.min(tracks.length - 1, readSavedTrackIndex());
+  }
+
+  const syncDrawer = () => {
+    if (!drawer) return;
+    const current = tracks[currentTrackIndex] || tracks[0];
+    const titleEl = drawer.querySelector('.bgm-current-title');
+    const artistEl = drawer.querySelector('.bgm-current-artist');
+    const coverEl = drawer.querySelector<HTMLImageElement>('.bgm-current-cover');
+    const slider = drawer.querySelector<HTMLInputElement>('.bgm-volume-slider');
+    const playIcon = drawer.querySelector<HTMLElement>('.bgm-play-btn .icon-play');
+    const pauseIcon = drawer.querySelector<HTMLElement>('.bgm-play-btn .icon-pause');
+
+    if (titleEl) titleEl.textContent = current.title;
+    if (artistEl) artistEl.textContent = current.artist || '';
+    if (coverEl && current.cover) coverEl.src = current.cover;
+    if (slider) slider.value = String(audio.volume);
+    if (playIcon && pauseIcon) {
+      playIcon.style.display = audio.paused ? '' : 'none';
+      pauseIcon.style.display = audio.paused ? 'none' : '';
+    }
+
+    const items = drawer.querySelectorAll('.bgm-track-item');
+    items.forEach((item, idx) => {
+      const active = idx === currentTrackIndex;
+      item.classList.toggle('active', active);
+      if (active) item.setAttribute('aria-current', 'true');
+      else item.removeAttribute('aria-current');
+    });
+  };
 
   const sync = () => {
     const playing = !audio.paused;
     btn.classList.toggle('playing', playing);
     btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
+    syncDrawer();
   };
 
+  const switchTrack = (index: number, shouldPlay = true) => {
+    if (index < 0) index = tracks.length - 1;
+    if (index >= tracks.length) index = 0;
+    currentTrackIndex = index;
+    writeSavedTrackIndex(index);
+    const track = tracks[currentTrackIndex];
+    if (track) {
+      audio.src = track.src;
+      updateMediaSession(track, audio, () => switchTrack(currentTrackIndex - 1), () => switchTrack(currentTrackIndex + 1));
+      if (shouldPlay) {
+        writeSaved('1');
+        playAudio(audio);
+      }
+    }
+    sync();
+  };
+
+  // Audio events
   if (!audio.dataset.bgmBound) {
     audio.dataset.bgmBound = '1';
     audio.addEventListener('play', sync);
     audio.addEventListener('pause', sync);
+    audio.addEventListener('ended', () => {
+      if (tracks.length > 1) {
+        switchTrack(currentTrackIndex + 1, true);
+      }
+    });
+    audio.addEventListener('error', () => {
+      // On load error, skip to next track once
+      if (tracks.length > 1) {
+        switchTrack(currentTrackIndex + 1, !audio.paused);
+      }
+    });
   }
 
+  // Header Toggle Button
   if (!btn.dataset.bgmInit) {
     btn.dataset.bgmInit = '1';
     btn.addEventListener('click', (e) => {
@@ -79,11 +203,76 @@ export function initBgm(): void {
       }
       sync();
     });
+
+    // Long press or context menu / double click opens drawer
+    btn.addEventListener('contextmenu', (e) => {
+      if (drawer) {
+        e.preventDefault();
+        drawer.hidden = !drawer.hidden;
+        syncDrawer();
+      }
+    });
   }
+
+  // Drawer Controls
+  if (drawer && !drawer.dataset.drawerInit) {
+    drawer.dataset.drawerInit = '1';
+
+    drawer.querySelector('.bgm-drawer-close')?.addEventListener('click', () => {
+      drawer.hidden = true;
+    });
+
+    drawer.querySelector('.bgm-play-btn')?.addEventListener('click', () => {
+      if (audio.paused) {
+        writeSaved('1');
+        playAudio(audio);
+      } else {
+        writeSaved('0');
+        audio.pause();
+      }
+      sync();
+    });
+
+    drawer.querySelector('.bgm-prev-btn')?.addEventListener('click', () => {
+      switchTrack(currentTrackIndex - 1, true);
+    });
+
+    drawer.querySelector('.bgm-next-btn')?.addEventListener('click', () => {
+      switchTrack(currentTrackIndex + 1, true);
+    });
+
+    const volumeSlider = drawer.querySelector<HTMLInputElement>('.bgm-volume-slider');
+    if (volumeSlider) {
+      volumeSlider.addEventListener('input', () => {
+        const val = clampVolume(volumeSlider.value);
+        audio.volume = val;
+        try {
+          localStorage.setItem(STORAGE_VOLUME_KEY, String(val));
+        } catch {
+          /* ignore */
+        }
+      });
+    }
+
+    drawer.querySelectorAll<HTMLElement>('.bgm-track-item').forEach((item) => {
+      item.addEventListener('click', () => {
+        const idx = Number(item.dataset.trackIndex);
+        if (Number.isInteger(idx)) {
+          switchTrack(idx, true);
+        }
+      });
+    });
+  }
+
   sync();
 
-  // autoplay：先在首屏机会性开播；若浏览器策略拦截，则等首次用户交互后兜底。
-  // kickArmed 模块级，不会因站内内容交换重复挂监听。
+  // Set initial media session metadata
+  const currentTrack = tracks[currentTrackIndex] || tracks[0];
+  if (currentTrack) {
+    updateMediaSession(currentTrack, audio, () => switchTrack(currentTrackIndex - 1), () => switchTrack(currentTrackIndex + 1));
+  }
+
+  // Autoplay / Resume logic
   const autoplayEnabled = audio.dataset.autoplay === 'true';
   if ((autoplayEnabled || readSaved() === '1') && audio.paused) {
     if (!kickArmed) {

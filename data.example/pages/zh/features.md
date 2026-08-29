@@ -3,6 +3,12 @@ title: "特性"
 nav: true
 order: 3
 slug: "features"
+date: 2026-08-29
+updated: 2026-08-29
+feed:
+  enabled: true
+toc: true
+reading_progress: true
 description: "本站点 markdown 渲染能力的完整演示"
 ---
 
@@ -132,4 +138,40 @@ $$
 ## HTML 混写
 
 <mark>这一行是原生 HTML 的 mark 标签</mark>，dangerous 标签（如 `<script>`）会被白名单过滤。
+
+
+## 注记卡片与时间线
+
+P0 内容指令保持零前端脚本：callout 用于解释、警示和引用，时间线用于教育、经历与里程碑。
+
+:::note{title="复现入口"}
+论文、工具与实验记录保留在同一个索引中，方便后续复核。
+:::
+
+:::tip{title="性能边界"}
+新增内容指令默认在构建期渲染，不增加首屏 JavaScript。
+:::
+
+:::warning{title="谨慎结论"}
+单次评测分数不能替代分布报告。
+:::
+
+:::quote{title="Field Note" source="Zhiyuan Lin, 2026"}
+系统优化的价值来自可重复的测量，而不是一次偶然的加速。
+:::
+
+::::timeline{title="Education & Experience"}
+:::timeline-item{start="2022" end="2026" title="PhD Candidate" org="Example University" url="/research" highlight="true"}
+研究方向为机器学习与系统，重点关注推理调度与可复现评测。
+:::
+:::timeline-item{start="2026" title="Research Intern" org="Example Lab"}
+参与边缘设备上的大模型推理实验。
+:::
+::::
+
+## 学术成果列表
+
+`data/publications.yaml` 是成果数据的权威来源，`publications.bib` 按 key 合并原始 BibTeX。下面的列表在构建期完成筛选、排序与分组；BibTeX 复制是唯一渐进增强交互。
+
+::publications{tag="systems" limit="3" group="year" sort="date-desc"}
 

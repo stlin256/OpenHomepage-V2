@@ -10,7 +10,9 @@ OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静
 
 ## 核心特性
 
-- **Markdown 优先与扩展指令**——原生支持 GFM、Shiki 明暗双主题代码高亮、KaTeX 数学公式解析，并提供丰富的自定义指令（`::bilibili`、`::youtube`、`:::video`、`:::audio`、`:::figure`、`::::grid`、`::stream`、`::ghcard`、`::editorial`）及安全 HTML 混写。
+- **Markdown 与科研学术排版**——原生支持 GFM、Shiki 明暗双主题代码高亮、KaTeX 数学公式解析、学术成果与 BibTeX 一键复制（`::publications`）、经历与里程碑时间线（`::::timeline` / `:::timeline-item`）、杂志风注记卡片（`:::note`、`:::tip`、`:::warning`、`:::important`、`:::quote`）以及丰富的多媒体指令（`::bilibili`、`::youtube`、`:::video`、`:::audio`、`:::figure`、`::::grid`、`::stream`、`::ghcard`、`::editorial`）。
+- **静态全局搜索与原创 Feed**——支持 `Ctrl+K` / `Cmd+K` 快捷唤起毛玻璃静态全局搜索（含中英文分词与多语言作用域切换）；构建期自动生成本站原创 RSS 2.0（`/feed.xml`）、Atom 1.0（`/feed.atom.xml`）与 JSON Feed 1.1（`/feed.json`）。
+- **动态 OG 社交卡片与长文导航**——构建期自动生成 1200×630 杂志风社交分享图（按内容 hash 智能缓存）；长文自动提取目录（TOC），桌面端粘性浮动吸顶，移动端折叠导航，配合 ScrollSpy 与顶部细线阅读进度条；支持多曲目 BGM 播放列表与抽屉面板。
 - **杂志化布局与自适应主题**——采用非对称 12 列网格布局与平滑硬件加速动效；内置明暗双主题（默认跟随系统偏好，支持手动切换与会话记忆）及自定义主题强调色。
 - **自动图片优化与响应式加载**——生产构建自动生成多档分辨率 WebP 与 AVIF，浏览器支持 AVIF 时经 `<picture>` 优先加载更小的 AVIF（WebP 兜底），并按当前布局和设备像素密度选择最小清晰档位；页面加载完成后无字节上限地激进空闲预取其他语言页面、同语言其他 tab 及对应 AVIF 候选图（HTML 进共享内存缓存，语言切换近乎瞬时），Chromium 另用 prefetch-only Speculation Rules 预热 hover 目标；同时保留原图与 `-full` 高清灯箱源且不参与预加载。
 - **动态数据预取与缓存降级**——构建期预取 GitHub 年度贡献热力图、1:1 官网质感 Pinned 仓库卡片以及多源 RSS 文章卡片流，支持网络失败时的本地缓存平滑降级。
@@ -180,4 +182,3 @@ GitHub Actions 会在代码推送到 `main`/`master` 分支或每 8 小时定时
 ├── admin/           # 本地可视化编辑器服务端与前端源码
 └── tests/           # Vitest 自动化测试套件
 ```
-

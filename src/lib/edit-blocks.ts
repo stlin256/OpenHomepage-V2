@@ -46,7 +46,7 @@ export interface EditableBlock {
 }
 
 /** 其内部块需要递归枚举的容器指令（其他容器如 figure 内部不单独枚举） */
-const GRID_CONTAINERS = new Set(['grid', 'cell']);
+const GRID_CONTAINERS = new Set(['grid', 'cell', 'timeline', 'timeline-item']);
 
 /** 内容可编辑（内部块递归枚举）的容器指令名集合（M12c 检查器 into 插入校验复用） */
 export const EDITABLE_CONTAINERS: ReadonlySet<string> = GRID_CONTAINERS;

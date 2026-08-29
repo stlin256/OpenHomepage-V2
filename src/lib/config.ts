@@ -53,7 +53,7 @@ export interface SiteConfig {
   };
   /** 编辑风格展示区块：列表 / 磁贴 / 归档卡 / 按钮组 / 分割线 */
   editorial_blocks?: EditorialBlock[];
-  /** 背景音乐（宽松校验，缺省禁用；归一化见 resolveBgm） */
+  /** 背景音乐（宽松校验，缺省禁用；归一化见 resolveBgm 与 resolveBgmPlaylist） */
   bgm?: {
     /** 音频文件，相对 data/ 的路径，如 assets/bgm.wav */
     file?: string;
@@ -63,11 +63,41 @@ export interface SiteConfig {
     enabled?: boolean;
     /** 自动播放（首次用户交互后开播，绕浏览器策略）；缺省 false */
     autoplay?: boolean;
+    /** 恢复播放模式：none | state（默认 state） */
+    resume?: 'none' | 'state';
+    /** 是否展示控制面板 */
+    show_panel?: boolean;
+    /** P1 多曲目播放列表 */
+    tracks?: {
+      title?: string;
+      artist?: string;
+      src: string;
+      cover?: string;
+    }[];
   };
   /** 页脚（默认开启；显式 enabled:false 关闭；text 支持内联 [label](url) 链接） */
   footer?: {
     enabled?: boolean;
     text?: LocalizedText;
+  };
+  /** 本站原创内容 Feed（P0） */
+  feed?: {
+    enabled?: boolean;
+    formats?: ('rss' | 'atom' | 'json')[];
+    limit?: number;
+    include_home?: boolean;
+  };
+  /** P1 社交分享图（OG Image）自动生成配置 */
+  og_images?: {
+    enabled?: boolean;
+    layout?: 'editorial' | 'minimal';
+    cache?: boolean;
+    format?: 'png';
+    show_avatar?: boolean;
+    show_site_title?: boolean;
+    accent_bar?: boolean;
+    background?: string;
+    default_image?: string;
   };
   /** 右下角联系卡与二维码弹层 */
   contact?: {
@@ -160,6 +190,19 @@ export interface PageEntry {
   description?: string;
   /** 顶端通知横幅（页面控件，仅该页面有效） */
   notice?: PageNotice;
+  /** 原创内容 Feed：ISO 日期；无 date/updated 默认不进 feed */
+  date?: string;
+  updated?: string;
+  /** 缺省 true；显式 false 排除 */
+  feedEnabled?: boolean;
+  /** P1 长文目录（TOC）：true | false | 'auto' */
+  toc?: boolean | 'auto';
+  tocDepth?: number;
+  readingProgress?: boolean;
+  /** P1 社交卡片覆盖 */
+  ogImage?: string;
+  ogTitle?: string;
+  ogDescription?: string;
   body: string;
   filePath: string;
 }
@@ -256,6 +299,18 @@ export function loadPages(dataDir: string): PageEntry[] {
       const base = file.replace(/\.md$/, "");
       const slug = (data.slug as string | undefined) ?? (base === "index" ? "/" : base);
       const notice = normalizeNotice(data.notice ?? data.banner);
+      const toc = data.toc === true ? true : data.toc === false ? false : data.toc === 'auto' ? 'auto' : undefined;
+      const tocDepth = typeof data.toc_depth === 'number' ? data.toc_depth : typeof data.tocDepth === 'number' ? data.tocDepth : undefined;
+      const readingProgress =
+        data.reading_progress === false || data.readingProgress === false
+          ? false
+          : data.reading_progress === true || data.readingProgress === true
+            ? true
+            : undefined;
+      const ogImage = typeof data.og_image === 'string' ? data.og_image : typeof data.ogImage === 'string' ? data.ogImage : undefined;
+      const ogTitle = typeof data.og_title === 'string' ? data.og_title : typeof data.ogTitle === 'string' ? data.ogTitle : undefined;
+      const ogDescription = typeof data.og_description === 'string' ? data.og_description : typeof data.ogDescription === 'string' ? data.ogDescription : undefined;
+
       pages.push({
         lang,
         slug,
@@ -264,6 +319,15 @@ export function loadPages(dataDir: string): PageEntry[] {
         order: data.order as number | undefined,
         description: data.description as string | undefined,
         notice: notice ?? undefined,
+        date: typeof data.date === 'string' ? data.date : undefined,
+        updated: typeof data.updated === 'string' ? data.updated : undefined,
+        feedEnabled: (data.feed as Record<string, unknown> | undefined)?.enabled === false ? false : data.feed_enabled === false ? false : undefined,
+        toc,
+        tocDepth,
+        readingProgress,
+        ogImage,
+        ogTitle,
+        ogDescription,
         body,
         filePath,
       });

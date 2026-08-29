@@ -18,7 +18,7 @@
     "test": "vitest run",
     "prefetch": "tsx scripts/prefetch.ts",
     "dev": "astro dev",
-    "build": "astro build && npm run optimize:images",
+    "build": "tsx scripts/generate-og-images.ts && astro build && npm run optimize:images",
     "optimize:images": "tsx scripts/optimize-images.ts",
     "setup": "node scripts/setup.mjs",
     "admin": "tsx admin/server/index.ts",

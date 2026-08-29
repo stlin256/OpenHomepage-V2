@@ -1,6 +1,6 @@
 # OpenHomepage V2 设计文档
 
-> 本文档是项目的权威设计依据，随讨论逐项细化更新。最后更新：2026-08-25（编辑区块、联系卡与 M10 编辑器交互）
+> 本文档是项目的权威设计依据，随讨论逐项细化更新。最后更新：2026-08-29（新增 P0/P1 待实现规格）
 
 ## 1. 项目定位
 
@@ -129,5 +129,7 @@
 9. [x] 动效清单与性能预算 → [docs/specs/09-animations.md](specs/09-animations.md)（九项动效按清单；性能预算为软目标）
 10. [x] 主题色变量体系（明暗双主题下的语义色） → [docs/specs/10-theme-colors.md](specs/10-theme-colors.md)（中性色固定 + accent 可配；深色自动校正）
 11. [x] i18n（页面多语言 / 编辑器 / CI 文案） → [docs/specs/11-i18n.md](specs/11-i18n.md)（子目录分语言；缺译回退 en；配置文案双语映射；编辑器中英可切；workflow 注解双语）
+12. [ ] P0 学术内容与站点 Feed → [docs/specs/13-p0-content-academic-and-feed.md](specs/13-p0-content-academic-and-feed.md)（论文/BibTeX、时间线、callout、原创 RSS/Atom/JSON Feed；多端、秒开、双主题、TDD 全局门槛）
+13. [ ] P1 搜索/OG/TOC/播放列表 → [docs/specs/14-p1-search-og-toc-playlist.md](specs/14-p1-search-og-toc-playlist.md)（Ctrl+K 静态搜索、构建期 OG 图、长文目录与阅读进度、BGM playlist；渐进增强与按需加载）
 
 另：已建立 `skills/editing-data/SKILL.md`，指导 AI 正确编辑 data/ 文件夹。

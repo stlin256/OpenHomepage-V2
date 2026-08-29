@@ -12,6 +12,8 @@ import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
 import { initAudioPlayers, pauseOtherMedia, resumeBgmIfNeeded } from './audio-player.ts';
 import { initImageFade } from './image-fade.ts';
+import { initSearch } from './search.ts';
+import { initToc } from './toc.ts';
 import { scheduleTabPrefetch } from './tab-prefetch.ts';
 import { fetchPageHtml } from './page-cache.ts';
 import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
@@ -314,6 +316,8 @@ function initAll(): void {
   initHeatmapTooltips();
   initImageFade();
   initNoticeBanners();
+  initSearch();
+  initToc();
   scheduleTabPrefetch();
 }
 
@@ -609,6 +613,26 @@ document.addEventListener('keydown', (e) => {
   for (const menu of document.querySelectorAll('.lang-menu.open')) setLangMenu(menu, false);
 });
 
+// ---- P0 论文 BibTeX 复制（渐进增强；无 JS 时 pre 内文本仍可手动复制） ----
+document.addEventListener('click', async (e) => {
+  const btn = e.target instanceof Element ? e.target.closest<HTMLButtonElement>('[data-copy-bibtex]') : null;
+  if (!btn) return;
+  const source = document.getElementById(btn.dataset.copyBibtex ?? '');
+  if (!source) return;
+  const text = source.textContent ?? '';
+  const original = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied';
+  } catch {
+    source.focus();
+    btn.textContent = 'Press Ctrl/Cmd+C';
+  }
+  btn.setAttribute('aria-live', 'polite');
+  window.setTimeout(() => {
+    btn.textContent = original || 'Copy BibTeX';
+  }, 1800);
+});
 // ---- RSS 封面加载失败 ----
 
 document.addEventListener(
@@ -640,5 +664,3 @@ void bootstrapLanguage();
 window.addEventListener('popstate', () => {
   void swapContent(location.pathname + location.search, { push: false });
 });
-
-
