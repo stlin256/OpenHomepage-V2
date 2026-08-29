@@ -10,6 +10,7 @@ import { initMotion } from './motion.ts';
 import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
+import { initImageFade } from './image-fade.ts';
 import { scheduleTabPrefetch } from './tab-prefetch.ts';
 import { fetchPageHtml } from './page-cache.ts';
 import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
@@ -301,6 +302,7 @@ function initAll(): void {
   initBgm();
   initEmbeddedMedia();
   initHeatmapTooltips();
+  initImageFade();
   initNoticeBanners();
   scheduleTabPrefetch();
 }

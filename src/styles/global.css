@@ -156,6 +156,13 @@ samp {
 :target {
   scroll-margin-top: 5rem;
 }
+html.js img[data-image-fade='pending'] {
+  opacity: 0;
+}
+html.js img[data-image-fade='loaded'] {
+  opacity: 1;
+  transition: opacity 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
 .site-nav ul {
   list-style: none;
   margin: 0;
@@ -2251,6 +2258,11 @@ html.js .reveal.revealed {
     transition:
       opacity 0.15s ease,
       visibility 0s linear 0.15s;
+  }
+  html.js img[data-image-fade='pending'],
+  html.js img[data-image-fade='loaded'] {
+    opacity: 1;
+    transition: none;
   }
   .theme-toggle .icon,
   .heat-tooltip {
