@@ -95,9 +95,9 @@ body {
 
 /* 主题切换仅颜色 200ms 过渡，不动布局（spec 10 §3）。
    transition class 由 theme.ts 在切换期间临时添加，避免常驻全局选择器。 */
-html.theme-switching *,
-html.theme-switching *::before,
-html.theme-switching *::after {
+html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki),
+html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki)::before,
+html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki)::after {
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
