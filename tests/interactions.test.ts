@@ -326,5 +326,73 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       vi.useRealTimers();
     }
   });
-});
+  it("跳转到启用阅读进度条的页面时，动态插入 .reading-progress 节点", async () => {
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='zh'><head><title>特性</title></head><body>",
+      "<div class='reading-progress' style='transform: scaleX(0)' aria-hidden='true'></div>",
+      "<header class='site-header'>",
+      "<nav class='site-nav'><a id='nav-link' href='/features/'>特性</a></nav>",
+      "</header>",
+      "<main class='site-main'><div class='page-content'><p>特性正文</p></div></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => targetHtml,
+    }));
+    vi.stubGlobal("fetch", fetchMock);
 
+    document.body.innerHTML = [
+      "<header class='site-header'>",
+      "<nav class='site-nav'><a id='nav-link' href='/features/'>特性</a></nav>",
+      "</header>",
+      "<main class='site-main'><p>主页无进度条</p></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    expect(document.querySelector(".reading-progress")).toBeNull();
+
+    const link = document.querySelector<HTMLAnchorElement>("#nav-link")!;
+    link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+
+    await vi.waitFor(() => {
+      expect(document.querySelector(".reading-progress")).not.toBeNull();
+    });
+  });
+
+  it("从带阅读进度条的页面跳转到未启用页面时，移除 .reading-progress 节点且不会残留进度条", async () => {
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='zh'><head><title>主页</title></head><body>",
+      "<header class='site-header'>",
+      "<nav class='site-nav'><a id='nav-home' href='/'>主页</a></nav>",
+      "</header>",
+      "<main class='site-main'><p>主页内容</p></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      text: async () => targetHtml,
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.body.innerHTML = [
+      "<div class='reading-progress' style='transform: scaleX(0.5)' aria-hidden='true'></div>",
+      "<header class='site-header'>",
+      "<nav class='site-nav'><a id='nav-home' href='/'>主页</a></nav>",
+      "</header>",
+      "<main class='site-main'><div class='page-content'><p>特性页</p></div></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    expect(document.querySelector(".reading-progress")).not.toBeNull();
+
+    const link = document.querySelector<HTMLAnchorElement>("#nav-home")!;
+    link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+
+    await vi.waitFor(() => {
+      expect(document.querySelector(".reading-progress")).toBeNull();
+    });
+  });
+});

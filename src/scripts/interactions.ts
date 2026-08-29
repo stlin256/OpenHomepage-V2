@@ -455,6 +455,7 @@ async function swapContent(
       const addedFooter = newFooter.cloneNode(true);
       oldMain.after(addedFooter);
     }
+    replaceReadingProgress(doc);
     replaceContactCard(doc);
     updateNavActive(path);
     // header 的站点标题、导航列表与页脚已在上方按需淡入淡出替换。
@@ -506,6 +507,28 @@ async function swapContent(
     await nextPaint();
     activatePage?.();
     swapping = false;
+  }
+}
+
+function replaceReadingProgress(doc: Document): void {
+  const nextProgress = doc.querySelector('.reading-progress');
+  const currentProgress = document.querySelector<HTMLElement>('.reading-progress');
+
+  if (nextProgress) {
+    if (currentProgress) {
+      currentProgress.style.transform = 'scaleX(0)';
+    } else {
+      const cloned = nextProgress.cloneNode(true) as HTMLElement;
+      cloned.style.transform = 'scaleX(0)';
+      const header = document.querySelector('.site-header');
+      if (header) {
+        header.before(cloned);
+      } else {
+        document.body.prepend(cloned);
+      }
+    }
+  } else {
+    currentProgress?.remove();
   }
 }
 
