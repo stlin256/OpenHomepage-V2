@@ -110,9 +110,15 @@ html.theme-switching *::after {
 a {
   color: var(--accent);
   text-decoration: none;
+  text-decoration-color: transparent;
+  transition:
+    color 0.16s ease,
+    text-decoration-color 0.16s ease;
 }
-a:hover {
+a:hover,
+a:focus-visible {
   text-decoration: underline;
+  text-decoration-color: currentColor;
 }
 img {
   max-width: 100%;
