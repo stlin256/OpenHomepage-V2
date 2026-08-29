@@ -9,6 +9,7 @@ import { tooltipLeft } from '../lib/interactive.ts';
 
 let tip: HTMLElement | null = null;
 let tipFor: Element | null = null;
+let hideTimer: number | undefined;
 let registered = false;
 
 function ensureTip(): HTMLElement {
@@ -23,7 +24,15 @@ function ensureTip(): HTMLElement {
 }
 
 function hideTip(): void {
-  if (tip) tip.hidden = true;
+  if (!tip || tip.hidden) return;
+  window.clearTimeout(hideTimer);
+  tip.classList.remove('is-visible');
+  tip.classList.add('is-hiding');
+  hideTimer = window.setTimeout(() => {
+    if (!tip) return;
+    tip.hidden = true;
+    tip.classList.remove('is-hiding');
+  }, 120);
   tipFor = null;
 }
 
@@ -31,6 +40,8 @@ function showTip(cell: Element): void {
   const text = cell.getAttribute('data-tip');
   if (!text) return;
   const el = ensureTip();
+  const shouldAnimate = el.hidden || el.classList.contains('is-hiding') || !el.classList.contains('is-visible');
+  window.clearTimeout(hideTimer);
   el.textContent = text;
   el.hidden = false;
   // 先渲染量尺寸，再定位：水平 clamp 在热力图滚动容器内，默认格子上方、空间不足改下方
@@ -44,6 +55,11 @@ function showTip(cell: Element): void {
   if (top < 4) top = cellRect.bottom + 6;
   el.style.left = `${Math.round(left)}px`;
   el.style.top = `${Math.round(top)}px`;
+  if (shouldAnimate) {
+    el.classList.remove('is-hiding');
+    void el.offsetWidth;
+    el.classList.add('is-visible');
+  }
   tipFor = cell;
 }
 
@@ -89,6 +105,7 @@ export function initHeatmapTooltips(): void {
   }, true);
   // ClientRouter 转场会替换 body 内容：丢弃旧气泡引用
   document.addEventListener('astro:before-swap', () => {
+    window.clearTimeout(hideTimer);
     tip?.remove();
     tip = null;
     tipFor = null;

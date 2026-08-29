@@ -1778,6 +1778,11 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   z-index: 90;
   max-width: 16rem;
   padding: 4px 8px;
+  opacity: 0;
+  transform: translateY(4px) scale(0.98);
+  transition:
+    opacity 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1);
   border-radius: 6px;
   background: var(--text);
   color: var(--bg);
@@ -1786,6 +1791,14 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   white-space: nowrap;
   pointer-events: none;
   box-shadow: 0 4px 14px rgb(0 0 0 / 0.18);
+}
+.heat-tooltip.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.heat-tooltip.is-hiding {
+  opacity: 0;
+  transform: translateY(4px) scale(0.98);
 }
 .heat-footer {
   display: flex;
@@ -2236,9 +2249,15 @@ html.js .reveal.revealed {
       opacity 0.15s ease,
       visibility 0s linear 0.15s;
   }
-  .theme-toggle .icon {
+  .theme-toggle .icon,
+  .heat-tooltip {
     transform: none;
+  }
+  .theme-toggle .icon {
     transition: opacity 0.12s ease;
+  }
+  .heat-tooltip {
+    transition: opacity 0.1s ease;
   }
   .site-title,
   .site-nav ul,
