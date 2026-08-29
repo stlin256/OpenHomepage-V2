@@ -1,4 +1,4 @@
-﻿/**
+/**
  * P1 全局静态搜索：搜索结果过滤、多语言作用域与索引预处理纯函数。
  */
 
@@ -15,6 +15,7 @@ export interface SearchI18nStrings {
   placeholder: string;
   scopeCurrent: string;
   scopeAll: string;
+  clearLabel: string;
   closeLabel: string;
   statusInitial: string;
   statusNoMatch: string;
@@ -30,6 +31,7 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: '搜索站内内容 (Ctrl+K)...',
     scopeCurrent: '当前语言',
     scopeAll: '全部语言',
+    clearLabel: '清空搜索',
     closeLabel: '关闭 (Esc)',
     statusInitial: '输入关键词开始搜索...',
     statusNoMatch: '未找到匹配结果',
@@ -43,6 +45,7 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: 'Search content (Ctrl+K)...',
     scopeCurrent: 'This language',
     scopeAll: 'All languages',
+    clearLabel: 'Clear search',
     closeLabel: 'Close (Esc)',
     statusInitial: 'Type keywords to search...',
     statusNoMatch: 'No results matched',
@@ -56,10 +59,11 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: 'サイト内を検索 (Ctrl+K)...',
     scopeCurrent: '現在の言語',
     scopeAll: 'すべての言語',
+    clearLabel: '検索内容をクリア',
     closeLabel: '閉じる (Esc)',
     statusInitial: 'キーワードを入力して検索...',
     statusNoMatch: '一致する結果が見つかりませんでした',
-    statusMatches: (n: number) => `${n} 件的结果`,
+    statusMatches: (n: number) => `${n} 件の結果`,
     navHint: '移動',
     selectHint: '選択',
     closeHint: '閉じる',
@@ -69,6 +73,7 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: 'Rechercher dans le site (Ctrl+K)...',
     scopeCurrent: 'Langue actuelle',
     scopeAll: 'Toutes les langues',
+    clearLabel: 'Effacer la recherche',
     closeLabel: 'Fermer (Esc)',
     statusInitial: 'Tapez pour rechercher...',
     statusNoMatch: 'Aucun résultat trouvé',
@@ -93,21 +98,68 @@ export function filterSearchResults(
   if (!query) return [];
 
   const targetLang = options.lang;
+  const tokens = query.split(/\s+/).filter(Boolean);
 
-  const filtered = items.filter((item) => {
+  const matched: { item: SearchResultItem; score: number }[] = [];
+
+  for (const item of items) {
     if (targetLang && targetLang !== 'all' && item.lang !== targetLang) {
-      return false;
+      continue;
     }
-    const titleMatch = item.title.toLowerCase().includes(query);
-    const excerptMatch = item.excerpt.toLowerCase().includes(query);
-    return titleMatch || excerptMatch;
-  });
 
-  return filtered.sort((a, b) => {
-    const aInTitle = a.title.toLowerCase().includes(query) ? 1 : 0;
-    const bInTitle = b.title.toLowerCase().includes(query) ? 1 : 0;
-    return bInTitle - aInTitle;
-  });
+    const titleLower = item.title.toLowerCase();
+    const excerptLower = item.excerpt.toLowerCase();
+
+    const titleExact = titleLower === query;
+    const titleStartsWith = titleLower.startsWith(query);
+    const titleIncludesQuery = titleLower.includes(query);
+    const excerptIncludesQuery = excerptLower.includes(query);
+
+    let titleTokensCount = 0;
+    let excerptTokensCount = 0;
+
+    for (const token of tokens) {
+      if (titleLower.includes(token)) titleTokensCount++;
+      if (excerptLower.includes(token)) excerptTokensCount++;
+    }
+
+    const allTokensMatch = tokens.every(
+      (token) => titleLower.includes(token) || excerptLower.includes(token)
+    );
+
+    if (!titleIncludesQuery && !excerptIncludesQuery && !allTokensMatch) {
+      continue;
+    }
+
+    let score = 0;
+    if (titleExact) score += 1000;
+    else if (titleStartsWith) score += 500;
+    else if (titleIncludesQuery) score += 250;
+
+    score += titleTokensCount * 60;
+    if (excerptIncludesQuery) score += 40;
+    score += excerptTokensCount * 15;
+
+    let excerpt = item.excerpt;
+    if (excerptLower.includes(query) && item.excerpt.length > 140) {
+      const matchIdx = excerptLower.indexOf(query);
+      const start = Math.max(0, matchIdx - 35);
+      const end = Math.min(item.excerpt.length, matchIdx + query.length + 85);
+      excerpt = (start > 0 ? '...' : '') + item.excerpt.slice(start, end).trim() + (end < item.excerpt.length ? '...' : '');
+    }
+
+    matched.push({
+      item: {
+        ...item,
+        excerpt,
+      },
+      score,
+    });
+  }
+
+  matched.sort((a, b) => b.score - a.score);
+
+  return matched.map((m) => m.item);
 }
 
 export function buildSearchIndexItem(input: {

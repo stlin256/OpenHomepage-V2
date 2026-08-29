@@ -3225,31 +3225,84 @@ html.js .reveal.revealed {
   display: flex;
   align-items: center;
 }
-.search-input {
+.search-input-wrapper {
+  position: relative;
   flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.search-input {
+  width: 100%;
   border: none;
   background: transparent;
   color: var(--text);
   font-size: 1rem;
   outline: none;
   min-width: 0;
+  padding-right: 1.6rem;
+}
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-results-button,
+.search-input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.search-clear-btn {
+  position: absolute;
+  right: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(125, 125, 125, 0.15);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.search-clear-btn:hover {
+  background: rgba(125, 125, 125, 0.25);
+  color: var(--text);
+  transform: scale(1.08);
+}
+.search-clear-btn:active {
+  transform: scale(0.92);
+}
+.search-clear-btn[hidden] {
+  display: none !important;
 }
 .search-scope-tabs {
   display: flex;
+  align-items: center;
   gap: 0.25rem;
   background: var(--bg-subtle);
   padding: 0.15rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
+  height: 1.75rem;
+  box-sizing: border-box;
 }
 .search-scope-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   border: none;
   background: transparent;
-  padding: 0.2rem 0.55rem;
+  padding: 0 0.55rem;
   border-radius: calc(var(--radius-sm) - 2px);
   font-size: 0.75rem;
+  line-height: 1;
+  font-family: inherit;
   color: var(--text-muted);
   cursor: pointer;
+  box-sizing: border-box;
   transition:
     background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
@@ -3270,12 +3323,20 @@ html.js .reveal.revealed {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 .search-close {
-  padding: 0.2rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  padding: 0 0.6rem;
+  box-sizing: border-box;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle);
   color: var(--text-muted);
   font-size: 0.75rem;
+  line-height: 1;
+  font-family: inherit;
+  font-weight: 500;
   cursor: pointer;
   transition:
     border-color 0.2s ease,

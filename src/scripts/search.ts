@@ -1,50 +1,97 @@
-﻿/**
+/**
  * P1 全局静态搜索客户端（Cmd+K / Ctrl+K）：
  * - 拦截快捷键与搜索按钮，呼出杂志风毛玻璃搜索框；
- * - 支持 Pagefind 分片静态索引与本地轻量索引渐进增强回退；
+ * - 支持全站静态 JSON 索引与本地轻量 DOM 索引渐进增强回退；
  * - 支持中英文分词检索、多语言作用域切换、键盘上下键导航与回车跳转；
- * - 支持弹窗打开/关闭平滑动画过渡与多语言 i18n 动态同步。
+ * - 支持弹窗打开/关闭平滑动画过渡与多语言 i18n 动态同步；
+ * - 无任何 emoji 字符，清空与关闭按键统一现代矢量图标与视觉高度。
  */
 import { filterSearchResults, getSearchI18n, type SearchResultItem } from '../lib/search.ts';
 
-let pagefindInstance: any = null;
-let pagefindLoaded = false;
+function formatSearchUrl(url: string): string {
+  const base = document.documentElement.dataset.base || '/';
+  const cleanBase = base.replace(/\/+$/, '');
+  if (!cleanBase || url.startsWith('http://') || url.startsWith('https://')) return url;
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  if (cleanPath === cleanBase || cleanPath.startsWith(`${cleanBase}/`)) return cleanPath;
+  return `${cleanBase}${cleanPath}`;
+}
 
-async function loadPagefind(): Promise<any> {
-  if (pagefindLoaded) return pagefindInstance;
-  try {
-    const base = document.documentElement.dataset.base || '/';
-    const cleanBase = base.replace(/\/+$/, '');
-    const pagefindModule = await import(/* @vite-ignore */ `${cleanBase}/pagefind/pagefind.js`);
-    if (pagefindModule && pagefindModule.search) {
-      await pagefindModule.init?.();
-      pagefindInstance = pagefindModule;
+let cachedSiteIndex: SearchResultItem[] | null = null;
+let indexFetching: Promise<SearchResultItem[]> | null = null;
+
+async function loadSiteSearchIndex(): Promise<SearchResultItem[]> {
+  if (cachedSiteIndex) return cachedSiteIndex;
+  if (indexFetching) return indexFetching;
+
+  indexFetching = (async () => {
+    try {
+      const base = document.documentElement.dataset.base || '/';
+      const cleanBase = base.replace(/\/+$/, '');
+      const url = `${cleanBase}/search-index.json`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const json = (await res.json()) as SearchResultItem[];
+        if (Array.isArray(json) && json.length > 0) {
+          cachedSiteIndex = json;
+          return json;
+        }
+      }
+    } catch {
+      /* fallback to local collection */
     }
-  } catch {
-    pagefindInstance = null;
-  }
-  pagefindLoaded = true;
-  return pagefindInstance;
+    return [];
+  })();
+
+  return indexFetching;
 }
 
 function collectLocalSearchItems(): SearchResultItem[] {
   const items: SearchResultItem[] = [];
-  document.querySelectorAll<HTMLAnchorElement>('.site-nav a, .home-block a, .publication-item, .timeline-item').forEach((el, idx) => {
+  const seen = new Set<string>();
+  const currentLang = document.documentElement.dataset.routeLang || 'zh';
+
+  const addItem = (id: string, url: string, title: string, excerpt: string) => {
+    if (!title || seen.has(id)) return;
+    seen.add(id);
+    items.push({ id, url, title, excerpt, lang: currentLang });
+  };
+
+  // 1. Page title
+  const pageTitle = document.querySelector('h1')?.textContent?.trim() || document.title;
+  addItem(location.pathname, location.pathname, pageTitle, document.querySelector('meta[name="description"]')?.getAttribute('content') || '');
+
+  // 2. Headings with IDs or anchor links
+  document.querySelectorAll<HTMLElement>('.markdown-body h2, .markdown-body h3, .markdown-body h4, .page-content h2, .page-content h3, .page-content h4, .component-demo-title').forEach((h) => {
+    const text = h.textContent?.trim();
+    if (!text) return;
+    const id = h.id || h.getAttribute('id') || '';
+    const href = id ? `${location.pathname}#${id}` : location.pathname;
+    let sibling = h.nextElementSibling;
+    let excerpt = '';
+    while (sibling && !/^H[1-6]$/.test(sibling.tagName)) {
+      const sText = sibling.textContent?.replace(/\s+/g, ' ').trim();
+      if (sText) {
+        excerpt += (excerpt ? ' ' : '') + sText;
+        if (excerpt.length > 200) break;
+      }
+      sibling = sibling.nextElementSibling;
+    }
+    addItem(href, href, `${text} · ${pageTitle}`, excerpt.slice(0, 200) || text);
+  });
+
+  // 3. Navigation links & home blocks
+  document.querySelectorAll<HTMLAnchorElement>('.site-nav a, .home-block a, .publication-item, .timeline-item, .rss-card, .editorial-item, .callout').forEach((el, idx) => {
     const link = el instanceof HTMLAnchorElement ? el : el.querySelector<HTMLAnchorElement>('a');
-    const titleEl = el.querySelector('h2, h3, .publication-title, .timeline-item-title') || el;
+    const titleEl = el.querySelector('h2, h3, h4, .publication-title, .timeline-item-title, .callout-title, .rss-title, .editorial-item-title') || el;
     const title = titleEl.textContent?.trim();
-    const href = link?.getAttribute('href');
-    if (title && href && href.startsWith('/')) {
-      const excerpt = el.textContent?.replace(/\s+/g, ' ').slice(0, 160) || '';
-      items.push({
-        id: href + '#' + idx,
-        url: href,
-        title,
-        excerpt,
-        lang: document.documentElement.dataset.routeLang || 'zh',
-      });
+    const href = link?.getAttribute('href') || location.pathname;
+    const excerpt = el.textContent?.replace(/\s+/g, ' ').slice(0, 180) || '';
+    if (title) {
+      addItem(`${href}#item-${idx}`, href, title, excerpt);
     }
   });
+
   return items;
 }
 
@@ -54,6 +101,7 @@ export function initSearch(): void {
   if (!dialog) return;
 
   const input = dialog.querySelector<HTMLInputElement>('.search-input');
+  const clearBtn = dialog.querySelector<HTMLButtonElement>('.search-clear-btn');
   const closeBtn = dialog.querySelector<HTMLButtonElement>('.search-close');
   const resultsList = dialog.querySelector<HTMLUListElement>('.search-results');
   const statusEl = dialog.querySelector<HTMLElement>('.search-status');
@@ -66,6 +114,12 @@ export function initSearch(): void {
   let searchGeneration = 0;
   let isClosing = false;
 
+  const updateClearBtn = () => {
+    if (clearBtn && input) {
+      clearBtn.hidden = !input.value;
+    }
+  };
+
   const syncI18n = () => {
     const lang = document.documentElement.dataset.routeLang || 'zh';
     const dict = getSearchI18n(lang);
@@ -73,6 +127,7 @@ export function initSearch(): void {
       input.placeholder = dict.placeholder;
       input.setAttribute('aria-label', dict.placeholder);
     }
+    if (clearBtn) clearBtn.setAttribute('aria-label', dict.clearLabel);
     if (toggleBtn) toggleBtn.setAttribute('aria-label', dict.toggleLabel);
     const currentBtn = dialog.querySelector<HTMLButtonElement>('.search-scope-btn[data-scope="current"]');
     const allBtn = dialog.querySelector<HTMLButtonElement>('.search-scope-btn[data-scope="all"]');
@@ -102,9 +157,10 @@ export function initSearch(): void {
       dialog.classList.add('open');
     });
     syncI18n();
+    updateClearBtn();
     input?.focus();
     input?.select();
-    void loadPagefind();
+    void loadSiteSearchIndex();
   };
 
   const closeSearch = () => {
@@ -122,6 +178,7 @@ export function initSearch(): void {
   };
 
   syncI18n();
+  updateClearBtn();
 
   if (!toggleBtn?.dataset.searchInit) {
     if (toggleBtn) {
@@ -149,6 +206,15 @@ export function initSearch(): void {
   dialog.dataset.dialogInit = '1';
 
   closeBtn?.addEventListener('click', () => closeSearch());
+  clearBtn?.addEventListener('click', () => {
+    if (input) {
+      input.value = '';
+      updateClearBtn();
+      input.focus();
+      void performSearch('');
+    }
+  });
+
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) closeSearch();
   });
@@ -168,7 +234,7 @@ export function initSearch(): void {
       scopeBtns.forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       currentScope = (btn.dataset.scope as 'current' | 'all') || 'current';
-      performSearch(input?.value ?? '');
+      void performSearch(input?.value ?? '');
     });
   });
 
@@ -192,7 +258,7 @@ export function initSearch(): void {
       .map(
         (item, idx) => `
       <li class="search-item ${idx === activeIndex ? 'active' : ''}" data-index="${idx}">
-        <a href="${item.url}" class="search-result-link">
+        <a href="${formatSearchUrl(item.url)}" class="search-result-link">
           <div class="search-result-header">
             <span class="search-result-title">${item.title}</span>
             <span class="search-result-lang">${item.lang}</span>
@@ -216,6 +282,8 @@ export function initSearch(): void {
     const query = queryText.trim();
     const lang = document.documentElement.dataset.routeLang || 'zh';
     const dict = getSearchI18n(lang);
+    updateClearBtn();
+
     if (!query) {
       currentResults = [];
       activeIndex = -1;
@@ -227,44 +295,27 @@ export function initSearch(): void {
     const currentLang = lang;
     const scopeLang = currentScope === 'current' ? currentLang : 'all';
 
-    const pagefind = await loadPagefind();
-    if (pagefind && pagefind.search) {
-      try {
-        const searchOptions: any = {};
-        if (scopeLang !== 'all') {
-          searchOptions.filters = { lang: scopeLang };
-        }
-        const searchRes = await pagefind.search(query, searchOptions);
-        if (generation !== searchGeneration) return;
-
-        const rawResults = await Promise.all(searchRes.results.slice(0, 8).map((r: any) => r.data()));
-        currentResults = rawResults.map((r: any) => ({
-          id: r.url,
-          url: r.url,
-          title: r.meta?.title || r.url,
-          excerpt: r.excerpt?.replace(/<[^>]+>/g, '') || '',
-          lang: r.filters?.lang?.[0] || currentLang,
-        }));
-        activeIndex = currentResults.length > 0 ? 0 : -1;
-        renderResults();
-        return;
-      } catch {
-        /* fallback to local search on error */
-      }
+    let allItems: SearchResultItem[] = [];
+    const siteIndex = await loadSiteSearchIndex();
+    if (siteIndex.length > 0) {
+      allItems = siteIndex;
+    } else {
+      allItems = collectLocalSearchItems();
     }
 
-    // Local search fallback
-    const localItems = collectLocalSearchItems();
-    currentResults = filterSearchResults(localItems, query, { lang: scopeLang }).slice(0, 8);
+    if (generation !== searchGeneration) return;
+
+    currentResults = filterSearchResults(allItems, query, { lang: scopeLang }).slice(0, 12);
     activeIndex = currentResults.length > 0 ? 0 : -1;
     renderResults();
   };
 
   input?.addEventListener('input', () => {
+    updateClearBtn();
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       void performSearch(input.value);
-    }, 120);
+    }, 100);
   });
 
   input?.addEventListener('keydown', (e) => {
@@ -285,7 +336,7 @@ export function initSearch(): void {
         closeSearch();
         const link = dialog.querySelector<HTMLAnchorElement>(`.search-item[data-index="${activeIndex >= 0 ? activeIndex : 0}"] a`);
         if (link) link.click();
-        else location.href = target.url;
+        else location.href = formatSearchUrl(target.url);
       }
     }
   });
