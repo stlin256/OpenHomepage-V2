@@ -374,8 +374,13 @@ const componentLabels =
         {hasToc ? (
           <div class="article-layout">
             <details class="toc-collapsible" data-pagefind-ignore>
-              <summary>{tocTitle}</summary>
-              <div set:html={tocHtml} />
+              <summary class="toc-collapsible-summary">
+                <span>{tocTitle}</span>
+                <svg class="toc-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </summary>
+              <div class="toc-collapsible-body" set:html={tocHtml} />
             </details>
             <div class="markdown-body" set:html={bodyHtml} />
             <aside class="toc-sidebar" data-pagefind-ignore set:html={tocHtml} />

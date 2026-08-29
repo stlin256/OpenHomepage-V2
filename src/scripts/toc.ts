@@ -1,5 +1,5 @@
 /**
- * P1 长文目录（TOC）ScrollSpy 与顶部细线阅读进度条控制。
+ * P1 长文目录（TOC）ScrollSpy、阅读进度条控制与移动端折叠动画。
  */
 
 let tocBound = false;
@@ -8,6 +8,12 @@ let currentArticle: HTMLElement | null = null;
 let currentTocLinks: HTMLAnchorElement[] = [];
 let currentHeadings: HTMLElement[] = [];
 let ticking = false;
+
+const collapsibleAnimations = new WeakMap<HTMLDetailsElement, Animation>();
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
+}
 
 function updateProgressAndSpy(): void {
   // 1. Reading progress bar
@@ -69,6 +75,134 @@ const onScroll = (): void => {
   }
 };
 
+export function animateCollapsible(details: HTMLDetailsElement, content: HTMLElement, toOpen: boolean): void {
+  if (prefersReducedMotion() || typeof content.animate !== 'function') {
+    details.open = toOpen;
+    details.classList.remove('is-opening', 'is-closing');
+    return;
+  }
+
+  const runningAnimation = collapsibleAnimations.get(details);
+  if (runningAnimation) {
+    runningAnimation.cancel();
+    collapsibleAnimations.delete(details);
+  }
+
+  if (toOpen) {
+    details.open = true;
+    details.classList.add('is-opening');
+    details.classList.remove('is-closing');
+
+    content.style.overflow = 'hidden';
+    const targetHeight = content.scrollHeight;
+    const currentHeight = content.getBoundingClientRect().height;
+    const startHeight = currentHeight > 0 && currentHeight < targetHeight ? currentHeight : 0;
+
+    const animation = content.animate(
+      [
+        { height: `${startHeight}px`, opacity: startHeight > 0 ? 0.6 : 0, transform: 'translateY(-4px)' },
+        { height: `${targetHeight}px`, opacity: 1, transform: 'translateY(0)' },
+      ],
+      {
+        duration: 260,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+      }
+    );
+
+    collapsibleAnimations.set(details, animation);
+
+    animation.onfinish = () => {
+      details.classList.remove('is-opening');
+      content.style.overflow = '';
+      content.style.height = '';
+      if (collapsibleAnimations.get(details) === animation) {
+        collapsibleAnimations.delete(details);
+      }
+    };
+
+    animation.oncancel = () => {
+      details.classList.remove('is-opening');
+      content.style.overflow = '';
+      if (collapsibleAnimations.get(details) === animation) {
+        collapsibleAnimations.delete(details);
+      }
+    };
+  } else {
+    details.classList.add('is-closing');
+    details.classList.remove('is-opening');
+
+    const currentHeight = content.getBoundingClientRect().height || content.scrollHeight;
+    content.style.overflow = 'hidden';
+
+    const animation = content.animate(
+      [
+        { height: `${currentHeight}px`, opacity: 1, transform: 'translateY(0)' },
+        { height: '0px', opacity: 0, transform: 'translateY(-4px)' },
+      ],
+      {
+        duration: 220,
+        easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+      }
+    );
+
+    collapsibleAnimations.set(details, animation);
+
+    animation.onfinish = () => {
+      details.open = false;
+      details.classList.remove('is-closing');
+      content.style.overflow = '';
+      content.style.height = '';
+      if (collapsibleAnimations.get(details) === animation) {
+        collapsibleAnimations.delete(details);
+      }
+    };
+
+    animation.oncancel = () => {
+      details.classList.remove('is-closing');
+      content.style.overflow = '';
+      if (collapsibleAnimations.get(details) === animation) {
+        collapsibleAnimations.delete(details);
+      }
+    };
+  }
+}
+
+export function initCollapsibleToc(): void {
+  const collapsibles = document.querySelectorAll<HTMLDetailsElement>('.toc-collapsible');
+  for (const details of collapsibles) {
+    if (details.dataset.tocCollapsibleInit === '1') continue;
+    details.dataset.tocCollapsibleInit = '1';
+
+    const summary = details.querySelector<HTMLElement>('summary');
+    const content =
+      details.querySelector<HTMLElement>('.toc-collapsible-body') ??
+      details.querySelector<HTMLElement>('.toc') ??
+      details.querySelector<HTMLElement>('div');
+    if (!summary || !content) continue;
+
+    summary.addEventListener('click', (e) => {
+      if (prefersReducedMotion() || typeof content.animate !== 'function') {
+        return;
+      }
+      e.preventDefault();
+      const shouldOpen = !details.open || details.classList.contains('is-closing');
+      animateCollapsible(details, content, shouldOpen);
+    });
+
+    details.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement | null;
+      const link = target?.closest<HTMLAnchorElement>('.toc-link');
+      if (link && details.open && window.innerWidth < 1200) {
+        if (!prefersReducedMotion() && typeof content.animate === 'function') {
+          animateCollapsible(details, content, false);
+        } else {
+          details.open = false;
+        }
+      }
+    });
+  }
+}
+
 export function initToc(): void {
   currentProgressBar = document.querySelector<HTMLElement>('.reading-progress');
   currentArticle = document.querySelector<HTMLElement>('.page-content, .markdown-body');
@@ -86,6 +220,8 @@ export function initToc(): void {
   if (currentProgressBar || currentTocLinks.length > 0) {
     updateProgressAndSpy();
   }
+
+  initCollapsibleToc();
 }
 
 export function _resetTocStateForTesting(): void {
@@ -95,4 +231,16 @@ export function _resetTocStateForTesting(): void {
   currentTocLinks = [];
   currentHeadings = [];
   ticking = false;
+  document.querySelectorAll<HTMLDetailsElement>('.toc-collapsible').forEach((el) => {
+    delete el.dataset.tocCollapsibleInit;
+    el.classList.remove('is-opening', 'is-closing');
+    const content =
+      el.querySelector<HTMLElement>('.toc-collapsible-body') ??
+      el.querySelector<HTMLElement>('.toc') ??
+      el.querySelector<HTMLElement>('div');
+    if (content) {
+      content.style.height = '';
+      content.style.overflow = '';
+    }
+  });
 }
