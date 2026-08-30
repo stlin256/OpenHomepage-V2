@@ -446,7 +446,28 @@ const SHOTS: Shot[] = [
       return buf;
     },
   },
-  { name: "media-video", page: "features", selector: ".page-content video", padding: 28 },
+  {
+    name: "media-video",
+    page: "features",
+    selector: ".page-content .embed-player",
+    padding: 28,
+    prepare: async (page) => {
+      await page.waitForFunction(() =>
+        Array.from(document.querySelectorAll(".page-content .embed-player .embed-poster")).every(
+          (img) => img.complete && img.naturalWidth > 0,
+        ),
+        undefined,
+        { timeout: 120_000 },
+      );
+    },
+    capture: async (page, lang) =>
+      captureElementWithPadding(
+        page,
+        `.page-content .embed-${lang === "zh" ? "bilibili" : "youtube"}`,
+        0,
+        28,
+      ),
+  },
   { name: "ghcard", page: "features", selector: ".page-content .gh-repo", nth: 0, padding: 28 },
   // —— 特性页：P0 & P1 学术、注记与目录 ——
   { name: "markdown-callout", page: "features", selector: ".page-content .callout", nth: 0, padding: 28 },

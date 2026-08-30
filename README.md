@@ -76,9 +76,9 @@ Each component below is captured individually from the production build (`npm ru
 
 ![Audio directive](docs/images/components/media-audio-en.webp)
 
-**Self-Hosted Video (`:::video`)** — A responsive native video block with poster support and standard browser controls; no third-party iframe or JavaScript shell is required.
+**Embedded Video Card (`::youtube`)** — A responsive 16:9 official-style facade with poster, title bar, and play button; the third-party iframe loads only after user interaction.
 
-![Video directive](docs/images/components/media-video-en.webp)
+![YouTube video card](docs/images/components/media-video-en.webp)
 
 **GitHub Repo Card (`::ghcard`)** — Embed any pinned repository card inline in markdown.
 
