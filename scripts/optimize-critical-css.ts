@@ -49,7 +49,15 @@ export async function optimizeCriticalCss(distDir = path.join(rootDir, 'dist')):
       compress: true,
       safeParser: true,
       logLevel: 'warn',
-      allowRules: [/^html\[data-theme=["']?dark["']?\]/],
+      // Beasties evaluates the static DOM before the head bootstrap adds html.js,
+      // so explicitly keep dark-theme and notice-banner JS state rules inline.
+      allowRules: [
+        /^html\[data-theme=["']?dark["']?\]/,
+        // Without the hidden state in critical CSS, the banner renders on first
+        // paint, disappears when the full stylesheet loads, then appears after
+        // its JS delay: the visible flash currently seen in production.
+        /^html\.js \.notice-banner(?:\.visible|\.dismissing)?$/,
+      ],
     });
 
     let output = await beasties.process(html);
