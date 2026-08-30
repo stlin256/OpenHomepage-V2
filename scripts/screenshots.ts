@@ -332,19 +332,25 @@ const SHOTS: Shot[] = [
     name: "bgm-drawer",
     page: "home",
     selector: ".bgm-drawer",
-    fullViewport: true,
+    padding: 28,
     prepare: async (page) => {
       await page.evaluate(() => {
         const drawer = document.querySelector<HTMLElement>(".bgm-drawer");
-        if (drawer) drawer.hidden = false;
+        if (drawer) {
+          drawer.hidden = false;
+          drawer.classList.add("open");
+        }
       });
-      await page.waitForSelector(".bgm-drawer:not([hidden])");
+      await page.waitForSelector(".bgm-drawer.open:not([hidden])");
       await page.waitForTimeout(100);
     },
     after: async (page) => {
       await page.evaluate(() => {
         const drawer = document.querySelector<HTMLElement>(".bgm-drawer");
-        if (drawer) drawer.hidden = true;
+        if (drawer) {
+          drawer.classList.remove("open");
+          drawer.hidden = true;
+        }
       });
     },
   },
@@ -440,6 +446,7 @@ const SHOTS: Shot[] = [
       return buf;
     },
   },
+  { name: "media-video", page: "features", selector: ".page-content video", padding: 28 },
   { name: "ghcard", page: "features", selector: ".page-content .gh-repo", nth: 0, padding: 28 },
   // —— 特性页：P0 & P1 学术、注记与目录 ——
   { name: "markdown-callout", page: "features", selector: ".page-content .callout", nth: 0, padding: 28 },
