@@ -23,6 +23,22 @@ const LANGUAGE_STORAGE_KEY = 'oh-language';
 /** 语言切换可见遮罩的最短时长：给 FLIP 动画足够的呈现窗口。 */
 const LANGUAGE_OVERLAY_MS = 420;
 
+/**
+ * Beasties swaps the full stylesheet from preload to stylesheet on load.
+ * Client-side content exchange waits for that swap so a very early click never
+ * renders a new route with only the initial critical CSS.
+ */
+const cssReady = Promise.all(
+  [...document.querySelectorAll<HTMLLinkElement>('link[as="style"]')].map((link) =>
+    new Promise<void>((resolve) => {
+      if (link.rel === 'stylesheet' || link.sheet) return resolve();
+      const done = () => resolve();
+      link.addEventListener('load', done, { once: true });
+      link.addEventListener('error', done, { once: true });
+    }),
+  ),
+);
+
 /** 站点实际语言列表（构建期由 <html data-site-langs> 注入；语言目录扫描结果，支持任意语言） */
 function siteLanguages(): string[] {
   return (document.documentElement.dataset.siteLangs ?? '').split(',').filter(Boolean);
@@ -401,6 +417,7 @@ async function swapContent(
   let activatePage: (() => void) | null = null;
   try {
     const html = await fetchPageHtml(path);
+    await cssReady;
     if (html === null) {
       location.href = path;
       return;

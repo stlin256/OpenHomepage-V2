@@ -2943,6 +2943,7 @@ html.js .reveal.revealed {
   to { transform: rotate(360deg); }
 }
 
+/* beasties:include start */
 /* ---- 全局降级（spec 09 §2）：仅 transform/opacity；reduced-motion 只留简单淡入 ---- */
 @media (prefers-reduced-motion: reduce) {
   .notice-banner {
@@ -3031,6 +3032,7 @@ html.js .reveal.revealed {
     transition: opacity 0.15s ease;
   }
 }
+/* beasties:include end */
 /* ---- :::audio self-rendered players（A 默认紧凑卡，B 封面卡） ---- */
 .markdown-body audio,
 .markdown-body .audio-native {

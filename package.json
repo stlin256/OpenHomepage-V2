@@ -18,14 +18,15 @@
     "test": "vitest run",
     "prefetch": "tsx scripts/prefetch.ts",
     "dev": "tsx scripts/generate-fonts.ts && astro dev",
-    "build": "tsx scripts/generate-fonts.ts && tsx scripts/generate-og-images.ts && astro build && npm run optimize:images",
+    "build": "tsx scripts/generate-fonts.ts && tsx scripts/generate-og-images.ts && astro build && npm run optimize:critical-css && npm run optimize:images",
     "optimize:images": "tsx scripts/optimize-images.ts",
     "setup": "node scripts/setup.mjs",
     "admin": "tsx admin/server/index.ts",
     "preview": "astro preview",
     "serve": "tsx scripts/serve.ts",
     "screenshots": "tsx scripts/screenshots.ts",
-    "generate:fonts": "tsx scripts/generate-fonts.ts"
+    "generate:fonts": "tsx scripts/generate-fonts.ts",
+    "optimize:critical-css": "tsx scripts/optimize-critical-css.ts"
   },
   "keywords": [
     "astro",
@@ -71,6 +72,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^26.2.0",
+    "beasties": "^0.4.3",
     "esbuild": "^0.28.2",
     "jimp": "^1.6.1",
     "jsdom": "^30.0.1",
