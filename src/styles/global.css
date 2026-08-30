@@ -83,6 +83,72 @@ html[data-theme='dark'] .gh-repo {
   --accent-contrast: var(--accent-dark-contrast);
 }
 
+/* ---- 自定义滚动条：页面与所有站内滚动容器统一细滚动条 ----
+   轨道透明、thumb 圆角、明暗主题适配；Firefox 使用 scrollbar-width/color，
+   Chromium/Safari 使用 WebKit 伪元素。 */
+html,
+.markdown-body .katex,
+.markdown-body pre,
+.markdown-body .md-table-wrap,
+.publication-links,
+.publication-bibtex pre,
+.heatmap-scroll,
+.article-layout .toc-sidebar,
+.search-results,
+.bgm-tracklist {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+html::-webkit-scrollbar,
+.markdown-body .katex::-webkit-scrollbar,
+.markdown-body pre::-webkit-scrollbar,
+.markdown-body .md-table-wrap::-webkit-scrollbar,
+.publication-links::-webkit-scrollbar,
+.publication-bibtex pre::-webkit-scrollbar,
+.heatmap-scroll::-webkit-scrollbar,
+.article-layout .toc-sidebar::-webkit-scrollbar,
+.search-results::-webkit-scrollbar,
+.bgm-tracklist::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html::-webkit-scrollbar-track,
+.markdown-body .katex::-webkit-scrollbar-track,
+.markdown-body pre::-webkit-scrollbar-track,
+.markdown-body .md-table-wrap::-webkit-scrollbar-track,
+.publication-links::-webkit-scrollbar-track,
+.publication-bibtex pre::-webkit-scrollbar-track,
+.heatmap-scroll::-webkit-scrollbar-track,
+.article-layout .toc-sidebar::-webkit-scrollbar-track,
+.search-results::-webkit-scrollbar-track,
+.bgm-tracklist::-webkit-scrollbar-track {
+  background: transparent;
+}
+html::-webkit-scrollbar-thumb,
+.markdown-body .katex::-webkit-scrollbar-thumb,
+.markdown-body pre::-webkit-scrollbar-thumb,
+.markdown-body .md-table-wrap::-webkit-scrollbar-thumb,
+.publication-links::-webkit-scrollbar-thumb,
+.publication-bibtex pre::-webkit-scrollbar-thumb,
+.heatmap-scroll::-webkit-scrollbar-thumb,
+.article-layout .toc-sidebar::-webkit-scrollbar-thumb,
+.search-results::-webkit-scrollbar-thumb,
+.bgm-tracklist::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+html::-webkit-scrollbar-thumb:hover,
+.markdown-body .katex::-webkit-scrollbar-thumb:hover,
+.markdown-body pre::-webkit-scrollbar-thumb:hover,
+.markdown-body .md-table-wrap::-webkit-scrollbar-thumb:hover,
+.publication-links::-webkit-scrollbar-thumb:hover,
+.publication-bibtex pre::-webkit-scrollbar-thumb:hover,
+.heatmap-scroll::-webkit-scrollbar-thumb:hover,
+.article-layout .toc-sidebar::-webkit-scrollbar-thumb:hover,
+.search-results::-webkit-scrollbar-thumb:hover,
+.bgm-tracklist::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
 /* ---- 基础 ---- */
 *,
 *::before,
@@ -1563,24 +1629,8 @@ a.editorial-item:focus-visible .editorial-item-content {
   overflow-x: auto;
   margin: 1.5em 0;
   -webkit-overflow-scrolling: touch;
-  /* 自定义细滚动条（GitHub 贡献热力图同款）：轨道透明、thumb 圆角、明暗主题适配，
-     WebKit 伪元素 + Firefox scrollbar-width/color 双写 */
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
 }
-.markdown-body .md-table-wrap::-webkit-scrollbar {
-  height: 6px;
-}
-.markdown-body .md-table-wrap::-webkit-scrollbar-track {
-  background: transparent;
-}
-.markdown-body .md-table-wrap::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-.markdown-body .md-table-wrap::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
+
 .markdown-body .md-table-wrap table {
   margin: 0;
   min-width: 100%;
@@ -2305,30 +2355,15 @@ html[data-theme='dark'] .shiki {
   color: var(--text-muted);
   margin-bottom: 0.6rem;
 }
-/* 横向滚动容器：自定义细滚动条（轨道透明、thumb 圆角、明暗主题适配），
-   WebKit 伪元素 + Firefox scrollbar-width/color 双写 */
+/* 横向滚动容器：滚动条样式由全局自定义滚动条规则统一提供。 */
 .heatmap-scroll {
   overflow-x: auto;
   padding-bottom: 0.35rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
   /* 容器只有 heatmap-inner 一个子节点：rtl 使初始滚动位置停靠在右侧（最新数据），
      子节点内恢复 ltr，格子/月份/图例排布不受影响 */
   direction: rtl;
 }
-.heatmap-scroll::-webkit-scrollbar {
-  height: 6px;
-}
-.heatmap-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.heatmap-scroll::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-.heatmap-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
+
 .heatmap-inner {
   display: inline-flex;
   flex-direction: column;
