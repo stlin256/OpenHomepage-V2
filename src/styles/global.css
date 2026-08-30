@@ -278,8 +278,7 @@ html.js img[data-image-fade='loaded'] {
   transition:
     background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
     color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .site-nav ul a:hover {
   color: var(--text);
@@ -291,20 +290,6 @@ html.js img[data-image-fade='loaded'] {
   border-left-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   font-weight: 600;
-  animation: navTabActive 0.24s cubic-bezier(0.22, 1, 0.36, 1);
-}
-@keyframes navTabActive {
-  0% {
-    transform: translateX(-3px);
-    opacity: 0.85;
-  }
-  60% {
-    transform: translateX(1.5px);
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 
 /* 汉堡按钮（仅移动端显示） */
