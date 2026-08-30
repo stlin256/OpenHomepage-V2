@@ -121,10 +121,7 @@ describe("initSearch client interactions", () => {
               <input type='search' class='search-input' />
               <button type='button' class='search-clear-btn' hidden>✕</button>
             </div>
-            <div class='search-scope-tabs'>
-              <button type='button' class='search-scope-btn active' data-scope='current'>当前语言</button>
-              <button type='button' class='search-scope-btn' data-scope='all'>全部语言</button>
-            </div>
+            <button type='button' class='search-scope-toggle' data-scope='current' aria-pressed='false'>当前语言</button>
             <button type='button' class='search-close'>Esc</button>
           </form>
           <p class='search-status'></p>
@@ -150,8 +147,7 @@ describe("initSearch client interactions", () => {
     const closeBtn = document.querySelector(".search-close") as HTMLButtonElement;
     const clearBtn = document.querySelector(".search-clear-btn") as HTMLButtonElement;
     const input = document.querySelector(".search-input") as HTMLInputElement;
-    const currentBtn = document.querySelector(".search-scope-btn[data-scope='current']") as HTMLButtonElement;
-    const allBtn = document.querySelector(".search-scope-btn[data-scope='all']") as HTMLButtonElement;
+    const scopeToggle = document.querySelector(".search-scope-toggle") as HTMLButtonElement;
 
     // Open modal
     toggle.click();
@@ -167,14 +163,14 @@ describe("initSearch client interactions", () => {
     expect(input.value).toBe("");
     expect(clearBtn.hidden).toBe(true);
 
-    // Scope toggling
-    allBtn.click();
-    expect(allBtn.classList.contains("active")).toBe(true);
-    expect(currentBtn.classList.contains("active")).toBe(false);
+    // Scope toggling: 单按钮在 current / all 间切换
+    scopeToggle.click();
+    expect(scopeToggle.dataset.scope).toBe("all");
+    expect(scopeToggle.getAttribute("aria-pressed")).toBe("true");
 
-    currentBtn.click();
-    expect(currentBtn.classList.contains("active")).toBe(true);
-    expect(allBtn.classList.contains("active")).toBe(false);
+    scopeToggle.click();
+    expect(scopeToggle.dataset.scope).toBe("current");
+    expect(scopeToggle.getAttribute("aria-pressed")).toBe("false");
 
     // Close modal
     closeBtn.click();

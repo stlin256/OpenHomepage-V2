@@ -15,6 +15,7 @@ export interface SearchI18nStrings {
   placeholder: string;
   scopeCurrent: string;
   scopeAll: string;
+  scopeToggleLabel: string;
   clearLabel: string;
   closeLabel: string;
   statusInitial: string;
@@ -31,6 +32,7 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: '搜索站内内容 (Ctrl+K)...',
     scopeCurrent: '当前语言',
     scopeAll: '全部语言',
+    scopeToggleLabel: '搜索范围',
     clearLabel: '清空搜索',
     closeLabel: '关闭 (Esc)',
     statusInitial: '输入关键词开始搜索...',
@@ -45,6 +47,7 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: 'Search content (Ctrl+K)...',
     scopeCurrent: 'This language',
     scopeAll: 'All languages',
+    scopeToggleLabel: 'Search scope',
     clearLabel: 'Clear search',
     closeLabel: 'Close (Esc)',
     statusInitial: 'Type keywords to search...',
@@ -59,6 +62,7 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: 'サイト内を検索 (Ctrl+K)...',
     scopeCurrent: '現在の言語',
     scopeAll: 'すべての言語',
+    scopeToggleLabel: '検索範囲',
     clearLabel: '検索内容をクリア',
     closeLabel: '閉じる (Esc)',
     statusInitial: 'キーワードを入力して検索...',
@@ -73,6 +77,7 @@ export const SEARCH_I18N: Record<string, SearchI18nStrings> = {
     placeholder: 'Rechercher dans le site (Ctrl+K)...',
     scopeCurrent: 'Langue actuelle',
     scopeAll: 'Toutes les langues',
+    scopeToggleLabel: 'Portée de recherche',
     clearLabel: 'Effacer la recherche',
     closeLabel: 'Fermer (Esc)',
     statusInitial: 'Tapez pour rechercher...',

@@ -3517,50 +3517,43 @@ html.js .reveal.revealed {
 .search-clear-btn[hidden] {
   display: none !important;
 }
-.search-scope-tabs {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: var(--bg-subtle);
-  padding: 0.15rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  height: 1.75rem;
-  box-sizing: border-box;
-}
-.search-scope-btn {
+/* 搜索范围切换：单按钮点击在「当前语言 / 全部语言」间切换（替代原双按钮 tab 组，
+   节省移动端横向空间）。aria-pressed="true" 表示已展开为全部语言。 */
+.search-scope-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  border: none;
-  background: transparent;
-  padding: 0 0.55rem;
-  border-radius: calc(var(--radius-sm) - 2px);
+  gap: 0.3rem;
+  height: 1.75rem;
+  flex: none;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  padding: 0 0.6rem;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   line-height: 1;
   font-family: inherit;
-  color: var(--text-muted);
+  color: var(--accent);
+  font-weight: 600;
   cursor: pointer;
   box-sizing: border-box;
+  white-space: nowrap;
   transition:
     background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.15s ease;
 }
-.search-scope-btn:hover {
-  color: var(--text);
-  background: rgba(125, 125, 125, 0.08);
+.search-scope-toggle:hover {
+  border-color: var(--accent);
+  background: var(--card);
 }
-.search-scope-btn:active {
+.search-scope-toggle:active {
   transform: scale(0.96);
 }
-.search-scope-btn.active {
+.search-scope-toggle[aria-pressed="true"] {
   background: var(--card);
-  color: var(--accent);
-  font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-color: var(--accent);
 }
 .search-close {
   display: inline-flex;

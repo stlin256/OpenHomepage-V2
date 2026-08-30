@@ -409,10 +409,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
               </svg>
             </button>
           </div>
-          <div class="search-scope-tabs">
-            <button type="button" class="search-scope-btn active" data-scope="current">{searchI18n.scopeCurrent}</button>
-            <button type="button" class="search-scope-btn" data-scope="all">{searchI18n.scopeAll}</button>
-          </div>
+          <button type="button" class="search-scope-toggle" data-scope="current" aria-pressed="false" title={searchI18n.scopeToggleLabel} aria-label={searchI18n.scopeToggleLabel}>{searchI18n.scopeCurrent}</button>
           <button type="button" class="search-close" aria-label={searchI18n.closeLabel}>Esc</button>
         </form>
         <p class="search-status" role="status">{searchI18n.statusInitial}</p>

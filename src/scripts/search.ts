@@ -105,7 +105,7 @@ export function initSearch(): void {
   const closeBtn = dialog.querySelector<HTMLButtonElement>('.search-close');
   const resultsList = dialog.querySelector<HTMLUListElement>('.search-results');
   const statusEl = dialog.querySelector<HTMLElement>('.search-status');
-  const scopeBtns = dialog.querySelectorAll<HTMLButtonElement>('.search-scope-btn');
+  const scopeToggle = dialog.querySelector<HTMLButtonElement>('.search-scope-toggle');
 
   let currentScope: 'current' | 'all' = 'current';
   let activeIndex = -1;
@@ -120,6 +120,17 @@ export function initSearch(): void {
     }
   };
 
+  const updateScopeToggle = () => {
+    if (!scopeToggle) return;
+    const lang = document.documentElement.dataset.routeLang || 'zh';
+    const dict = getSearchI18n(lang);
+    scopeToggle.textContent = currentScope === 'current' ? dict.scopeCurrent : dict.scopeAll;
+    scopeToggle.dataset.scope = currentScope;
+    scopeToggle.setAttribute('aria-pressed', currentScope === 'all' ? 'true' : 'false');
+    scopeToggle.setAttribute('title', dict.scopeToggleLabel);
+    scopeToggle.setAttribute('aria-label', dict.scopeToggleLabel);
+  };
+
   const syncI18n = () => {
     const lang = document.documentElement.dataset.routeLang || 'zh';
     const dict = getSearchI18n(lang);
@@ -129,10 +140,7 @@ export function initSearch(): void {
     }
     if (clearBtn) clearBtn.setAttribute('aria-label', dict.clearLabel);
     if (toggleBtn) toggleBtn.setAttribute('aria-label', dict.toggleLabel);
-    const currentBtn = dialog.querySelector<HTMLButtonElement>('.search-scope-btn[data-scope="current"]');
-    const allBtn = dialog.querySelector<HTMLButtonElement>('.search-scope-btn[data-scope="all"]');
-    if (currentBtn) currentBtn.textContent = dict.scopeCurrent;
-    if (allBtn) allBtn.textContent = dict.scopeAll;
+    updateScopeToggle();
     if (closeBtn) closeBtn.setAttribute('aria-label', dict.closeLabel);
     const navHint = dialog.querySelector('.search-hint-nav');
     const selectHint = dialog.querySelector('.search-hint-select');
@@ -229,13 +237,10 @@ export function initSearch(): void {
     }
   });
 
-  scopeBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      scopeBtns.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentScope = (btn.dataset.scope as 'current' | 'all') || 'current';
-      void performSearch(input?.value ?? '');
-    });
+  scopeToggle?.addEventListener('click', () => {
+    currentScope = currentScope === 'current' ? 'all' : 'current';
+    updateScopeToggle();
+    void performSearch(input?.value ?? '');
   });
 
   const renderResults = () => {
