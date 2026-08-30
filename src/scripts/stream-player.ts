@@ -126,8 +126,19 @@ function applyToken(ctx: PlayerCtx, token: StreamToken): void {
   }
 }
 
-async function play(ctx: PlayerCtx): Promise<void> {
+interface PlayOptions {
+  initialDelay?: number;
+}
+
+/** 自动播放先停一小拍，让页面进入/切换动画先结束，避免与打字同时发生造成抖动错觉。 */
+export const AUTOPLAY_START_DELAY_MS = 300;
+
+async function play(ctx: PlayerCtx, { initialDelay = 0 }: PlayOptions = {}): Promise<void> {
   const gen = ++ctx.generation;
+  if (initialDelay > 0) {
+    await sleep(initialDelay);
+    if (ctx.generation !== gen) return;
+  }
   ctx.content.innerHTML = '';
   ctx.stack = [ctx.content];
   ctx.cursor.hidden = false;
@@ -198,7 +209,7 @@ export function initStreamBlocks(): void {
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
           io.disconnect();
-          void play(ctx);
+          void play(ctx, { initialDelay: AUTOPLAY_START_DELAY_MS });
         }
       },
       { threshold: 0.5 },

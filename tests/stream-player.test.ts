@@ -4,7 +4,7 @@
  * @vitest-environment jsdom
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { initStreamBlocks } from '../src/scripts/stream-player.ts';
+import { AUTOPLAY_START_DELAY_MS, initStreamBlocks } from '../src/scripts/stream-player.ts';
 
 describe('流式光标位置', () => {
   afterEach(() => {
@@ -52,6 +52,11 @@ describe('流式光标位置', () => {
 
     initStreamBlocks();
     await Promise.resolve();
+
+    // 自动播放先延迟，避免与页面进入动画叠加。
+    const contentBeforeDelay = document.querySelector<HTMLElement>('.stream-block > .stream-content')!;
+    expect(contentBeforeDelay.innerHTML).toBe('');
+    await vi.advanceTimersByTimeAsync(AUTOPLAY_START_DELAY_MS);
 
     const root = document.querySelector<HTMLElement>('.stream-block')!;
     const content = root.querySelector<HTMLElement>(':scope > .stream-content')!;
