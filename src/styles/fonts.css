@@ -1,0 +1,9 @@
+/* Narrow mono subset for homepage editorial indexes; code text keeps the full font. */
+@font-face {
+  font-family: 'JetBrains Mono Index Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../../public/fonts/jetbrains-mono-index.woff2') format('woff2');
+}
+

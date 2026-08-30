@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 全局样式：语义色变量（docs/specs/10）、明暗主题、杂志网格（docs/specs/02 方案 B）、
  * 导航（design.md 5.3）、markdown 正文排版、Shiki 双主题切换。
  * M4b：GitHub/RSS/流式区块样式、hover 浮层、嵌入懒加载封面、动效与降级（docs/specs/09）。
@@ -28,6 +28,7 @@ html {
   --font-sans:
     'Segoe UI', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --font-mono-index: 'JetBrains Mono Index Variable', var(--font-mono);
   --content-width: 68rem;
   --nav-width: 11rem;
 }
@@ -989,7 +990,7 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
   flex: 0 0 3.25rem;
   min-width: 0;
   color: var(--section-color, var(--accent));
-  font-family: var(--font-mono);
+  font-family: var(--font-mono-index);
   font-size: 1.35rem;
   font-weight: 250;
   transform-origin: left center;
@@ -3962,3 +3963,4 @@ html.js .reveal.revealed {
       visibility 0s;
   }
 }
+

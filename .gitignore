@@ -17,3 +17,5 @@ dist-*/
 .DS_Store
 Thumbs.db
 debug.log
+
+/public/fonts/

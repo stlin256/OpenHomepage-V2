@@ -17,14 +17,15 @@
   "scripts": {
     "test": "vitest run",
     "prefetch": "tsx scripts/prefetch.ts",
-    "dev": "astro dev",
-    "build": "tsx scripts/generate-og-images.ts && astro build && npm run optimize:images",
+    "dev": "tsx scripts/generate-fonts.ts && astro dev",
+    "build": "tsx scripts/generate-fonts.ts && tsx scripts/generate-og-images.ts && astro build && npm run optimize:images",
     "optimize:images": "tsx scripts/optimize-images.ts",
     "setup": "node scripts/setup.mjs",
     "admin": "tsx admin/server/index.ts",
     "preview": "astro preview",
     "serve": "tsx scripts/serve.ts",
-    "screenshots": "tsx scripts/screenshots.ts"
+    "screenshots": "tsx scripts/screenshots.ts",
+    "generate:fonts": "tsx scripts/generate-fonts.ts"
   },
   "keywords": [
     "astro",
@@ -74,6 +75,7 @@
     "jimp": "^1.6.1",
     "jsdom": "^30.0.1",
     "playwright": "^1.62.1",
+    "subset-font": "^2.7.0",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2",
     "vitest": "^4.1.11"
