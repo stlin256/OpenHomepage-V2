@@ -1562,11 +1562,29 @@ a.editorial-item:focus-visible .editorial-item-content {
   overflow-x: auto;
   margin: 1.5em 0;
   -webkit-overflow-scrolling: touch;
+  /* 自定义细滚动条（GitHub 贡献热力图同款）：轨道透明、thumb 圆角、明暗主题适配，
+     WebKit 伪元素 + Firefox scrollbar-width/color 双写 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.markdown-body .md-table-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+.markdown-body .md-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.markdown-body .md-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.markdown-body .md-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 .markdown-body .md-table-wrap table {
   margin: 0;
   min-width: 100%;
-  width: max-content;
+  width: 100%;
+  table-layout: auto;
 }
 .markdown-body table {
   border-collapse: collapse;
