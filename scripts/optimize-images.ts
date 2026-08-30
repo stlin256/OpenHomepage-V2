@@ -11,7 +11,6 @@ import { fileURLToPath } from 'node:url';
 import sharp, { type Metadata } from 'sharp';
 import { JSDOM } from 'jsdom';
 import {
-  RESPONSIVE_WEBP_WIDTHS,
   avifImageUrl,
   inferImageSizes,
   isConvertibleAssetPath,
@@ -21,6 +20,7 @@ import {
   webpAssetPath,
   webpImageUrl,
 } from '../src/lib/image-opt.ts';
+import { parseImageSizes, responsiveWidthsForLayout, type ImageLayout } from '../src/lib/responsive-images.ts';
 
 interface ConversionResult {
   converted: number;
@@ -131,76 +131,98 @@ function rewriteSrcset(value: string, availableWebp: ReadonlySet<string>): strin
   return changed ? rewritten : null;
 }
 
-function responsiveSrcset(
+function responsiveCandidateUrl(
   referenceUrl: string,
-  catalog: ResponsiveCatalog,
-  availableWebp: ReadonlySet<string>,
+  width: number,
+  naturalWidth: number,
+  available: ReadonlySet<string>,
+  format: 'webp' | 'avif',
 ): string | null {
-  const assetPath = localAssetPathFromImageUrl(referenceUrl);
-  const basePath = assetPath ? webpAssetPath(`assets/${assetPath}`) : null;
-  const image = basePath ? catalog.get(basePath) : undefined;
-  if (!image) return null;
-
-  const candidates = [...image.variantWidths, image.naturalWidth].sort((a, b) => a - b);
-  const entries: string[] = [];
-  for (const width of candidates) {
-    const url =
-      width === image.naturalWidth
-        ? webpImageUrl(referenceUrl, availableWebp)
-        : responsiveWebpImageUrl(referenceUrl, width, availableWebp);
-    if (url) entries.push(`${url} ${width}w`);
+  if (width >= naturalWidth) {
+    return format === 'webp'
+      ? webpImageUrl(referenceUrl, available)
+      : avifImageUrl(referenceUrl, available);
   }
-  return entries.length > 1 ? entries.join(', ') : null;
+  return format === 'webp'
+    ? responsiveWebpImageUrl(referenceUrl, width, available)
+    : responsiveAvifImageUrl(referenceUrl, width, available);
 }
 
-function responsiveAvifSrcset(
-  referenceUrl: string,
-  catalog: ResponsiveCatalog,
-  availableAvif: ReadonlySet<string>,
-): string | null {
-  const assetPath = localAssetPathFromImageUrl(referenceUrl);
-  const basePath = assetPath ? webpAssetPath(`assets/${assetPath}`) : null;
-  const image = basePath ? catalog.get(basePath) : undefined;
-  if (!image) return null;
-
-  const candidates = [...image.variantWidths, image.naturalWidth].sort((a, b) => a - b);
-  const entries: string[] = [];
-  for (const width of candidates) {
-    const url =
-      width === image.naturalWidth
-        ? avifImageUrl(referenceUrl, availableAvif)
-        : responsiveAvifImageUrl(referenceUrl, width, availableAvif);
-    if (url) entries.push(`${url} ${width}w`);
+function responsiveEntriesForLayout(maxWidth: number, naturalWidth: number): Array<{ width: number; descriptor: number }> {
+  const byWidth = new Map<number, number>();
+  for (const descriptor of [1, 2, 3]) {
+    const width = Math.min(naturalWidth, Math.max(1, Math.round((maxWidth * descriptor) / 2) * 2));
+    byWidth.set(width, Math.max(byWidth.get(width) ?? 0, descriptor));
   }
-  return entries.length > 1 ? entries.join(', ') : null;
+  return [...byWidth.entries()]
+    .map(([width, descriptor]) => ({ width, descriptor }))
+    .sort((a, b) => a.width - b.width);
 }
 
-/**
- * Give an <img> an AVIF-first <picture> wrapper (or prepend the AVIF source
- * to an existing picture). The <img> keeps its WebP src/srcset as fallback;
- * sizes stays on the <img> and applies to the <source> per spec.
- */
-function wrapWithAvifSource(
+function responsiveSrcsetForLayout(
+  referenceUrl: string,
+  image: ResponsiveImage,
+  layout: ImageLayout,
+  available: ReadonlySet<string>,
+  format: 'webp' | 'avif',
+): string | null {
+  const entries = responsiveEntriesForLayout(layout.maxWidth, image.naturalWidth)
+    .map(({ width, descriptor }) => {
+      const url = responsiveCandidateUrl(referenceUrl, width, image.naturalWidth, available, format);
+      return url ? `${url} ${descriptor}x` : null;
+    })
+    .filter((entry): entry is string => entry !== null);
+  return entries.length > 0 ? entries.join(', ') : null;
+}
+
+function wrapWithResponsiveSources(
   document: Document,
   img: Element,
-  avifSrcset: string,
+  referenceUrl: string,
+  layouts: ImageLayout[],
+  catalog: ResponsiveCatalog,
+  availableWebp: ReadonlySet<string>,
+  availableAvif: ReadonlySet<string>,
 ): void {
+  const assetPath = localAssetPathFromImageUrl(referenceUrl);
+  const basePath = assetPath ? webpAssetPath(`assets/${assetPath}`) : null;
+  const image = basePath ? catalog.get(basePath) : undefined;
+  if (!image) return;
+
   let picture = img.parentElement?.tagName === 'PICTURE' ? img.parentElement : null;
   if (!picture) {
     picture = document.createElement('picture');
     img.parentNode?.insertBefore(picture, img);
     picture.append(img);
   }
-  for (const child of picture.children) {
-    if (child.tagName === 'SOURCE' && child.getAttribute('type') === 'image/avif') {
-      child.setAttribute('srcset', avifSrcset);
-      return;
+
+  for (const child of [...picture.children]) {
+    if (child.tagName === 'SOURCE' && child.getAttribute('data-responsive-source') === '1') {
+      child.remove();
     }
   }
-  const source = document.createElement('source');
-  source.setAttribute('type', 'image/avif');
-  source.setAttribute('srcset', avifSrcset);
-  picture.prepend(source);
+
+  const sources: Element[] = [];
+  for (const [type, available, format] of [
+    ['image/avif', availableAvif, 'avif'],
+    ['image/webp', availableWebp, 'webp'],
+  ] as const) {
+    for (const layout of layouts) {
+      const srcset = responsiveSrcsetForLayout(referenceUrl, image, layout, available, format);
+      if (!srcset) continue;
+      const source = document.createElement('source');
+      source.setAttribute('type', type);
+      source.setAttribute('srcset', srcset);
+      if (layout.media) source.setAttribute('media', layout.media);
+      source.setAttribute('data-responsive-source', '1');
+      sources.push(source);
+    }
+  }
+  for (const source of sources.toReversed()) picture.prepend(source);
+
+  const fallbackLayout = layouts.at(-1) ?? layouts[0];
+  const fallback = responsiveSrcsetForLayout(referenceUrl, image, fallbackLayout, availableWebp, 'webp');
+  if (fallback) img.setAttribute('srcset', fallback);
 }
 
 function rewriteStyle(value: string, availableWebp: ReadonlySet<string>): string | null {
@@ -229,20 +251,18 @@ function rewriteHtml(
   for (const element of document.querySelectorAll<HTMLElement>(
     'img[src], img[srcset], source[src], source[srcset], video[poster], [style]',
   )) {
+    if (element.getAttribute('data-responsive-source') === '1') continue;
     const src = element.getAttribute('src');
     const srcset = element.getAttribute('srcset');
     const referenceUrl = src ?? (srcset ? firstSrcsetUrl(srcset) : null);
-    const responsive = referenceUrl ? responsiveSrcset(referenceUrl, catalog, availableWebp) : null;
+
+    if (element.tagName === 'IMG' && referenceUrl) {
+      if (!element.hasAttribute('sizes')) element.setAttribute('sizes', inferImageSizes(element));
+    }
 
     for (const attr of ['src', 'poster', 'srcset'] as const) {
       const value = element.getAttribute(attr);
       if (!value) continue;
-      if (responsive && attr === 'srcset') {
-        element.setAttribute('srcset', responsive);
-        if (!element.hasAttribute('sizes')) element.setAttribute('sizes', inferImageSizes(element));
-        continue;
-      }
-
       const replacement =
         attr === 'srcset'
           ? rewriteSrcset(value, availableWebp)
@@ -254,21 +274,12 @@ function rewriteHtml(
       element.setAttribute(attr, replacement);
     }
 
-    if (responsive && element.tagName === 'IMG' && src && webpImageUrl(src, availableWebp)) {
-      element.setAttribute('src', webpImageUrl(src, availableWebp)!);
-      // 只有 src 的普通图片同样补全 srcset，响应式档位才真正生效
-      if (!element.hasAttribute('srcset')) element.setAttribute('srcset', responsive);
-      if (!element.hasAttribute('sizes')) element.setAttribute('sizes', inferImageSizes(element));
-    }
-
     const style = element.getAttribute('style');
     if (style) {
       const replacement = rewriteStyle(style, availableWebp);
       if (replacement) element.setAttribute('style', replacement);
     }
 
-    // 写入真实宽高：浏览器在图片加载前即按宽高比预留同尺寸矩形占位，开始加载时无抖动。
-    // 必须在 sizes 推断之后：注入的是原图自然尺寸而非显示尺寸，不能参与 inferImageSizes。
     if (
       element.tagName === 'IMG' &&
       referenceUrl &&
@@ -284,16 +295,45 @@ function rewriteHtml(
       }
     }
 
-    // AVIF 优先：支持 AVIF 的浏览器取 <source>，其余回落 <img> 的 WebP。
     if (element.tagName === 'IMG' && referenceUrl) {
-      const avifSrcset =
-        responsiveAvifSrcset(referenceUrl, catalog, availableAvif) ??
-        avifImageUrl(referenceUrl, availableAvif);
-      if (avifSrcset) wrapWithAvifSource(document, element, avifSrcset);
+      const sizes = element.getAttribute('sizes') ?? inferImageSizes(element);
+      wrapWithResponsiveSources(
+        document,
+        element,
+        referenceUrl,
+        parseImageSizes(sizes),
+        catalog,
+        availableWebp,
+        availableAvif,
+      );
     }
   }
 
   return dom.serialize();
+}
+
+function collectRequiredVariantWidths(htmlFiles: string[]): Map<string, number[]> {
+  const required = new Map<string, Set<number>>();
+  for (const file of htmlFiles) {
+    const dom = new JSDOM(readFileSync(file, 'utf8'));
+    for (const img of dom.window.document.querySelectorAll<HTMLImageElement>('img[src], img[srcset]')) {
+      const src = img.getAttribute('src');
+      const srcset = img.getAttribute('srcset');
+      const referenceUrl = src ?? (srcset ? firstSrcsetUrl(srcset) : null);
+      const assetPath = referenceUrl ? localAssetPathFromImageUrl(referenceUrl) : null;
+      const basePath = assetPath ? webpAssetPath(`assets/${assetPath}`) : null;
+      if (!basePath) continue;
+      const sizes = img.getAttribute('sizes') ?? inferImageSizes(img);
+      const widths = required.get(basePath) ?? new Set<number>();
+      for (const layout of parseImageSizes(sizes)) {
+        for (const width of responsiveWidthsForLayout(layout.maxWidth, Number.MAX_SAFE_INTEGER)) {
+          widths.add(width);
+        }
+      }
+      required.set(basePath, widths);
+    }
+  }
+  return new Map([...required].map(([key, widths]) => [key, [...widths].sort((a, b) => a - b)]));
 }
 
 async function validExistingVariant(file: string, expectedWidth: number): Promise<boolean> {
@@ -536,6 +576,8 @@ export async function optimizeDistImages(
   const files = statSync(assetsDir, { throwIfNoEntry: false })?.isDirectory()
     ? walkFiles(assetsDir)
     : [];
+  const htmlFiles = walkFiles(distDir).filter((file) => file.endsWith('.html'));
+  const requiredVariantWidths = collectRequiredVariantWidths(htmlFiles);
   const convertibleFiles = files.filter((file) =>
     isConvertibleAssetPath(`assets/${toPosix(path.relative(assetsDir, file))}`),
   );
@@ -628,7 +670,8 @@ export async function optimizeDistImages(
 
       const variantWidths: number[] = [];
       if (!metadata.pages || metadata.pages <= 1) {
-        for (const width of RESPONSIVE_WEBP_WIDTHS) {
+        const requiredWidths = requiredVariantWidths.get(`assets/${webpRelative}`) ?? [];
+        for (const width of requiredWidths) {
           if (width >= naturalWidth) continue;
           const webpVariantRelative = responsiveWebpRelativePath(webpRelative, width);
           const avifVariantRelative = responsiveAvifRelativePath(avifRelative, width);

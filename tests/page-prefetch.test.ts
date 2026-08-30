@@ -51,6 +51,16 @@ describe('page prefetch helpers', () => {
     expect(candidates.at(-1)).toEqual({ src: '/assets/full-only.webp' });
   });
 
+  it('chooses the exact current-DPR AVIF candidate', () => {
+    const dom = new JSDOM(
+      '<picture>' +
+        '<source type="image/avif" srcset="/assets/a.1.avif 1x, /assets/a.2.avif 2x, /assets/a.3.avif 3x">' +
+        '<img src="/assets/a.webp" srcset="/assets/a.1.webp 1x, /assets/a.2.webp 2x">' +
+        '</picture>',
+    );
+    Object.defineProperty(dom.window, 'devicePixelRatio', { value: 2, configurable: true });
+    expect(responsiveImageCandidates(dom.window.document)).toEqual([{ src: '/assets/a.2.avif' }]);
+  });
   it('prefers the AVIF source from a responsive picture element', () => {
     const dom = new JSDOM(
       '<picture>' +

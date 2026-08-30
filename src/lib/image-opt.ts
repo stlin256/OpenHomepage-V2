@@ -15,8 +15,8 @@ export function isConvertibleAssetPath(assetPath: string): boolean {
 }
 
 function isGeneratedResponsiveVariant(assetPath: string): boolean {
-  const match = /\.(\d+)\.webp$/i.exec(assetPath);
-  return match != null && (RESPONSIVE_WEBP_WIDTHS as readonly number[]).includes(Number(match[1]));
+  // Exact layout-derived widths are also generated at build time.
+  return /\.(\d+)\.webp$/i.test(assetPath);
 }
 
 export function webpAssetPath(assetPath: string): string | null {

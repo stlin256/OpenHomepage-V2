@@ -116,6 +116,7 @@ async function createImageOptimizeFixture(): Promise<string> {
     .png()
     .toBuffer();
   writeFileSync(path.join(dist, 'assets/hero.png'), png);
+  writeFileSync(path.join(dist, 'index.html'), '<img src="/assets/hero.png">', 'utf8');
   return dist;
 }
 describe('optimizeDistImages', () => {
@@ -157,34 +158,36 @@ describe('optimizeDistImages', () => {
     const html = readFileSync(path.join(dist, 'index.html'), 'utf8');
 
     expect(result.converted).toBe(1);
-    expect(result.variantsCreated).toBe(3);
+    expect(result.variantsCreated).toBe(2);
     expect(result.avifConverted).toBe(1);
-    expect(result.avifVariantsCreated).toBe(3);
+    expect(result.avifVariantsCreated).toBe(2);
     expect(existsSync(path.join(dist, 'assets/hero.webp'))).toBe(true);
-    expect(existsSync(path.join(dist, 'assets/hero.480.webp'))).toBe(true);
-    expect(existsSync(path.join(dist, 'assets/hero.768.webp'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.704.webp'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero.1024.webp'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.480.webp'))).toBe(false);
+    expect(existsSync(path.join(dist, 'assets/hero.768.webp'))).toBe(false);
     expect(existsSync(path.join(dist, 'assets/hero.1440.webp'))).toBe(false);
     expect(existsSync(path.join(dist, 'assets/hero.avif'))).toBe(true);
-    expect(existsSync(path.join(dist, 'assets/hero.480.avif'))).toBe(true);
-    expect(existsSync(path.join(dist, 'assets/hero.768.avif'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.704.avif'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero.1024.avif'))).toBe(true);
+    expect(existsSync(path.join(dist, 'assets/hero.480.avif'))).toBe(false);
+    expect(existsSync(path.join(dist, 'assets/hero.768.avif'))).toBe(false);
     expect(existsSync(path.join(dist, 'assets/hero.1440.avif'))).toBe(false);
     expect(existsSync(path.join(dist, 'assets/hero.png'))).toBe(true);
     expect(existsSync(path.join(dist, 'assets/hero-full.webp'))).toBe(false);
     expect(existsSync(path.join(dist, 'assets/hero-full.avif'))).toBe(false);
     expect(html).toContain('data-original="/site/assets/hero.png"');
     expect(html).toContain('src="/site/assets/hero.webp"');
-    // src-only 与自带 srcset 的图片都应获得同一组响应式候选
-    const responsiveSrcset =
-      'srcset="/site/assets/hero.480.webp 480w, /site/assets/hero.768.webp 768w, /site/assets/hero.1024.webp 1024w, /site/assets/hero.webp 1400w"';
-    expect(html.split(responsiveSrcset).length - 1).toBe(2);
+    // 每个布局断点使用精确 1x/2x/3x 候选，避免 DPR 过度选择
+    expect(html).toContain('media="(max-width: 768px)"');
+    expect(html).toContain('srcset="/site/assets/hero.704.avif 1x, /site/assets/hero.avif 3x"');
+    expect(html).toContain('srcset="/site/assets/hero.1024.avif 1x, /site/assets/hero.avif 3x"');
+    expect(html).toContain('srcset="/site/assets/hero.704.webp 1x, /site/assets/hero.webp 3x"');
+    expect(html).toContain('srcset="/site/assets/hero.1024.webp 1x, /site/assets/hero.webp 3x"');
     expect(html).toContain('sizes="(max-width: 768px) calc(100vw - 64px)');
-    // AVIF 优先：两个 img 都被 <picture> 包裹并前置 image/avif 的 <source>
-    const avifSrcset =
-      '<source type="image/avif" srcset="/site/assets/hero.480.avif 480w, /site/assets/hero.768.avif 768w, /site/assets/hero.1024.avif 1024w, /site/assets/hero.avif 1400w">';
+    // 两个 img 都被 <picture> 包裹并按 AVIF → WebP 顺序生成候选
     expect(html.split('<picture>').length - 1).toBe(2);
-    expect(html.split(avifSrcset).length - 1).toBe(2);
+
     expect(html).toContain('url(\'/site/assets/hero.webp\')');
     // 构建期写入真实宽高：加载前即预留同尺寸矩形占位，开始加载不抖动
     expect(html.split('width="1400" height="900"').length - 1).toBe(2);
@@ -198,12 +201,12 @@ describe('optimizeDistImages', () => {
     const second = await optimizeDistImages(current, 80, 50, { previousDistDir: previous });
 
     expect(first.cacheHits).toBe(0);
-    expect(repeat.cacheHits).toBe(8);
+    expect(repeat.cacheHits).toBe(6);
     expect(repeat.converted).toBe(0);
     expect(repeat.variantsCreated).toBe(0);
     expect(repeat.avifConverted).toBe(0);
     expect(repeat.avifVariantsCreated).toBe(0);
-    expect(second.cacheHits).toBe(8);
+    expect(second.cacheHits).toBe(6);
     expect(second.converted).toBe(0);
     expect(second.variantsCreated).toBe(0);
     expect(second.avifConverted).toBe(0);
@@ -237,9 +240,9 @@ describe('optimizeDistImages', () => {
 
     const result = await optimizeDistImages(current, 81, 50, { previousDistDir: previous });
 
-    expect(result.cacheHits).toBe(4);
+    expect(result.cacheHits).toBe(3);
     expect(result.converted).toBe(1);
-    expect(result.variantsCreated).toBe(3);
+    expect(result.variantsCreated).toBe(2);
     expect(result.avifConverted).toBe(0);
     expect(result.avifVariantsCreated).toBe(0);
     expect(readFileSync(path.join(current, 'assets/hero.avif'))).toEqual(

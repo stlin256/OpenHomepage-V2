@@ -1,6 +1,7 @@
 /** Pure helpers for idle-time prefetching of same-language tab pages and lightbox assets. */
 
 import { lightboxCandidateUrls } from './lightbox.ts';
+import { chooseResponsiveCandidate } from './responsive-images.ts';
 
 export interface PrefetchImageCandidate {
   src: string;
@@ -52,33 +53,59 @@ export function languageAlternatePaths(document: Document, currentPath: string):
 }
 
 export function responsiveImageCandidates(document: Document): PrefetchImageCandidate[] {
+  const view = document.defaultView;
+  const devicePixelRatio = view?.devicePixelRatio ?? 1;
+  const mediaMatches = (source: HTMLSourceElement): boolean => {
+    const media = source.getAttribute('media');
+    if (!media) return true;
+    if (typeof view?.matchMedia !== 'function') return false;
+    try {
+      return view.matchMedia(media).matches;
+    } catch {
+      return false;
+    }
+  };
+
   const candidates: PrefetchImageCandidate[] = [];
   const seen = new Set<string>();
   for (const image of document.querySelectorAll<HTMLImageElement>('img[src], img[srcset]')) {
     if (image.closest('.lightbox-img')) continue;
     const src = image.getAttribute('src') ?? '';
-    const srcset = image.getAttribute('srcset');
-    if (!src && !srcset) continue;
-    if ((srcset ?? src).includes('-full.')) continue;
+    const imgSrcset = image.getAttribute('srcset');
+    if (!src && !imgSrcset) continue;
 
-    // Post-build images are AVIF-first <picture> elements. The detached Image
-    // used by idle prefetch must follow that source, not the WebP fallback.
     const avifSource = [...(image.closest('picture')?.children ?? [])].find(
       (element): element is HTMLSourceElement =>
         element.tagName === 'SOURCE' &&
         element.getAttribute('type') === 'image/avif' &&
-        Boolean(element.getAttribute('srcset')),
+        Boolean(element.getAttribute('srcset')) &&
+        mediaMatches(element),
     );
-    const effectiveSrcset = avifSource?.getAttribute('srcset') ?? srcset;
-    const firstCandidate = /^(\S+)/.exec(effectiveSrcset ?? '')?.[1];
-    const candidate: PrefetchImageCandidate = effectiveSrcset
-      ? {
-          src: avifSource ? firstCandidate ?? src : src,
-          srcset: effectiveSrcset,
-          sizes: image.getAttribute('sizes') ?? undefined,
-        }
-      : { src };
-    const key = `${candidate.srcset ?? ''}|${candidate.sizes ?? ''}|${candidate.src}`;
+    const effectiveSrcset = avifSource?.getAttribute('srcset') ?? imgSrcset;
+    if (!effectiveSrcset) {
+      if (!src || src.includes('-full.')) continue;
+      if (seen.has(src)) continue;
+      seen.add(src);
+      candidates.push({ src });
+      continue;
+    }
+    if (effectiveSrcset.includes('-full.')) continue;
+
+    if (/\s[0-9.]+x(?:,|$)/.test(effectiveSrcset)) {
+      const chosen = chooseResponsiveCandidate(effectiveSrcset, devicePixelRatio);
+      if (!chosen || seen.has(chosen.src)) continue;
+      seen.add(chosen.src);
+      candidates.push({ src: chosen.src });
+      continue;
+    }
+
+    const firstCandidate = /^(\S+)/.exec(effectiveSrcset)?.[1];
+    const candidate: PrefetchImageCandidate = {
+      src: avifSource ? firstCandidate ?? src : src,
+      srcset: effectiveSrcset,
+      sizes: image.getAttribute('sizes') ?? undefined,
+    };
+    const key = [candidate.srcset ?? '', candidate.sizes ?? '', candidate.src].join('|');
     if (seen.has(key)) continue;
     seen.add(key);
     candidates.push(candidate);
