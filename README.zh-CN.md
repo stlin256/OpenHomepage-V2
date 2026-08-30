@@ -76,7 +76,7 @@ OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静
 
 ![音频指令](docs/images/components/media-audio-zh.webp)
 
-**视频嵌入卡片（`::bilibili`）**——16:9 响应式官方门面卡片，展示封面、标题栏与播放按钮；点击后才加载第三方 iframe。
+**视频嵌入卡片（`::bilibili` / `::youtube`）**——16:9 响应式官方门面卡片，展示封面、自动解析的标题栏与播放按钮；点击后才加载第三方 iframe。
 
 ![Bilibili 视频卡片](docs/images/components/media-video-zh.webp)
 

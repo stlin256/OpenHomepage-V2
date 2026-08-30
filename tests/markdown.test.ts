@@ -123,7 +123,12 @@ describe('自定义指令：内嵌播放器', () => {
   });
 
   it('::youtube 渲染高性能门面播放器卡片（Facade 带默认缩略图）', async () => {
-    const html = await renderMarkdown('::youtube{id="dQw4w9WgXcQ"}');
+    const html = await renderMarkdown('::youtube{id="dQw4w9WgXcQ"}', {
+      localizeAssets: {
+        dataDir: 'data.example',
+        fetchFn: (async () => ({ ok: false, status: 404 }) as unknown as Response) as any,
+      },
+    });
     expect(html).toContain('class="embed-player embed-youtube"');
     expect(html).toContain('data-embed-src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"');
     expect(html).toContain('embed-play-btn-yt');
@@ -166,6 +171,35 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('class="embed-player embed-bilibili"');
     expect(html).toContain('alt="字幕君交流场所"');
     expect(html).toContain('字幕君交流场所');
+  });
+
+  it('::youtube 自动解析视频标题并更新标题栏', async () => {
+    const mockFetch = vi.fn(async (url: string) => {
+      if (url.startsWith('https://www.youtube.com/oembed')) {
+        return {
+          ok: true,
+          json: async () => ({
+            title: 'Mock YouTube Video Title',
+            thumbnail_url: 'https://i.ytimg.com/vi/mock-video/maxresdefault.jpg',
+          }),
+        } as unknown as Response;
+      }
+      return { ok: false, status: 404 } as unknown as Response;
+    });
+
+    const html = await renderMarkdown('::youtube{id="mock-video"}', {
+      localizeAssets: {
+        dataDir: 'data.youtube-test',
+        fetchFn: mockFetch as any,
+      },
+    });
+
+    expect(html).toContain('class="embed-player embed-youtube"');
+    expect(html).toContain('data-embed-title="Mock YouTube Video Title"');
+    expect(html).toContain('aria-label="Mock YouTube Video Title"');
+    expect(html).toContain('alt="Mock YouTube Video Title"');
+    expect(html).toContain('<span class="embed-title">Mock YouTube Video Title</span>');
+    expect(html).toContain('aria-label="Play YouTube video: Mock YouTube Video Title"');
   });
 
   it(':::video 渲染原生 video 标签', async () => {

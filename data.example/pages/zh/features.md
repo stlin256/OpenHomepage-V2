@@ -75,7 +75,7 @@ $$
 
 播放器以响应式 16:9 容器直接渲染官方 iframe（`loading="lazy"` 惰性加载，不拖慢首屏）：
 
-::youtube{id="aircAruvnKk"}
+::youtube{id="aircAruvnKk" poster="assets/cover-youtube-aircaruvnkk.jpg"}
 
 ::bilibili{bvid="BV13z421U7cs"}
 

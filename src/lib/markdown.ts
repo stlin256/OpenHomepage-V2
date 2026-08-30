@@ -34,6 +34,7 @@ import { localizeRemoteAsset, type RemoteFetchFn } from './remote-assets.ts';
 import { renderPublications, type PublicationsConfig, type PublicationQuery } from './publications.ts';
 import { generateHeadingSlug } from './toc.ts';
 import { fetchBilibiliMeta } from './bilibili.ts';
+import { fetchYouTubeMeta } from './youtube.ts';
 import { getUiLabels, normalizeUiLang } from './ui-i18n.ts';
 import path from 'node:path';
 
@@ -918,10 +919,38 @@ function rehypeHeadingSlugs() {
 }
 
 /**
- * Bilibili 远程封面与视频信息自动解析：
- * 对未显式指定 poster 的 ::bilibili 指令，自动查询 Bilibili API 获取官方封面与标题，
- * 插入 <img class="embed-poster"> 并更新标题栏。随后由 rehypeLocalizeRemoteAssets 自动转为本地缓存。
+ * Bilibili / YouTube 远程封面与视频信息自动解析：
+ * - 未显式指定 poster 的 ::bilibili 指令自动查询 Bilibili API，获取官方封面与标题；
+ * - 未显式指定 title 的 ::youtube 指令自动查询 YouTube oEmbed，获取官方标题。
+ * 查询结果会更新标题栏与无障碍标签；随后由 rehypeLocalizeRemoteAssets 自动转为本地缓存。
  */
+function updateEmbedTitle(node: Element, title: string, kind: 'bilibili' | 'youtube', lang?: string): void {
+  node.properties = node.properties || {};
+  node.properties.dataEmbedTitle = title;
+  node.properties.ariaLabel = title;
+  const topBar = node.children.find(
+    (c) => c.type === 'element' && classesOf(c).includes('embed-topbar')
+  ) as Element | undefined;
+  const titleSpan = topBar?.children.find(
+    (c) => c.type === 'element' && classesOf(c).includes('embed-title')
+  ) as Element | undefined;
+  if (titleSpan) {
+    titleSpan.children = [{ type: 'text', value: title }];
+  }
+  const poster = node.children.find(
+    (c) => c.type === 'element' && c.tagName === 'img' && classesOf(c).includes('embed-poster')
+  ) as Element | undefined;
+  if (poster) {
+    poster.properties.alt = title;
+  }
+  const playBtn = node.children.find(
+    (c) => c.type === 'element' && classesOf(c).includes('embed-play-btn')
+  ) as Element | undefined;
+  if (playBtn) {
+    playBtn.properties.ariaLabel = `${getUiLabels(lang).embed[kind === 'bilibili' ? 'bilibiliPlay' : 'youtubePlay']}: ${title}`;
+  }
+}
+
 function rehypeResolveEmbeds(options: MarkdownOptions) {
   return async (tree: HastRoot) => {
     const jobs: Promise<void>[] = [];
@@ -953,24 +982,23 @@ function rehypeResolveEmbeds(options: MarkdownOptions) {
                   node.children.unshift(img);
                 }
                 if (meta.title && (!node.properties?.dataEmbedTitle || node.properties.dataEmbedTitle === getUiLabels(options.lang).embed.bilibiliTitleFallback)) {
-                  node.properties.dataEmbedTitle = meta.title;
-                  node.properties.ariaLabel = meta.title;
-                  const topBar = node.children.find(
-                    (c) => c.type === 'element' && classesOf(c).includes('embed-topbar')
-                  ) as Element | undefined;
-                  const titleSpan = topBar?.children.find(
-                    (c) => c.type === 'element' && classesOf(c).includes('embed-title')
-                  ) as Element | undefined;
-                  if (titleSpan) {
-                    titleSpan.children = [{ type: 'text', value: meta.title }];
-                  }
-                  const playBtn = node.children.find(
-                    (c) => c.type === 'element' && classesOf(c).includes('embed-play-btn')
-                  ) as Element | undefined;
-                  if (playBtn) {
-                    playBtn.properties.ariaLabel = `${getUiLabels(options.lang).embed.bilibiliPlay}: ${meta.title}`;
-                  }
+                  updateEmbedTitle(node, meta.title, 'bilibili', options.lang);
                 }
+              }
+            })
+          );
+        }
+      } else if (kind === 'youtube' && typeof id === 'string' && id) {
+        if (node.properties?.dataEmbedTitle === getUiLabels(options.lang).embed.youtubeTitleFallback) {
+          const cacheDir = options.localizeAssets ? path.join(path.dirname(options.localizeAssets.dataDir), '.cache') : undefined;
+          jobs.push(
+            fetchYouTubeMeta(id, {
+              cacheDir,
+              fetchFn: options.localizeAssets?.fetchFn,
+              warn: options.localizeAssets?.warn,
+            }).then((meta) => {
+              if (meta?.title) {
+                updateEmbedTitle(node, meta.title, 'youtube', options.lang);
               }
             })
           );
@@ -1144,7 +1172,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     processor.use(() => rehypePublications(options.publications!, options.lang, options.defaultLang, baseUrl));
   }
 
-  // 自动解析 Bilibili 远程封面并在随后触发本地化下载
+  // 自动解析 Bilibili / YouTube 远程信息，并在随后触发本地化下载
   processor.use(() => rehypeResolveEmbeds(options));
 
   // 远程媒体下载在 sanitize/iframe 过滤之后：只改写 src/poster 属性，不影响结构

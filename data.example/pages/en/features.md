@@ -75,7 +75,7 @@ Text on the left. Magazine typography is about **whitespace and alignment**, not
 
 Players render the official iframe directly in a responsive 16:9 container (`loading="lazy"`, so first paint stays fast):
 
-::youtube{id="aircAruvnKk"}
+::youtube{id="aircAruvnKk" poster="assets/cover-youtube-aircaruvnkk.jpg"}
 
 ::bilibili{bvid="BV13z421U7cs"}
 

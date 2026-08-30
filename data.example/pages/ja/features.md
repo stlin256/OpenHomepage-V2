@@ -75,7 +75,7 @@ $$
 
 プレイヤーは公式の iframe をレスポンシブな 16:9 コンテナに直接レンダリングします（`loading="lazy"` なので初回ペイントは高速のままです）：
 
-::youtube{id="aircAruvnKk"}
+::youtube{id="aircAruvnKk" poster="assets/cover-youtube-aircaruvnkk.jpg"}
 
 ::bilibili{bvid="BV13z421U7cs"}
 

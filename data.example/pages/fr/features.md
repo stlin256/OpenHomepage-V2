@@ -75,7 +75,7 @@ Texte à gauche. La typographie de magazine, c'est **les blancs et l'alignement*
 
 Les lecteurs affichent directement l'iframe officielle dans un conteneur 16:9 responsive (`loading="lazy"`, pour que le premier affichage reste rapide) :
 
-::youtube{id="aircAruvnKk"}
+::youtube{id="aircAruvnKk" poster="assets/cover-youtube-aircaruvnkk.jpg"}
 
 ::bilibili{bvid="BV13z421U7cs"}
 

@@ -76,7 +76,7 @@ Each component below is captured individually from the production build (`npm ru
 
 ![Audio directive](docs/images/components/media-audio-en.webp)
 
-**Embedded Video Card (`::youtube`)** — A responsive 16:9 official-style facade with poster, title bar, and play button; the third-party iframe loads only after user interaction.
+**Embedded Video Card (`::youtube`)** — A responsive 16:9 official-style facade with poster, an automatically resolved video title, and play button; the third-party iframe loads only after user interaction.
 
 ![YouTube video card](docs/images/components/media-video-en.webp)
 
