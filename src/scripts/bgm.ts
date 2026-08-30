@@ -140,7 +140,7 @@ export function initBgm(): void {
     const pauseIcon = drawer.querySelector<HTMLElement>('.bgm-play-btn .icon-pause');
 
     if (titleEl) titleEl.textContent = current.title;
-    if (artistEl) artistEl.textContent = current.artist || '';
+    if (artistEl) artistEl.textContent = current.artist || audio.dataset.artistFallback || '';
     if (coverEl) {
       if (current.cover) {
         coverEl.src = current.cover;

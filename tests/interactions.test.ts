@@ -395,4 +395,103 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       expect(document.querySelector(".reading-progress")).toBeNull();
     });
   });
+  it("语言切换后，BGM 播放列表与全局 UI 无障碍文案同步到目标语言", async () => {
+    const targetHtml = [
+      "<!doctype html><html lang='en' data-route-lang='en'><head><title>Home</title></head><body>",
+      "<header class='site-header'>",
+      "<button class='nav-toggle' aria-label='Open navigation menu'></button>",
+      "<nav class='site-nav' aria-label='Site navigation'><p class='site-title'><a href='/en/'>English Site</a></p></nav>",
+      "<div class='header-tools'>",
+      "<button class='search-toggle' aria-label='Search (Ctrl+K)'></button>",
+      "<div class='bgm-switcher'>",
+      "<button class='bgm-toggle' aria-label='Toggle background music' aria-haspopup='dialog'></button>",
+      "<div class='bgm-drawer' aria-label='BGM Playlist'>",
+      "<p class='bgm-drawer-title'>Playlist · Background music</p>",
+      "<button class='bgm-drawer-close' aria-label='Close'></button>",
+      "<p class='bgm-current-title'>English track</p>",
+      "<p class='bgm-current-artist'>English Site</p>",
+      "<button class='bgm-prev-btn' aria-label='Previous'></button>",
+      "<button class='bgm-play-btn' aria-label='Play/Pause'></button>",
+      "<button class='bgm-next-btn' aria-label='Next'></button>",
+      "<input class='bgm-volume-slider' aria-label='Volume'>",
+      "<ul class='bgm-tracklist'><li class='bgm-track-item active' data-track-index='0'><span class='bgm-track-name'>English track</span></li></ul>",
+      "</div>",
+      "</div>",
+      "<div class='lang-switcher'><button class='lang-toggle' aria-label='Switch language'></button></div>",
+      "<button class='theme-toggle' aria-label='Toggle light/dark theme'></button>",
+      "</div>",
+      "</header>",
+      "<audio class='bgm-audio' src='/assets/en-bgm.mp3' preload='none' data-volume='0.4' data-autoplay='false' data-resume='none' data-artist-fallback='English Site' data-tracks='[]'></audio>",
+      "<dialog class='search-dialog' aria-label='Search (Ctrl+K)' hidden><p class='search-status'>Type keywords to search...</p><div class='search-footer'><span><span class='search-hint-nav'>Navigate</span></span><span><span class='search-hint-select'>Select</span></span><span><span class='search-hint-close'>Close</span></span></div></dialog>",
+      "<div class='lightbox' aria-label='Image preview' hidden><button class='lightbox-close' aria-label='Close'></button></div>",
+      "<div class='lang-switcher'><ul class='lang-menu'><li><a href='/en/' hreflang='en'>English</a></li></ul></div>",
+      "<main class='site-main'><p>English home</p></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({ ok: true, text: async () => targetHtml }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.documentElement.dataset.routeLang = "zh";
+    document.documentElement.dataset.siteLangs = "zh,en";
+    localStorage.setItem("oh-language", "zh");
+    document.body.innerHTML = [
+      "<header class='site-header'>",
+      "<button class='nav-toggle' aria-label='打开导航菜单'></button>",
+      "<nav class='site-nav' aria-label='站点导航'><p class='site-title'><a href='/'>中文站名</a></p></nav>",
+      "<div class='header-tools'>",
+      "<button class='search-toggle' aria-label='搜索 (Ctrl+K)'></button>",
+      "<div class='bgm-switcher'>",
+      "<button class='bgm-toggle' aria-label='切换背景音乐' aria-haspopup='dialog'></button>",
+      "<div class='bgm-drawer' aria-label='BGM Playlist'>",
+      "<p class='bgm-drawer-title'>播放列表 · 背景音乐</p>",
+      "<button class='bgm-drawer-close' aria-label='关闭'></button>",
+      "<p class='bgm-current-title'>English track</p>",
+      "<p class='bgm-current-artist'>中文站名</p>",
+      "<button class='bgm-prev-btn' aria-label='上一首'></button>",
+      "<button class='bgm-play-btn' aria-label='播放/暂停'></button>",
+      "<button class='bgm-next-btn' aria-label='下一首'></button>",
+      "<input class='bgm-volume-slider' aria-label='音量'>",
+      "<ul class='bgm-tracklist'><li class='bgm-track-item active' data-track-index='0'><span class='bgm-track-name'>English track</span></li></ul>",
+      "</div>",
+      "</div>",
+      "<div class='lang-switcher'><button class='lang-toggle' aria-label='切换语言'></button></div>",
+      "<button class='theme-toggle' aria-label='切换明暗主题'></button>",
+      "</div>",
+      "</header>",
+      "<audio class='bgm-audio' src='/assets/en-bgm.mp3' preload='none' data-volume='0.4' data-autoplay='false' data-resume='none' data-artist-fallback='中文站名' data-tracks='[]'></audio>",
+      "<dialog class='search-dialog' aria-label='搜索 (Ctrl+K)' hidden><p class='search-status'>输入关键词开始搜索...</p><div class='search-footer'><span><span class='search-hint-nav'>切换</span></span><span><span class='search-hint-select'>跳转</span></span><span><span class='search-hint-close'>关闭</span></span></div></dialog>",
+      "<div class='lightbox' aria-label='图片预览' hidden><button class='lightbox-close' aria-label='关闭'></button></div>",
+      "<div class='lang-switcher'><ul class='lang-menu'><li><a id='switch-en' href='/en/' hreflang='en'>English</a></li></ul></div>",
+      "<main class='site-main'><p>中文页面</p></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+    document.querySelector<HTMLAnchorElement>("#switch-en")!.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, cancelable: true }),
+    );
+
+    await vi.waitFor(() => {
+      expect(document.querySelector(".site-title a")?.textContent).toBe("English Site");
+    });
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    expect(document.querySelector<HTMLButtonElement>(".nav-toggle")?.getAttribute("aria-label")).toBe("Open navigation menu");
+    expect(document.querySelector(".site-nav")?.getAttribute("aria-label")).toBe("Site navigation");
+    expect(document.querySelector<HTMLButtonElement>(".bgm-toggle")?.getAttribute("aria-label")).toBe("Toggle background music");
+    expect(document.querySelector(".bgm-drawer-title")?.textContent).toBe("Playlist · Background music");
+    expect(document.querySelector<HTMLButtonElement>(".bgm-drawer-close")?.getAttribute("aria-label")).toBe("Close");
+    expect(document.querySelector<HTMLButtonElement>(".bgm-prev-btn")?.getAttribute("aria-label")).toBe("Previous");
+    expect(document.querySelector<HTMLButtonElement>(".bgm-play-btn")?.getAttribute("aria-label")).toBe("Play/Pause");
+    expect(document.querySelector<HTMLButtonElement>(".bgm-next-btn")?.getAttribute("aria-label")).toBe("Next");
+    expect(document.querySelector<HTMLInputElement>(".bgm-volume-slider")?.getAttribute("aria-label")).toBe("Volume");
+    expect(document.querySelector(".bgm-track-name")?.textContent).toBe("English track");
+    expect(document.querySelector(".bgm-current-artist")?.textContent).toBe("English Site");
+    expect(document.querySelector<HTMLButtonElement>(".lang-toggle")?.getAttribute("aria-label")).toBe("Switch language");
+    expect(document.querySelector<HTMLButtonElement>(".theme-toggle")?.getAttribute("aria-label")).toBe("Toggle light/dark theme");
+    expect(document.querySelector(".search-dialog")?.getAttribute("aria-label")).toBe("Search (Ctrl+K)");
+    expect(document.querySelector(".search-status")?.textContent).toBe("Type keywords to search...");
+    expect(document.querySelector(".search-hint-nav")?.textContent).toBe("Navigate");
+    expect(document.querySelector(".lightbox")?.getAttribute("aria-label")).toBe("Image preview");
+    expect(document.querySelector<HTMLButtonElement>(".lightbox-close")?.getAttribute("aria-label")).toBe("Close");
+  });
 });

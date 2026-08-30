@@ -70,6 +70,11 @@ jobs:
 
       - name: 构建 / Build
         run: npm run build
+        env:
+          # 复用上次 gh-pages 的已压缩图片：image-opt-manifest.json 会对比
+          # 原图哈希/尺寸/格式与 WebP、AVIF 的质量、effort、编解码器版本；
+          # 完全一致的产物直接复制，只有参数或原图变化时才重新压缩。
+          IMAGE_OPT_PREVIOUS_DIST: prev
 
       - name: 校验产物 / Verify output
         run: |

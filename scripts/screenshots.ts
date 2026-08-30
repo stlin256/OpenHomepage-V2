@@ -454,7 +454,7 @@ const SHOTS: Shot[] = [
     prepare: async (page) => {
       await page.waitForFunction(() =>
         Array.from(document.querySelectorAll(".page-content .embed-player .embed-poster")).every(
-          (img) => img.complete && img.naturalWidth > 0,
+          (img) => { const image = img as HTMLImageElement; return image.complete && image.naturalWidth > 0; },
         ),
         undefined,
         { timeout: 120_000 },

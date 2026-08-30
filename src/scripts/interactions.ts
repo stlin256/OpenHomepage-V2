@@ -457,6 +457,7 @@ async function swapContent(
     }
     replaceReadingProgress(doc);
     replaceContactCard(doc);
+    syncGlobalChromeI18n(doc);
     updateNavActive(path);
     // header 的站点标题、导航列表与页脚已在上方按需淡入淡出替换。
     const newLangMenu = doc.querySelector('.lang-menu');
@@ -508,6 +509,87 @@ async function swapContent(
     activatePage?.();
     swapping = false;
   }
+}
+
+/**
+ * SPA 内容交换保留 header/dialog 等全局节点以维持音频、搜索、主题等运行状态。
+ * 这些节点不随 main 一起替换，因此语言切换后必须把新文档中的本地化 aria/text
+ * 同步到现有节点；否则 BGM 播放列表、导航、主题与灯箱等会停留在旧语言。
+ */
+const GLOBAL_I18N_ATTRIBUTES: Array<[string, string]> = [
+  ['.nav-toggle', 'aria-label'],
+  ['.site-nav', 'aria-label'],
+  ['.search-dialog', 'aria-label'],
+  ['.bgm-toggle', 'aria-label'],
+  ['.bgm-toggle', 'aria-haspopup'],
+  ['audio.bgm-audio', 'data-artist-fallback'],
+  ['.bgm-drawer', 'aria-label'],
+  ['.bgm-drawer-close', 'aria-label'],
+  ['.bgm-prev-btn', 'aria-label'],
+  ['.bgm-play-btn', 'aria-label'],
+  ['.bgm-next-btn', 'aria-label'],
+  ['.bgm-volume-slider', 'aria-label'],
+  ['.lang-toggle', 'aria-label'],
+  ['.theme-toggle', 'aria-label'],
+  ['.lightbox', 'aria-label'],
+  ['.lightbox-close', 'aria-label'],
+];
+
+const GLOBAL_I18N_TEXT_SELECTORS = [
+  '.bgm-drawer-title',
+  '.search-hint-nav',
+  '.search-hint-select',
+  '.search-hint-close',
+  '.search-status',
+];
+
+function syncAttribute(selector: string, attribute: string, doc: Document): void {
+  const current = document.querySelector(selector);
+  const next = doc.querySelector(selector);
+  if (!current || !next) return;
+  const value = next.getAttribute(attribute);
+  if (value === null) current.removeAttribute(attribute);
+  else current.setAttribute(attribute, value);
+}
+
+function syncText(selector: string, doc: Document): void {
+  const current = document.querySelector(selector);
+  const next = doc.querySelector(selector);
+  if (current && next) current.textContent = next.textContent;
+}
+
+function syncBgmTracklist(doc: Document): void {
+  const currentItems = Array.from(document.querySelectorAll('.bgm-track-item'));
+  const nextItems = Array.from(doc.querySelectorAll('.bgm-track-item'));
+  if (currentItems.length !== nextItems.length) return;
+
+  currentItems.forEach((item, index) => {
+    const nextName = nextItems[index]?.querySelector('.bgm-track-name');
+    const currentName = item.querySelector('.bgm-track-name');
+    if (currentName && nextName) currentName.textContent = nextName.textContent;
+
+    const nextBy = nextItems[index]?.querySelector('.bgm-track-by');
+    const currentBy = item.querySelector('.bgm-track-by');
+    if (currentBy && nextBy) currentBy.textContent = nextBy.textContent;
+  });
+
+  // 新文档渲染的是第 1 首曲目；只有当前确实选中第 1 首时才同步标题/艺人，
+  // 避免用户已切到其他曲目时被第 1 首信息覆盖。
+  const activeItem = document.querySelector<HTMLElement>('.bgm-track-item.active');
+  if (activeItem?.dataset.trackIndex === '0') {
+    const nextTitle = doc.querySelector('.bgm-current-title');
+    const currentTitle = document.querySelector('.bgm-current-title');
+    if (currentTitle && nextTitle) currentTitle.textContent = nextTitle.textContent;
+    const nextArtist = doc.querySelector('.bgm-current-artist');
+    const currentArtist = document.querySelector('.bgm-current-artist');
+    if (currentArtist && nextArtist) currentArtist.textContent = nextArtist.textContent;
+  }
+}
+
+function syncGlobalChromeI18n(doc: Document): void {
+  for (const [selector, attribute] of GLOBAL_I18N_ATTRIBUTES) syncAttribute(selector, attribute, doc);
+  for (const selector of GLOBAL_I18N_TEXT_SELECTORS) syncText(selector, doc);
+  syncBgmTracklist(doc);
 }
 
 function replaceReadingProgress(doc: Document): void {

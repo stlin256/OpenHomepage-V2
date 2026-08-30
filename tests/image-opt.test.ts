@@ -95,6 +95,29 @@ describe('image path optimization', () => {
   });
 });
 
+async function createImageOptimizeFixture(): Promise<string> {
+  const dist = mkdtempSync(path.join(tmpdir(), 'openhomepage-image-cache-'));
+  mkdirSync(path.join(dist, 'assets'), { recursive: true });
+  const png = await sharp({
+    create: {
+      width: 1400,
+      height: 900,
+      channels: 4,
+      background: { r: 30, g: 110, b: 180, alpha: 1 },
+    },
+  })
+    .composite([
+      {
+        input: Buffer.from(
+          '<svg width="1400" height="900"><circle cx="420" cy="450" r="330" fill="#f4d35e"/><rect width="1400" height="160" fill="#ee6c4d"/></svg>',
+        ),
+      },
+    ])
+    .png()
+    .toBuffer();
+  writeFileSync(path.join(dist, 'assets/hero.png'), png);
+  return dist;
+}
 describe('optimizeDistImages', () => {
   it('converts assets and rewrites HTML while retaining originals for the lightbox', async () => {
     const dist = mkdtempSync(path.join(tmpdir(), 'openhomepage-webp-'));
@@ -165,5 +188,93 @@ describe('optimizeDistImages', () => {
     expect(html).toContain('url(\'/site/assets/hero.webp\')');
     // 构建期写入真实宽高：加载前即预留同尺寸矩形占位，开始加载不抖动
     expect(html.split('width="1400" height="900"').length - 1).toBe(2);
+  });
+  it('stores source and compression metadata and reuses unchanged previous outputs', async () => {
+    const previous = await createImageOptimizeFixture();
+    const current = await createImageOptimizeFixture();
+
+    const first = await optimizeDistImages(previous, 80, 50);
+    const repeat = await optimizeDistImages(previous, 80, 50);
+    const second = await optimizeDistImages(current, 80, 50, { previousDistDir: previous });
+
+    expect(first.cacheHits).toBe(0);
+    expect(repeat.cacheHits).toBe(8);
+    expect(repeat.converted).toBe(0);
+    expect(repeat.variantsCreated).toBe(0);
+    expect(repeat.avifConverted).toBe(0);
+    expect(repeat.avifVariantsCreated).toBe(0);
+    expect(second.cacheHits).toBe(8);
+    expect(second.converted).toBe(0);
+    expect(second.variantsCreated).toBe(0);
+    expect(second.avifConverted).toBe(0);
+    expect(second.avifVariantsCreated).toBe(0);
+    expect(readFileSync(path.join(current, 'assets/hero.webp'))).toEqual(
+      readFileSync(path.join(previous, 'assets/hero.webp')),
+    );
+    expect(readFileSync(path.join(current, 'assets/hero.1024.avif'))).toEqual(
+      readFileSync(path.join(previous, 'assets/hero.1024.avif')),
+    );
+
+    const manifest = JSON.parse(readFileSync(path.join(current, 'image-opt-manifest.json'), 'utf8'));
+    const base = manifest.entries['assets/hero.webp'];
+    expect(base.source.path).toBe('hero.png');
+    expect(base.source.format).toBe('png');
+    expect(base.source.width).toBe(1400);
+    expect(base.source.height).toBe(900);
+    expect(base.source.sha256).toHaveLength(64);
+    expect(base.algorithm.library).toBe('sharp');
+    expect(base.algorithm.format).toBe('webp');
+    expect(base.algorithm.quality).toBe(80);
+    expect(base.algorithm.effort).toBe(4);
+    expect(base.algorithm.resize).toBe('without-enlargement');
+    expect(base.output.sha256).toHaveLength(64);
+  });
+
+  it('only reuses outputs whose compression parameters are unchanged', async () => {
+    const previous = await createImageOptimizeFixture();
+    const current = await createImageOptimizeFixture();
+    await optimizeDistImages(previous, 80, 50);
+
+    const result = await optimizeDistImages(current, 81, 50, { previousDistDir: previous });
+
+    expect(result.cacheHits).toBe(4);
+    expect(result.converted).toBe(1);
+    expect(result.variantsCreated).toBe(3);
+    expect(result.avifConverted).toBe(0);
+    expect(result.avifVariantsCreated).toBe(0);
+    expect(readFileSync(path.join(current, 'assets/hero.avif'))).toEqual(
+      readFileSync(path.join(previous, 'assets/hero.avif')),
+    );
+
+    const manifest = JSON.parse(readFileSync(path.join(current, 'image-opt-manifest.json'), 'utf8'));
+    expect(manifest.entries['assets/hero.webp'].algorithm.quality).toBe(81);
+    expect(manifest.entries['assets/hero.avif'].algorithm.quality).toBe(50);
+  });
+
+  it('invalidates cache entries when the original image changes', async () => {
+    const previous = await createImageOptimizeFixture();
+    const current = await createImageOptimizeFixture();
+    await optimizeDistImages(previous, 80, 50);
+
+    const changed = await sharp(readFileSync(path.join(current, 'assets/hero.png')))
+      .composite([
+        {
+          input: Buffer.from('<svg width="1400" height="900"><rect width="1400" height="900" fill="#20123f"/></svg>'),
+        },
+      ])
+      .png()
+      .toBuffer();
+    writeFileSync(path.join(current, 'assets/hero.png'), changed);
+
+    const result = await optimizeDistImages(current, 80, 50, { previousDistDir: previous });
+    expect(result.cacheHits).toBe(0);
+    expect(result.converted).toBe(1);
+    expect(result.avifConverted).toBe(1);
+
+    const manifest = JSON.parse(readFileSync(path.join(current, 'image-opt-manifest.json'), 'utf8'));
+    const previousManifest = JSON.parse(readFileSync(path.join(previous, 'image-opt-manifest.json'), 'utf8'));
+    expect(manifest.entries['assets/hero.webp'].source.sha256).not.toBe(
+      previousManifest.entries['assets/hero.webp'].source.sha256,
+    );
   });
 });

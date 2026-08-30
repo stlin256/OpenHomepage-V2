@@ -388,6 +388,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
           data-volume={activePlaylist.volume}
           data-autoplay={activePlaylist.autoplay ? 'true' : 'false'}
           data-resume={activePlaylist.resume}
+          data-artist-fallback={siteTitle}
           data-tracks={JSON.stringify(activePlaylist.tracks.map((t) => ({ ...t, src: withBase(t.src), cover: t.cover ? withBase(t.cover) : undefined })))}
         />
       </>
