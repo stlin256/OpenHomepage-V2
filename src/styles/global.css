@@ -2213,15 +2213,22 @@ html.js .timeline-item.reveal.revealed {
   pointer-events: none;
 }
 .markdown-body .embed-corner-badge {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.65);
-  color: rgba(255, 255, 255, 0.88);
-  font-family: var(--font-mono);
-  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.45rem;
+  border-radius: 0.35rem;
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  line-height: 0;
+}
+
+.markdown-body .embed-badge-logo {
+  display: block;
+  height: clamp(14px, 2.8vw, 20px);
+  width: auto;
+  opacity: 0.94;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
 }
 
 .markdown-body .embed-player.is-active .embed-poster,

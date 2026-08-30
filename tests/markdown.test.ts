@@ -119,7 +119,7 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('class="embed-player embed-bilibili"');
     expect(html).toContain('data-embed-src="https://player.bilibili.com/player.html?bvid=BV1xx411c7mD&#x26;autoplay=1"');
     expect(html).toContain('embed-play-btn-bili');
-    expect(html).toContain('bilibili');
+    expect(html).toContain('src="/brand/bilibili-badge.svg"');
   });
 
   it('::youtube 渲染高性能门面播放器卡片（Facade 带默认缩略图）', async () => {
@@ -132,7 +132,7 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('class="embed-player embed-youtube"');
     expect(html).toContain('data-embed-src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1"');
     expect(html).toContain('embed-play-btn-yt');
-    expect(html).toContain('YouTube');
+    expect(html).toContain('src="/brand/youtube-badge.svg"');
     expect(html).toContain('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg');
   });
 
