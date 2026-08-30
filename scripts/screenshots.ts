@@ -453,7 +453,7 @@ const SHOTS: Shot[] = [
     padding: 28,
     prepare: async (page) => {
       await page.waitForFunction(() =>
-        Array.from(document.querySelectorAll(".page-content .embed-player img")).every(
+        Array.from(document.querySelectorAll(".page-content .embed-player .embed-poster")).every(
           (img) => { const image = img as HTMLImageElement; return image.complete && image.naturalWidth > 0; },
         ),
         undefined,

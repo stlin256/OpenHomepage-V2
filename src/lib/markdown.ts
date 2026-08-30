@@ -269,18 +269,9 @@ function toEmbedDiv(
     children.push(playBtn);
   }
 
-  // 3. 底部角落标识：平台官方字形 SVG，不依赖站内字体
-  const badgeImage = hEl('img', {
-    className: ['embed-badge-logo'],
-    src: withBase('/brand/' + kind + '-badge.svg', baseUrl),
-    alt: getUiLabels(lang).embed[kind === 'bilibili' ? 'bilibiliBadge' : 'youtubeBadge'],
-    loading: 'lazy',
-    decoding: 'async',
-    width: kind === 'youtube' ? 512 : 1000,
-    height: kind === 'youtube' ? 114 : 252,
-  });
+  // 3. 底部角落标识
   const bottomBar = hEl('div', { className: ['embed-bottombar'] }, [
-    hEl('span', { className: ['embed-corner-badge'] }, [badgeImage]),
+    hEl('span', { className: ['embed-corner-badge'] }, [hTxt(getUiLabels(lang).embed[kind === 'bilibili' ? 'bilibiliBadge' : 'youtubeBadge'])]),
   ]);
   children.push(bottomBar);
 
