@@ -541,7 +541,6 @@ const GLOBAL_I18N_ATTRIBUTES: Array<[string, string]> = [
   ['.bgm-toggle', 'aria-haspopup'],
   ['audio.bgm-audio', 'data-artist-fallback'],
   ['.bgm-drawer', 'aria-label'],
-  ['.bgm-drawer-close', 'aria-label'],
   ['.bgm-prev-btn', 'aria-label'],
   ['.bgm-play-btn', 'aria-label'],
   ['.bgm-next-btn', 'aria-label'],

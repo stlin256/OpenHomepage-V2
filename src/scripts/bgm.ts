@@ -232,10 +232,6 @@ export function initBgm(): void {
   if (drawer && !drawer.dataset.drawerInit) {
     drawer.dataset.drawerInit = '1';
 
-    drawer.querySelector('.bgm-drawer-close')?.addEventListener('click', () => {
-      setDrawerOpen(drawer, false);
-    });
-
     // 移动端遮罩：点击关闭抽屉（同搜索遮罩）
     document.querySelector('.bgm-backdrop')?.addEventListener('click', () => {
       setDrawerOpen(drawer, false);

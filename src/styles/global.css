@@ -3798,25 +3798,6 @@ html.js .reveal.revealed {
   text-transform: uppercase;
   color: var(--text-muted);
 }
-.bgm-drawer-close {
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.2rem;
-  font-size: 1.1rem;
-  line-height: 1;
-  border-radius: var(--radius-sm);
-  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-}
-.bgm-drawer-close:hover {
-  color: var(--text);
-  background: var(--bg-subtle);
-  transform: scale(1.1);
-}
-.bgm-drawer-close:active {
-  transform: scale(0.92);
-}
 .bgm-current-info {
   display: flex;
   align-items: center;

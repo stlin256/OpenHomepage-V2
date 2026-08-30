@@ -407,7 +407,6 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       "<button class='bgm-toggle' aria-label='Toggle background music' aria-haspopup='dialog'></button>",
       "<div class='bgm-drawer' aria-label='BGM Playlist'>",
       "<p class='bgm-drawer-title'>Playlist · Background music</p>",
-      "<button class='bgm-drawer-close' aria-label='Close'></button>",
       "<p class='bgm-current-title'>English track</p>",
       "<p class='bgm-current-artist'>English Site</p>",
       "<button class='bgm-prev-btn' aria-label='Previous'></button>",
@@ -444,7 +443,6 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       "<button class='bgm-toggle' aria-label='切换背景音乐' aria-haspopup='dialog'></button>",
       "<div class='bgm-drawer' aria-label='BGM Playlist'>",
       "<p class='bgm-drawer-title'>播放列表 · 背景音乐</p>",
-      "<button class='bgm-drawer-close' aria-label='关闭'></button>",
       "<p class='bgm-current-title'>English track</p>",
       "<p class='bgm-current-artist'>中文站名</p>",
       "<button class='bgm-prev-btn' aria-label='上一首'></button>",
@@ -479,7 +477,6 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(document.querySelector(".site-nav")?.getAttribute("aria-label")).toBe("Site navigation");
     expect(document.querySelector<HTMLButtonElement>(".bgm-toggle")?.getAttribute("aria-label")).toBe("Toggle background music");
     expect(document.querySelector(".bgm-drawer-title")?.textContent).toBe("Playlist · Background music");
-    expect(document.querySelector<HTMLButtonElement>(".bgm-drawer-close")?.getAttribute("aria-label")).toBe("Close");
     expect(document.querySelector<HTMLButtonElement>(".bgm-prev-btn")?.getAttribute("aria-label")).toBe("Previous");
     expect(document.querySelector<HTMLButtonElement>(".bgm-play-btn")?.getAttribute("aria-label")).toBe("Play/Pause");
     expect(document.querySelector<HTMLButtonElement>(".bgm-next-btn")?.getAttribute("aria-label")).toBe("Next");
