@@ -303,12 +303,22 @@ export function initBgm(): void {
   if ((autoplayEnabled || readSaved() === '1') && audio.paused) {
     if (!kickArmed) {
       kickArmed = true;
-      const kick = () => {
+      const disarmKick = () => {
+        document.removeEventListener('click', kick);
+        document.removeEventListener('keydown', kick);
+      };
+      const kick = (event: Event) => {
+        // BGM 控件自身的点击/键盘操作有明确意图（暂停、切歌、关闭抽屉等），
+        // 不能冒泡到这里的“首次任意交互自动恢复播放”逻辑；否则暂停按钮
+        // 第一次点击时会被这里重新 play，表现为“点两次才暂停”。
+        const target = event.target instanceof Element ? event.target : null;
+        if (target?.closest('.bgm-switcher')) return;
         if (audio.paused) playAudio(audio);
         sync();
+        disarmKick();
       };
-      document.addEventListener('click', kick, { once: true });
-      document.addEventListener('keydown', kick, { once: true });
+      document.addEventListener('click', kick);
+      document.addEventListener('keydown', kick);
     }
     playAudio(audio, false);
   }

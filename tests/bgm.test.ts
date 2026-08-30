@@ -38,6 +38,31 @@ describe('initBgm', () => {
     expect(audio.preload).toBe('none');
   });
 
+  it('does not restart BGM when the drawer pause control is clicked while autoplay kick is armed', () => {
+    document.body.innerHTML = [
+      '<audio class="bgm-audio" src="/assets/bgm.mp3" preload="none" data-volume="0.4" data-autoplay="true"></audio>',
+      '<div class="bgm-switcher">',
+      '  <button class="bgm-toggle" hidden></button>',
+      '  <div class="bgm-drawer"><button class="bgm-play-btn" aria-label="Play/Pause"></button></div>',
+      '</div>',
+    ].join('');
+    const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio')!;
+    audio.play = vi.fn(() => Promise.resolve());
+    audio.pause = vi.fn(() => {
+      Object.defineProperty(audio, 'paused', { value: true, configurable: true });
+    });
+
+    initBgm();
+    // Simulate playback having started after initialization (for example, a
+    // browser resolving the play request after the kick listener was armed).
+    Object.defineProperty(audio, 'paused', { value: false, configurable: true });
+    document.querySelector<HTMLButtonElement>('.bgm-play-btn')!.click();
+
+    expect(audio.pause).toHaveBeenCalledTimes(1);
+    expect(audio.play).toHaveBeenCalledTimes(1);
+    expect(audio.paused).toBe(true);
+  });
+
   it('falls back to loading and playing after the first interaction when autoplay is blocked', () => {
     const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio')!;
     const loads: string[] = [];
