@@ -11201,62 +11201,6 @@
         "bytes": 68438
       }
     },
-    "assets/remote/f29dd8c26c0d3614.avif": {
-      "source": {
-        "path": "remote/f29dd8c26c0d3614.jpg",
-        "sha256": "baa51fee59976cd12ae17446abfb8e776bd7f5619d465ebde3f66138f64dfcf7",
-        "bytes": 18715,
-        "format": "jpeg",
-        "width": 480,
-        "height": 360,
-        "orientation": 1,
-        "pages": 1
-      },
-      "algorithm": {
-        "library": "sharp",
-        "format": "avif",
-        "quality": 50,
-        "effort": 4,
-        "rotate": true,
-        "resize": "without-enlargement",
-        "sharpVersion": "0.35.3",
-        "libvipsVersion": "8.18.3",
-        "codecVersion": "3.14.1"
-      },
-      "output": {
-        "path": "assets/remote/f29dd8c26c0d3614.avif",
-        "sha256": "1cf8aa6333d651dcf2aa22860a89c426412cea2aa14af7b0f5a7b5cde80cfe78",
-        "bytes": 11840
-      }
-    },
-    "assets/remote/f29dd8c26c0d3614.webp": {
-      "source": {
-        "path": "remote/f29dd8c26c0d3614.jpg",
-        "sha256": "baa51fee59976cd12ae17446abfb8e776bd7f5619d465ebde3f66138f64dfcf7",
-        "bytes": 18715,
-        "format": "jpeg",
-        "width": 480,
-        "height": 360,
-        "orientation": 1,
-        "pages": 1
-      },
-      "algorithm": {
-        "library": "sharp",
-        "format": "webp",
-        "quality": 80,
-        "effort": 4,
-        "rotate": true,
-        "resize": "without-enlargement",
-        "sharpVersion": "0.35.3",
-        "libvipsVersion": "8.18.3",
-        "codecVersion": "1.6.0"
-      },
-      "output": {
-        "path": "assets/remote/f29dd8c26c0d3614.webp",
-        "sha256": "cd8ad1b3ad45a806325b11c7beb2901ba0fe9b667a72e4aff574eaa81e1dc812",
-        "bytes": 21020
-      }
-    },
     "assets/research-compute.1024.avif": {
       "source": {
         "path": "research-compute.jpg",
