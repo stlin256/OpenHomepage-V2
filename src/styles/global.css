@@ -3685,10 +3685,28 @@ html.js .reveal.revealed {
 /* ==========================================================================
    P1: BGM 多曲目播放列表抽屉 (Playlist Panel)
    ========================================================================== */
+/* BGM 播放列表卡片：桌面端为悬浮按钮下方的下拉卡片（hover 显隐，同语言菜单），
+   移动端为底部抽屉 + 遮罩（点按 .open 切换，同搜索）。默认隐藏态由 opacity/visibility
+   控制；.bgm-switcher:hover（桌面，hover 媒体查询）或 .open（移动端点按）显隐。 */
+.bgm-switcher {
+  position: relative;
+}
+/* 桥接按钮与卡片之间的间隙，防止 hover 断开（同 .lang-switcher::after） */
+.bgm-switcher::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 100%;
+  height: 10px;
+}
+.bgm-backdrop {
+  display: none;
+}
 .bgm-drawer {
-  position: fixed;
-  top: 4.2rem;
-  right: 1.5rem;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
   width: 320px;
   background: var(--card);
   border: 1px solid var(--border);
@@ -3701,9 +3719,40 @@ html.js .reveal.revealed {
   gap: 0.85rem;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  transform-origin: top right;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.18s;
+}
+.bgm-drawer.open {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
 }
 .bgm-drawer[hidden] {
   display: none !important;
+}
+@media (hover: hover) and (min-width: 769px) {
+  .bgm-switcher:hover .bgm-drawer {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s;
+  }
 }
 .bgm-drawer-header {
   display: flex;
@@ -3863,12 +3912,53 @@ html.js .reveal.revealed {
   font-weight: 600;
 }
 @media (max-width: 768px) {
+  .bgm-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 995;
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s linear 0.22s;
+  }
+  .bgm-switcher:has(.bgm-drawer.open) .bgm-backdrop {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s;
+  }
   .bgm-drawer {
+    position: fixed;
     top: auto;
-    bottom: 0;
     right: 0;
+    left: 0;
+    bottom: 0;
     width: 100vw;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    z-index: 996;
     box-sizing: border-box;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform-origin: bottom;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(100%);
+    pointer-events: none;
+    transition:
+      transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s linear 0.24s;
+  }
+  .bgm-drawer.open {
+    transform: translateY(0);
+    pointer-events: auto;
+    transition:
+      transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s;
   }
 }

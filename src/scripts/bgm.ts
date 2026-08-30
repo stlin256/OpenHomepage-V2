@@ -82,35 +82,14 @@ function updateMediaSession(track: Track, audio: HTMLAudioElement, onPrev?: () =
   }
 }
 
-function toggleDrawer(drawer: HTMLElement): void {
-  if (drawer.hidden || drawer.classList.contains('closing')) {
-    openDrawer(drawer);
-  } else {
-    closeDrawer(drawer);
-  }
+function isMobile(): boolean {
+  return window.matchMedia('(max-width: 768px)').matches;
 }
 
-function openDrawer(drawer: HTMLElement): void {
-  drawer.classList.remove('closing');
-  drawer.hidden = false;
-  // Re-trigger animation by reflow
-  void drawer.offsetWidth;
-  drawer.style.animation = '';
-}
-
-function closeDrawer(drawer: HTMLElement): void {
-  if (drawer.hidden || drawer.classList.contains('closing')) return;
-  drawer.classList.add('closing');
-  const done = () => {
-    drawer.hidden = true;
-    drawer.classList.remove('closing');
-    drawer.removeEventListener('animationend', done);
-  };
-  drawer.addEventListener('animationend', done);
-  // Fallback timeout in case animationend doesn't fire
-  setTimeout(() => {
-    if (!drawer.hidden) done();
-  }, 250);
+function setDrawerOpen(drawer: HTMLElement, open: boolean): void {
+  drawer.classList.toggle('open', open);
+  const toggle = document.querySelector('.bgm-toggle');
+  toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
 export function initBgm(): void {
@@ -231,22 +210,20 @@ export function initBgm(): void {
     btn.dataset.bgmInit = '1';
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (audio.paused) {
-        writeSaved('1');
-        playAudio(audio);
-      } else {
-        writeSaved('0');
-        audio.pause();
-      }
-      sync();
-    });
-
-    // Long press or context menu / double click opens drawer
-    btn.addEventListener('contextmenu', (e) => {
-      if (drawer) {
-        e.preventDefault();
-        toggleDrawer(drawer);
+      // 移动端：点按切换播放列表抽屉（底部抽屉 + 遮罩，同搜索）；
+      // 桌面端：点按播放/暂停，悬浮显隐卡片由 CSS hover 负责（同语言菜单）。
+      if (drawer && isMobile()) {
+        setDrawerOpen(drawer, !drawer.classList.contains('open'));
         syncDrawer();
+      } else {
+        if (audio.paused) {
+          writeSaved('1');
+          playAudio(audio);
+        } else {
+          writeSaved('0');
+          audio.pause();
+        }
+        sync();
       }
     });
   }
@@ -256,7 +233,19 @@ export function initBgm(): void {
     drawer.dataset.drawerInit = '1';
 
     drawer.querySelector('.bgm-drawer-close')?.addEventListener('click', () => {
-      closeDrawer(drawer);
+      setDrawerOpen(drawer, false);
+    });
+
+    // 移动端遮罩：点击关闭抽屉（同搜索遮罩）
+    document.querySelector('.bgm-backdrop')?.addEventListener('click', () => {
+      setDrawerOpen(drawer, false);
+    });
+
+    // Esc 关闭抽屉
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && drawer.classList.contains('open')) {
+        setDrawerOpen(drawer, false);
+      }
     });
 
     drawer.querySelector('.bgm-play-btn')?.addEventListener('click', () => {
