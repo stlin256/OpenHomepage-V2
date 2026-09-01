@@ -76,6 +76,32 @@ describe('initBgm', () => {
     expect(loads).toEqual(['load']);
     expect(audio.preload).toBe('none');
   });
+  it('does NOT autoplay when user previously paused BGM, even if data-autoplay="true" (tab switch regression fix)', () => {
+    localStorage.setItem('bgm', '0'); // User explicitly paused BGM
+    const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio')!;
+    audio.play = vi.fn(() => Promise.resolve());
+
+    // Simulate tab switch / page change re-calling initBgm
+    initBgm();
+
+    // Must not call play
+    expect(audio.play).not.toHaveBeenCalled();
+
+    // Further clicks or keydowns must not kickstart playback
+    document.dispatchEvent(new MouseEvent('click'));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Space' }));
+    expect(audio.play).not.toHaveBeenCalled();
+  });
+
+  it('resumes playback when user previously played BGM (localStorage bgm=1)', () => {
+    localStorage.setItem('bgm', '1');
+    const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio')!;
+    audio.play = vi.fn(() => Promise.resolve());
+
+    initBgm();
+    expect(audio.play).toHaveBeenCalledTimes(1);
+  });
+
 });
 
 describe('media interruption & auto-resume', () => {

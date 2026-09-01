@@ -296,7 +296,11 @@ export function initBgm(): void {
 
   // Autoplay / Resume logic
   const autoplayEnabled = audio.dataset.autoplay === 'true';
-  if ((autoplayEnabled || readSaved() === '1') && audio.paused) {
+  const saved = readSaved();
+  // 用户明确暂停（saved === '0'）时尊重用户意图，切页或切 tab 绝不再自动播放；
+  // 仅在用户主动播放过（saved === '1'）或未交互且配置自动播放（saved === null && autoplayEnabled）时恢复
+  const shouldAutoplay = saved === '1' || (saved === null && autoplayEnabled);
+  if (shouldAutoplay && audio.paused) {
     if (!kickArmed) {
       kickArmed = true;
       const disarmKick = () => {
@@ -309,6 +313,10 @@ export function initBgm(): void {
         // 第一次点击时会被这里重新 play，表现为“点两次才暂停”。
         const target = event.target instanceof Element ? event.target : null;
         if (target?.closest('.bgm-switcher')) return;
+        if (readSaved() === '0') {
+          disarmKick();
+          return;
+        }
         if (audio.paused) playAudio(audio);
         sync();
         disarmKick();
