@@ -15,6 +15,36 @@ function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches === true;
 }
 
+function updateTocMarkers(activeLink: HTMLAnchorElement | null): void {
+  const markers = document.querySelectorAll<HTMLElement>('.toc-marker');
+  if (!markers.length) return;
+
+  if (!activeLink) {
+    markers.forEach((m) => {
+      m.style.opacity = '0';
+    });
+    return;
+  }
+
+  const activeHref = activeLink.getAttribute('href');
+
+  markers.forEach((marker) => {
+    const track = marker.closest<HTMLElement>('.toc-track');
+    if (!track) return;
+    const targetLink = activeHref ? track.querySelector<HTMLAnchorElement>(`a[href="${activeHref}"]`) : null;
+    if (targetLink) {
+      const linkRect = targetLink.getBoundingClientRect();
+      const trackRect = track.getBoundingClientRect();
+      const topOffset = linkRect.top - trackRect.top;
+      marker.style.transform = `translateY(${topOffset}px)`;
+      marker.style.height = `${linkRect.height}px`;
+      marker.style.opacity = '1';
+    } else {
+      marker.style.opacity = '0';
+    }
+  });
+}
+
 function updateProgressAndSpy(): void {
   // 1. Reading progress bar
   if (currentProgressBar && currentArticle) {
@@ -54,13 +84,25 @@ function updateProgressAndSpy(): void {
 
     if (activeHeading) {
       const activeId = activeHeading.id;
+      let activeLink: HTMLAnchorElement | null = null;
       currentTocLinks.forEach((link) => {
         const href = link.getAttribute('href');
         const isCurrent = href === `#${activeId}`;
         link.classList.toggle('active', isCurrent);
-        if (isCurrent) link.setAttribute('aria-current', 'true');
-        else link.removeAttribute('aria-current');
+        if (isCurrent) {
+          link.setAttribute('aria-current', 'true');
+          if (!activeLink) activeLink = link;
+        } else {
+          link.removeAttribute('aria-current');
+        }
       });
+      updateTocMarkers(activeLink);
+    } else {
+      currentTocLinks.forEach((link) => {
+        link.classList.remove('active');
+        link.removeAttribute('aria-current');
+      });
+      updateTocMarkers(null);
     }
   }
 }
@@ -231,6 +273,11 @@ export function _resetTocStateForTesting(): void {
   currentTocLinks = [];
   currentHeadings = [];
   ticking = false;
+  document.querySelectorAll<HTMLElement>('.toc-marker').forEach((m) => {
+    m.style.transform = '';
+    m.style.height = '';
+    m.style.opacity = '';
+  });
   document.querySelectorAll<HTMLDetailsElement>('.toc-collapsible').forEach((el) => {
     delete el.dataset.tocCollapsibleInit;
     el.classList.remove('is-opening', 'is-closing');

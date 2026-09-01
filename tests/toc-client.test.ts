@@ -156,6 +156,59 @@ describe('toc & reading-progress client behavior', () => {
       });
     });
   });
+
+  it('ScrollSpy 同步更新 .toc-marker 的 translateY 与高度', () => {
+    document.body.innerHTML = `
+      <nav class="toc">
+        <div class="toc-track">
+          <div class="toc-marker"></div>
+          <ol class="toc-list">
+            <li class="toc-item"><a class="toc-link" href="#heading-1">Heading 1</a></li>
+            <li class="toc-item"><a class="toc-link" href="#heading-2">Heading 2</a></li>
+          </ol>
+        </div>
+      </nav>
+      <main class="site-main">
+        <div class="page-content">
+          <h2 id="heading-1">Heading 1</h2>
+          <h2 id="heading-2">Heading 2</h2>
+        </div>
+      </main>
+    `;
+
+    const track = document.querySelector<HTMLElement>('.toc-track')!;
+    const marker = document.querySelector<HTMLElement>('.toc-marker')!;
+    const link1 = document.querySelector<HTMLAnchorElement>('a[href="#heading-1"]')!;
+    const link2 = document.querySelector<HTMLAnchorElement>('a[href="#heading-2"]')!;
+    const h1 = document.querySelector<HTMLElement>('#heading-1')!;
+    const h2 = document.querySelector<HTMLElement>('#heading-2')!;
+
+    track.getBoundingClientRect = () => ({ top: 100, bottom: 200, height: 100, width: 200, left: 0, right: 200, x: 0, y: 100, toJSON: () => {} });
+    link1.getBoundingClientRect = () => ({ top: 100, bottom: 130, height: 30, width: 200, left: 0, right: 200, x: 0, y: 100, toJSON: () => {} });
+    link2.getBoundingClientRect = () => ({ top: 135, bottom: 165, height: 30, width: 200, left: 0, right: 200, x: 0, y: 135, toJSON: () => {} });
+
+    h1.getBoundingClientRect = () => ({ top: 50, bottom: 80, height: 30, width: 500, left: 0, right: 500, x: 0, y: 50, toJSON: () => {} });
+    h2.getBoundingClientRect = () => ({ top: 500, bottom: 530, height: 30, width: 500, left: 0, right: 500, x: 0, y: 500, toJSON: () => {} });
+
+    initToc();
+    expect(marker.style.opacity).toBe('1');
+    expect(marker.style.transform).toBe('translateY(0px)');
+    expect(marker.style.height).toBe('30px');
+
+    // Scroll to heading 2
+    h1.getBoundingClientRect = () => ({ top: -200, bottom: -170, height: 30, width: 500, left: 0, right: 500, x: 0, y: -200, toJSON: () => {} });
+    h2.getBoundingClientRect = () => ({ top: 50, bottom: 80, height: 30, width: 500, left: 0, right: 500, x: 0, y: 50, toJSON: () => {} });
+
+    window.dispatchEvent(new Event('scroll'));
+
+    return new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        expect(marker.style.transform).toBe('translateY(35px)');
+        expect(marker.style.height).toBe('30px');
+        resolve();
+      });
+    });
+  });
 });
 
 describe('mobile collapsible toc animation', () => {

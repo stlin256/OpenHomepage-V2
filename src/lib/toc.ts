@@ -118,8 +118,11 @@ export function renderTocHtml(items: TocItem[], options: { title?: string; lang?
   <div class="toc-header">
     <p class="toc-title">${escapeHtml(title)}</p>
   </div>
-  <ol class="toc-list">
+  <div class="toc-track">
+    <div class="toc-marker" aria-hidden="true"></div>
+    <ol class="toc-list">
 ${listItems}
-  </ol>
+    </ol>
+  </div>
 </nav>`;
 }
