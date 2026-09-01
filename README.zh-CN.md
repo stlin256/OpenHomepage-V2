@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://stlin256.github.io/OpenHomepage-V2/"><img src="https://img.shields.io/badge/Live%20Demo-在线演示-0969DA?style=flat-square&logo=githubpages&logoColor=white" alt="Live Demo"></a>
-  <a href="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/stlin256/OpenHomepage-V2/deploy.yml?branch=main&label=Deploy&style=flat-square" alt="Deploy"></a>
+  <a href="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/stlin256/OpenHomepage-V2/deploy.yml?branch=master&label=Deploy&style=flat-square&logo=githubactions&logoColor=white" alt="Deploy"></a>
   <a href="https://astro.build"><img src="https://img.shields.io/badge/Astro-5.x-BC52EE?style=flat-square&logo=astro&logoColor=white" alt="Astro"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript"></a>
   <a href="https://vitest.dev/"><img src="https://img.shields.io/badge/Tested%20with-Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white" alt="Vitest"></a>
