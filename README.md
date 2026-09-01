@@ -56,6 +56,10 @@ Each component below is captured individually from the production build (`npm ru
 
 ### Markdown & Directive Rendering
 
+**Rich Interactive Footnotes (`[^1]`)** — Academic popovers on desktop hover/focus with link preservation and viewport collision detection; bottom drawer sheet on mobile devices with smooth slide-up animation and backlink navigation.
+
+![Rich interactive footnotes](docs/images/components/footnote-en.webp)
+
 **Dual-Theme Code Highlighting** — Shiki with light/dark palettes bound to the site theme.
 
 ![Shiki code highlighting](docs/images/components/markdown-code-en.webp)

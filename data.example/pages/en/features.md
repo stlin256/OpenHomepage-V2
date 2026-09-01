@@ -16,7 +16,11 @@ This page demonstrates every content type the site supports. The source is a pla
 
 ## Text & typography
 
-**Bold**, *italic*, ~~strikethrough~~, `inline code`, and [titled links](https://example.com "hover me").
+**Bold**, *italic*, ~~strikethrough~~, `inline code`, [titled links](https://example.com "hover me"), and **rich interactive footnotes**[^fn-academic]. In modern academic and editorial publishing, footnotes provide seamless bibliographic citations[^fn-spec] as well as detailed technical annotations[^fn-tech].
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: Standard CommonMark & GFM footnote extension with desktop popovers and mobile bottom drawers.
+[^fn-tech]: Embed inline code `O(N \log N)` and math equations like $L = -\sum y \log \hat{y}$ right inside footnotes.
 
 > In magazine typography, blockquotes are the breathing room.
 > — a typography enthusiast

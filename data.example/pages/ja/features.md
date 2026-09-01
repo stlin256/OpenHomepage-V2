@@ -16,7 +16,11 @@ description: "このサイトのマークダウンレンダリングでできる
 
 ## テキストとタイポグラフィ
 
-**太字**、*斜体*、~~取り消し線~~、`インラインコード`、そして[タイトル付きリンク](https://example.com "hover me")。
+**太字**、*斜体*、~~取り消し線~~、`インラインコード`、[タイトル付きリンク](https://example.com "hover me")、そして**リッチメディア脚注**[^fn-academic]に対応しています。学術論文や技術ブログにおいて、参考文献の引用[^fn-spec]や技術的な注釈[^fn-tech]をスムーズに提示できます。
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: 標準的な GFM 脚注構文を拡張し、デスクトップでのホバーポップオーバーとモバイルでのボトムドロワーを提供します。
+[^fn-tech]: 脚注内に `O(N \log N)` などのインラインコードや数式 $L = -\sum y \log \hat{y}$ を埋め込むことができます。
 
 > マガジンタイポグラフィにおいて、引用ブロックは呼吸する余白である。
 > — あるタイポグラフィ愛好家

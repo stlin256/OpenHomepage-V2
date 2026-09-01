@@ -84,3 +84,20 @@ describe('resolvePageForLang', () => {
     expect(resolvePageForLang(pages, 'nonexistent', 'zh', 'zh')).toBeNull();
   });
 });
+
+import { UI_LANGS, getUiLabels } from '../src/lib/ui-i18n.ts';
+
+describe('UI Labels 脚注多语言配置完整性', () => {
+  it('所有 17 种支持语言均包含完整的 footnotes 字段', () => {
+    for (const lang of UI_LANGS) {
+      const ui = getUiLabels(lang);
+      expect(ui.footnotes, `footnotes in ${lang}`).toBeDefined();
+      expect(ui.footnotes.title, `title in ${lang}`).toBeTruthy();
+      expect(ui.footnotes.label, `label in ${lang}`).toBeTruthy();
+      expect(ui.footnotes.close, `close in ${lang}`).toBeTruthy();
+      expect(ui.footnotes.jumpToBottom, `jumpToBottom in ${lang}`).toBeTruthy();
+      expect(typeof ui.footnotes.backToRef(1), `backToRef in ${lang}`).toBe('string');
+      expect(ui.footnotes.backToRef(1).length).toBeGreaterThan(0);
+    }
+  });
+});

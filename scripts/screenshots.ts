@@ -376,6 +376,73 @@ const SHOTS: Shot[] = [
     },
   },
   // —— 特性页：Markdown 渲染能力 ——
+  {
+    name: "footnote",
+    page: "features",
+    selector: ".page-content a[data-footnote-ref]",
+    padding: 24,
+    prepare: async (page) => {
+      const ref = page.locator(".page-content a[data-footnote-ref]").first();
+      await ref.scrollIntoViewIfNeeded();
+      await ref.hover();
+      await page.waitForSelector(".footnote-popover.visible");
+      await page.waitForTimeout(100);
+    },
+    capture: async (page) => {
+      const pad = 24;
+      const ref = page.locator(".page-content a[data-footnote-ref]").first();
+      const pop = page.locator(".footnote-popover");
+      await page.evaluate(() => {
+        const refEl = document.querySelector(".page-content a[data-footnote-ref]");
+        const popEl = document.querySelector(".footnote-popover");
+        const paragraph = refEl?.closest("p");
+        if (refEl) refEl.classList.add("__oh_shot_target");
+        if (popEl) popEl.classList.add("__oh_shot_target");
+        if (paragraph) paragraph.classList.add("__oh_shot_target");
+        let style = document.getElementById("__oh_shot_style");
+        if (!style) {
+          style = document.createElement("style");
+          style.id = "__oh_shot_style";
+          style.textContent = `
+            body * { visibility: hidden !important; }
+            .__oh_shot_target, .__oh_shot_target *, .__oh_shot_target::before, .__oh_shot_target::after, .__oh_shot_target *::before, .__oh_shot_target *::after {
+              visibility: visible !important;
+            }
+          `;
+          document.head.appendChild(style);
+        }
+      });
+      const pBox = await ref.locator("xpath=ancestor::p").boundingBox();
+      const popBox = await pop.boundingBox();
+      if (!pBox || !popBox) throw new Error("Bounding box null for footnote");
+      const x = Math.min(pBox.x, popBox.x);
+      const y = Math.min(pBox.y, popBox.y);
+      const width = Math.max(pBox.x + pBox.width, popBox.x + popBox.width) - x;
+      const height = Math.max(pBox.y + pBox.height, popBox.y + popBox.height) - y;
+      const clip = {
+        x: Math.max(0, Math.floor(x - pad)),
+        y: Math.max(0, Math.floor(y - pad)),
+        width: Math.ceil(width + (x - Math.max(0, Math.floor(x - pad))) + pad),
+        height: Math.ceil(height + (y - Math.max(0, Math.floor(y - pad))) + pad),
+      };
+      const buf = await page.screenshot({ clip });
+      await page.evaluate(() => {
+        document.querySelectorAll(".__oh_shot_target").forEach((t) => t.classList.remove("__oh_shot_target"));
+        const style = document.getElementById("__oh_shot_style");
+        if (style) style.remove();
+      });
+      return buf;
+    },
+    after: async (page) => {
+      await page.evaluate(() => {
+        const pop = document.querySelector<HTMLElement>(".footnote-popover");
+        if (pop) {
+          pop.classList.remove("visible");
+          pop.hidden = true;
+        }
+      });
+    },
+  },
   { name: "markdown-code", page: "features", selector: ".page-content pre.shiki", nth: 0, padding: 28 },
   { name: "markdown-math", page: "features", selector: ".page-content .katex-display", nth: 0, padding: 28 },
   { name: "markdown-figure", page: "features", selector: ".page-content figure", nth: 0, padding: 28 },

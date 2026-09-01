@@ -490,3 +490,42 @@ describe('构建期占位替换（M4b）', () => {
 });
 
 
+
+describe('富媒体脚注（Footnotes Pipeline）', () => {
+  it('渲染标准 GFM 脚注角标与文末列表', async () => {
+    const md = '正文引用[^1]与二次引用[^2]。\n\n[^1]: 第一个注释内容\n[^2]: 第二个注释带 [链接](https://example.com)';
+    const html = await renderMarkdown(md, { lang: 'zh' });
+    expect(html).toContain('data-footnote-ref');
+    expect(html).toContain('class="footnote-ref"');
+    expect(html).toContain('<section data-footnotes="" class="footnotes reveal"');
+    expect(html).toContain('<h2 class="footnotes-title" id="footnote-label">脚注</h2>');
+    expect(html).toContain('<ol class="footnotes-list">');
+    expect(html).toContain('<li id="user-content-fn-1" class="footnote-item">');
+    expect(html).toContain('data-footnote-backref=""');
+    expect(html).toContain('aria-label="返回引用 1"');
+    expect(html).toContain('aria-label="返回引用 2"');
+  });
+
+  it('多语言 i18n 标题与回跳文案适配（en / ja / fr）', async () => {
+    const md = 'Statement[^1].\n\n[^1]: Rich citation note.';
+    const htmlEn = await renderMarkdown(md, { lang: 'en' });
+    expect(htmlEn).toContain('<h2 class="footnotes-title" id="footnote-label">Footnotes</h2>');
+    expect(htmlEn).toContain('aria-label="Back to reference 1"');
+
+    const htmlJa = await renderMarkdown(md, { lang: 'ja' });
+    expect(htmlJa).toContain('<h2 class="footnotes-title" id="footnote-label">脚注</h2>');
+    expect(htmlJa).toContain('aria-label="参照 1 に戻る"');
+
+    const htmlFr = await renderMarkdown(md, { lang: 'fr' });
+    expect(htmlFr).toContain('<h2 class="footnotes-title" id="footnote-label">Notes de bas de page</h2>');
+    expect(htmlFr).toContain('aria-label="Retour à la référence 1"');
+  });
+
+  it('脚注内富媒体内容（代码、数学公式、链接）完整保留', async () => {
+    const md = '研究成果[^math].\n\n[^math]: 复杂度 $O(N \\log N)$ 与代码 `run()`，详见 [arXiv](https://arxiv.org)';
+    const html = await renderMarkdown(md, { lang: 'zh' });
+    expect(html).toContain('katex');
+    expect(html).toContain('<code>run()</code>');
+    expect(html).toContain('<a href="https://arxiv.org">arXiv</a>');
+  });
+});

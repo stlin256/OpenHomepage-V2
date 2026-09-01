@@ -16,7 +16,11 @@ description: "本站点 markdown 渲染能力的完整演示"
 
 ## 文本与排版
 
-支持 **加粗**、*斜体*、~~删除线~~、`行内代码`、以及[带标题的链接](https://example.com "悬停看我")。
+支持 **加粗**、*斜体*、~~删除线~~、`行内代码`、[带标题的链接](https://example.com "悬停看我")与**富媒体交互脚注**[^fn-academic]。在现代学术排版与技术博客中，脚注不仅能承载文献引用[^fn-spec]，还能容纳包含公式与多段说明的技术注释[^fn-tech]。
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: 标准 CommonMark 与 GFM 脚注语法扩展，支持桌面端智能气泡与移动端抽屉交互。
+[^fn-tech]: 支持在脚注中嵌入行内代码 `O(N \log N)` 以及公式 $L = -\sum y \log \hat{y}$。
 
 > 杂志式排版里，引用块是最好的呼吸节奏。
 > —— 某位排版爱好者

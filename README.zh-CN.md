@@ -56,6 +56,10 @@ OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静
 
 ### Markdown 与指令渲染
 
+**富媒体交互脚注（`[^1]`）**——桌面端悬停/聚焦展示智能气泡浮窗（支持气泡内点击超链接、DOI、代码与公式，自动视口边缘防溢出）；移动端轻触滑出底部抽屉（带平滑遮罩与手势关闭），文末排版与精准平滑回跳。
+
+![富媒体交互脚注](docs/images/components/footnote-zh.webp)
+
 **双主题代码高亮**——Shiki 引擎内联明暗双套样式，随站点主题无缝切换。
 
 ![Shiki 代码高亮](docs/images/components/markdown-code-zh.webp)

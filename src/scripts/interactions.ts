@@ -14,6 +14,7 @@ import { initAudioPlayers, pauseOtherMedia, resumeBgmIfNeeded } from './audio-pl
 import { initImageFade } from './image-fade.ts';
 import { initSearch } from './search.ts';
 import { initToc } from './toc.ts';
+import { initFootnotes } from './footnotes.ts';
 import { scheduleTabPrefetch } from './tab-prefetch.ts';
 import { fetchPageHtml } from './page-cache.ts';
 import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
@@ -419,6 +420,7 @@ function initAll(): void {
   initNoticeBanners();
   initSearch();
   initToc();
+  initFootnotes();
   scheduleTabPrefetch();
 }
 
@@ -593,6 +595,9 @@ const GLOBAL_I18N_ATTRIBUTES: Array<[string, string]> = [
   ['.theme-toggle', 'aria-label'],
   ['.lightbox', 'aria-label'],
   ['.lightbox-close', 'aria-label'],
+  ['.footnote-popover-close', 'aria-label'],
+  ['.footnote-drawer', 'aria-label'],
+  ['.footnote-drawer-close', 'aria-label'],
 ];
 
 const GLOBAL_I18N_TEXT_SELECTORS = [
@@ -601,6 +606,9 @@ const GLOBAL_I18N_TEXT_SELECTORS = [
   '.search-hint-select',
   '.search-hint-close',
   '.search-status',
+  '.footnote-popover-label',
+  '.footnote-drawer-title',
+  '.footnote-drawer-jump-btn span',
 ];
 
 function syncAttribute(selector: string, attribute: string, doc: Document): void {

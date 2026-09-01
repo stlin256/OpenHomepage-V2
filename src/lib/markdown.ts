@@ -811,6 +811,34 @@ function calloutHeader(node: Element): void {
 function rehypeContentDecorations(lang: string | undefined, defaultLang?: string) {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node) => {
+      if (node.tagName === 'a' && node.properties && ('dataFootnoteRef' in node.properties || 'data-footnote-ref' in node.properties)) {
+        const cls = classesOf(node);
+        if (!cls.includes('footnote-ref')) {
+          node.properties.className = [...cls, 'footnote-ref'];
+        }
+      }
+      if (node.tagName === 'section' && (classesOf(node).includes('footnotes') || node.properties?.dataFootnotes != null || ('data-footnotes' in (node.properties || {})))) {
+        const cls = classesOf(node);
+        if (!cls.includes('reveal')) {
+          node.properties.className = [...cls, 'reveal'];
+        }
+        node.properties.style = '--delay:120ms';
+        for (const child of node.children) {
+          if (child.type === 'element' && (child.tagName === 'h2' || child.tagName === 'h3' || child.properties?.id === 'footnote-label')) {
+            child.properties.className = ['footnotes-title'];
+          }
+        }
+        for (const child of node.children) {
+          if (child.type === 'element' && child.tagName === 'ol') {
+            child.properties.className = ['footnotes-list'];
+            for (const item of child.children) {
+              if (item.type === 'element' && item.tagName === 'li') {
+                item.properties.className = ['footnote-item'];
+              }
+            }
+          }
+        }
+      }
       if (node.tagName === 'aside' && classesOf(node).includes('callout')) {
         calloutHeader(node);
         return;
@@ -1157,7 +1185,14 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   // （指令的 hProperties 先建好，这里合并 data-oh-src）
   if (options.editSource) processor.use(() => remarkEditSpans(options.editSource!));
   processor
-    .use(remarkRehype, { allowDangerousHtml: true })
+    const ui = getUiLabels(options.lang);
+  processor.use(remarkRehype, {
+    allowDangerousHtml: true,
+    footnoteLabel: ui.footnotes.label,
+    footnoteLabelTagName: 'h2',
+    footnoteLabelProperties: { className: ['footnotes-title'] },
+    footnoteBackLabel: (refIndex) => ui.footnotes.backToRef(refIndex + 1),
+  })
     .use(rehypeRaw)
     .use(rehypeKatex)
     .use(rehypeShiki, { themes, defaultColor: false })

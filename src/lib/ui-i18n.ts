@@ -91,6 +91,15 @@ export interface PublicationsLabels {
   linksAria: string;
 }
 
+/** 富媒体脚注 */
+export interface FootnotesLabels {
+  title: string;
+  label: string;
+  backToRef: (refIndex: number) => string;
+  close: string;
+  jumpToBottom: string;
+}
+
 /** 统一 UI 文案集合 */
 export interface UiLabels {
   header: HeaderLabels;
@@ -103,6 +112,7 @@ export interface UiLabels {
   directive: DirectiveLabels;
   toc: TocLabels;
   publications: PublicationsLabels;
+  footnotes: FootnotesLabels;
 }
 
 export const UI_LABELS: Record<UiLang, UiLabels> = {
@@ -152,6 +162,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: '没有匹配的成果',
       linksAria: '论文链接',
     },
+    footnotes: {
+      title: '脚注',
+      label: '脚注',
+      backToRef: (n: number) => '返回引用 ' + n,
+      close: '关闭',
+      jumpToBottom: '查看文末脚注',
+    },
   },
   en: {
     header: {
@@ -198,6 +215,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'Copy BibTeX',
       empty: 'No publications matched',
       linksAria: 'Publication links',
+    },
+    footnotes: {
+      title: 'Footnotes',
+      label: 'Footnotes',
+      backToRef: (n: number) => 'Back to reference ' + n,
+      close: 'Close',
+      jumpToBottom: 'Jump to footnotes',
     },
   },
   ja: {
@@ -246,6 +270,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: '一致する成果がありません',
       linksAria: '論文リンク',
     },
+    footnotes: {
+      title: '脚注',
+      label: '脚注',
+      backToRef: (n: number) => '参照 ' + n + ' に戻る',
+      close: '閉じる',
+      jumpToBottom: '脚注へ移動',
+    },
   },
   fr: {
     header: {
@@ -292,6 +323,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'Copier BibTeX',
       empty: 'Aucune publication ne correspond',
       linksAria: 'Liens de la publication',
+    },
+    footnotes: {
+      title: 'Notes de bas de page',
+      label: 'Notes de bas de page',
+      backToRef: (n: number) => 'Retour à la référence ' + n,
+      close: 'Fermer',
+      jumpToBottom: 'Aller aux notes de bas de page',
     },
   },
   de: {
@@ -340,6 +378,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: 'Keine passenden Publikationen',
       linksAria: 'Publikationslinks',
     },
+    footnotes: {
+      title: 'Fußnoten',
+      label: 'Fußnoten',
+      backToRef: (n: number) => 'Zurück zu Referenz ' + n,
+      close: 'Schließen',
+      jumpToBottom: 'Zu den Fußnoten springen',
+    },
   },
   es: {
     header: {
@@ -386,6 +431,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'Copiar BibTeX',
       empty: 'Ninguna publicación coincide',
       linksAria: 'Enlaces de publicación',
+    },
+    footnotes: {
+      title: 'Notas al pie',
+      label: 'Notas al pie',
+      backToRef: (n: number) => 'Volver a la referencia ' + n,
+      close: 'Cerrar',
+      jumpToBottom: 'Ir a las notas al pie',
     },
   },
   ko: {
@@ -434,6 +486,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: '일치하는 출판물이 없습니다',
       linksAria: '출판물 링크',
     },
+    footnotes: {
+      title: '각주',
+      label: '각주',
+      backToRef: (n: number) => '참조 ' + n + '로 돌아가기',
+      close: '닫기',
+      jumpToBottom: '각주로 이동',
+    },
   },
   pt: {
     header: {
@@ -480,6 +539,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'Copiar BibTeX',
       empty: 'Nenhuma publicação correspondente',
       linksAria: 'Links da publicação',
+    },
+    footnotes: {
+      title: 'Notas de rodapé',
+      label: 'Notas de rodapé',
+      backToRef: (n: number) => 'Voltar para a referência ' + n,
+      close: 'Fechar',
+      jumpToBottom: 'Ir para as notas de rodapé',
     },
   },
   ru: {
@@ -528,6 +594,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: 'Нет соответствующих публикаций',
       linksAria: 'Ссылки на публикации',
     },
+    footnotes: {
+      title: 'Сноски',
+      label: 'Сноски',
+      backToRef: (n: number) => 'Назад к ссылке ' + n,
+      close: 'Закрыть',
+      jumpToBottom: 'Перейти к сноскам',
+    },
   },
   it: {
     header: {
@@ -574,6 +647,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'Copia BibTeX',
       empty: 'Nessuna pubblicazione corrispondente',
       linksAria: 'Collegamenti della pubblicazione',
+    },
+    footnotes: {
+      title: 'Note a piè di pagina',
+      label: 'Note a piè di pagina',
+      backToRef: (n: number) => 'Torna al riferimento ' + n,
+      close: 'Chiudi',
+      jumpToBottom: 'Vai alle note a piè di pagina',
     },
   },
   nl: {
@@ -622,6 +702,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: 'Geen overeenkomende publicaties',
       linksAria: 'Publicatielinks',
     },
+    footnotes: {
+      title: 'Voetnoten',
+      label: 'Voetnoten',
+      backToRef: (n: number) => 'Terug naar referentie ' + n,
+      close: 'Sluiten',
+      jumpToBottom: 'Naar voetnoten springen',
+    },
   },
   tr: {
     header: {
@@ -668,6 +755,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'BibTeX kopyala',
       empty: 'Eşleşen yayın yok',
       linksAria: 'Yayın bağlantıları',
+    },
+    footnotes: {
+      title: 'Dipnotlar',
+      label: 'Dipnotlar',
+      backToRef: (n: number) => 'Referansa geri dön ' + n,
+      close: 'Kapat',
+      jumpToBottom: 'Dipnotlara git',
     },
   },
   vi: {
@@ -716,6 +810,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: 'Không có ấn phẩm phù hợp',
       linksAria: 'Liên kết ấn phẩm',
     },
+    footnotes: {
+      title: 'Chú thích',
+      label: 'Chú thích',
+      backToRef: (n: number) => 'Quay lại tham chiếu ' + n,
+      close: 'Đóng',
+      jumpToBottom: 'Đi tới chú thích',
+    },
   },
   th: {
     header: {
@@ -762,6 +863,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'คัดลอก BibTeX',
       empty: 'ไม่มีงานตีพิมพ์ที่ตรงกัน',
       linksAria: 'ลิงก์งานตีพิมพ์',
+    },
+    footnotes: {
+      title: 'เชิงอรรถ',
+      label: 'เชิงอรรถ',
+      backToRef: (n: number) => 'กลับไปที่การอ้างอิง ' + n,
+      close: 'ปิด',
+      jumpToBottom: 'ไปยังเชิงอรรถ',
     },
   },
   id: {
@@ -810,6 +918,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: 'Tidak ada publikasi yang cocok',
       linksAria: 'Tautan publikasi',
     },
+    footnotes: {
+      title: 'Catatan Kaki',
+      label: 'Catatan Kaki',
+      backToRef: (n: number) => 'Kembali ke referensi ' + n,
+      close: 'Tutup',
+      jumpToBottom: 'Buka catatan kaki',
+    },
   },
   ar: {
     header: {
@@ -857,6 +972,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       empty: 'لا توجد منشورات مطابقة',
       linksAria: 'روابط المنشور',
     },
+    footnotes: {
+      title: 'الهوامش',
+      label: 'الهوامش',
+      backToRef: (n: number) => 'العودة إلى المرجع ' + n,
+      close: 'إغلاق',
+      jumpToBottom: 'الانتقال إلى الهوامش',
+    },
   },
   hi: {
     header: {
@@ -903,6 +1025,13 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       copyBibtex: 'BibTeX कॉपी करें',
       empty: 'कोई मिलान प्रकाशन नहीं',
       linksAria: 'प्रकाशन लिंक',
+    },
+    footnotes: {
+      title: 'पाद टिप्पणी',
+      label: 'पाद टिप्पणी',
+      backToRef: (n: number) => 'संदर्भ ' + n + ' पर वापस जाएं',
+      close: 'बंद करें',
+      jumpToBottom: 'पाद टिप्पणियों पर जाएं',
     },
   },
 

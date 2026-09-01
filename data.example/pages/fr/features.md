@@ -16,7 +16,11 @@ Cette page présente chaque type de contenu pris en charge par le site. La sourc
 
 ## Texte et typographie
 
-**Gras**, *italique*, ~~barré~~, `code inline`, et [liens avec titre](https://example.com "hover me").
+**Gras**, *italique*, ~~barré~~, `code inline`, [liens avec titre](https://example.com "hover me") et **notes de bas de page interactives riches**[^fn-academic]. Dans l'édition académique et les blogs techniques, les notes fournissent des citations bibliographiques[^fn-spec] et des annotations techniques[^fn-tech].
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: Extension de note GFM standard avec popovers interactifs sur bureau et tiroirs sur mobile.
+[^fn-tech]: Insérez du code `O(N \log N)` et des formules mathématiques comme $L = -\sum y \log \hat{y}$ au sein des notes.
 
 > En typographie de magazine, les citations sont l'espace pour respirer.
 > — un amateur de typographie

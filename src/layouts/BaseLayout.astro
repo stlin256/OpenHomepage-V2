@@ -428,6 +428,45 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
 
     {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 global.css */}
     {introCard && <ContactCard card={introCard} lang={lang} />}
+    {/* 富媒体脚注：桌面浮窗与移动端抽屉 */}
+    <div class="footnote-popover" role="tooltip" aria-hidden="true" hidden>
+      <div class="footnote-popover-arrow"></div>
+      <div class="footnote-popover-header">
+        <span class="footnote-popover-badge">#1</span>
+        <span class="footnote-popover-label">{ui.footnotes.label}</span>
+        <button type="button" class="footnote-popover-close" aria-label={ui.footnotes.close}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="footnote-popover-body"></div>
+    </div>
+    <div class="footnote-backdrop" aria-hidden="true" hidden></div>
+    <div class="footnote-drawer" role="dialog" aria-modal="true" aria-label={ui.footnotes.label} aria-hidden="true" hidden>
+      <div class="footnote-drawer-handle" aria-hidden="true"></div>
+      <div class="footnote-drawer-header">
+        <div class="footnote-drawer-title-wrap">
+          <span class="footnote-drawer-badge">#1</span>
+          <h3 class="footnote-drawer-title">{ui.footnotes.label}</h3>
+        </div>
+        <button type="button" class="footnote-drawer-close" aria-label={ui.footnotes.close}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="footnote-drawer-body"></div>
+      <div class="footnote-drawer-footer">
+        <a href="#footnote-label" class="footnote-drawer-jump-btn">
+          <span>{ui.footnotes.jumpToBottom}</span>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M7 13l5 5 5-5M12 4v14" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
     <div class="lightbox" role="dialog" aria-modal="true" aria-label={ui.lightbox.dialog} data-pagefind-ignore hidden>
       <img class="lightbox-img" alt="" />
       <button class="lightbox-close" type="button" aria-label={ui.lightbox.close}>
