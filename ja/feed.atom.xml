@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-01T13:35:47.019Z</updated>
+  <updated>2026-09-01T14:40:34.940Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.atom.xml"/>
     <entry>
       <title>機能</title>
@@ -13,7 +13,7 @@
       <summary>このサイトのマークダウンレンダリングでできることの全機能ツアー</summary>
       <content type="html">&lt;p&gt;このページでは、サイトがサポートするすべてのコンテンツタイプを実演します。ソースはプレーンなマークダウンファイル（&lt;code&gt;data/pages/ja/features.md&lt;/code&gt;）です——エディタで開いて見比べてみてください。&lt;/p&gt;
 &lt;h2&gt;テキストとタイポグラフィ&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;太字&lt;/strong&gt;、&lt;em&gt;斜体&lt;/em&gt;、&lt;del&gt;取り消し線&lt;/del&gt;、&lt;code&gt;インラインコード&lt;/code&gt;、そして&lt;a href=&quot;https://example.com&quot; title=&quot;hover me&quot;&gt;タイトル付きリンク&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;太字&lt;/strong&gt;、&lt;em&gt;斜体&lt;/em&gt;、&lt;del&gt;取り消し線&lt;/del&gt;、&lt;code&gt;インラインコード&lt;/code&gt;、&lt;a href=&quot;https://example.com&quot; title=&quot;hover me&quot;&gt;タイトル付きリンク&lt;/a&gt;、そして&lt;strong&gt;リッチメディア脚注&lt;/strong&gt;&lt;sup&gt;&lt;a href=&quot;#user-content-fn-fn-academic&quot; id=&quot;user-content-fnref-fn-academic&quot; data-footnote-ref=&quot;&quot; aria-describedby=&quot;footnote-label&quot; class=&quot;footnote-ref&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;に対応しています。学術論文や技術ブログにおいて、参考文献の引用&lt;sup&gt;&lt;a href=&quot;#user-content-fn-fn-spec&quot; id=&quot;user-content-fnref-fn-spec&quot; data-footnote-ref=&quot;&quot; aria-describedby=&quot;footnote-label&quot; class=&quot;footnote-ref&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;や技術的な注釈&lt;sup&gt;&lt;a href=&quot;#user-content-fn-fn-tech&quot; id=&quot;user-content-fnref-fn-tech&quot; data-footnote-ref=&quot;&quot; aria-describedby=&quot;footnote-label&quot; class=&quot;footnote-ref&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;をスムーズに提示できます。&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;マガジンタイポグラフィにおいて、引用ブロックは呼吸する余白である。
 — あるタイポグラフィ愛好家&lt;/p&gt;
@@ -233,6 +233,19 @@
   author = {Smith, Bob and Lin, Zhiyuan}&lt;/pre&gt;&lt;/div&gt;
       &lt;/div&gt;
       &lt;picture class=&quot;publication-teaser&quot;&gt;&lt;img src=&quot;https://stlin256.github.io/OpenHomepage-V2/OpenHomepage-V2/assets/publication-03.jpg&quot; alt=&quot;Edge KV Cache Compression figure&quot; loading=&quot;lazy&quot; decoding=&quot;async&quot; sizes=&quot;(max-width: 768px) 100vw, 220px&quot;&gt;&lt;/picture&gt;
-    &lt;/article&gt;&lt;/section&gt;&lt;/section&gt;</content>
+    &lt;/article&gt;&lt;/section&gt;&lt;/section&gt;
+&lt;section data-footnotes=&quot;&quot; class=&quot;footnotes reveal&quot; style=&quot;--delay:120ms&quot;&gt;&lt;h2 class=&quot;footnotes-title&quot; id=&quot;footnote-label&quot;&gt;脚注&lt;/h2&gt;
+&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;user-content-fn-fn-academic&quot; class=&quot;footnote-item&quot;&gt;
+&lt;p&gt;&lt;strong&gt;Vaswani et al. (2017)&lt;/strong&gt;. &lt;em&gt;Attention Is All You Need&lt;/em&gt;. Advances in Neural Information Processing Systems (NeurIPS 2017). &lt;a href=&quot;https://arxiv.org/abs/1706.03762&quot;&gt;arXiv:1706.03762&lt;/a&gt; &lt;a href=&quot;#user-content-fnref-fn-academic&quot; data-footnote-backref=&quot;&quot; aria-label=&quot;参照 1 に戻る&quot; class=&quot;data-footnote-backref&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&quot;user-content-fn-fn-spec&quot; class=&quot;footnote-item&quot;&gt;
+&lt;p&gt;標準的な GFM 脚注構文を拡張し、デスクトップでのホバーポップオーバーとモバイルでのボトムドロワーを提供します。 &lt;a href=&quot;#user-content-fnref-fn-spec&quot; data-footnote-backref=&quot;&quot; aria-label=&quot;参照 2 に戻る&quot; class=&quot;data-footnote-backref&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&quot;user-content-fn-fn-tech&quot; class=&quot;footnote-item&quot;&gt;
+&lt;p&gt;脚注内に &lt;code&gt;O(N \log N)&lt;/code&gt; などのインラインコードや数式 &lt;span class=&quot;katex&quot;&gt;&lt;span class=&quot;katex-mathml&quot;&gt;&lt;math xmlns=&quot;http://www.w3.org/1998/Math/MathML&quot;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mi&gt;L&lt;/mi&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mo&gt;−&lt;/mo&gt;&lt;mo&gt;∑&lt;/mo&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mi&gt;log&lt;/mi&gt;&lt;mo&gt;⁡&lt;/mo&gt;&lt;mover accent=&quot;true&quot;&gt;&lt;mi&gt;y&lt;/mi&gt;&lt;mo&gt;^&lt;/mo&gt;&lt;/mover&gt;&lt;/mrow&gt;&lt;annotation encoding=&quot;application/x-tex&quot;&gt;L = -\sum y \log \hat{y}&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&quot;katex-html&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:0.6833em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot;&gt;L&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mrel&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.2778em;&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;base&quot;&gt;&lt;span class=&quot;strut&quot; style=&quot;height:1em;vertical-align:-0.25em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord&quot;&gt;−&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.1667em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mop op-symbol small-op&quot; style=&quot;position:relative;top:0em;&quot;&gt;∑&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.1667em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.0359em;&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.1667em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mop&quot;&gt;lo&lt;span style=&quot;margin-right:0.0139em;&quot;&gt;g&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;mspace&quot; style=&quot;margin-right:0.1667em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord accent&quot;&gt;&lt;span class=&quot;vlist-t vlist-t2&quot;&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.6944em;&quot;&gt;&lt;span style=&quot;top:-3em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;mord mathnormal&quot; style=&quot;margin-right:0.0359em;&quot;&gt;y&lt;/span&gt;&lt;/span&gt;&lt;span style=&quot;top:-3em;&quot;&gt;&lt;span class=&quot;pstrut&quot; style=&quot;height:3em;&quot;&gt;&lt;/span&gt;&lt;span class=&quot;accent-body&quot; style=&quot;left:-0.1944em;&quot;&gt;&lt;span class=&quot;mord&quot;&gt;^&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-s&quot;&gt;​&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;vlist-r&quot;&gt;&lt;span class=&quot;vlist&quot; style=&quot;height:0.1944em;&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt; を埋め込むことができます。 &lt;a href=&quot;#user-content-fnref-fn-tech&quot; data-footnote-backref=&quot;&quot; aria-label=&quot;参照 3 に戻る&quot; class=&quot;data-footnote-backref&quot;&gt;↩&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/section&gt;</content>
     </entry>
 </feed>
