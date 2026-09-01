@@ -141,6 +141,7 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('class="embed-player embed-bilibili"');
     expect(html).toContain('class="embed-poster"');
     expect(html).toContain('src="/assets/custom-cover.jpg"');
+    expect(html).toContain('referrerpolicy="no-referrer"');
     expect(html).toContain('自定义测试视频');
   });
 
@@ -170,6 +171,7 @@ describe('自定义指令：内嵌播放器', () => {
 
     expect(html).toContain('class="embed-player embed-bilibili"');
     expect(html).toContain('alt="字幕君交流场所"');
+    expect(html).toContain('referrerpolicy="no-referrer"');
     expect(html).toContain('字幕君交流场所');
   });
 

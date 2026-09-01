@@ -72,15 +72,18 @@ export async function fetchBilibiliMeta(
   const now = options.now ?? (() => Date.now());
   const fetchFn = options.fetchFn ?? (globalThis.fetch as typeof fetch);
 
-  const cleanBvid = bvid.trim();
+  let cleanBvid = bvid.trim();
   if (!cleanBvid) return null;
+  if (cleanBvid.startsWith('bv')) {
+    cleanBvid = 'BV' + cleanBvid.slice(2);
+  }
 
   const map = loadBilibiliCache(cacheDir);
   if (map[cleanBvid]) {
     return map[cleanBvid];
   }
 
-  const cacheKey = `${cacheDir ?? ''}:${cleanBvid}`;
+  const cacheKey = `${cacheDir ?? ""}:${cleanBvid}`;
   let p = inflight.get(cacheKey);
   if (!p) {
     p = (async () => {
@@ -89,6 +92,7 @@ export async function fetchBilibiliMeta(
         const res = await fetchFn(url, {
           headers: {
             'User-Agent': USER_AGENT,
+            'Referer': 'https://www.bilibili.com/',
             Accept: 'application/json, text/plain, */*',
           },
           signal: AbortSignal.timeout(timeoutMs),
@@ -98,8 +102,10 @@ export async function fetchBilibiliMeta(
         if (json.code !== 0 || !json.data) {
           throw new Error(`API code ${json.code}`);
         }
-        const rawPic = json.data.pic ?? '';
-        const pic = rawPic.replace(/^http:\/\//i, 'https://');
+        const rawPic = (json.data.pic ?? "").trim();
+        const pic = rawPic.startsWith('//')
+          ? `https:${rawPic}`
+          : rawPic.replace(/^http:\/\//i, 'https://');
         const title = json.data.title ?? 'bilibili 视频';
         const entry: BilibiliMeta = {
           bvid: cleanBvid,

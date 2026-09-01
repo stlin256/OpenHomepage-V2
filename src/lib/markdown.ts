@@ -126,7 +126,7 @@ function buildSanitizeSchema(): Schema {
     iframe: ['src', 'width', 'height', 'allowFullScreen', 'loading', 'referrerPolicy', 'title'],
     video: ['src', 'poster', 'controls', 'preload', 'width', 'height'],
     audio: ['src', 'controls', 'preload'],
-    img: [...(defaultSchema.attributes?.img ?? ['src', 'alt', 'title']), 'loading', 'decoding', 'sizes', 'width', 'height'],
+    img: [...(defaultSchema.attributes?.img ?? ['src', 'alt', 'title']), 'loading', 'decoding', 'sizes', 'width', 'height', 'referrerPolicy', 'referrerpolicy'],
     button: ['type', 'ariaLabel', 'ariaPressed', 'disabled'],
     svg: ['viewBox', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin', 'width', 'height', 'ariaHidden', 'ariaLabel', 'xmlns'],
     path: ['d', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin'],
@@ -211,6 +211,7 @@ function toEmbedDiv(
         alt: title,
         loading: 'lazy',
         decoding: 'async',
+        referrerPolicy: 'no-referrer',
       },
       children: [],
     });
@@ -1006,6 +1007,7 @@ function rehypeResolveEmbeds(options: MarkdownOptions) {
                     alt: meta.title || getUiLabels(options.lang).embed.bilibiliTitleFallback,
                     loading: 'lazy',
                     decoding: 'async',
+                    referrerPolicy: 'no-referrer',
                   });
                   node.children.unshift(img);
                 }
