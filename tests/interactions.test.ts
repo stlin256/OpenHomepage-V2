@@ -98,6 +98,9 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
 
     expect(clickEvt.defaultPrevented).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("/features/");
+    await vi.waitFor(() => {
+      expect(document.querySelector("main.site-main")?.textContent).toBe("新页面");
+    });
   });
 
   it("同页锚点链接平滑滚动且不触发 swapContent fetch", async () => {
@@ -551,5 +554,40 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(document.querySelector(".search-hint-nav")?.textContent).toBe("Navigate");
     expect(document.querySelector(".lightbox")?.getAttribute("aria-label")).toBe("Image preview");
     expect(document.querySelector<HTMLButtonElement>(".lightbox-close")?.getAttribute("aria-label")).toBe("Close");
+  });
+  it("同语言内切换页面时，站点标题保持稳定且不被重新替换或触发淡入淡出", async () => {
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='zh'><head><title>特性</title></head><body>",
+      "<header class='site-header'>",
+      "<nav class='site-nav'><p class='site-title'><a href='/'>中文站名</a></p><ul><li><a href='/features/'>特性</a></li></ul></nav>",
+      "</header>",
+      "<main class='site-main'><p>特性正文</p></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({ ok: true, text: async () => targetHtml }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.documentElement.dataset.routeLang = "zh";
+    document.documentElement.dataset.siteLangs = "zh,en";
+    document.body.innerHTML = [
+      "<header class='site-header'>",
+      "<nav class='site-nav'><p class='site-title'><a id='original-title-link' href='/'>中文站名</a></p><ul><li><a id='nav-link' href='/features/'>特性</a></li></ul></nav>",
+      "</header>",
+      "<main class='site-main'><p>主页正文</p></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    const originalTitleLink = document.querySelector("#original-title-link")!;
+    const navLink = document.querySelector<HTMLAnchorElement>("#nav-link")!;
+    navLink.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+
+    await vi.waitFor(() => {
+      expect(document.querySelector("main.site-main")?.textContent).toBe("特性正文");
+    });
+
+    // 标题节点未被销毁重建，依然是原 DOM 节点
+    expect(document.querySelector("#original-title-link")).toBe(originalTitleLink);
+    expect(document.querySelector(".site-title")?.classList.contains("chrome-fade-out")).toBe(false);
   });
 });

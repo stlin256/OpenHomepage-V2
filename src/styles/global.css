@@ -229,13 +229,6 @@ samp {
     opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
-/* 页面切换只淡入淡出站点标题；标题保持固定位置，避免视觉“浮动”。 */
-.site-nav .site-title {
-  transition: opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.site-nav .site-title.chrome-fade-out {
-  transform: none;
-}
 .site-nav ul {
   transition: opacity 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }

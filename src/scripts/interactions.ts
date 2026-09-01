@@ -354,6 +354,15 @@ function animateLangMenuSelection(link: HTMLAnchorElement): boolean {
   return true;
 }
 
+function siteTitleEqual(oldTitleContainer: Element | null, newTitleLink: Element | null): boolean {
+  if (!oldTitleContainer || !newTitleLink) return !oldTitleContainer && !newTitleLink;
+  const oldLink = oldTitleContainer.querySelector<HTMLAnchorElement>("a");
+  if (!oldLink) return false;
+  if (oldLink.getAttribute("href") !== newTitleLink.getAttribute("href")) return false;
+  if (oldLink.textContent?.trim() !== newTitleLink.textContent?.trim()) return false;
+  return true;
+}
+
 function navLinksEqual(a: Element | null, b: Element | null): boolean {
   if (!a || !b) return a === b;
   const linksA = a.querySelectorAll<HTMLAnchorElement>("a");
@@ -483,12 +492,12 @@ async function swapContent(
     const oldList = oldNav?.querySelector('ul');
 
     const chromeSwaps: Promise<void>[] = [];
-    if (oldTitle) {
+    if (oldTitle && newTitle && !siteTitleEqual(oldTitle, newTitle)) {
       chromeSwaps.push(
-        replaceChildrenWithFade(oldTitle, () =>
-          newTitle ? [newTitle.cloneNode(true)] : [],
-        ),
+        replaceChildrenWithFade(oldTitle, () => [newTitle.cloneNode(true)]),
       );
+    } else if (oldTitle && !newTitle) {
+      chromeSwaps.push(removeWithFade(oldTitle));
     }
     if (oldList && newList && !navLinksEqual(oldList, newList)) {
       chromeSwaps.push(
