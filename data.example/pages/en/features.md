@@ -129,6 +129,18 @@ The contact card, QR modal, light/dark theme, language switcher, background musi
 
 The homepage-specific Profile Block, GitHub Block, and RSS Block are also rendered in full below; they do not depend on the homepage layout.
 
+## Profile Block
+
+Homepage profile section displaying personal bio, social links, and responsive avatar.
+
+## GitHub Block
+
+Homepage GitHub block featuring contribution heatmap and pinned repository cards.
+
+## RSS Block
+
+Homepage RSS block displaying latest syndicated article cards in grouped or mixed view.
+
 ## Page controls
 
 Page controls are page-level widgets configured on a per-page basis (non-global). Each page can define them independently in its frontmatter; they reappear whenever the page is reopened or revisited, providing page-specific announcements and controls.
