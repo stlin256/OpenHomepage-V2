@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-01T15:17:08.537Z</updated>
+  <updated>2026-09-01T15:20:09.416Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/feed.atom.xml"/>
     <entry>
       <title>特性</title>
@@ -152,6 +152,12 @@
 
 &lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;全局组件名称&lt;/th&gt;&lt;th&gt;入口&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Contact Card / QR Modal&lt;/td&gt;&lt;td&gt;右下角联系卡，点击打开二维码弹层&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Theme Toggle&lt;/td&gt;&lt;td&gt;右上角太阳 / 月亮按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Language Switcher&lt;/td&gt;&lt;td&gt;右上角语言按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM Toggle&lt;/td&gt;&lt;td&gt;右上角播放 / 暂停按钮&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;点击正文中的图片&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scroll Reveal&lt;/td&gt;&lt;td&gt;滚动页面时区块显现&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;主页专属组件也在下方完整渲染，不依赖主页是否启用：Profile Block、GitHub Block、RSS Block。&lt;/p&gt;
+&lt;h2&gt;Profile Block · 资料区&lt;/h2&gt;
+&lt;p&gt;主页专属资料区展示个人介绍、社交链接与多端自适应头像。&lt;/p&gt;
+&lt;h2&gt;GitHub Block · 贡献热力图 + 仓库卡&lt;/h2&gt;
+&lt;p&gt;主页专属 GitHub 区块展示过去一年的贡献热力图与精选置顶仓库卡片。&lt;/p&gt;
+&lt;h2&gt;RSS Block · 内容卡片流&lt;/h2&gt;
+&lt;p&gt;主页专属 RSS 区块支持分组分栏与时间混排模式展示最新订阅文章流。&lt;/p&gt;
 &lt;h2&gt;页面控件&lt;/h2&gt;
 &lt;p&gt;页面控件是针对单个页面按需添加的部件（非全局组件），每个页面可以在 frontmatter 中独立定义；离开或重新打开该页面时会再次出现，提供针对单页的提示与操作能力。&lt;/p&gt;
 

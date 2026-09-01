@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-01T15:17:09.748Z</updated>
+  <updated>2026-09-01T15:20:10.945Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.atom.xml"/>
     <entry>
       <title>機能</title>
@@ -152,6 +152,12 @@
 
 &lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;グローバルコンポーネント&lt;/th&gt;&lt;th&gt;入口&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;連絡先カード / QR モーダル&lt;/td&gt;&lt;td&gt;右下のカード。クリックで QR モーダルを表示&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;テーマ切替&lt;/td&gt;&lt;td&gt;右上の太陽／月ボタン&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;言語スイッチャー&lt;/td&gt;&lt;td&gt;右上の言語ボタン&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM 切替&lt;/td&gt;&lt;td&gt;右上の再生／一時停止ボタン&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;ライトボックス&lt;/td&gt;&lt;td&gt;本文中の画像をクリック&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;スクロールリビール&lt;/td&gt;&lt;td&gt;ページのスクロールに合わせてブロックが出現&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;ホームページ専用のプロフィールブロック、GitHub ブロック、RSS ブロックも以下に完全にレンダリングされています。これらはホームページレイアウトに依存しません。&lt;/p&gt;
+&lt;h2&gt;Profile Block · プロフィール&lt;/h2&gt;
+&lt;p&gt;ホームページ専用のプロフィールセクション。自己紹介、ソーシャルリンク、レスポンシブアバターを表示します。&lt;/p&gt;
+&lt;h2&gt;GitHub Block · 貢献ヒートマップ + リポジトリカード&lt;/h2&gt;
+&lt;p&gt;ホームページ専用の GitHub セクション。過去 1 年間のコントリビューションヒートマップとピン留めリポジトリカードを表示します。&lt;/p&gt;
+&lt;h2&gt;RSS Block · コンテンツカード&lt;/h2&gt;
+&lt;p&gt;ホームページ専用の RSS セクション。最新の購読記事カードをグループ化または混在ビューで表示します。&lt;/p&gt;
 &lt;h2&gt;ページコントロール&lt;/h2&gt;
 &lt;p&gt;ページコントロールはページ単位で設定されるページレベルのウィジェットです（グローバルではありません）。各ページは frontmatter で独立に定義でき、ページを開き直すたびに再表示され、ページ固有のお知らせや操作を提供します。&lt;/p&gt;
 
