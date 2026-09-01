@@ -35,7 +35,7 @@
     "static-site-generator"
   ],
   "author": "stlin256",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "private": "true",
   "dependencies": {
