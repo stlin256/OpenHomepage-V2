@@ -1,10 +1,19 @@
-# OpenHomepage V2
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-banner-dark.webp">
+    <img alt="OpenHomepage V2" src="docs/images/logo-banner.webp" width="340">
+  </picture>
+</p>
 
-[![演示](https://img.shields.io/badge/演示-在线预览-blue?style=flat-square&logo=github)](https://stlin256.github.io/OpenHomepage-V2/)
-[![Deploy](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg)](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/stlin256/OpenHomepage-V2)
+<p align="center">
+  <a href="https://stlin256.github.io/OpenHomepage-V2/"><img src="https://img.shields.io/badge/演示-在线预览-blue?style=flat-square&logo=github" alt="演示"></a>
+  <a href="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml"><img src="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg" alt="Deploy"></a>
+  <a href="https://deepwiki.com/stlin256/OpenHomepage-V2"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+</p>
 
-[English](README.md) · [在线演示 / Live Demo](https://stlin256.github.io/OpenHomepage-V2/)
+<p align="center">
+  <a href="README.md">English</a> · <a href="https://stlin256.github.io/OpenHomepage-V2/">在线演示 / Live Demo</a>
+</p>
 
 OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静态个人主页生成器。全站采用科研主页式的严谨克制与现代杂志版式设计，内容与配置完全由本地 `data/` 目录中的 Markdown 和 YAML 文件驱动，并通过 GitHub Actions 自动化构建部署至 GitHub Pages。
 

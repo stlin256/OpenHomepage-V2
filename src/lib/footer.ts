@@ -58,7 +58,11 @@ export function footerTextToHtml(text: string): string {
     out += escapeHtml(text.slice(last, idx));
     const [, label, url] = m;
     if (url && SAFE_HREF_RE.test(url)) {
-      out += `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+      if (label === 'OpenHomepage-V2' || label === 'OpenHomepage V2') {
+        out += `<a href="${escapeHtml(url)}" target="_blank" rel="noopener" class="footer-brand">OpenHomepage <span class="footer-brand-v2">V2</span></a>`;
+      } else {
+        out += `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+      }
     } else {
       out += escapeHtml(m[0]);
     }

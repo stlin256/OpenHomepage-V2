@@ -4514,3 +4514,44 @@ section.footnotes {
   background: var(--accent-glow);
   transform: translateX(-2px);
 }
+
+
+/* 页脚品牌 Logo 与文字排版（OpenHomepage V2 杂志衬线体） */
+.site-footer .footer-brand,
+.site-footer a[href*="OpenHomepage-V2"] {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.015em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.22em;
+  margin: 0 0.15rem;
+  transition: color 0.18s ease;
+}
+
+.site-footer .footer-brand-v2,
+.site-footer .footer-brand span,
+.site-footer .footer-brand em,
+.site-footer a[href*="OpenHomepage-V2"] span,
+.site-footer a[href*="OpenHomepage-V2"] em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-terracotta, #c85a32);
+}
+
+html[data-theme="dark"] .site-footer .footer-brand-v2,
+html[data-theme="dark"] .site-footer .footer-brand span,
+html[data-theme="dark"] .site-footer .footer-brand em,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] span,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
+  color: var(--color-terracotta, #f87171);
+}
+
+.site-footer .footer-brand:hover,
+.site-footer a[href*="OpenHomepage-V2"]:hover {
+  color: var(--accent);
+}

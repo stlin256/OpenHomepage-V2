@@ -47,7 +47,7 @@ describe('footerTextToHtml（内联链接 + sanitize）', () => {
   it('[label](url) 转为链接（target=_blank rel=noopener）', () => {
     const html = footerTextToHtml('Powered by [OpenHomepage-V2](https://github.com/stlin256/OpenHomepage-V2)');
     expect(html).toBe(
-      'Powered by <a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener">OpenHomepage-V2</a>',
+      'Powered by <a href="https://github.com/stlin256/OpenHomepage-V2" target="_blank" rel="noopener" class="footer-brand">OpenHomepage <span class="footer-brand-v2">V2</span></a>',
     );
   });
 

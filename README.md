@@ -1,10 +1,19 @@
-# OpenHomepage V2
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-banner-dark.webp">
+    <img alt="OpenHomepage V2" src="docs/images/logo-banner.webp" width="340">
+  </picture>
+</p>
 
-[![Demo](https://img.shields.io/badge/Demo-Live%20Preview-blue?style=flat-square&logo=github)](https://stlin256.github.io/OpenHomepage-V2/)
-[![Deploy](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg)](https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/stlin256/OpenHomepage-V2)
+<p align="center">
+  <a href="https://stlin256.github.io/OpenHomepage-V2/"><img src="https://img.shields.io/badge/Demo-Live%20Preview-blue?style=flat-square&logo=github" alt="Demo"></a>
+  <a href="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml"><img src="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg" alt="Deploy"></a>
+  <a href="https://deepwiki.com/stlin256/OpenHomepage-V2"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+</p>
 
-[中文文档](README.zh-CN.md) · [Live Demo](https://stlin256.github.io/OpenHomepage-V2/)
+<p align="center">
+  <a href="README.zh-CN.md">中文文档</a> · <a href="https://stlin256.github.io/OpenHomepage-V2/">Live Demo</a>
+</p>
 
 OpenHomepage V2 is a static, magazine-style personal homepage generator built with Astro. Designed with scholarly restraint and editorial typography, it is driven entirely by a local `data/` folder containing plain Markdown and YAML configuration files, and deployed seamlessly to GitHub Pages via GitHub Actions.
 
