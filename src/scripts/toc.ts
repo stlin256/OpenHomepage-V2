@@ -121,33 +121,53 @@ export function animateCollapsible(details: HTMLDetailsElement, content: HTMLEle
   if (prefersReducedMotion() || typeof content.animate !== 'function') {
     details.open = toOpen;
     details.classList.remove('is-opening', 'is-closing');
+    content.style.height = '';
+    content.style.overflow = '';
     return;
   }
 
   const runningAnimation = collapsibleAnimations.get(details);
+  let currentAnimatedHeight = 0;
+  let currentAnimatedOpacity = 0;
+  const isCurrentlyClosing = details.classList.contains('is-closing');
+  const isCurrentlyOpening = details.classList.contains('is-opening');
+
   if (runningAnimation) {
+    const rect = content.getBoundingClientRect();
+    currentAnimatedHeight = rect.height;
+    const computedOpacity = parseFloat(window.getComputedStyle(content).opacity);
+    currentAnimatedOpacity = isNaN(computedOpacity) ? 1 : computedOpacity;
     runningAnimation.cancel();
     collapsibleAnimations.delete(details);
   }
 
   if (toOpen) {
-    details.open = true;
+    const isReversing = runningAnimation !== undefined && (isCurrentlyClosing || isCurrentlyOpening);
+    const startHeight = isReversing ? currentAnimatedHeight : 0;
+    const startOpacity = isReversing ? currentAnimatedOpacity : 0;
+
     details.classList.add('is-opening');
     details.classList.remove('is-closing');
 
     content.style.overflow = 'hidden';
+    content.style.height = `${startHeight}px`;
+
+    details.open = true;
+
+    // 测算目标高度
+    content.style.height = '';
     const targetHeight = content.scrollHeight;
-    const currentHeight = content.getBoundingClientRect().height;
-    const startHeight = currentHeight > 0 && currentHeight < targetHeight ? currentHeight : 0;
+    content.style.height = `${startHeight}px`;
 
     const animation = content.animate(
       [
-        { height: `${startHeight}px`, opacity: startHeight > 0 ? 0.6 : 0, transform: 'translateY(-4px)' },
+        { height: `${startHeight}px`, opacity: startOpacity, transform: 'translateY(-4px)' },
         { height: `${targetHeight}px`, opacity: 1, transform: 'translateY(0)' },
       ],
       {
         duration: 260,
         easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'both',
       }
     );
 
@@ -165,25 +185,35 @@ export function animateCollapsible(details: HTMLDetailsElement, content: HTMLEle
     animation.oncancel = () => {
       details.classList.remove('is-opening');
       content.style.overflow = '';
+      content.style.height = '';
       if (collapsibleAnimations.get(details) === animation) {
         collapsibleAnimations.delete(details);
       }
     };
   } else {
+    const isReversing = runningAnimation !== undefined && (isCurrentlyClosing || isCurrentlyOpening);
+    const startHeight = isReversing
+      ? currentAnimatedHeight
+      : (content.getBoundingClientRect().height || content.scrollHeight);
+    const startOpacity = isReversing
+      ? currentAnimatedOpacity
+      : (parseFloat(window.getComputedStyle(content).opacity) || 1);
+
     details.classList.add('is-closing');
     details.classList.remove('is-opening');
 
-    const currentHeight = content.getBoundingClientRect().height || content.scrollHeight;
     content.style.overflow = 'hidden';
+    content.style.height = `${startHeight}px`;
 
     const animation = content.animate(
       [
-        { height: `${currentHeight}px`, opacity: 1, transform: 'translateY(0)' },
+        { height: `${startHeight}px`, opacity: startOpacity, transform: 'translateY(0)' },
         { height: '0px', opacity: 0, transform: 'translateY(-4px)' },
       ],
       {
         duration: 220,
         easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+        fill: 'both',
       }
     );
 
@@ -202,6 +232,7 @@ export function animateCollapsible(details: HTMLDetailsElement, content: HTMLEle
     animation.oncancel = () => {
       details.classList.remove('is-closing');
       content.style.overflow = '';
+      content.style.height = '';
       if (collapsibleAnimations.get(details) === animation) {
         collapsibleAnimations.delete(details);
       }

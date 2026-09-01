@@ -297,6 +297,32 @@ describe('mobile collapsible toc animation', () => {
     expect(details.classList.contains('is-opening')).toBe(false);
   });
 
+  it('当从已渲染高度的关闭节点打开时，展开动画依然从 0px 启动', () => {
+    const { details, summary, body } = setupCollapsible(false);
+    // 模拟现代浏览器对已加载 DOM 的 getBoundingClientRect 返回全高
+    body.getBoundingClientRect = () => ({
+      top: 0,
+      bottom: 179.8,
+      height: 179.8,
+      width: 300,
+      left: 0,
+      right: 300,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    });
+
+    initToc();
+    summary.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+    expect(details.open).toBe(true);
+    expect(body.animate).toHaveBeenCalledTimes(1);
+
+    const keyframes = vi.mocked(body.animate).mock.calls[0][0] as Keyframe[];
+    expect(keyframes[0].height).toBe('0px');
+    expect(keyframes[1].height).toBe('180px');
+  });
+
   it('点击展开状态的 summary 会触发平滑关闭动画并在结束时设置 open 为 false', () => {
     const { details, summary, body } = setupCollapsible(true);
     initToc();
