@@ -4494,14 +4494,15 @@ section.footnotes {
   align-items: center;
   justify-content: center;
   margin-left: 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: var(--accent);
   text-decoration: none;
   opacity: 0.75;
-  padding: 0 4px;
+  padding: 2px 4px;
   border-radius: var(--radius-sm);
   transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+  vertical-align: middle;
+  line-height: 1;
 }
 
 .data-footnote-backref:hover,
@@ -4509,6 +4510,15 @@ section.footnotes {
   opacity: 1;
   background: var(--accent-glow);
   transform: translateX(-2px);
+}
+
+.data-footnote-backref .footnote-backref-icon,
+.footnote-backref .footnote-backref-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
 }
 
 /* 页脚品牌 Logo 与文字排版（OpenHomepage V2 方案6：渐进形变为按钮，保持品牌色） */

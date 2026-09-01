@@ -534,6 +534,7 @@ describe('富媒体脚注（Footnotes Pipeline）', () => {
     expect(html).toContain('<ol class="footnotes-list">');
     expect(html).toContain('<li id="user-content-fn-1" class="footnote-item">');
     expect(html).toContain('data-footnote-backref=""');
+    expect(html).toContain('footnote-backref-icon');
     expect(html).toContain('aria-label="返回引用 1"');
     expect(html).toContain('aria-label="返回引用 2"');
   });

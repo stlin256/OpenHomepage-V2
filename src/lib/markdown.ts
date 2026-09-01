@@ -131,6 +131,8 @@ function buildSanitizeSchema(): Schema {
     button: ['type', 'ariaLabel', 'ariaPressed', 'disabled'],
     svg: ['viewBox', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin', 'width', 'height', 'ariaHidden', 'ariaLabel', 'xmlns'],
     path: ['d', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin'],
+    polyline: ['points', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin'],
+    line: ['x1', 'y1', 'x2', 'y2', 'stroke', 'strokeWidth', 'strokeLinecap'],
     circle: ['cx', 'cy', 'r', 'fill', 'stroke', 'strokeWidth'],
     rect: ['x', 'y', 'width', 'height', 'rx', 'ry', 'fill', 'stroke', 'strokeWidth'],
   };
@@ -140,7 +142,7 @@ function buildSanitizeSchema(): Schema {
     clobberPrefix: '',
     tagNames: [
       ...(defaultSchema.tagNames ?? []),
-      'iframe', 'video', 'audio', 'figure', 'figcaption', 'button', 'svg', 'path', 'circle', 'rect', 'aside', ...MATH_ML_TAGS,
+      'iframe', 'video', 'audio', 'figure', 'figcaption', 'button', 'svg', 'path', 'polyline', 'line', 'circle', 'rect', 'aside', ...MATH_ML_TAGS,
     ],
     attributes,
   };
@@ -813,6 +815,40 @@ function calloutHeader(node: Element): void {
 function rehypeContentDecorations(lang: string | undefined, defaultLang?: string) {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node) => {
+      if (
+        node.tagName === 'a' &&
+        node.properties &&
+        ('dataFootnoteBackref' in node.properties ||
+          'data-footnote-backref' in node.properties ||
+          classesOf(node).includes('data-footnote-backref') ||
+          classesOf(node).includes('footnote-backref'))
+      ) {
+        const cls = classesOf(node);
+        if (!cls.includes('data-footnote-backref')) {
+          node.properties.className = [...cls, 'data-footnote-backref'];
+        }
+        node.children = [
+          hEl(
+            'svg',
+            {
+              className: ['footnote-backref-icon'],
+              viewBox: '0 0 24 24',
+              width: '13',
+              height: '13',
+              fill: 'none',
+              stroke: 'currentColor',
+              strokeWidth: '2.2',
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round',
+              ariaHidden: 'true',
+            },
+            [
+              hEl('path', { d: 'M9 14 4 9l5-5' }),
+              hEl('path', { d: 'M20 20v-7a4 4 0 0 0-4-4H4' }),
+            ],
+          ),
+        ];
+      }
       if (node.tagName === 'a' && node.properties && ('dataFootnoteRef' in node.properties || 'data-footnote-ref' in node.properties)) {
         const cls = classesOf(node);
         if (!cls.includes('footnote-ref')) {
