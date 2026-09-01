@@ -1,3 +1,6 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import { renderMarkdown } from '../src/lib/markdown.ts';
 
@@ -173,6 +176,33 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('alt="字幕君交流场所"');
     expect(html).toContain('referrerpolicy="no-referrer"');
     expect(html).toContain('字幕君交流场所');
+  });
+
+  it('::bilibili 远程获取失败时智能回退到本地匹配的封面', async () => {
+    const mockFetch = vi.fn(async () => ({ ok: false, status: 403 } as unknown as Response));
+    const emptyCacheDir = path.join(tmpdir(), 'oh-bili-empty-' + Date.now());
+    mkdirSync(emptyCacheDir, { recursive: true });
+    const html = await renderMarkdown('::bilibili{bvid="BV13z421U7cs"}', {
+      localizeAssets: {
+        dataDir: path.join(emptyCacheDir, 'data'),
+        fetchFn: mockFetch as any,
+      },
+    });
+    // 在测试的 dataDir 下放置匹配的本地封面
+    const testDataDir = path.join(emptyCacheDir, 'data');
+    mkdirSync(path.join(testDataDir, 'assets'), { recursive: true });
+    writeFileSync(path.join(testDataDir, 'assets', 'cover-bilibili-bv13z421u7cs.jpg'), 'fake-img');
+
+    const htmlWithFallback = await renderMarkdown('::bilibili{bvid="BV13z421U7cs"}', {
+      localizeAssets: {
+        dataDir: testDataDir,
+        fetchFn: mockFetch as any,
+      },
+    });
+
+    expect(htmlWithFallback).toContain('class="embed-player embed-bilibili"');
+    expect(htmlWithFallback).toContain('src="/assets/cover-bilibili-bv13z421u7cs.jpg"');
+    expect(htmlWithFallback).toContain('referrerpolicy="no-referrer"');
   });
 
   it('::youtube 自动解析视频标题并更新标题栏', async () => {

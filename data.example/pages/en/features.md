@@ -81,7 +81,7 @@ Players render the official iframe directly in a responsive 16:9 container (`loa
 
 ::youtube{id="aircAruvnKk" poster="assets/cover-youtube-aircaruvnkk.jpg"}
 
-::bilibili{bvid="BV13z421U7cs"}
+::bilibili{bvid="BV13z421U7cs" poster="assets/cover-bilibili-bv13z421u7cs.jpg" title="【官方双语】GPT是什么？直观解释Transformer | 深度学习第5章"}
 
 Self-hosted media (native tags):
 

@@ -36,6 +36,7 @@ import { generateHeadingSlug } from './toc.ts';
 import { fetchBilibiliMeta } from './bilibili.ts';
 import { fetchYouTubeMeta } from './youtube.ts';
 import { getUiLabels, normalizeUiLang } from './ui-i18n.ts';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 export interface MarkdownOptions {
@@ -980,7 +981,27 @@ function updateEmbedTitle(node: Element, title: string, kind: 'bilibili' | 'yout
   }
 }
 
-function rehypeResolveEmbeds(options: MarkdownOptions) {
+function findLocalBilibiliPoster(dataDir: string, bvid: string): string | null {
+  const clean = bvid.trim().toLowerCase();
+  const rawClean = bvid.trim();
+  const candidates = [
+    `assets/cover-bilibili-${clean}.jpg`,
+    `assets/cover-bilibili-${clean}.webp`,
+    `assets/cover-bilibili-${clean}.png`,
+    `assets/cover-bilibili-${clean}.avif`,
+    `assets/cover-bilibili-${rawClean}.jpg`,
+    `assets/cover-bilibili-${rawClean}.webp`,
+    `assets/cover-bilibili-${rawClean}.png`,
+  ];
+  for (const rel of candidates) {
+    if (existsSync(path.join(dataDir, rel))) {
+      return rel;
+    }
+  }
+  return null;
+}
+
+function rehypeResolveEmbeds(options: MarkdownOptions, baseUrl: string) {
   return async (tree: HastRoot) => {
     const jobs: Promise<void>[] = [];
     visit(tree, 'element', (node: Element) => {
@@ -991,8 +1012,11 @@ function rehypeResolveEmbeds(options: MarkdownOptions) {
         const hasPoster = node.children.some(
           (c) => c.type === 'element' && c.tagName === 'img' && classesOf(c).includes('embed-poster')
         );
-        if (!hasPoster) {
+        const needsTitle = !node.properties?.dataEmbedTitle || node.properties.dataEmbedTitle === getUiLabels(options.lang).embed.bilibiliTitleFallback;
+        if (!hasPoster || needsTitle) {
           const cacheDir = options.localizeAssets ? path.join(path.dirname(options.localizeAssets.dataDir), '.cache') : undefined;
+          const dataDir = options.localizeAssets?.dataDir;
+          const localFallback = dataDir ? findLocalBilibiliPoster(dataDir, id) : null;
           jobs.push(
             fetchBilibiliMeta(id, {
               cacheDir,
@@ -1000,7 +1024,7 @@ function rehypeResolveEmbeds(options: MarkdownOptions) {
               warn: options.localizeAssets?.warn,
             }).then((meta) => {
               if (meta) {
-                if (meta.pic) {
+                if (!hasPoster && meta.pic) {
                   const img = hEl('img', {
                     className: ['embed-poster'],
                     src: meta.pic,
@@ -1011,8 +1035,22 @@ function rehypeResolveEmbeds(options: MarkdownOptions) {
                   });
                   node.children.unshift(img);
                 }
-                if (meta.title && (!node.properties?.dataEmbedTitle || node.properties.dataEmbedTitle === getUiLabels(options.lang).embed.bilibiliTitleFallback)) {
+                if (meta.title && needsTitle) {
                   updateEmbedTitle(node, meta.title, 'bilibili', options.lang);
+                }
+              } else {
+                // 远程元数据获取失败（如 GitHub Actions 海外 IP 被拦截），智能降级使用本地匹配的离线封面
+                if (!hasPoster && localFallback) {
+                  const currentTitle = String(node.properties?.dataEmbedTitle || getUiLabels(options.lang).embed.bilibiliTitleFallback);
+                  const img = hEl('img', {
+                    className: ['embed-poster'],
+                    src: withBase(`/${localFallback}`, baseUrl),
+                    alt: currentTitle,
+                    loading: 'lazy',
+                    decoding: 'async',
+                    referrerPolicy: 'no-referrer',
+                  });
+                  node.children.unshift(img);
                 }
               }
             })
@@ -1210,7 +1248,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   }
 
   // 自动解析 Bilibili / YouTube 远程信息，并在随后触发本地化下载
-  processor.use(() => rehypeResolveEmbeds(options));
+  processor.use(() => rehypeResolveEmbeds(options, baseUrl));
 
   // 远程媒体下载在 sanitize/iframe 过滤之后：只改写 src/poster 属性，不影响结构
   if (options.localizeAssets) {

@@ -128,8 +128,15 @@ async function download(
   url: string,
   opts: Required<Pick<RemoteAssetOptions, 'fetchFn' | 'now' | 'requestTimeoutMs' | 'warn'>> & { dataDir: string },
 ): Promise<string | null> {
+  const headers: Record<string, string> = {
+    'User-Agent': USER_AGENT,
+    Accept: 'image/*,video/*,audio/*,*/*',
+  };
+  if (/hdslb\.com|bilibili\.com/i.test(url)) {
+    headers['Referer'] = 'https://www.bilibili.com/';
+  }
   const resp = await opts.fetchFn(url, {
-    headers: { 'User-Agent': USER_AGENT, Accept: 'image/*,video/*,audio/*,*/*' },
+    headers,
     signal: AbortSignal.timeout(opts.requestTimeoutMs),
   });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
