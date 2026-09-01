@@ -127,15 +127,15 @@ $$
 
 ## Profile Block · プロフィール
 
-ホームページ専用のプロフィールセクション。自己紹介、ソーシャルリンク、レスポンシブアバターを表示します。
+<div data-feature-slot="profile"></div>
 
 ## GitHub Block · 貢献ヒートマップ + リポジトリカード
 
-ホームページ専用の GitHub セクション。過去 1 年間のコントリビューションヒートマップとピン留めリポジトリカードを表示します。
+<div data-feature-slot="github"></div>
 
 ## RSS Block · コンテンツカード
 
-ホームページ専用の RSS セクション。最新の購読記事カードをグループ化または混在ビューで表示します。
+<div data-feature-slot="rss"></div>
 
 ## ページコントロール
 

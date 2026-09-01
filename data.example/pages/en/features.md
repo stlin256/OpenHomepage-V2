@@ -131,15 +131,15 @@ The homepage-specific Profile Block, GitHub Block, and RSS Block are also render
 
 ## Profile Block
 
-Homepage profile section displaying personal bio, social links, and responsive avatar.
+<div data-feature-slot="profile"></div>
 
 ## GitHub Block
 
-Homepage GitHub block featuring contribution heatmap and pinned repository cards.
+<div data-feature-slot="github"></div>
 
 ## RSS Block
 
-Homepage RSS block displaying latest syndicated article cards in grouped or mixed view.
+<div data-feature-slot="rss"></div>
 
 ## Page controls
 

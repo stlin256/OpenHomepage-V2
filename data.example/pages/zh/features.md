@@ -131,15 +131,15 @@ $$
 
 ## Profile Block · 资料区
 
-主页专属资料区展示个人介绍、社交链接与多端自适应头像。
+<div data-feature-slot="profile"></div>
 
 ## GitHub Block · 贡献热力图 + 仓库卡
 
-主页专属 GitHub 区块展示过去一年的贡献热力图与精选置顶仓库卡片。
+<div data-feature-slot="github"></div>
 
 ## RSS Block · 内容卡片流
 
-主页专属 RSS 区块支持分组分栏与时间混排模式展示最新订阅文章流。
+<div data-feature-slot="rss"></div>
 
 ## 页面控件
 

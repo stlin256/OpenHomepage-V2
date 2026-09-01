@@ -127,15 +127,15 @@ Les blocs Profil, GitHub et RSS propres à la page d'accueil sont également ren
 
 ## Profile Block · Profil
 
-Section de profil de la page d'accueil avec biographie, liens sociaux et avatar adaptatif.
+<div data-feature-slot="profile"></div>
 
 ## GitHub Block · Heatmap et dépôts
 
-Bloc GitHub de la page d'accueil avec heatmap des contributions et cartes de dépôts épinglés.
+<div data-feature-slot="github"></div>
 
 ## RSS Block · Flux de cartes RSS
 
-Bloc RSS de la page d'accueil affichant les derniers flux d'articles en vue groupée ou mixte.
+<div data-feature-slot="rss"></div>
 
 ## Contrôles de page
 
