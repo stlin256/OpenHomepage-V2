@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[Zhiyuan Lin's homepage: machine learning research, open source, and reading notes]]></description>
     <language>en</language>
-    <lastBuildDate>Tue, 01 Sep 2026 15:24:41 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 01 Sep 2026 15:45:02 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/en/feed.xml"/>
     <item>
       <title><![CDATA[Features]]></title>
@@ -156,11 +156,11 @@
 <div class="md-table-wrap"><table><thead><tr><th>Global component</th><th>Entry point</th></tr></thead><tbody><tr><td>Contact Card / QR Modal</td><td>Bottom-right card; click for the QR modal</td></tr><tr><td>Theme Toggle</td><td>Sun / moon button in the top-right</td></tr><tr><td>Language Switcher</td><td>Language button in the top-right</td></tr><tr><td>BGM Toggle</td><td>Play / pause button in the top-right</td></tr><tr><td>Lightbox</td><td>Click an image in the body</td></tr><tr><td>Scroll Reveal</td><td>Blocks reveal as the page scrolls</td></tr></tbody></table></div>
 <p>The homepage-specific Profile Block, GitHub Block, and RSS Block are also rendered in full below; they do not depend on the homepage layout.</p>
 <h2>Profile Block</h2>
-<p>Homepage profile section displaying personal bio, social links, and responsive avatar.</p>
+<div data-feature-slot="profile"></div>
 <h2>GitHub Block</h2>
-<p>Homepage GitHub block featuring contribution heatmap and pinned repository cards.</p>
+<div data-feature-slot="github"></div>
 <h2>RSS Block</h2>
-<p>Homepage RSS block displaying latest syndicated article cards in grouped or mixed view.</p>
+<div data-feature-slot="rss"></div>
 <h2>Page controls</h2>
 <p>Page controls are page-level widgets configured on a per-page basis (non-global). Each page can define them independently in its frontmatter; they reappear whenever the page is reopened or revisited, providing page-specific announcements and controls.</p>
 

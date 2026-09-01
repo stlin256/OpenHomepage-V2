@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[Page personnelle de Zhiyuan Lin : recherche en apprentissage automatique, open source et notes de lecture]]></description>
     <language>fr</language>
-    <lastBuildDate>Tue, 01 Sep 2026 15:24:41 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 01 Sep 2026 15:45:02 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/fr/feed.xml"/>
     <item>
       <title><![CDATA[Fonctionnalités]]></title>
@@ -156,11 +156,11 @@
 <div class="md-table-wrap"><table><thead><tr><th>Composant global</th><th>Point d'entrée</th></tr></thead><tbody><tr><td>Carte de contact / modale QR</td><td>Carte en bas à droite ; cliquez pour ouvrir la modale QR</td></tr><tr><td>Bascule de thème</td><td>Bouton soleil / lune en haut à droite</td></tr><tr><td>Sélecteur de langue</td><td>Bouton de langue en haut à droite</td></tr><tr><td>Bascule BGM</td><td>Bouton lecture / pause en haut à droite</td></tr><tr><td>Lightbox</td><td>Cliquez sur une image dans le corps</td></tr><tr><td>Révélation au défilement</td><td>Les blocs apparaissent au fil du défilement</td></tr></tbody></table></div>
 <p>Les blocs Profil, GitHub et RSS propres à la page d'accueil sont également rendus intégralement ci-dessous ; ils ne dépendent pas de la mise en page de l'accueil.</p>
 <h2>Profile Block · Profil</h2>
-<p>Section de profil de la page d'accueil avec biographie, liens sociaux et avatar adaptatif.</p>
+<div data-feature-slot="profile"></div>
 <h2>GitHub Block · Heatmap et dépôts</h2>
-<p>Bloc GitHub de la page d'accueil avec heatmap des contributions et cartes de dépôts épinglés.</p>
+<div data-feature-slot="github"></div>
 <h2>RSS Block · Flux de cartes RSS</h2>
-<p>Bloc RSS de la page d'accueil affichant les derniers flux d'articles en vue groupée ou mixte.</p>
+<div data-feature-slot="rss"></div>
 <h2>Contrôles de page</h2>
 <p>Les contrôles de page sont des widgets de niveau page configurés page par page (non globaux). Chaque page peut les définir indépendamment dans son frontmatter ; ils réapparaissent à chaque ouverture ou nouvelle visite de la page, offrant des annonces et des contrôles propres à la page.</p>
 

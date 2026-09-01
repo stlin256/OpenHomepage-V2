@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <title>Zhiyuan Lin</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-01T15:24:39.766Z</updated>
+  <updated>2026-09-01T15:45:00.950Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/en/feed.atom.xml"/>
     <entry>
       <title>Features</title>
@@ -153,11 +153,11 @@
 &lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Global component&lt;/th&gt;&lt;th&gt;Entry point&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Contact Card / QR Modal&lt;/td&gt;&lt;td&gt;Bottom-right card; click for the QR modal&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Theme Toggle&lt;/td&gt;&lt;td&gt;Sun / moon button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Language Switcher&lt;/td&gt;&lt;td&gt;Language button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;BGM Toggle&lt;/td&gt;&lt;td&gt;Play / pause button in the top-right&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;Click an image in the body&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Scroll Reveal&lt;/td&gt;&lt;td&gt;Blocks reveal as the page scrolls&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;The homepage-specific Profile Block, GitHub Block, and RSS Block are also rendered in full below; they do not depend on the homepage layout.&lt;/p&gt;
 &lt;h2&gt;Profile Block&lt;/h2&gt;
-&lt;p&gt;Homepage profile section displaying personal bio, social links, and responsive avatar.&lt;/p&gt;
+&lt;div data-feature-slot=&quot;profile&quot;&gt;&lt;/div&gt;
 &lt;h2&gt;GitHub Block&lt;/h2&gt;
-&lt;p&gt;Homepage GitHub block featuring contribution heatmap and pinned repository cards.&lt;/p&gt;
+&lt;div data-feature-slot=&quot;github&quot;&gt;&lt;/div&gt;
 &lt;h2&gt;RSS Block&lt;/h2&gt;
-&lt;p&gt;Homepage RSS block displaying latest syndicated article cards in grouped or mixed view.&lt;/p&gt;
+&lt;div data-feature-slot=&quot;rss&quot;&gt;&lt;/div&gt;
 &lt;h2&gt;Page controls&lt;/h2&gt;
 &lt;p&gt;Page controls are page-level widgets configured on a per-page basis (non-global). Each page can define them independently in its frontmatter; they reappear whenever the page is reopened or revisited, providing page-specific announcements and controls.&lt;/p&gt;
 

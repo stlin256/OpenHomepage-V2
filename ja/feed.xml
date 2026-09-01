@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远の個人ホームページ：機械学習研究、オープンソース、読書記録]]></description>
     <language>ja</language>
-    <lastBuildDate>Tue, 01 Sep 2026 15:24:41 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 01 Sep 2026 15:45:02 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.xml"/>
     <item>
       <title><![CDATA[機能]]></title>
@@ -156,11 +156,11 @@
 <div class="md-table-wrap"><table><thead><tr><th>グローバルコンポーネント</th><th>入口</th></tr></thead><tbody><tr><td>連絡先カード / QR モーダル</td><td>右下のカード。クリックで QR モーダルを表示</td></tr><tr><td>テーマ切替</td><td>右上の太陽／月ボタン</td></tr><tr><td>言語スイッチャー</td><td>右上の言語ボタン</td></tr><tr><td>BGM 切替</td><td>右上の再生／一時停止ボタン</td></tr><tr><td>ライトボックス</td><td>本文中の画像をクリック</td></tr><tr><td>スクロールリビール</td><td>ページのスクロールに合わせてブロックが出現</td></tr></tbody></table></div>
 <p>ホームページ専用のプロフィールブロック、GitHub ブロック、RSS ブロックも以下に完全にレンダリングされています。これらはホームページレイアウトに依存しません。</p>
 <h2>Profile Block · プロフィール</h2>
-<p>ホームページ専用のプロフィールセクション。自己紹介、ソーシャルリンク、レスポンシブアバターを表示します。</p>
+<div data-feature-slot="profile"></div>
 <h2>GitHub Block · 貢献ヒートマップ + リポジトリカード</h2>
-<p>ホームページ専用の GitHub セクション。過去 1 年間のコントリビューションヒートマップとピン留めリポジトリカードを表示します。</p>
+<div data-feature-slot="github"></div>
 <h2>RSS Block · コンテンツカード</h2>
-<p>ホームページ専用の RSS セクション。最新の購読記事カードをグループ化または混在ビューで表示します。</p>
+<div data-feature-slot="rss"></div>
 <h2>ページコントロール</h2>
 <p>ページコントロールはページ単位で設定されるページレベルのウィジェットです（グローバルではありません）。各ページは frontmatter で独立に定義でき、ページを開き直すたびに再表示され、ページ固有のお知らせや操作を提供します。</p>
 

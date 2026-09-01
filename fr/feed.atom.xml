@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">
   <title>Zhiyuan Lin</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-01T15:24:40.011Z</updated>
+  <updated>2026-09-01T15:45:01.203Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/fr/feed.atom.xml"/>
     <entry>
       <title>Fonctionnalités</title>
@@ -153,11 +153,11 @@
 &lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Composant global&lt;/th&gt;&lt;th&gt;Point d&apos;entrée&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Carte de contact / modale QR&lt;/td&gt;&lt;td&gt;Carte en bas à droite ; cliquez pour ouvrir la modale QR&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Bascule de thème&lt;/td&gt;&lt;td&gt;Bouton soleil / lune en haut à droite&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Sélecteur de langue&lt;/td&gt;&lt;td&gt;Bouton de langue en haut à droite&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Bascule BGM&lt;/td&gt;&lt;td&gt;Bouton lecture / pause en haut à droite&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Lightbox&lt;/td&gt;&lt;td&gt;Cliquez sur une image dans le corps&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Révélation au défilement&lt;/td&gt;&lt;td&gt;Les blocs apparaissent au fil du défilement&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;p&gt;Les blocs Profil, GitHub et RSS propres à la page d&apos;accueil sont également rendus intégralement ci-dessous ; ils ne dépendent pas de la mise en page de l&apos;accueil.&lt;/p&gt;
 &lt;h2&gt;Profile Block · Profil&lt;/h2&gt;
-&lt;p&gt;Section de profil de la page d&apos;accueil avec biographie, liens sociaux et avatar adaptatif.&lt;/p&gt;
+&lt;div data-feature-slot=&quot;profile&quot;&gt;&lt;/div&gt;
 &lt;h2&gt;GitHub Block · Heatmap et dépôts&lt;/h2&gt;
-&lt;p&gt;Bloc GitHub de la page d&apos;accueil avec heatmap des contributions et cartes de dépôts épinglés.&lt;/p&gt;
+&lt;div data-feature-slot=&quot;github&quot;&gt;&lt;/div&gt;
 &lt;h2&gt;RSS Block · Flux de cartes RSS&lt;/h2&gt;
-&lt;p&gt;Bloc RSS de la page d&apos;accueil affichant les derniers flux d&apos;articles en vue groupée ou mixte.&lt;/p&gt;
+&lt;div data-feature-slot=&quot;rss&quot;&gt;&lt;/div&gt;
 &lt;h2&gt;Contrôles de page&lt;/h2&gt;
 &lt;p&gt;Les contrôles de page sont des widgets de niveau page configurés page par page (non globaux). Chaque page peut les définir indépendamment dans son frontmatter ; ils réapparaissent à chaque ouverture ou nouvelle visite de la page, offrant des annonces et des contrôles propres à la page.&lt;/p&gt;
 
