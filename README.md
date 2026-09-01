@@ -23,7 +23,6 @@
 <p align="center">
   <a href="#-core-capabilities">⚡ Core Capabilities</a> ·
   <a href="#-component-gallery">🎨 Gallery</a> ·
-  <a href="#-architecture--data-flow">📐 Architecture</a> ·
   <a href="#-markdown-directives-cheat-sheet">📝 Directives</a> ·
   <a href="#-quick-start">🚀 Quick Start</a> ·
   <a href="#-local-visual-editor">🎛️ Admin Console</a> ·
@@ -47,7 +46,6 @@
   - [1. Homepage & Dynamic Streams](#1-homepage--dynamic-streams)
   - [2. Academic Publishing & Markdown Directives](#2-academic-publishing--markdown-directives)
   - [3. Global UI, Media & Multilingual Architecture](#3-global-ui-media--multilingual-architecture)
-- [📐 Architecture & Data Flow](#-architecture--data-flow)
 - [📝 Markdown Directives Cheat Sheet](#-markdown-directives-cheat-sheet)
 - [🚀 Quick Start](#-quick-start)
 - [💻 CLI Commands](#-cli-commands)
@@ -315,59 +313,6 @@ Every screenshot below is captured directly from the static production build via
 
 ---
 
-## 📐 Architecture & Data Flow
-
-OpenHomepage V2 follows a strict **"Public Code, Private Content"** architecture. All content lives inside the local `data/` directory, computed statically during build time, resulting in zero unnecessary client runtime overhead:
-
-```mermaid
-flowchart TD
-    subgraph DataLayer ["Data & Content Layer - Private data directory"]
-        SiteConfig["site.yaml<br/>Site Config / Nav / Theme"]
-        PagesContent["pages Multilingual Content<br/>Markdown Format"]
-        PubsData["publications.yaml<br/>Papers & BibTeX Records"]
-        RssConfig["rss.yaml<br/>RSS Subscription Feeds"]
-        MediaAssets["assets Static Media<br/>Avatars / Galleries / Media"]
-    end
-
-    subgraph EditorAdmin ["Local Dual-Mode Editor - npm run admin"]
-        WYSIWYG["On-Page WYSIWYG Editor<br/>Hover Outlines / Inspector / Reorder"]
-        SourceEditor["Source Fallback & Site Config Forms"]
-        Snapshots["Autosave & Historical Snapshots<br/>.snapshots Directory"]
-        ExportZip["One-Click Export Archive<br/>data.zip Package"]
-    end
-
-    subgraph BuildEngine ["Astro Core SSG Pipeline"]
-        PrefetchService["Dynamic Prefetch Engine<br/>GitHub Activity / Pinned Repos / RSS"]
-        MarkdownCompiler["Markdown & Academic Pipeline<br/>Shiki / KaTeX / BibTeX / Footnotes"]
-        ImageOptimizer["Responsive Image Derivation<br/>AVIF + WebP Multi-Density"]
-        SiteFeeds["Feed & Social Generation<br/>Dynamic OG Cards / RSS / Atom / JSON"]
-    end
-
-    subgraph DeployEngine ["Production Hosting & CI / CD"]
-        GHActions["GitHub Actions CI Workflow<br/>Private URL Download / Snapshot Fallback"]
-        GHPages["GitHub Pages & Global CDN<br/>Zero JS Overhead / Instant Idle Prefetch"]
-        ServerHost["Standalone Production Server<br/>Custom Ports & SSL Support"]
-    end
-
-    %% Flow Relationships
-    SiteConfig --- SourceEditor
-    PagesContent --- WYSIWYG
-    SourceEditor --> Snapshots
-    SourceEditor --> ExportZip
-    ExportZip -->|Private URL Sync| GHActions
-    PagesContent --> MarkdownCompiler
-    PubsData --> MarkdownCompiler
-    RssConfig --> PrefetchService
-    MediaAssets --> ImageOptimizer
-    PrefetchService --> MarkdownCompiler
-    MarkdownCompiler --> GHActions
-    ImageOptimizer --> GHActions
-    SiteFeeds --> GHActions
-    GHActions -->|Automated Deploy gh-pages| GHPages
-    MarkdownCompiler -->|Direct Production Serving| ServerHost
-```
-
----
 
 ## 📝 Markdown Directives Cheat Sheet
 

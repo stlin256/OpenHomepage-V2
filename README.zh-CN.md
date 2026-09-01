@@ -23,7 +23,6 @@
 <p align="center">
   <a href="#-核心特性">⚡ 核心特性</a> ·
   <a href="#-组件画廊">🎨 组件画廊</a> ·
-  <a href="#-架构与数据流">📐 架构设计</a> ·
   <a href="#-markdown-指令速查表">📝 指令速查</a> ·
   <a href="#-快速上手">🚀 快速上手</a> ·
   <a href="#-本地可视化编辑器">🎛️ 本地后台</a> ·
@@ -47,7 +46,6 @@
   - [1. 主页与动态数据区块](#1-主页与动态数据区块)
   - [2. 学术科研与 Markdown 指令排版](#2-学术科研与-markdown-指令排版)
   - [3. 全局交互、媒体与多语言体系](#3-全局交互媒体与多语言体系)
-- [📐 架构与数据流](#-架构与数据流)
 - [📝 Markdown 指令速查表](#-markdown-指令速查表)
 - [🚀 快速上手](#-快速上手)
 - [💻 常用 CLI 命令](#-常用-cli-命令)
@@ -315,59 +313,6 @@
 
 ---
 
-## 📐 架构与数据流
-
-OpenHomepage V2 采用**「代码开源、内容私密」**的设计哲学。站点的所有内容均由本地 `data/` 目录驱动，构建期全量计算衍生，客户端零额外脚本开销：
-
-```mermaid
-flowchart TD
-    subgraph DataLayer ["数据与内容层 - data 目录私有隔离"]
-        SiteConfig["site.yaml<br/>站点配置 / 导航 / 主题"]
-        PagesContent["pages 多语言页面正文<br/>Markdown 格式"]
-        PubsData["publications.yaml<br/>学术论文与 BibTeX 记录"]
-        RssConfig["rss.yaml<br/>多源 RSS 订阅流配置"]
-        MediaAssets["assets 静态素材<br/>头像 / 相册 / 音视频"]
-    end
-
-    subgraph EditorAdmin ["本地双模编辑器 - npm run admin"]
-        WYSIWYG["真实渲染页直编<br/>悬停描边 / 检查器 / 拖拽重排"]
-        SourceEditor["源码兜底编辑 & 全站表单配置"]
-        Snapshots["自动保存与版本快照<br/>.snapshots 目录"]
-        ExportZip["一键导出私有数据包<br/>data.zip 归档"]
-    end
-
-    subgraph BuildEngine ["Astro 核心构建管线 - SSG 静态直出"]
-        PrefetchService["动态数据预取<br/>GitHub 日历 / Pinned 仓库 / RSS"]
-        MarkdownCompiler["Markdown 与学术指令解析<br/>Shiki / KaTeX / BibTeX / 脚注"]
-        ImageOptimizer["图像响应式优化衍生<br/>AVIF + WebP 多断点计算"]
-        SiteFeeds["全站 Feed 与社交图生成<br/>动态 OG 图 / RSS / Atom / JSON"]
-    end
-
-    subgraph DeployEngine ["生产发布与托管 - CI / CD"]
-        GHActions["GitHub Actions 自动化流水线<br/>私有直链拉取 / 容灾快照回退"]
-        GHPages["GitHub Pages 全球 CDN<br/>零 JS 开销 / 内存秒开预取"]
-        ServerHost["独立生产级静态服务器<br/>自定义端口 / SSL 证书"]
-    end
-
-    %% 核心数据流转
-    SiteConfig --- SourceEditor
-    PagesContent --- WYSIWYG
-    SourceEditor --> Snapshots
-    SourceEditor --> ExportZip
-    ExportZip -->|私有直链同步| GHActions
-    PagesContent --> MarkdownCompiler
-    PubsData --> MarkdownCompiler
-    RssConfig --> PrefetchService
-    MediaAssets --> ImageOptimizer
-    PrefetchService --> MarkdownCompiler
-    MarkdownCompiler --> GHActions
-    ImageOptimizer --> GHActions
-    SiteFeeds --> GHActions
-    GHActions -->|自动化发布 gh-pages| GHPages
-    MarkdownCompiler -->|独立生产托管| ServerHost
-```
-
----
 
 ## 📝 Markdown 指令速查表
 
