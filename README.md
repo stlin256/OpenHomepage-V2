@@ -321,50 +321,50 @@ OpenHomepage V2 follows a strict **"Public Code, Private Content"** architecture
 
 ```mermaid
 flowchart TD
-    subgraph DataGroup["Data & Content Layer (data/ - Strictly Private)"]
-        SiteYAML["site.yaml<br/>(Site Config / Nav / Theme)"]
-        PagesMD["pages/[lang]/*.md<br/>(Multilingual Markdown Pages)"]
-        PubsYAML["publications.yaml<br/>(Papers & BibTeX Records)"]
-        RssYAML["rss.yaml<br/>(RSS Syndication Feeds)"]
-        MediaAssets["assets/<br/>(Avatars / Galleries / Media)"]
+    subgraph DataLayer ["Data & Content Layer - Private data directory"]
+        SiteConfig["site.yaml<br/>Site Config / Nav / Theme"]
+        PagesContent["pages Multilingual Content<br/>Markdown Format"]
+        PubsData["publications.yaml<br/>Papers & BibTeX Records"]
+        RssConfig["rss.yaml<br/>RSS Subscription Feeds"]
+        MediaAssets["assets Static Media<br/>Avatars / Galleries / Media"]
     end
 
-    subgraph AdminGroup["Dual-Mode Local Admin (npm run admin)"]
-        WYSIWYG["On-Page WYSIWYG Editor<br/>(Hover Outlines / Inspector / Reorder)"]
+    subgraph EditorAdmin ["Local Dual-Mode Editor - npm run admin"]
+        WYSIWYG["On-Page WYSIWYG Editor<br/>Hover Outlines / Inspector / Reorder"]
         SourceEditor["Source Fallback & Site Config Forms"]
-        Snapshots["Autosave & Version Snapshots (.snapshots/)"]
-        ExportZip["One-Click Export (data.zip)"]
+        Snapshots["Autosave & Historical Snapshots<br/>.snapshots Directory"]
+        ExportZip["One-Click Export Archive<br/>data.zip Package"]
     end
 
-    subgraph BuildGroup["Astro Core SSG Pipeline"]
-        PrefetchEngine["Dynamic Prefetch Engine<br/>(GitHub Activity / Pinned Repos / RSS)"]
-        MarkdownEngine["Markdown & Academic Pipeline<br/>(Shiki / KaTeX / BibTeX / Footnotes)"]
-        ImageEngine["Responsive Image Derivation (Sharp)<br/>(AVIF + WebP / Density Matching)"]
-        SyndicationEngine["Feed & Social Generation<br/>(Dynamic OG Cards / RSS / Atom / JSON Feed)"]
+    subgraph BuildEngine ["Astro Core SSG Pipeline"]
+        PrefetchService["Dynamic Prefetch Engine<br/>GitHub Activity / Pinned Repos / RSS"]
+        MarkdownCompiler["Markdown & Academic Pipeline<br/>Shiki / KaTeX / BibTeX / Footnotes"]
+        ImageOptimizer["Responsive Image Derivation<br/>AVIF + WebP Multi-Density"]
+        SiteFeeds["Feed & Social Generation<br/>Dynamic OG Cards / RSS / Atom / JSON"]
     end
 
-    subgraph DeployGroup["Hosting & CI/CD Pipeline"]
-        GHActions["GitHub Actions CI Workflow<br/>(Private URL Download / Snapshot Recovery)"]
-        GHPages["GitHub Pages / Global CDN<br/>(Zero JS Overhead / Instant Idle Prefetch)"]
-        ServerHost["Standalone Production Server (npm run serve)<br/>(Custom Ports & SSL Support)"]
+    subgraph DeployEngine ["Production Hosting & CI / CD"]
+        GHActions["GitHub Actions CI Workflow<br/>Private URL Download / Snapshot Fallback"]
+        GHPages["GitHub Pages & Global CDN<br/>Zero JS Overhead / Instant Idle Prefetch"]
+        ServerHost["Standalone Production Server<br/>Custom Ports & SSL Support"]
     end
 
-    %% Flow relationships
-    SiteYAML <--> SourceEditor
-    PagesMD <--> WYSIWYG
+    %% Flow Relationships
+    SiteConfig --- SourceEditor
+    PagesContent --- WYSIWYG
     SourceEditor --> Snapshots
     SourceEditor --> ExportZip
-    ExportZip -.->|"Secure URL Download (DATA_SOURCE_URL)"| GHActions
-    PagesMD --> MarkdownEngine
-    PubsYAML --> MarkdownEngine
-    RssYAML --> PrefetchEngine
-    MediaAssets --> ImageEngine
-    PrefetchEngine --> MarkdownEngine
-    MarkdownEngine --> GHActions
-    ImageEngine --> GHActions
-    SyndicationEngine --> GHActions
-    GHActions -->|"Automated Deployment"| GHPages
-    MarkdownEngine -->|"Direct Production Serving"| ServerHost
+    ExportZip -->|Private URL Sync| GHActions
+    PagesContent --> MarkdownCompiler
+    PubsData --> MarkdownCompiler
+    RssConfig --> PrefetchService
+    MediaAssets --> ImageOptimizer
+    PrefetchService --> MarkdownCompiler
+    MarkdownCompiler --> GHActions
+    ImageOptimizer --> GHActions
+    SiteFeeds --> GHActions
+    GHActions -->|Automated Deploy gh-pages| GHPages
+    MarkdownCompiler -->|Direct Production Serving| ServerHost
 ```
 
 ---

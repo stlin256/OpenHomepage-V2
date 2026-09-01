@@ -321,50 +321,50 @@ OpenHomepage V2 采用**「代码开源、内容私密」**的设计哲学。站
 
 ```mermaid
 flowchart TD
-    subgraph DataGroup["数据与内容层 (data/ - 私有隔离)"]
-        SiteYAML["site.yaml<br/>(全站配置 / 导航 / 主题)"]
-        PagesMD["pages/[lang]/*.md<br/>(多语言 Markdown 正文)"]
-        PubsYAML["publications.yaml<br/>(学术成果 / BibTeX)"]
-        RssYAML["rss.yaml<br/>(RSS 订阅流配置)"]
-        MediaAssets["assets/<br/>(头像 / 图库相册 / 本地媒体)"]
+    subgraph DataLayer ["数据与内容层 - data 目录私有隔离"]
+        SiteConfig["site.yaml<br/>站点配置 / 导航 / 主题"]
+        PagesContent["pages 多语言页面正文<br/>Markdown 格式"]
+        PubsData["publications.yaml<br/>学术论文与 BibTeX 记录"]
+        RssConfig["rss.yaml<br/>多源 RSS 订阅流配置"]
+        MediaAssets["assets 静态素材<br/>头像 / 相册 / 音视频"]
     end
 
-    subgraph AdminGroup["本地双模编辑器 (npm run admin)"]
-        WYSIWYG["真实渲染页直编<br/>(悬停描边 / 检查器 / 拖拽重排)"]
+    subgraph EditorAdmin ["本地双模编辑器 - npm run admin"]
+        WYSIWYG["真实渲染页直编<br/>悬停描边 / 检查器 / 拖拽重排"]
         SourceEditor["源码兜底编辑 & 全站表单配置"]
-        Snapshots["自动保存与版本快照 (.snapshots/)"]
-        ExportZip["一键导出私有数据包 (data.zip)"]
+        Snapshots["自动保存与版本快照<br/>.snapshots 目录"]
+        ExportZip["一键导出私有数据包<br/>data.zip 归档"]
     end
 
-    subgraph BuildGroup["Astro 核心构建管线 (SSG 静态直出)"]
-        PrefetchEngine["动态数据预取<br/>(GitHub 日历 / Pinned 仓库 / RSS)"]
-        MarkdownEngine["Markdown 与学术指令解析<br/>(Shiki / KaTeX / BibTeX / 脚注)"]
-        ImageEngine["图像响应式优化衍生 (Sharp)<br/>(AVIF + WebP / 精确断点密度)"]
-        SyndicationEngine["全站 Feed 与社交图生成<br/>(动态 OG 图 / RSS / Atom / JSON Feed)"]
+    subgraph BuildEngine ["Astro 核心构建管线 - SSG 静态直出"]
+        PrefetchService["动态数据预取<br/>GitHub 日历 / Pinned 仓库 / RSS"]
+        MarkdownCompiler["Markdown 与学术指令解析<br/>Shiki / KaTeX / BibTeX / 脚注"]
+        ImageOptimizer["图像响应式优化衍生<br/>AVIF + WebP 多断点计算"]
+        SiteFeeds["全站 Feed 与社交图生成<br/>动态 OG 图 / RSS / Atom / JSON"]
     end
 
-    subgraph DeployGroup["生产发布与托管 (CI/CD)"]
-        GHActions["GitHub Actions 自动化流水线<br/>(私有直链拉取 / 容灾快照回退)"]
-        GHPages["GitHub Pages / 全球 CDN<br/>(零 JS 开销 / 内存秒开预取 / Speculation Rules)"]
-        ServerHost["独立生产级静态服务器 (npm run serve)<br/>(自定义端口 / 自动化 SSL 证书)"]
+    subgraph DeployEngine ["生产发布与托管 - CI / CD"]
+        GHActions["GitHub Actions 自动化流水线<br/>私有直链拉取 / 容灾快照回退"]
+        GHPages["GitHub Pages 全球 CDN<br/>零 JS 开销 / 内存秒开预取"]
+        ServerHost["独立生产级静态服务器<br/>自定义端口 / SSL 证书"]
     end
 
     %% 核心数据流转
-    SiteYAML <--> SourceEditor
-    PagesMD <--> WYSIWYG
+    SiteConfig --- SourceEditor
+    PagesContent --- WYSIWYG
     SourceEditor --> Snapshots
     SourceEditor --> ExportZip
-    ExportZip -.->|"私有直链下载 (DATA_SOURCE_URL)"| GHActions
-    PagesMD --> MarkdownEngine
-    PubsYAML --> MarkdownEngine
-    RssYAML --> PrefetchEngine
-    MediaAssets --> ImageEngine
-    PrefetchEngine --> MarkdownEngine
-    MarkdownEngine --> GHActions
-    ImageEngine --> GHActions
-    SyndicationEngine --> GHActions
-    GHActions -->|"自动化发布 gh-pages"| GHPages
-    MarkdownEngine -->|"独立生产托管"| ServerHost
+    ExportZip -->|私有直链同步| GHActions
+    PagesContent --> MarkdownCompiler
+    PubsData --> MarkdownCompiler
+    RssConfig --> PrefetchService
+    MediaAssets --> ImageOptimizer
+    PrefetchService --> MarkdownCompiler
+    MarkdownCompiler --> GHActions
+    ImageOptimizer --> GHActions
+    SiteFeeds --> GHActions
+    GHActions -->|自动化发布 gh-pages| GHPages
+    MarkdownCompiler -->|独立生产托管| ServerHost
 ```
 
 ---
