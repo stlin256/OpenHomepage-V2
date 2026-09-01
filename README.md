@@ -321,42 +321,50 @@ OpenHomepage V2 follows a strict **"Public Code, Private Content"** architecture
 
 ```mermaid
 flowchart TD
-    subgraph DataLayer["📁 Data & Content Layer (data/ - Strictly Git-Ignored & Private)"]
-        SiteYAML["site.yaml<br/>(Site Config / Theme / Navigation / Profile)"]
-        PagesMD["pages/&lt;lang&gt;/*.md<br/>(Multilingual Markdown Page Content)"]
-        PubsYAML["publications.yaml<br/>(Scholarly Papers / BibTeX Records)"]
-        RssYAML["rss.yaml<br/>(RSS Syndication Feeds Config)"]
-        MediaAssets["assets/<br/>(Avatars / Photo Galleries / Audio & Video Assets)"]
+    subgraph DataGroup["Data & Content Layer (data/ - Strictly Private)"]
+        SiteYAML["site.yaml<br/>(Site Config / Nav / Theme)"]
+        PagesMD["pages/[lang]/*.md<br/>(Multilingual Markdown Pages)"]
+        PubsYAML["publications.yaml<br/>(Papers & BibTeX Records)"]
+        RssYAML["rss.yaml<br/>(RSS Syndication Feeds)"]
+        MediaAssets["assets/<br/>(Avatars / Galleries / Media)"]
     end
 
-    subgraph EditEngine["🎛️ Dual-Mode Local Visual Admin (npm run admin)"]
-        WYSIWYG["WYSIWYG Editing on Real Rendered Pages<br/>(Hover Outlines / Inspector / Drag-and-Drop / Undo-Redo)"]
-        SourceEditor["Markdown Source Fallback & Site-Wide Config Forms"]
-        Snapshots["Autosave & Historical Version Snapshots (.snapshots/)"]
-        ExportZip["One-Click Data Archive Export (data.zip)"]
+    subgraph AdminGroup["Dual-Mode Local Admin (npm run admin)"]
+        WYSIWYG["On-Page WYSIWYG Editor<br/>(Hover Outlines / Inspector / Reorder)"]
+        SourceEditor["Source Fallback & Site Config Forms"]
+        Snapshots["Autosave & Version Snapshots (.snapshots/)"]
+        ExportZip["One-Click Export (data.zip)"]
     end
 
-    subgraph BuildPipeline["⚙️ Astro Core SSG Pipeline"]
-        Prefetch["Dynamic Prefetch Engine<br/>(GitHub GraphQL Calendar / Pinned Repos / RSS Stream)"]
-        MarkdownEngine["Markdown & Academic Directive Pipeline<br/>(Shiki Highlighting / KaTeX Math / BibTeX / Footnotes)"]
-        ImageOptimization["Image Optimization & Derivation (Sharp)<br/>(AVIF + WebP Responsive Candidates / Density Matching)"]
-        Syndication["Social & Syndication Generation<br/>(Dynamic OG Share Cards / RSS / Atom / JSON Feed)"]
+    subgraph BuildGroup["Astro Core SSG Pipeline"]
+        PrefetchEngine["Dynamic Prefetch Engine<br/>(GitHub Activity / Pinned Repos / RSS)"]
+        MarkdownEngine["Markdown & Academic Pipeline<br/>(Shiki / KaTeX / BibTeX / Footnotes)"]
+        ImageEngine["Responsive Image Derivation (Sharp)<br/>(AVIF + WebP / Density Matching)"]
+        SyndicationEngine["Feed & Social Generation<br/>(Dynamic OG Cards / RSS / Atom / JSON Feed)"]
     end
 
-    subgraph Deployment["🚀 Production Hosting & CI/CD Pipeline"]
-        GitHubActions["GitHub Actions Automated Workflow<br/>(Private URL Download / Snapshot Disaster Recovery)"]
-        GitHubPages["GitHub Pages / Global CDN<br/>(Zero JS Overhead / Instant Idle Prefetch / Speculation Rules)"]
-        SelfHost["Standalone Production Server (npm run serve)<br/>(Custom Ports & Automated HTTPS Certificates)"]
+    subgraph DeployGroup["Hosting & CI/CD Pipeline"]
+        GHActions["GitHub Actions CI Workflow<br/>(Private URL Download / Snapshot Recovery)"]
+        GHPages["GitHub Pages / Global CDN<br/>(Zero JS Overhead / Instant Idle Prefetch)"]
+        ServerHost["Standalone Production Server (npm run serve)<br/>(Custom Ports & SSL Support)"]
     end
 
     %% Flow relationships
-    DataLayer <-->|"Local Bidirectional Read/Write"| EditEngine
-    EditEngine -->|"Package Archive"| ExportZip
-    ExportZip -.->|"Secure URL Download (DATA_SOURCE_URL)"| GitHubActions
-    DataLayer -->|"Static Build Input"| BuildPipeline
-    BuildPipeline -->|"Compiled Artifacts (dist/)"| GitHubActions
-    GitHubActions -->|"Automated Deployment (gh-pages)"| GitHubPages
-    BuildPipeline -->|"Direct Local Production Serving"| SelfHost
+    SiteYAML <--> SourceEditor
+    PagesMD <--> WYSIWYG
+    SourceEditor --> Snapshots
+    SourceEditor --> ExportZip
+    ExportZip -.->|"Secure URL Download (DATA_SOURCE_URL)"| GHActions
+    PagesMD --> MarkdownEngine
+    PubsYAML --> MarkdownEngine
+    RssYAML --> PrefetchEngine
+    MediaAssets --> ImageEngine
+    PrefetchEngine --> MarkdownEngine
+    MarkdownEngine --> GHActions
+    ImageEngine --> GHActions
+    SyndicationEngine --> GHActions
+    GHActions -->|"Automated Deployment"| GHPages
+    MarkdownEngine -->|"Direct Production Serving"| ServerHost
 ```
 
 ---
