@@ -27,6 +27,8 @@ html {
   --accent-contrast: var(--accent-light-contrast);
   --font-sans:
     'Segoe UI', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+  --font-serif: 'Newsreader', 'Songti SC', 'Source Han Serif SC', Georgia, 'Times New Roman', serif;
+  --color-terracotta: #c85a32;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --font-mono-index: 'JetBrains Mono Index Variable', var(--font-mono);
   --content-width: 68rem;
@@ -35,6 +37,7 @@ html {
 
 html[data-theme='dark'] {
   --bg: var(--site-bg-dark, #141311);
+  --color-terracotta: #f87171;
   --bg-subtle: #1c1a18;
   --card: #201e1b;
   --text: #f0ede7;
@@ -4515,43 +4518,91 @@ section.footnotes {
   transform: translateX(-2px);
 }
 
-
-/* 页脚品牌 Logo 与文字排版（OpenHomepage V2 杂志衬线体） */
-.site-footer .footer-brand,
+/* 页脚品牌 Logo 与文字排版（OpenHomepage V2 方案6：渐进形变为按钮，保持品牌色） */
+.site-footer a.footer-brand,
 .site-footer a[href*="OpenHomepage-V2"] {
   font-family: var(--font-serif);
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text);
-  text-decoration: none;
+  color: var(--text) !important;
+  text-decoration: none !important;
   letter-spacing: -0.015em;
   display: inline-flex;
   align-items: baseline;
+  vertical-align: baseline;
+  white-space: nowrap;
   gap: 0.22em;
-  margin: 0 0.15rem;
-  transition: color 0.18s ease;
+  padding: 1px 6px;
+  margin: 0 0.2rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: transparent;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition:
+    background-color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
 }
 
-.site-footer .footer-brand-v2,
-.site-footer .footer-brand span,
-.site-footer .footer-brand em,
+.site-footer a.footer-brand .brand-name,
+.site-footer a[href*="OpenHomepage-V2"] .brand-name {
+  color: var(--text) !important;
+}
+
+.site-footer a.footer-brand .footer-brand-v2,
+.site-footer a.footer-brand span.footer-brand-v2,
+.site-footer a.footer-brand em,
+.site-footer a[href*="OpenHomepage-V2"] .footer-brand-v2,
 .site-footer a[href*="OpenHomepage-V2"] span,
 .site-footer a[href*="OpenHomepage-V2"] em {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 600;
-  color: var(--color-terracotta, #c85a32);
+  color: var(--color-terracotta, #c85a32) !important;
+  transition: color 0.15s ease;
 }
 
-html[data-theme="dark"] .site-footer .footer-brand-v2,
-html[data-theme="dark"] .site-footer .footer-brand span,
-html[data-theme="dark"] .site-footer .footer-brand em,
+html[data-theme="dark"] .site-footer a.footer-brand .footer-brand-v2,
+html[data-theme="dark"] .site-footer a.footer-brand span.footer-brand-v2,
+html[data-theme="dark"] .site-footer a.footer-brand em,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] span,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
-  color: var(--color-terracotta, #f87171);
+  color: var(--color-terracotta, #f87171) !important;
 }
 
-.site-footer .footer-brand:hover,
+/* 悬停态：平滑展开为胶囊按钮，保持自身品牌色不变 */
+.site-footer a.footer-brand:hover,
 .site-footer a[href*="OpenHomepage-V2"]:hover {
-  color: var(--accent);
+  color: var(--text) !important;
+  text-decoration: none !important;
+  background: var(--card);
+  border-color: var(--border-strong);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
+  padding: 1px 11px;
+}
+
+html[data-theme="dark"] .site-footer a.footer-brand:hover,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover {
+  background: var(--card);
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.site-footer a.footer-brand:hover .footer-brand-v2,
+.site-footer a[href*="OpenHomepage-V2"]:hover .footer-brand-v2,
+.site-footer a[href*="OpenHomepage-V2"]:hover span,
+.site-footer a[href*="OpenHomepage-V2"]:hover em {
+  color: var(--color-terracotta, #c85a32) !important;
+}
+
+html[data-theme="dark"] .site-footer a.footer-brand:hover .footer-brand-v2,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover .footer-brand-v2,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover span,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
+  color: var(--color-terracotta, #f87171) !important;
 }
