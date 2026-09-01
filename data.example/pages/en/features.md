@@ -175,9 +175,15 @@ Worked on on-device LLM inference experiments.
 :::
 ::::
 
-## Publications
+## Publications & Citations
 
 `data/publications.yaml` is the canonical source, while `publications.bib` supplies raw BibTeX by key. Filtering, sorting, and grouping happen at build time; copying BibTeX is the only progressive enhancement.
 
 ::publications{tag="systems" limit="3" group="year" sort="date-desc"}
+
+This site natively supports scholarly bibliographic citations and **rich interactive footnotes**[^fn-academic]. On desktop devices, hover or focus over references to trigger smart popovers containing bibliographic metadata, inline code, and mathematical formulas[^fn-tech]; on mobile devices, a smooth bottom drawer sheet slides up, followed by a dedicated footnotes appendix at the end of the document[^fn-spec].
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: Standard CommonMark & GFM footnote extension with desktop popovers and mobile bottom drawers.
+[^fn-tech]: Embed inline code `O(N \log N)` and math equations like $L = -\sum y \log \hat{y}$ right inside footnotes.
 

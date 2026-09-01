@@ -16,11 +16,7 @@ description: "このサイトのマークダウンレンダリングでできる
 
 ## テキストとタイポグラフィ
 
-**太字**、*斜体*、~~取り消し線~~、`インラインコード`、[タイトル付きリンク](https://example.com "hover me")、そして**リッチメディア脚注**[^fn-academic]に対応しています。学術論文や技術ブログにおいて、参考文献の引用[^fn-spec]や技術的な注釈[^fn-tech]をスムーズに提示できます。
-
-[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
-[^fn-spec]: 標準的な GFM 脚注構文を拡張し、デスクトップでのホバーポップオーバーとモバイルでのボトムドロワーを提供します。
-[^fn-tech]: 脚注内に `O(N \log N)` などのインラインコードや数式 $L = -\sum y \log \hat{y}$ を埋め込むことができます。
+**太字**、*斜体*、~~取り消し線~~、`インラインコード`、そして[タイトル付きリンク](https://example.com "hover me")。
 
 > マガジンタイポグラフィにおいて、引用ブロックは呼吸する余白である。
 > — あるタイポグラフィ愛好家
@@ -175,9 +171,15 @@ P0 のコンテンツディレクティブは実行時にスクリプトを追�
 :::
 ::::
 
-## 论文リスト
+## 論文リストと文献注釈
 
-`data/publications.yaml` が権威あるデータソースで、`publications.bib` がキーごとに元の BibTeX を提供します。絞り込み・並べ替え・グループ化はビルド時に完了します。
+`data/publications.yaml` が権威あるデータソースで、`publications.bib` がキーごとに元の BibTeX を提供します。絞り込み・并べ替え・グループ化はビルド時に完了します。
 
 ::publications{tag="systems" limit="3" group="year" sort="date-desc"}
+
+本サイトは学術文献の引用と**リッチメディア対話型脚注**[^fn-academic]にネイティブ対応しています。デスクトップでは角標ホバーでスマートなポップオーバーが開き、コードや数式を含む注釈[^fn-tech]をスムーズに確認できます。モバイルではボトムドロワーが展開され、文末には完全な参考文献付録とスムーズなバックリンクナビゲーションを提供します[^fn-spec]。
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: 標準的な GFM 脚注構文を拡張し、デスクトップでのホバーポップオーバーとモバイルでのボトムドロワーを提供します。
+[^fn-tech]: 脚注内に `O(N \log N)` などのインラインコードや数式 $L = -\sum y \log \hat{y}$ を埋め込むことができます。
 

@@ -175,9 +175,15 @@ P0 内容指令保持零前端脚本：callout 用于解释、警示和引用，
 :::
 ::::
 
-## 学术成果列表
+## 学术成果与文献注记
 
 `data/publications.yaml` 是成果数据的权威来源，`publications.bib` 按 key 合并原始 BibTeX。下面的列表在构建期完成筛选、排序与分组；BibTeX 复制是唯一渐进增强交互。
 
 ::publications{tag="systems" limit="3" group="year" sort="date-desc"}
+
+本站点深度支持现代学术排版与**富媒体交互脚注**[^fn-academic]。在桌面端悬停或聚焦角标可直接唤起智能气泡，查阅文献来源与包含行内代码或公式的技术注释[^fn-tech]；移动端则以平滑底部抽屉展开，并在文末提供完整的参考文献附录与精准平滑回跳导航[^fn-spec]。
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: 标准 CommonMark 与 GFM 脚注语法扩展，支持桌面端智能气泡与移动端抽屉交互。
+[^fn-tech]: 支持在脚注中嵌入行内代码 `O(N \log N)` 以及公式 $L = -\sum y \log \hat{y}$。
 

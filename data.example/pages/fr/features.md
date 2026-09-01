@@ -175,9 +175,15 @@ Expériences d’inférence LLM sur appareils embarqués.
 :::
 ::::
 
-## Publications
+## Publications et notes bibliographiques
 
 `data/publications.yaml` est la source canonique ; `publications.bib` fournit le BibTeX brut par clé. Le filtrage, le tri et le regroupement sont réalisés à la construction.
 
 ::publications{tag="systems" limit="3" group="year" sort="date-desc"}
+
+Ce site prend en charge les citations scientifiques et les **notes de bas de page interactives riches**[^fn-academic]. Sur ordinateur, le survol affiche un popover intelligent contenant métadonnées, code et équations[^fn-tech] ; sur mobile, un tiroir coulissant s'ouvre, suivi d'une annexe dédiée en fin de document[^fn-spec].
+
+[^fn-academic]: **Vaswani et al. (2017)**. *Attention Is All You Need*. Advances in Neural Information Processing Systems (NeurIPS 2017). [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
+[^fn-spec]: Extension de note GFM standard avec popovers interactifs sur bureau et tiroirs sur mobile.
+[^fn-tech]: Insérez du code `O(N \log N)` et des formules mathématiques comme $L = -\sum y \log \hat{y}$ au sein des notes.
 
