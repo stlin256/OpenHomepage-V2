@@ -110,6 +110,40 @@ function scrollToTop(): void {
   });
 }
 
+/**
+ * 锚点精确滚动（消除移动端折叠 TOC 与顶部固定控件带来的坐标误差）：
+ * 1. 动态判断上方是否有处于展开状态的 TOC 折叠面板，若是则扣除收起后的高度差；
+ * 2. 依据元素计算样式 scrollMarginTop 或响应式顶部安全距离（桌面 80px / 移动 72px）精确定位。
+ */
+export function scrollToAnchor(target: HTMLElement, smooth = true): void {
+  const targetRect = target.getBoundingClientRect();
+  const currentScrollY = window.scrollY || window.pageYOffset || 0;
+  let targetTop = targetRect.top + currentScrollY;
+
+  const openCollapsible = document.querySelector<HTMLDetailsElement>('.toc-collapsible[open]');
+  if (openCollapsible && (openCollapsible.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+    const body =
+      openCollapsible.querySelector<HTMLElement>('.toc-collapsible-body') ??
+      openCollapsible.querySelector<HTMLElement>('.toc') ??
+      openCollapsible.querySelector<HTMLElement>('div');
+    const collapsingHeight = body ? body.getBoundingClientRect().height : 0;
+    targetTop -= collapsingHeight;
+  }
+
+  const computedMargin = typeof window.getComputedStyle === 'function'
+    ? parseFloat(window.getComputedStyle(target).scrollMarginTop)
+    : NaN;
+  const headerOffset = !isNaN(computedMargin) && computedMargin > 0
+    ? computedMargin
+    : (window.innerWidth <= 768 ? 72 : 80);
+
+  const finalScrollY = Math.max(0, targetTop - headerOffset);
+  window.scrollTo({
+    top: finalScrollY,
+    behavior: !smooth || prefersReducedMotion() ? 'auto' : 'smooth',
+  });
+}
+
 function nextPaint(): Promise<void> {
   return new Promise((resolve) => {
     if (typeof requestAnimationFrame === 'function') {
@@ -510,7 +544,17 @@ async function swapContent(
       initAll();
       // 客户端内容交换等价于一次页面加载；联系卡等全局组件依赖此事件重绑。
       window.dispatchEvent(new Event('astro:page-load'));
-      scrollToTop();
+      if (location.hash) {
+        const hashId = decodeURIComponent(location.hash.slice(1));
+        const hashTarget = document.getElementById(hashId) ?? document.getElementsByName(hashId)[0];
+        if (hashTarget instanceof HTMLElement) {
+          scrollToAnchor(hashTarget, false);
+        } else {
+          scrollToTop();
+        }
+      } else {
+        scrollToTop();
+      }
     };
   } catch {
     location.href = path;
@@ -726,13 +770,10 @@ document.addEventListener('click', (e) => {
     ) {
       const id = decodeURIComponent(url.hash.slice(1));
       const target = document.getElementById(id) ?? document.getElementsByName(id)[0];
-      if (target) {
+      if (target instanceof HTMLElement) {
         e.preventDefault();
         history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`);
-        target.scrollIntoView({
-          behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-          block: 'start',
-        });
+        scrollToAnchor(target, true);
       }
     }
     return;

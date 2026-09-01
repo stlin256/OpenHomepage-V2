@@ -243,8 +243,37 @@ samp {
 .site-nav ul.chrome-fade-out {
   transform: none;
 }
-:target {
+html {
+  scroll-padding-top: 5rem;
+}
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 4.5rem;
+  }
+}
+:target,
+h1[id],
+h2[id],
+h3[id],
+h4[id],
+h5[id],
+h6[id],
+.markdown-body [id],
+.page-content [id] {
   scroll-margin-top: 5rem;
+}
+@media (max-width: 768px) {
+  :target,
+  h1[id],
+  h2[id],
+  h3[id],
+  h4[id],
+  h5[id],
+  h6[id],
+  .markdown-body [id],
+  .page-content [id] {
+    scroll-margin-top: 4.5rem;
+  }
 }
 html.js img[data-image-fade='pending'] {
   opacity: 0;

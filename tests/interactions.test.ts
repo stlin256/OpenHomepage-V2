@@ -107,11 +107,20 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
       "<a id='anchor-link' href='#target-section'>跳到目标</a>",
       "<main class='site-main'><section id='target-section'>目标</section></main>",
     ].join("");
-    const scrollIntoView = vi.fn();
-    Object.defineProperty(Element.prototype, "scrollIntoView", {
-      configurable: true,
-      writable: true,
-      value: scrollIntoView,
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo;
+
+    const targetSection = document.querySelector<HTMLElement>("#target-section")!;
+    targetSection.getBoundingClientRect = () => ({
+      top: 500,
+      bottom: 600,
+      height: 100,
+      width: 500,
+      left: 0,
+      right: 500,
+      x: 0,
+      y: 500,
+      toJSON: () => {},
     });
 
     await import("../src/scripts/interactions.ts");
@@ -121,7 +130,59 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(clickEvt.defaultPrevented).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
     expect(location.hash).toBe("#target-section");
-    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
+    expect(scrollTo).toHaveBeenCalled();
+  });
+
+  it("移动端展开 TOC 折叠面板时点击锚点，scrollToAnchor 会正确扣除折叠高度误差", async () => {
+    document.body.innerHTML = `
+      <details class="toc-collapsible" open>
+        <summary>文章目录</summary>
+        <div class="toc-collapsible-body">
+          <nav class="toc"><a id="toc-item-link" class="toc-link" href="#chapter-2">第二章</a></nav>
+        </div>
+      </details>
+      <main class="site-main">
+        <h2 id="chapter-2">第二章</h2>
+      </main>
+    `;
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo;
+    Object.defineProperty(window, "innerWidth", { value: 375, configurable: true });
+
+    const collapsibleBody = document.querySelector<HTMLElement>(".toc-collapsible-body")!;
+    collapsibleBody.getBoundingClientRect = () => ({
+      top: 50,
+      bottom: 350,
+      height: 300,
+      width: 300,
+      left: 0,
+      right: 300,
+      x: 0,
+      y: 50,
+      toJSON: () => {},
+    });
+
+    const targetHeading = document.querySelector<HTMLElement>("#chapter-2")!;
+    targetHeading.getBoundingClientRect = () => ({
+      top: 800,
+      bottom: 840,
+      height: 40,
+      width: 300,
+      left: 0,
+      right: 300,
+      x: 0,
+      y: 800,
+      toJSON: () => {},
+    });
+
+    const { scrollToAnchor } = await import("../src/scripts/interactions.ts");
+    scrollToAnchor(targetHeading);
+
+    // targetTop (800) - collapsingHeight (300) - headerOffset (72) = 428
+    expect(scrollTo).toHaveBeenCalledWith({
+      top: 428,
+      behavior: "smooth",
+    });
   });
 
   it("RSS 封面加载失败时保留占位并标记淡出", async () => {
