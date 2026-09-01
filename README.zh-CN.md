@@ -1,225 +1,497 @@
-<p align="center">
+﻿<p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-banner-dark.webp">
-    <img alt="OpenHomepage V2" src="docs/images/logo-banner.webp" width="340">
+    <img alt="OpenHomepage V2" src="docs/images/logo-banner.webp" width="360">
   </picture>
 </p>
 
 <p align="center">
-  <a href="https://stlin256.github.io/OpenHomepage-V2/"><img src="https://img.shields.io/badge/演示-在线预览-blue?style=flat-square&logo=github" alt="演示"></a>
-  <a href="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml"><img src="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml/badge.svg" alt="Deploy"></a>
+  <strong>Scholarly Restraint Meets Editorial Elegance.</strong><br>
+  专为学者、工程师与创作者打造的杂志级排版纯静态个人主页生成器
+</p>
+
+<p align="center">
+  <a href="https://stlin256.github.io/OpenHomepage-V2/"><img src="https://img.shields.io/badge/Live%20Demo-在线演示-0969DA?style=flat-square&logo=githubpages&logoColor=white" alt="Live Demo"></a>
+  <a href="https://github.com/stlin256/OpenHomepage-V2/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/stlin256/OpenHomepage-V2/deploy.yml?branch=main&label=Deploy&style=flat-square" alt="Deploy"></a>
+  <a href="https://astro.build"><img src="https://img.shields.io/badge/Astro-5.x-BC52EE?style=flat-square&logo=astro&logoColor=white" alt="Astro"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript"></a>
+  <a href="https://vitest.dev/"><img src="https://img.shields.io/badge/Tested%20with-Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white" alt="Vitest"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-informational?style=flat-square" alt="License"></a>
   <a href="https://deepwiki.com/stlin256/OpenHomepage-V2"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> · <a href="https://stlin256.github.io/OpenHomepage-V2/">在线演示 / Live Demo</a>
+  <a href="#-核心特性">⚡ 核心特性</a> ·
+  <a href="#-组件画廊">🎨 组件画廊</a> ·
+  <a href="#-架构与数据流">📐 架构设计</a> ·
+  <a href="#-markdown-指令速查表">📝 指令速查</a> ·
+  <a href="#-快速上手">🚀 快速上手</a> ·
+  <a href="#-本地可视化编辑器">🎛️ 本地后台</a> ·
+  <a href="#-部署与持续集成">🌐 部署上线</a> ·
+  <a href="README.md">English</a>
 </p>
 
-OpenHomepage V2 是一款基于 Astro 构建的轻量级、杂志化排版纯静态个人主页生成器。全站采用科研主页式的严谨克制与现代杂志版式设计，内容与配置完全由本地 `data/` 目录中的 Markdown 和 YAML 文件驱动，并通过 GitHub Actions 自动化构建部署至 GitHub Pages。
+---
 
-## 核心特性
+**OpenHomepage V2** 是一款基于 Astro 构建的轻量级、杂志化排版纯静态个人主页生成器。全站采用科研主页式的严谨克制与现代杂志版式设计，内容与配置完全由本地 `data/` 目录中的 Markdown 与 YAML 文件驱动，并通过 GitHub Actions 自动化构建部署至 GitHub Pages。
 
-- **Markdown 与科研学术排版**——原生支持 GFM、Shiki 明暗双主题代码高亮、KaTeX 数学公式解析、学术成果与 BibTeX 一键复制（`::publications`）、经历与里程碑时间线（`::::timeline` / `:::timeline-item`）、杂志风注记卡片（`:::note`、`:::tip`、`:::warning`、`:::important`、`:::quote`）以及丰富的多媒体指令（`::bilibili`、`::youtube`、`:::video`、`:::audio`、`:::figure`、`::::grid`、`::stream`、`::ghcard`、`::editorial`）。
-- **静态全局搜索与原创 Feed**——支持 `Ctrl+K` / `Cmd+K` 快捷唤起毛玻璃静态全局搜索（含中英文分词与多语言作用域切换）；构建期自动生成本站原创 RSS 2.0（`/feed.xml`）、Atom 1.0（`/feed.atom.xml`）与 JSON Feed 1.1（`/feed.json`）。
-- **动态 OG 社交卡片与长文导航**——构建期自动生成 1200×630 杂志风社交分享图（按内容 hash 智能缓存）；长文自动提取目录（TOC），桌面端粘性浮动吸顶，移动端折叠导航，配合 ScrollSpy 与顶部细线阅读进度条；支持多曲目 BGM 播放列表与抽屉面板。
-- **杂志化布局与自适应主题**——采用非对称 12 列网格布局与平滑硬件加速动效；内置明暗双主题（默认跟随系统偏好，支持手动切换与会话记忆）及自定义主题强调色。
-- **自动图片优化与响应式加载**——生产构建自动生成多档分辨率 WebP 与 AVIF，浏览器支持 AVIF 时经 `<picture>` 优先加载更小的 AVIF（WebP 兜底），并按布局断点生成精确 1x / 2x / 3x 候选，避免浏览器过度选择桌面档位；页面加载完成后无字节上限地激进空闲预取其他语言页面、同语言其他 tab 及对应 AVIF 候选图（HTML 进共享内存缓存，语言切换近乎瞬时），Chromium 另用 prefetch-only Speculation Rules 预热 hover 目标；同时保留原图与 `-full` 高清灯箱源且不参与预加载。
-- **动态数据预取与缓存降级**——构建期预取 GitHub 年度贡献热力图、1:1 官网质感 Pinned 仓库卡片以及多源 RSS 文章卡片流，支持网络失败时的本地缓存平滑降级。
-- **拟真交互与多媒体支持**——图片全屏灯箱（自动匹配 `-full` 高清源图）、站内无缝连续播放的背景音乐、以及拟真 LLM 打字机流式呈现的 Markdown 动画区块。
-- **零开销多语言架构**——在 `data/pages/<lang>/` 下增设语言目录即可自动激活对应语言路由、导航与多语言配置，配合智能回退链实现静默兜底渲染。内置示例站点自带 中文 / English / 日本語 / Français 四种语言演示。
-- **本地可视化编辑器（PC）**——内置本地管理后台（`npm run admin`），页面正文在真实渲染页上直编（悬停描边、就地编辑、指令参数检查器、区块插入与拖拽排序、撤销/重做），后台另附页面源码兜底编辑与全站配置表单，配备自动保存、版本快照回滚与一键数据导出。
-- **自托管静态服务器**——提供开箱即用的静态生产服务命令 `npm run serve`，支持自定义端口及 SSL/HTTPS 证书接入。
-- **数据隐私与 CI/CD 解耦**——真实 `data/` 内容不入版本库；GitHub Actions 支持从私有直链下载数据、快照兜底容灾与演示示例部署。
+> [!TIP]
+> **开箱即用体验**：仓库内置了完整的四语示例数据（`data.example/`），克隆项目后无需任何配置即可一键启动本地预览与完整构建。
 
-## 组件画廊
+---
 
-以下每个组件都取自生产构建的单独截图（`npm run screenshots` 一键重新生成）——所见即所得。
+## 目录
 
-### 主页区块
+- [⚡ 核心特性](#-核心特性)
+- [🎨 组件画廊](#-组件画廊)
+  - [1. 主页与动态数据区块](#1-主页与动态数据区块)
+  - [2. 学术科研与 Markdown 指令排版](#2-学术科研与-markdown-指令排版)
+  - [3. 全局交互、媒体与多语言体系](#3-全局交互媒体与多语言体系)
+- [📐 架构与数据流](#-架构与数据流)
+- [📝 Markdown 指令速查表](#-markdown-指令速查表)
+- [🚀 快速上手](#-快速上手)
+- [💻 常用 CLI 命令](#-常用-cli-命令)
+- [🎛️ 本地可视化编辑器](#️-本地可视化编辑器)
+- [🌐 部署与持续集成](#-部署与持续集成)
+- [📁 项目工程结构](#-项目工程结构)
+- [📄 开源协议与致谢](#-开源协议与致谢)
 
-**个人名片（ProfileBlock）**——头像（支持自适应取色）、姓名、身份简介与社交/学术主页链接行。
+---
 
-![个人名片](docs/images/components/profile-zh.webp)
+## ⚡ 核心特性
 
-**LLM 流式区块（StreamBlock）**——拟真大模型打字机动画呈现预写 Markdown，支持重播与速度调节。
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🎨 杂志美学与自适应排版</h3>
+      <ul>
+        <li><strong>非对称 12 列杂志网格</strong>：严谨克制的留白与现代杂志版式，手机端自动平滑塌缩为单栏。</li>
+        <li><strong>首帧零闪烁明暗主题</strong>：默认跟随系统偏好，支持手动切换与会话记忆，支持自定义主题强调色。</li>
+        <li><strong>微交互与硬件加速动效</strong>：基于 Transform / Opacity 的轻量平滑过渡，严格遵守 <code>prefers-reduced-motion</code>。</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>📝 学术科研与富媒体套件</h3>
+      <ul>
+        <li><strong>学术出版物列表（<code>::publications</code>）</strong>：多维过滤、分类排序、一键复制 BibTeX 与平滑展开摘要。</li>
+        <li><strong>富媒体交互脚注（<code>[^1]</code>）</strong>：桌面端智能气泡浮窗（防视口溢出）、移动端底部抽屉与平滑回跳。</li>
+        <li><strong>学术与工程排版</strong>：KaTeX 原生数学公式、Shiki 明暗双主题代码高亮、经历时间线与杂志风语义注记框。</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>⚡ 极致性能与预加载管线</h3>
+      <ul>
+        <li><strong>全自动 WebP / AVIF 响应式衍生</strong>：按布局断点生成 1x / 2x / 3x 候选图，<code>&lt;picture&gt;</code> 优先加载高压缩比 AVIF。</li>
+        <li><strong>激进空闲预取与共享内存缓存</strong>：页面就绪后空闲预取多语言与 Tab 页面，语言切换近乎瞬时。</li>
+        <li><strong>Speculation Rules 预热</strong>：Chromium 内核悬停预取，配合纯静态直出实现秒开体验。</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🎛️ 本地可视化直编编辑器</h3>
+      <ul>
+        <li><strong>真实渲染页所见即所得直编</strong>：悬停描边、就地文本编辑、指令参数检查器、区块拖拽与插入、撤销/重做（<code>Ctrl+Z</code>）。</li>
+        <li><strong>全站配置表单与源码兜底</strong>：站点配置、主题取色、Favicon 自动生成及整页 Markdown 源码编辑。</li>
+        <li><strong>版本快照与一键导出</strong>：停顿自动写盘、<code>.snapshots/</code> 历史备份回滚、一键导出 <code>data.zip</code>。</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🌐 零开销多语言架构</h3>
+      <ul>
+        <li><strong>目录即路由</strong>：在 <code>data/pages/&lt;lang&gt;/</code> 增设语言目录即可自动激活路由、导航与多语言配置。</li>
+        <li><strong>智能回退链机制</strong>：缺译页面静默兜底回退；内置中文、English、日本語、Français 四语完整演示。</li>
+        <li><strong>全局多语言搜索</strong>：<code>Ctrl+K</code> 快速呼出毛玻璃搜索框，支持中英文分词与多语言作用域即时切换。</li>
+      </ul>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🛡️ 隐私优先与无头 CI/CD</h3>
+      <ul>
+        <li><strong>数据隐私彻底解耦</strong>：真实 <code>data/</code> 目录不入版本库，代码开源而个人数据私有安全。</li>
+        <li><strong>容灾快照回退</strong>：GitHub Actions 支持私有直链拉取，数据源失效时自动拉取上一成功快照平滑兜底。</li>
+        <li><strong>原创全站 Feed 生成</strong>：构建期自动生成 RSS 2.0（<code>/feed.xml</code>）、Atom 1.0 与 JSON Feed 1.1。</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-![LLM 流式区块](docs/images/components/stream-zh.webp)
+---
 
-**编辑风展示区块（`::editorial`）**——按钮组、编号列表卡、图片磁贴、归档卡与分割线的自由组合，完全由 `site.yaml` 定义。
+## 🎨 组件画廊
 
-![编辑风区块：按钮组与列表卡](docs/images/components/editorial-list-zh.webp)
+以下全部组件截图均由 Playwright 从生产构建环境一键截取生成（`npm run screenshots`）——**所见即所得**。
 
-![编辑风区块：磁贴与归档卡](docs/images/components/editorial-tiles-zh.webp)
+### 1. 主页与动态数据区块
 
-**GitHub 贡献热力图**——构建期 GraphQL 预取贡献日历，5 档主题色阶、月份/星期坐标轴与逐日提示气泡；色阶变量只注入区块根节点，不在数百个格子上重复。
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <b>个人名片（ProfileBlock · 明色）</b><br>
+      <sub>头像自适应取色、姓名简介与社交/学术链接行</sub><br><br>
+      <img src="docs/images/components/profile-zh.webp" alt="个人名片（明色）">
+    </td>
+    <td width="50%" align="center">
+      <b>个人名片（ProfileBlock · 暗色）</b><br>
+      <sub>深色暖黑背景、对比度自适应强调色与无缝切换</sub><br><br>
+      <img src="docs/images/components/profile-dark-zh.webp" alt="个人名片（暗色）">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>LLM 打字机流式区块 (<kbd>::stream</kbd>)</b><br>
+      <sub>拟真大模型打字机呈现预写 Markdown，支持重播与速度配置</sub><br><br>
+      <img src="docs/images/components/stream-zh.webp" alt="LLM 流式区块">
+    </td>
+    <td width="50%" align="center">
+      <b>GitHub 贡献热力图</b><br>
+      <sub>构建期 GraphQL 预取日历，5 档主题色阶与逐日提示气泡</sub><br><br>
+      <img src="docs/images/components/github-heatmap-zh.webp" alt="GitHub 贡献热力图">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>Pinned 仓库卡片</b><br>
+      <sub>1:1 还原 GitHub 官网质感：语言色点、Star/Fork 与相对时间</sub><br><br>
+      <img src="docs/images/components/github-repos-zh.webp" alt="Pinned 仓库卡片">
+    </td>
+    <td width="50%" align="center">
+      <b>多源 RSS 文章卡片流 (RssBlock)</b><br>
+      <sub>支持最新发布（latest）与精选置顶（curated），封面懒加载</sub><br><br>
+      <img src="docs/images/components/rss-zh.webp" alt="RSS 文章卡片流">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>编辑风展示区块：按钮组与列表卡 (<kbd>::editorial</kbd>)</b><br>
+      <sub>动作按钮组与带序号列表卡，由 <code>site.yaml</code> 自由组合</sub><br><br>
+      <img src="docs/images/components/editorial-list-zh.webp" alt="编辑风展示区块：列表卡">
+    </td>
+    <td width="50%" align="center">
+      <b>编辑风展示区块：磁贴与归档卡 (<kbd>::editorial</kbd>)</b><br>
+      <sub>图片磁贴、归档卡片与分割线的杂志化编排</sub><br><br>
+      <img src="docs/images/components/editorial-tiles-zh.webp" alt="编辑风展示区块：磁贴与归档卡">
+    </td>
+  </tr>
+</table>
 
-![GitHub 贡献热力图](docs/images/components/github-heatmap-zh.webp)
+### 2. 学术科研与 Markdown 指令排版
 
-**Pinned 仓库卡片**——1:1 还原 GitHub 官网质感：语言色点、Star/Fork 计数、Topics 标签与本地化相对时间。
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <b>学术成果列表 (<kbd>::publications</kbd>)</b><br>
+      <sub>构建期多维过滤分组，支持一键复制 BibTeX 与平滑展开摘要</sub><br><br>
+      <img src="docs/images/components/publications-zh.webp" alt="学术成果列表">
+    </td>
+    <td width="50%" align="center">
+      <b>富媒体交互脚注 (<kbd>[^1]</kbd>)</b><br>
+      <sub>桌面端悬停智能气泡，移动端平滑滑出底部抽屉与精准回跳</sub><br><br>
+      <img src="docs/images/components/footnote-zh.webp" alt="富媒体交互脚注">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>经历与里程碑时间线 (<kbd>::::timeline</kbd>)</b><br>
+      <sub>极简杂志风履历时间轴，带状态节点指示与自适应响应式布局</sub><br><br>
+      <img src="docs/images/components/timeline-zh.webp" alt="经历与里程碑时间线">
+    </td>
+    <td width="50%" align="center">
+      <b>杂志风注记卡片 (<kbd>:::note</kbd> / <kbd>:::tip</kbd> 等)</b><br>
+      <sub>零 JS 语义化注记框，自动匹配主题强调色与自适应明暗背景</sub><br><br>
+      <img src="docs/images/components/markdown-callout-zh.webp" alt="杂志风注记卡片">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>KaTeX 数学公式</b><br>
+      <sub>行内 <code>$...$</code> 与块级公式原生极速静态排版渲染</sub><br><br>
+      <img src="docs/images/components/markdown-math-zh.webp" alt="KaTeX 数学公式">
+    </td>
+    <td width="50%" align="center">
+      <b>Shiki 明暗双主题代码高亮</b><br>
+      <sub>Shiki 引擎内联样式，随全站主题无闪烁平滑同步</sub><br><br>
+      <img src="docs/images/components/markdown-code-zh.webp" alt="Shiki 代码高亮">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>结构化配图与图注 (<kbd>:::figure</kbd>)</b><br>
+      <sub>支持显式宽度约束、多对齐方式与美观杂志风图注</sub><br><br>
+      <img src="docs/images/components/markdown-figure-zh.webp" alt="结构化配图指令">
+    </td>
+    <td width="50%" align="center">
+      <b>12 列杂志化网格 (<kbd>::::grid</kbd>)</b><br>
+      <sub>非对称多栏版式排版容器，移动端自动优雅塌缩为单栏</sub><br><br>
+      <img src="docs/images/components/markdown-grid-zh.webp" alt="网格指令">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>自渲染音频播放器 (<kbd>:::audio</kbd>)</b><br>
+      <sub>自研轻量播放器（双模式），带文字跑马灯与 BGM 智能互斥续播</sub><br><br>
+      <img src="docs/images/components/media-audio-zh.webp" alt="自渲染音频播放器">
+    </td>
+    <td width="50%" align="center">
+      <b>响应式视频嵌入 (<kbd>::bilibili</kbd> / <kbd>::youtube</kbd>)</b><br>
+      <sub>16:9 官方质感门面卡片，封面标题自动解析，点击后才拉取 iframe</sub><br><br>
+      <img src="docs/images/components/media-video-zh.webp" alt="响应式视频卡片">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>GitHub 内嵌仓库卡 (<kbd>::ghcard</kbd>)</b><br>
+      <sub>在 Markdown 正文任意位置嵌入 1:1 质感 GitHub 仓库卡</sub><br><br>
+      <img src="docs/images/components/ghcard-zh.webp" alt="GitHub 仓库卡">
+    </td>
+    <td width="50%" align="center">
+      <b>长文目录与阅读进度条 (<kbd>toc: true</kbd>)</b><br>
+      <sub>桌面端粘性吸顶侧边栏、移动端折叠抽屉导航与顶部 2px 细线进度条</sub><br><br>
+      <img src="docs/images/components/toc-sidebar-zh.webp" alt="目录侧边栏与进度条">
+    </td>
+  </tr>
+</table>
 
-![Pinned 仓库卡片](docs/images/components/github-repos-zh.webp)
+### 3. 全局交互、媒体与多语言体系
 
-**RSS 区块（RssBlock）**——多源文章卡片流，支持最新排序（`latest`）与精选置顶（`curated`），含来源标签、日期与封面懒加载。
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <b>全局静态搜索 (<kbd>Ctrl+K</kbd> / <kbd>Cmd+K</kbd>)</b><br>
+      <sub>支持多语言作用域切换（当前/全部）、中英文分词与键盘极速导航</sub><br><br>
+      <img src="docs/images/components/search-dialog-zh.webp" alt="全局静态搜索弹窗">
+    </td>
+    <td width="50%" align="center">
+      <b>BGM 播放列表与抽屉迷你播放器</b><br>
+      <sub>多曲目播放列表抽屉、曲目切换、音量记忆与媒体冲突智能续播</sub><br><br>
+      <img src="docs/images/components/bgm-drawer-zh.webp" alt="BGM 播放列表抽屉">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>多语言无缝切换器</b><br>
+      <sub>目录分语系，内置中 / 英 / 日 / 法四语演示，缺译页面静默回退</sub><br><br>
+      <img src="docs/images/components/lang-switcher-zh.webp" alt="语言切换器">
+    </td>
+    <td width="50%" align="center">
+      <b>顶栏工具区</b><br>
+      <sub>背景音乐开关、语言菜单、全局搜索与首帧防闪烁主题切换</sub><br><br>
+      <img src="docs/images/components/header-tools-zh.webp" alt="顶栏工具区">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>画廊相册网格</b><br>
+      <sub>带图注的响应式网格相册，点击任意图片自动开启全屏灯箱</sub><br><br>
+      <img src="docs/images/components/gallery-grid-zh.webp" alt="画廊网格">
+    </td>
+    <td width="50%" align="center">
+      <b>全屏高清图片灯箱</b><br>
+      <sub>支持自动匹配 <code>-full</code> 高清原图、平滑缩放过渡与键盘 Esc 关闭</sub><br><br>
+      <img src="docs/images/components/lightbox-zh.webp" alt="图片灯箱">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <b>浮动联系微卡片 (ContactCard)</b><br>
+      <sub>右下角延迟滑入的精致联系卡，点击快速呼出全屏二维码弹窗</sub><br><br>
+      <img src="docs/images/components/contact-card-zh.webp" alt="联系微卡片">
+    </td>
+    <td width="50%" align="center">
+      <b>全屏二维码弹窗 (QR Modal)</b><br>
+      <sub>全屏毛玻璃背景二维码弹窗，支持移动端扫码快速触达与微信赞赏</sub><br><br>
+      <img src="docs/images/components/qr-modal-zh.webp" alt="二维码弹窗">
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <b>页面通知横幅 (NoticeBanner)</b><br>
+      <sub>单页 Frontmatter 独立配置的顶端公告横幅，支持主题色 / 黄 / 红 / 自定义色</sub><br><br>
+      <img src="docs/images/components/notice-banner-zh.webp" alt="通知横幅">
+    </td>
+  </tr>
+</table>
 
-![RSS 区块](docs/images/components/rss-zh.webp)
+---
 
-### Markdown 与指令渲染
+## 📐 架构与数据流
 
-**富媒体交互脚注（`[^1]`）**——桌面端悬停/聚焦展示智能气泡浮窗（支持气泡内点击超链接、DOI、代码与公式，自动视口边缘防溢出）；移动端轻触滑出底部抽屉（带平滑遮罩与手势关闭），文末排版与精准平滑回跳。
+OpenHomepage V2 采用**「代码开源、内容私密」**的设计哲学。站点的所有内容均由本地 `data/` 目录驱动，构建期全量计算衍生，客户端零额外脚本开销：
 
-![富媒体交互脚注](docs/images/components/footnote-zh.webp)
+```mermaid
+flowchart TD
+    subgraph DataLayer["📁 数据与内容层 (data/ - 私有隔离，不入版本库)"]
+        SiteYAML["site.yaml<br/>(站点配置 / 主题 / 导航 / 个人信息)"]
+        PagesMD["pages/&lt;lang&gt;/*.md<br/>(多语言 Markdown 页面正文)"]
+        PubsYAML["publications.yaml<br/>(学术成果 / BibTeX / 论文列表)"]
+        RssYAML["rss.yaml<br/>(RSS 订阅流配置)"]
+        MediaAssets["assets/<br/>(头像 / 图库相册 / 音视频本地媒体)"]
+    end
 
-**双主题代码高亮**——Shiki 引擎内联明暗双套样式，随站点主题无缝切换。
+    subgraph EditEngine["🎛️ 本地双模可视化编辑器 (npm run admin)"]
+        WYSIWYG["真实渲染页所见即所得直编<br/>(悬停描边 / 参数检查器 / 拖拽排序 / 撤销重做)"]
+        SourceEditor["源码兜底编辑 & 全站表单可视化配置"]
+        Snapshots["自动保存 & 版本快照历史 (.snapshots/)"]
+        ExportZip["一键导出私有数据归档 (data.zip)"]
+    end
 
-![Shiki 代码高亮](docs/images/components/markdown-code-zh.webp)
+    subgraph BuildPipeline["⚙️ Astro 核心构建管线 (SSG 静态直出)"]
+        Prefetch["动态数据预取<br/>(GitHub GraphQL 贡献日历 / Pinned 仓库 / RSS 文章流)"]
+        MarkdownEngine["Markdown 与科研指令渲染引擎<br/>(Shiki 双高亮 / KaTeX 公式 / BibTeX / 交互脚注)"]
+        ImageOptimization["图像性能衍生管线 (Sharp)<br/>(AVIF + WebP 响应式生成 / 断点密度精准匹配)"]
+        Syndication["社交与全站订阅生成<br/>(动态 OG 社交分享图 / RSS / Atom / JSON Feed)"]
+    end
 
-**KaTeX 数学公式**——行内 `$...$` 与块级公式原生渲染。
+    subgraph Deployment["🚀 生产发布与托管 (CI/CD)"]
+        GitHubActions["GitHub Actions 自动化流水线<br/>(私有直链拉取 / 容灾快照回退机制)"]
+        GitHubPages["GitHub Pages / CDN 全球分发<br/>(零 JS 开销 / 内存秒开预取 / Speculation Rules)"]
+        SelfHost["独立生产级静态服务器 (npm run serve)<br/>(自定义端口 / 自动化 SSL 证书接入)"]
+    end
 
-![KaTeX 数学公式](docs/images/components/markdown-math-zh.webp)
+    %% 数据流动与触发机制
+    DataLayer <-->|"本地双向读写"| EditEngine
+    EditEngine -->|"打包归档"| ExportZip
+    ExportZip -.->|"私有直链同步 (DATA_SOURCE_URL)"| GitHubActions
+    DataLayer -->|"静态构建输入"| BuildPipeline
+    BuildPipeline -->|"编译产物输出 (dist/)"| GitHubActions
+    GitHubActions -->|"自动化发布 gh-pages"| GitHubPages
+    BuildPipeline -->|"本地生产托管"| SelfHost
+```
 
-**结构化配图（`:::figure`）**——对齐方式、显式宽度约束与美观图注。
+---
 
-![配图指令](docs/images/components/markdown-figure-zh.webp)
+## 📝 Markdown 指令速查表
 
-**杂志化网格（`::::grid` / `:::cell`）**——12 列非对称版式，移动端自动塌缩为单栏。
+在任何 `.md` 页面中，你可以直接使用以下拓展指令，享受杂志级的排版表达力：
 
-![网格指令](docs/images/components/markdown-grid-zh.webp)
+| 指令语法 | 渲染类型 | 核心参数与说明 | 适用场景 |
+|---|---|---|---|
+| `::publications{category="journal"}` | 块级 | 自动读取 `data/publications.yaml`，多维过滤/分组，支持 BibTeX 复制 | 学术论文、预印本、期刊成果列表 |
+| `[^1]` 与 `[^1]: 解释` | 行内/文末 | 桌面端智能气泡浮窗（防视口溢出）、移动端底部抽屉与双向平滑回跳 | 学术引用、术语注解、DOI 链接 |
+| `::::timeline` / `:::timeline-item` | 容器 | 杂志风经历时间轴，支持 `date`、`title`、`org`、`description` 属性 | 教育背景、工作履历、学术里程碑 |
+| `:::note` / `:::tip` / `:::warning` / `:::important` / `:::quote` | 容器 | 零 JS 杂志风语义注记框，自动匹配站点明暗背景与强调色 | 重点提示、引用格言、技术注意事项 |
+| `::stream{id="welcome" replay="true"}` | 块级 | 拟真大模型打字机流式呈现预写 Markdown，支持重播与速度配置 | 动态自我介绍、主页开篇陈词 |
+| `::::grid{cols=2}` / `:::cell` | 容器 | 12 列非对称杂志网格排版容器，移动端自动优雅塌缩为单栏 | 图文混排、多列卡片式布局 |
+| `:::figure{src="..." caption="..." width="70%" align="center"}` | 容器 | 结构化配图指令，支持宽度约束（`%/px/vw`）、对齐与美观图注 | 实验图表、设计稿、论文插图 |
+| `:::audio{src="..." title="..." cover="..." mode="card"}` | 容器 | 自渲染轻量音频播放器，带标题跑马灯，与站内 BGM 智能互斥续播 | 音乐试听、播客音频、语音讲解 |
+| `::bilibili{bvid="..."}` / `::youtube{id="..."}` | 块级 | 16:9 响应式门面卡片，封面标题自动解析，用户点击后才拉取 iframe | 视频嵌入、保护首屏加载速度 |
+| `:::video{src="..." poster="..."}` | 容器 | 原生 HTML5 响应式视频卡片，带自定义封面图与控制条 | 本地或自托管短视频展示 |
+| `::ghcard{repo="owner/repo"}` | 块级 | 在 Markdown 正文中任意嵌入 1:1 质感的 GitHub 仓库卡片 | 开源项目推荐、工具库展示 |
+| `::editorial{id="features"}` | 块级 | 嵌入 `site.yaml` 定义的编辑风区块（按钮组/列表/磁贴/归档卡） | 主页功能矩阵、精选模块展示 |
 
-**自渲染音频与内嵌媒体（`:::audio` / `:::video`）**——轻量自渲染音频播放器（紧凑标题与封面卡片双模式，带超长文字缓动与独占播放/背景音乐智能续播）；`:::video` 及 16:9 响应式 `::bilibili` / `::youtube` 嵌入。
+---
 
-![音频指令](docs/images/components/media-audio-zh.webp)
+## 🚀 快速上手
 
-**视频嵌入卡片（`::bilibili` / `::youtube`）**——16:9 响应式官方门面卡片，展示封面、自动解析的标题栏与播放按钮；点击后才加载第三方 iframe。
+### 环境要求
+- **Node.js**：`>= 18.17.0`（推荐 Node 20+）
+- **包管理器**：`npm` / `pnpm` / `yarn`
 
-![Bilibili 视频卡片](docs/images/components/media-video-zh.webp)
-
-**GitHub 仓库卡（`::ghcard`）**——在正文任意位置内嵌 pinned 仓库卡片。
-
-![ghcard 指令](docs/images/components/ghcard-zh.webp)
-
-**杂志风注记卡片（`:::note` / `:::tip` / `:::warning` / `:::important` / `:::quote`）**——零 JS 语义化注记卡片，自动匹配主题强调色与自适应明暗背景。
-
-![注记卡片](docs/images/components/markdown-callout-zh.webp)
-
-**经历与里程碑时间线（`::::timeline` / `:::timeline-item`）**——极简杂志风学术/工作经历时间轴，配备节点指示器与展开动效，自适应移动端与桌面端布局。
-
-![时间线](docs/images/components/timeline-zh.webp)
-
-**学术成果列表（`::publications`）**——构建期多维过滤、分组与排序学术成果条目，支持一键复制 BibTeX 与平滑展开折叠的摘要过渡动画。
-
-![学术成果列表](docs/images/components/publications-zh.webp)
-
-**长文目录与阅读进度条（`toc: true`）**——桌面端智能粘性侧边栏、移动端底部抽屉导航，支持 ScrollSpy 视口跟随与顶部 2px 精准阅读进度条。
-
-![目录侧边栏](docs/images/components/toc-sidebar-zh.webp)
-
-### 全局控件与交互
-
-**顶栏工具区**——背景音乐开关、语言切换器、全局搜索与首帧防闪烁主题切换。
-
-![顶栏工具区](docs/images/components/header-tools-zh.webp)
-
-**全局静态搜索（`Ctrl+K` / `Cmd+K`）**——支持多语言作用域切换（当前语言/全部语言）、中英文与 CJK 分词匹配、键盘快速导航与平滑打开/关闭过渡动画的杂志风搜索弹窗。
-
-![搜索弹窗](docs/images/components/search-dialog-zh.webp)
-
-**BGM 播放列表与抽屉迷你播放器**——支持多曲目播放列表抽屉、曲目切换、音量记忆与调节、多媒体冲突暂停与智能自动续播。
-
-![BGM 播放列表抽屉](docs/images/components/bgm-drawer-zh.webp)
-
-**语言切换器**——一个目录即一种语言；演示站内置 中文 / English / 日本語 / Français，缺译页面静默回退。
-
-![语言切换器](docs/images/components/lang-switcher-zh.webp)
-
-**页面通知横幅（NoticeBanner）**——单页 frontmatter 独立配置的顶端横幅，支持主题色 / 黄 / 红 / 自定义色。
-
-![通知横幅](docs/images/components/notice-banner-zh.webp)
-
-**联系卡与二维码弹窗（ContactCard）**——右下角延迟滑入的微卡片，点击呼出全屏二维码弹窗。
-
-![联系卡](docs/images/components/contact-card-zh.webp)
-
-![二维码弹窗](docs/images/components/qr-modal-zh.webp)
-
-**画廊与灯箱**——带图注的网格相册；任意图片点击即开全屏灯箱，自动加载 `-full` 高清原图。
-
-![画廊网格](docs/images/components/gallery-grid-zh.webp)
-
-![图片灯箱](docs/images/components/lightbox-zh.webp)
-
-**暗色主题**——跟随系统并支持会话记忆，所有组件均有明暗双主题。
-
-![暗色主题](docs/images/components/profile-dark-zh.webp)
-
-## 快速上手
+### 4 步极速运行
 
 ```bash
-# 1. 安装项目依赖
+# 1. 克隆项目仓库
+git clone https://github.com/stlin256/OpenHomepage-V2.git
+cd OpenHomepage-V2
+
+# 2. 安装项目依赖
 npm install
 
-# 2. 从内置示例初始化数据目录
+# 3. 初始化本地数据目录（从内置示例自动创建 data/）
 npm run setup
 
-# 3. 启动本地开发服务器
+# 4. 启动本地开发预览
 npm run dev
-
-# 4. （可选）运行测试与静态生产构建
-npm test
-npm run build
 ```
 
-*注：未创建 `data/` 目录时，系统将自动使用内置的 `data.example/` 示例数据进行本地预览与构建。*
+浏览器访问 `http://localhost:4321` 即可预览站点！
 
-## 常用命令
+> [!NOTE]
+> 若尚未运行 `npm run setup`，系统会自动使用 `data.example/` 目录进行演示构建与预览，完全无需担心缺少配置文件。
 
-| 命令 | 说明 | 默认地址 | 生命周期 |
+---
+
+## 💻 常用 CLI 命令
+
+| 命令 | 描述说明 | 默认访问地址 | 运行生命周期 |
 |---|---|---|---|
-| `npm run admin` | 启动本地可视化编辑器（自动托管站点预览服务） | http://127.0.0.1:4174 + http://localhost:4321 | 终端按 `Ctrl+C` 一并停止 |
-| `npm run dev` | 仅启动 Astro 开发服务器（支持热更新） | http://localhost:4321 | 终端按 `Ctrl+C` 停止 |
-| `npm run prefetch` | 预取远端 GitHub 与 RSS 数据到 `.cache/` | — | 运行完成自动退出 |
-| `npm test` | 运行 Vitest 单元与集成测试套件 | — | 运行完成自动退出 |
-| `npm run build` | 执行正式静态构建，并自动优化页面图片为 WebP + AVIF（默认 `WEBP_QUALITY` 80 / `AVIF_QUALITY` 50） | — | 运行完成自动退出 |
-| `npm run preview` | 预览 `dist/` 生产构建产物 | http://localhost:4321 | 终端按 `Ctrl+C` 停止 |
-| `npm run serve` | 运行生产级独立静态托管服务（可选 HTTPS） | http://localhost:8080（或 https://localhost:8443） | 终端按 `Ctrl+C` 停止 |
-| `npm run screenshots` | 从 `dist/` 重新生成上文组件画廊截图（需先 `npm run build`，首次运行需 `npx playwright install chromium`） | — | 运行完成自动退出 |
+| `npm run admin` | **启动本地可视化编辑器**（自动托管站点实时预览服务） | `http://127.0.0.1:4174` | 终端按 `Ctrl+C` 统一停止 |
+| `npm run dev` | 仅启动 Astro 开发服务器（支持 Vite 模块热更新 HMR） | `http://localhost:4321` | 终端按 `Ctrl+C` 停止 |
+| `npm run build` | **执行正式静态构建**，自动生成多档 WebP + AVIF 响应式图片 | — | 运行完成自动退出 |
+| `npm run preview` | 本地预览 `dist/` 生产构建输出产物 | `http://localhost:4321` | 终端按 `Ctrl+C` 停止 |
+| `npm run serve` | **独立生产级静态托管服务**（支持自定义端口与 HTTPS） | `http://localhost:8080` | 终端按 `Ctrl+C` 停止 |
+| `npm test` | 运行 Vitest 单元测试与集成测试套件 | — | 运行完成自动退出 |
+| `npm run prefetch` | 预取远端 GitHub 贡献图、Pinned 仓库与 RSS 数据至 `.cache/` | — | 运行完成自动退出 |
+| `npm run screenshots` | 从 `dist/` 自动重构生成 README 全部组件截图（基于 Playwright） | — | 运行完成自动退出 |
 
-## 可视化编辑器
+---
 
-在 PC 本地终端运行以下命令：
+## 🎛️ 本地可视化编辑器
+
+在 PC 本地终端运行以下命令，即可打开专属可视化管理后台：
 
 ```bash
-npm run admin       # 访问 http://127.0.0.1:4174（仅监听本地回环地址）
+npm run admin       # 浏览器访问 http://127.0.0.1:4174（仅监听本地安全回环地址）
 ```
 
-- **渲染页直编**：后台页面视图点击「可视化编辑」，在真实渲染页面上直接编辑——悬停描边、文本块就地编辑、指令参数与网格列右侧检查器、区块插入/拖拽排序/跨容器移动/删除、撤销/重做（Ctrl+Z）、流式块内容弹窗编辑（编辑时内容完全展开且即时预览）、首页配置区块表单与页面设置面板（含长文目录开启智能检测与一键启用）。
-- **源码兜底编辑**：后台页面视图保留 frontmatter 表单与整页 Markdown 源码编辑（停顿自动保存）。
-- **全站可视化配置**：支持站点信息、头像取色与自定义强调色、Favicon 自动裁切生成、背景音乐与播放列表、GitHub/RSS 订阅源以及主页区块自由拖拽重排。
-- **自动保存与快照机制**：编辑停顿约 1.5 秒自动写盘，每次变更前将前一版本备份至 `data/.snapshots/`，支持历史版本查看与一键回滚。
-- **数据导出**：顶栏一键导出 `data.zip` 压缩包，方便上传到私有存储或 Release 供 CI 自动化抓取。
+- **真实渲染页直编（WYSIWYG on Real Render）**：后台点击「可视化编辑」，直接在真实排版页面上进行修改——鼠标悬停描边、文本块就地编辑、指令右侧参数检查器、区块一键插入与拖拽排序、`Ctrl+Z` 撤销/重做、流式打字机内容弹窗即时预览。
+- **全站可视化配置表单**：支持配置站点信息、社交链接、头像智能取色与强调色自定义、Favicon 一键生成、背景音乐与播放列表管理、GitHub/RSS 订阅源设置及首页区块拖拽重排。
+- **源码兜底编辑**：保留 Frontmatter 结构化表单与整页 Markdown 源码编辑器，编辑停顿约 1.5 秒自动写盘。
+- **自动保存与版本快照（Snapshots）**：每次保存前自动将历史备份至 `data/.snapshots/`，支持版本对比与一键回滚。
+- **一键数据导出**：顶栏一键导出打包为 `data.zip`，可直接上传至私有存储桶或 GitHub Release 供 CI 自动化构建。
 
-## 部署与持续集成
+---
 
-GitHub Actions 会在代码推送到 `main`/`master` 分支或每 8 小时定时触发构建并自动发布至 GitHub Pages。
+## 🌐 部署与持续集成
 
-### GitHub Secrets 配置项
+项目内置了完整的 GitHub Actions 自动化工作流（`.github/workflows/deploy.yml`）。代码推送到 `main` 分支或每 8 小时定时触发构建，自动发布至 GitHub Pages。
 
-| Secret 变量名 | 说明 | 适用场景 |
+### GitHub Secrets 环境变量配置
+
+| Secret 变量名 | 必填性 | 说明与作用 |
 |---|---|---|
-| `ENABLE_EXAMPLE` | 设为 `true` 时启用示例演示模式，直接使用内置 `data.example/` 进行正式生产部署 | 演示 / 体验部署 |
-| `DATA_SOURCE_URL` | 存放私有 `data.zip` 数据压缩包的直接下载链接 | 私有数据正式部署 |
-| `GH_PAT` | 具备 `read:user` 权限的 GitHub Token，用于 GraphQL 贡献图数据抓取 | 贡献图完整展示 |
+| `ENABLE_EXAMPLE` | 可选 | 设为 `true` 时启用示例模式，直接使用内置 `data.example/` 部署完整演示站 |
+| `DATA_SOURCE_URL` | 私有部署必填 | 存放私有 `data.zip` 压缩包的直接下载直链（支持预签名 URL） |
+| `GH_PAT` | 可选 | 具备 `read:user` 权限的 GitHub Token，用于拉取完整的 GraphQL 贡献日历数据 |
 
-- **示例演示模式**：设置 `ENABLE_EXAMPLE: true` 时，工作流会自动使用内置示例进行正式生产部署，无需配置私有直链即可展示完整效果。
-- **容灾快照回退**：若配置的 `DATA_SOURCE_URL` 失效，工作流会自动拉取上一次成功部署的快照进行构建，更新 GitHub/RSS 动态内容后完成部署，并触发邮件提醒。
+### 容灾降级与邮件告警机制
+- **容灾快照恢复**：若配置的 `DATA_SOURCE_URL` 下载失败，CI 会自动拉取上一次成功构建的快照包（`data-snapshot.zip`）继续构建，刷新动态 GitHub/RSS 数据后完成发布，确保线上站点绝不宕机。
+- **邮件提醒触发**：快照恢复执行后，工作流会以告警状态结束，利用 GitHub 原生机制向维护者发送邮件提醒。
 
-## 项目结构
+---
+
+## 📁 项目工程结构
 
 ```
-├── data.example/    # 内置示例数据与媒体资源（版本库跟踪）
-├── data/            # 用户真实内容与配置（不入库，由 .gitignore 忽略）
-├── docs/            # 设计文档与技术规范说明
-├── scripts/         # 数据预取、环境初始化与静态服务脚本
-├── src/             # Astro 页面源码、组件、布局与核心工具库
-├── admin/           # 本地可视化编辑器服务端与前端源码
-└── tests/           # Vitest 自动化测试套件
+OpenHomepage-V2/
+├── data.example/        # 内置示例数据与媒体素材（版本库跟踪）
+│   ├── site.yaml        # 全站核心配置（主题、导航、个人信息）
+│   ├── publications.yaml# 学术论文与成果列表
+│   ├── rss.yaml         # 多源 RSS 订阅列表
+│   ├── pages/<lang>/    # 多语言 Markdown 页面正文
+│   └── streaming/       # 流式打字机预写内容
+├── data/                # 用户真实内容与配置（不入库，.gitignore 严格忽略）
+├── admin/               # 本地可视化编辑器服务端与客户端源码
+├── docs/                # 架构设计、指令规范与测试文档
+│   └── images/          # 品牌 Logo 与组件自动化画廊截图
+├── scripts/             # 预取、图片优化、静态服务与截图脚本
+├── src/                 # Astro 核心源码
+│   ├── components/      # 页面区块与原子组件
+│   ├── layouts/         # BaseLayout 站点外壳（导航/主题/搜索）
+│   ├── lib/             # 纯函数层（Markdown/配置/路由/缓存/i18n）
+│   └── styles/          # 语义化 CSS 变量、12 列网格与全局排版
+└── tests/               # Vitest 单元与集成自动化测试套件
 ```
+
+---
+
+## 📄 开源协议与致谢
+
+本项目基于 [MIT License](LICENSE) 协议开源。欢迎 Star、Fork 或提交 Issue 与 Pull Request 共同完善！
+
+<p align="center">
+  <a href="https://stlin256.github.io/OpenHomepage-V2/">✨ 访问在线演示</a> ·
+  <a href="https://github.com/stlin256/OpenHomepage-V2/issues">🐛 提交反馈 / Issues</a> ·
+  <a href="https://github.com/stlin256/OpenHomepage-V2">⭐ Star 本项目</a>
+</p>
