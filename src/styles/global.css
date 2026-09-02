@@ -642,6 +642,10 @@ html[data-theme='dark'] .theme-toggle .icon-dark {
 .markdown-body .block-editorial:has(> .editorial-divider) {
   padding-bottom: 0;
 }
+.markdown-body h2 + .home-block,
+.markdown-body h3 + .home-block {
+  margin-top: 0.5rem;
+}
 
 
 /* ---- 页面通知横幅（Notice Banner） ---- */
@@ -1454,21 +1458,24 @@ a.editorial-item:focus-visible .editorial-item-content {
 }
 
 /* profile 区块 */
-.profile-name {
+.profile-name,
+.markdown-body .profile-name {
   margin: 0 0 0.5rem;
   font-size: 3.25rem;
   line-height: 1.02;
   font-weight: 250;
   text-transform: uppercase;
 }
-.profile-tagline {
+.profile-tagline,
+.markdown-body .profile-tagline {
   margin: 0 0 1.25rem;
   color: var(--text-muted);
   font-size: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-.profile-links {
+.profile-links,
+.markdown-body .profile-links {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
@@ -1513,6 +1520,9 @@ a.editorial-item:focus-visible .editorial-item-content {
 @media (min-width: 769px) {
   .block-profile:not(.profile-top) .profile-avatar {
     padding-top: 3rem;
+  }
+  .markdown-body .block-profile:not(.profile-top) .profile-avatar {
+    padding-top: 0;
   }
 }
 /* 居顶布局（profile.avatar_position: top）：头像在姓名/简介上方居中 */
@@ -2338,12 +2348,14 @@ html[data-theme='dark'] .shiki {
 /* ==================== M4b：主页功能区块与动效 ==================== */
 
 /* 区块标题与通用小字 */
-.block-title {
+.block-title,
+.markdown-body .block-title {
   margin: 0 0 1.5rem;
   font-size: 1.4rem;
   letter-spacing: -0.01em;
 }
-.block-empty {
+.block-empty,
+.markdown-body .block-empty {
   margin: 0;
   padding: 1rem 1.25rem;
   border: 1px dashed var(--border);
@@ -2363,11 +2375,13 @@ html[data-theme='dark'] .shiki {
   margin-bottom: 1.5rem;
 }
 /* 顶部计数行：第一行原版式 "2,467 contributions in the last year"，第二行带 GitHub 变体 */
-.heat-total {
+.heat-total,
+.markdown-body .heat-total {
   margin: 0 0 0.15rem;
   font-size: 0.95rem;
 }
-.heat-total-alt {
+.heat-total-alt,
+.markdown-body .heat-total-alt {
   font-size: 0.8rem;
   color: var(--text-muted);
   margin-bottom: 0.6rem;
@@ -2691,7 +2705,8 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
   gap: 2rem;
 }
-.rss-source {
+.rss-source,
+.markdown-body .rss-source {
   margin: 0 0 0.9rem;
   font-size: 1rem;
   display: flex;
@@ -2757,7 +2772,9 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   min-width: 0;
   flex: 1 1 auto;
 }
-.rss-title {
+.rss-title,
+.markdown-body .rss-title {
+  margin: 0;
   font-weight: 600;
   line-height: 1.45;
   display: -webkit-box;
@@ -2782,7 +2799,9 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   background: var(--bg-subtle);
   border: 1px solid var(--border);
 }
-.rss-summary {
+.rss-summary,
+.markdown-body .rss-summary {
+  margin: 0;
   font-size: 0.85rem;
   color: var(--text-muted);
   display: -webkit-box;
@@ -2790,7 +2809,9 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.rss-note {
+.rss-note,
+.markdown-body .rss-note {
+  margin: 0;
   font-size: 0.8rem;
   font-style: italic;
   color: var(--accent);
@@ -2811,7 +2832,8 @@ html.js .block-github.revealed .heatmap .heat-cell:not(.heat-empty) {
   align-items: center;
   gap: 1rem;
 }
-.stream-title {
+.stream-title,
+.markdown-body .stream-title {
   margin: 0;
   padding-left: 0.7rem;
   border-left: 3px solid var(--accent);
