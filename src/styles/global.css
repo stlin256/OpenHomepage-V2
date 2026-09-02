@@ -300,6 +300,9 @@ html.js img[data-image-fade='loaded'] {
   color: var(--text-muted);
   border-left: 2.5px solid transparent;
   border-radius: var(--radius-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition:
     background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
     color 0.22s cubic-bezier(0.22, 1, 0.36, 1),

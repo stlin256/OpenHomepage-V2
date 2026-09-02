@@ -259,6 +259,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
                 href={withBase(item.path)}
                 class:list={[{ active: item.path === currentPath }]}
                 aria-current={item.path === currentPath ? 'page' : undefined}
+                title={item.title}
               >
                 {item.title}
               </a>
