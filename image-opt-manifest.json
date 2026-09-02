@@ -9745,6 +9745,342 @@
         "bytes": 107538
       }
     },
+    "assets/logo-banner-dark.360.avif": {
+      "source": {
+        "path": "logo-banner-dark.png",
+        "sha256": "d1012d881828b107362880044f557a2ab243984d2fd0360cfaefbc9b133c60bd",
+        "bytes": 22903,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/logo-banner-dark.360.avif",
+        "sha256": "a145512901e7449ccbdf9893bcad7ced2507a37f110c3d5f864189c44c0a62fe",
+        "bytes": 4255
+      }
+    },
+    "assets/logo-banner-dark.360.webp": {
+      "source": {
+        "path": "logo-banner-dark.png",
+        "sha256": "d1012d881828b107362880044f557a2ab243984d2fd0360cfaefbc9b133c60bd",
+        "bytes": 22903,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/logo-banner-dark.360.webp",
+        "sha256": "8f6b52150c24ce19a875699342eabef752e86256445f1da16d8a7657ea96b293",
+        "bytes": 7760
+      }
+    },
+    "assets/logo-banner-dark.720.avif": {
+      "source": {
+        "path": "logo-banner-dark.png",
+        "sha256": "d1012d881828b107362880044f557a2ab243984d2fd0360cfaefbc9b133c60bd",
+        "bytes": 22903,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/logo-banner-dark.720.avif",
+        "sha256": "a5a22880cc65e780ca06cc22770ff7ff5bb9e1c1d865f3e9918ff63730cffae8",
+        "bytes": 9648
+      }
+    },
+    "assets/logo-banner-dark.720.webp": {
+      "source": {
+        "path": "logo-banner-dark.png",
+        "sha256": "d1012d881828b107362880044f557a2ab243984d2fd0360cfaefbc9b133c60bd",
+        "bytes": 22903,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/logo-banner-dark.720.webp",
+        "sha256": "4755794a94ef937f6cb319e6b1aca9661d4dfe9915c732a96d4e4c5666becf0d",
+        "bytes": 17306
+      }
+    },
+    "assets/logo-banner-dark.avif": {
+      "source": {
+        "path": "logo-banner-dark.png",
+        "sha256": "d1012d881828b107362880044f557a2ab243984d2fd0360cfaefbc9b133c60bd",
+        "bytes": 22903,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/logo-banner-dark.avif",
+        "sha256": "2cb3b6fba0d1fad284ccad173822a996003df13e55e14ba03ee6da659244b78b",
+        "bytes": 8757
+      }
+    },
+    "assets/logo-banner-dark.webp": {
+      "source": {
+        "path": "logo-banner-dark.png",
+        "sha256": "d1012d881828b107362880044f557a2ab243984d2fd0360cfaefbc9b133c60bd",
+        "bytes": 22903,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/logo-banner-dark.webp",
+        "sha256": "8e31eb1c7b5bc4dbbc3bbd1a2532c7c947d001e9087dd39de42c463ba4b4c8c6",
+        "bytes": 13010
+      }
+    },
+    "assets/logo-banner.360.avif": {
+      "source": {
+        "path": "logo-banner.png",
+        "sha256": "bcb37712a14dfc39e8f2e8ca814eb86ac84a5f58c5b58228b2cb6aa385c34a33",
+        "bytes": 23840,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/logo-banner.360.avif",
+        "sha256": "cc57605e271962e22ffda174efc3404ea8536931f14c73cd4ceb339dfb66e180",
+        "bytes": 3509
+      }
+    },
+    "assets/logo-banner.360.webp": {
+      "source": {
+        "path": "logo-banner.png",
+        "sha256": "bcb37712a14dfc39e8f2e8ca814eb86ac84a5f58c5b58228b2cb6aa385c34a33",
+        "bytes": 23840,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/logo-banner.360.webp",
+        "sha256": "3c52ed8f89678679c5414a6b3a8ce2db189539931a0802376689d9c808f6e138",
+        "bytes": 6670
+      }
+    },
+    "assets/logo-banner.720.avif": {
+      "source": {
+        "path": "logo-banner.png",
+        "sha256": "bcb37712a14dfc39e8f2e8ca814eb86ac84a5f58c5b58228b2cb6aa385c34a33",
+        "bytes": 23840,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/logo-banner.720.avif",
+        "sha256": "876f5495e31b0742b255b663f74b963c6576c74fd0f27903cedf2e1ab7953d91",
+        "bytes": 7370
+      }
+    },
+    "assets/logo-banner.720.webp": {
+      "source": {
+        "path": "logo-banner.png",
+        "sha256": "bcb37712a14dfc39e8f2e8ca814eb86ac84a5f58c5b58228b2cb6aa385c34a33",
+        "bytes": 23840,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/logo-banner.720.webp",
+        "sha256": "7dd843a9e68aa0db8610b41c73b958eb01d30143b6f3ee4339c63ce814d9bd7a",
+        "bytes": 14838
+      }
+    },
+    "assets/logo-banner.avif": {
+      "source": {
+        "path": "logo-banner.png",
+        "sha256": "bcb37712a14dfc39e8f2e8ca814eb86ac84a5f58c5b58228b2cb6aa385c34a33",
+        "bytes": 23840,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/logo-banner.avif",
+        "sha256": "a4630074f8d7cf0fb1b03a54d9545b83ed009664476739a20ab63ab3dd491ef6",
+        "bytes": 8125
+      }
+    },
+    "assets/logo-banner.webp": {
+      "source": {
+        "path": "logo-banner.png",
+        "sha256": "bcb37712a14dfc39e8f2e8ca814eb86ac84a5f58c5b58228b2cb6aa385c34a33",
+        "bytes": 23840,
+        "format": "png",
+        "width": 996,
+        "height": 152,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/logo-banner.webp",
+        "sha256": "d9d87e412c7913d77e3ce0f16a657f8961cedf288837f4deb080b43012caea76",
+        "bytes": 14716
+      }
+    },
     "assets/og/347e37f65d783dfd.avif": {
       "source": {
         "path": "og/347e37f65d783dfd.png",
@@ -10025,6 +10361,62 @@
         "bytes": 1430
       }
     },
+    "assets/og/629d5155075dfcee.avif": {
+      "source": {
+        "path": "og/629d5155075dfcee.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/og/629d5155075dfcee.avif",
+        "sha256": "362ee1faa5632ae54797fef80d0c5310b7bbd5452795f9401305a331a90a331f",
+        "bytes": 502
+      }
+    },
+    "assets/og/629d5155075dfcee.webp": {
+      "source": {
+        "path": "og/629d5155075dfcee.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/og/629d5155075dfcee.webp",
+        "sha256": "5e7bbcbbce6d0ac1502f3374754a2c0703c2e0ce333c8028becfac2b6fa0a7f2",
+        "bytes": 1430
+      }
+    },
     "assets/og/69c6fa7b12d2e2d9.avif": {
       "source": {
         "path": "og/69c6fa7b12d2e2d9.png",
@@ -10245,6 +10637,62 @@
       },
       "output": {
         "path": "assets/og/92bf376b3c777bd2.webp",
+        "sha256": "5e7bbcbbce6d0ac1502f3374754a2c0703c2e0ce333c8028becfac2b6fa0a7f2",
+        "bytes": 1430
+      }
+    },
+    "assets/og/a0aec1c972b79c2a.avif": {
+      "source": {
+        "path": "og/a0aec1c972b79c2a.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/og/a0aec1c972b79c2a.avif",
+        "sha256": "362ee1faa5632ae54797fef80d0c5310b7bbd5452795f9401305a331a90a331f",
+        "bytes": 502
+      }
+    },
+    "assets/og/a0aec1c972b79c2a.webp": {
+      "source": {
+        "path": "og/a0aec1c972b79c2a.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/og/a0aec1c972b79c2a.webp",
         "sha256": "5e7bbcbbce6d0ac1502f3374754a2c0703c2e0ce333c8028becfac2b6fa0a7f2",
         "bytes": 1430
       }
@@ -10473,6 +10921,62 @@
         "bytes": 1430
       }
     },
+    "assets/og/cb574988136f78a9.avif": {
+      "source": {
+        "path": "og/cb574988136f78a9.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/og/cb574988136f78a9.avif",
+        "sha256": "362ee1faa5632ae54797fef80d0c5310b7bbd5452795f9401305a331a90a331f",
+        "bytes": 502
+      }
+    },
+    "assets/og/cb574988136f78a9.webp": {
+      "source": {
+        "path": "og/cb574988136f78a9.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/og/cb574988136f78a9.webp",
+        "sha256": "5e7bbcbbce6d0ac1502f3374754a2c0703c2e0ce333c8028becfac2b6fa0a7f2",
+        "bytes": 1430
+      }
+    },
     "assets/og/d20d413ee1670367.avif": {
       "source": {
         "path": "og/d20d413ee1670367.png",
@@ -10525,6 +11029,62 @@
       },
       "output": {
         "path": "assets/og/d20d413ee1670367.webp",
+        "sha256": "5e7bbcbbce6d0ac1502f3374754a2c0703c2e0ce333c8028becfac2b6fa0a7f2",
+        "bytes": 1430
+      }
+    },
+    "assets/og/d271e72b004410ad.avif": {
+      "source": {
+        "path": "og/d271e72b004410ad.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "avif",
+        "quality": 50,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "3.14.1"
+      },
+      "output": {
+        "path": "assets/og/d271e72b004410ad.avif",
+        "sha256": "362ee1faa5632ae54797fef80d0c5310b7bbd5452795f9401305a331a90a331f",
+        "bytes": 502
+      }
+    },
+    "assets/og/d271e72b004410ad.webp": {
+      "source": {
+        "path": "og/d271e72b004410ad.png",
+        "sha256": "e97d028b30f13b570d19eaca80dc308abcc95053dead60f00f20e27f645cdc1b",
+        "bytes": 16471,
+        "format": "png",
+        "width": 1200,
+        "height": 630,
+        "orientation": 1,
+        "pages": 1
+      },
+      "algorithm": {
+        "library": "sharp",
+        "format": "webp",
+        "quality": 80,
+        "effort": 4,
+        "rotate": true,
+        "resize": "without-enlargement",
+        "sharpVersion": "0.35.3",
+        "libvipsVersion": "8.18.3",
+        "codecVersion": "1.6.0"
+      },
+      "output": {
+        "path": "assets/og/d271e72b004410ad.webp",
         "sha256": "5e7bbcbbce6d0ac1502f3374754a2c0703c2e0ce333c8028becfac2b6fa0a7f2",
         "bytes": 1430
       }
