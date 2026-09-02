@@ -4,13 +4,15 @@ nav: true
 order: 5
 slug: "about"
 description: "About OpenHomepage V2: Scholarly Restraint Meets Editorial Elegance"
-toc: true
+toc: false
 ---
 
 <div class="about-hero reveal">
   <div class="about-banner-wrap">
-    <img class="about-logo about-logo-light" src="assets/logo-banner.webp" alt="OpenHomepage V2" width="360">
-    <img class="about-logo about-logo-dark" src="assets/logo-banner-dark.webp" alt="OpenHomepage V2" width="360">
+    <div class="about-brand-banner">
+      <span class="about-brand-main">OpenHomepage</span>
+      <span class="about-brand-v2">V2</span>
+    </div>
   </div>
   <p class="about-slogan">
     <strong>Scholarly Restraint Meets Editorial Elegance.</strong>
@@ -25,63 +27,33 @@ toc: true
   </div>
 </div>
 
-## Vision & Philosophy
+## Overview
 
-**OpenHomepage V2** is a static personal homepage generator built on Astro and TypeScript, tailored specifically for scholars, engineers, and creators. Its content and layout are driven entirely by plain Markdown and YAML configuration files.
-
-:::note{title="Design Philosophy"}
-Scholarly expression demands restraint and rigor, while editorial typography brings rhythm and reading delight. We eliminate heavy CMS architectures to embrace static delivery and local data ownership.
-:::
-
-## Core Capabilities
+**OpenHomepage V2** is a static personal homepage generator built with Astro, tailored for researchers, engineers, and creators. Content and layout are driven entirely by plain Markdown and YAML configuration files.
 
 ::::grid{cols=2}
 :::cell
-### 🎨 Editorial Typography & Layout
-- **12-Column Magazine Grid**: Asymmetric whitespace and editorial contrast with seamless mobile collapse.
-- **Zero-Flash Dual Themes**: System preference auto-adaptation with instant CSS variable transitions.
-- **Hardware Micro-Interactions**: Lightweight transitions strictly honoring `prefers-reduced-motion`.
+### 🎨 Editorial Layout & Academic Notes
+- 12-column asymmetric magazine grid with refined whitespace and mobile responsiveness.
+- Native KaTeX formulas, Shiki syntax highlighting, and interactive footnotes.
 :::
 :::cell
-### 📝 Academic Publishing & Media
-- **Publications & Citations**: Multi-dimensional filtering, grouping, and 1-click BibTeX copying.
-- **Rich Interactive Footnotes**: Viewport-aware desktop popovers and smooth mobile slide-up sheets.
-- **Scholarly Typesetting**: KaTeX formulas, Shiki dual-theme syntax highlighting, and timelines.
+### ⚡ High Performance & Data Sovereignty
+- Pure static delivery with zero client JS hydration and automated image derivatives.
+- Decoupled `data/` folder keeping personal data private while source code stays open.
 :::
 ::::
 
-::::grid{cols=2}
-:::cell
-### ⚡ Extreme Performance Pipeline
-- **Automated Responsive Assets**: Build-time AVIF/WebP multi-density derivative generation.
-- **Idle Smart Prefetch**: Sub-second tab and multilingual navigation via idle cache warming.
-- **Zero Client Hydration**: Pure static markup with zero client-side JavaScript overhead.
-:::
-:::cell
-### 🛡️ Privacy Decoupling & CI/CD
-- **Data Privacy Decoupling**: User `data/` directory is strictly git-ignored and self-contained.
-- **Disaster Snapshot Recovery**: Automated CI recovery mechanism ensuring 100% uptime.
-- **Full Feed Syndication**: Built-in RSS 2.0, Atom 1.0, and JSON Feed 1.1 generation.
-:::
-::::
-
-## Getting Started
+## Quick Start
 
 ::ghcard{repo="stlin256/OpenHomepage-V2"}
 
 ```bash
-# Clone repository and install dependencies
 git clone https://github.com/stlin256/OpenHomepage-V2.git
 cd OpenHomepage-V2
-npm install
-
-# Initialize local data directory
-npm run setup
-
-# Start development server
-npm run dev
+npm install && npm run setup && npm run dev
 ```
 
-:::tip{title="Open Source & License"}
-OpenHomepage V2 is distributed under the [MIT License](https://github.com/stlin256/OpenHomepage-V2/blob/master/LICENSE). Contributions and feedback are warmly welcomed!
+:::tip{title="License"}
+OpenHomepage V2 is distributed under the [MIT License](https://github.com/stlin256/OpenHomepage-V2/blob/master/LICENSE).
 :::
