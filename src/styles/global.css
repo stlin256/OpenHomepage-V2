@@ -170,9 +170,9 @@ body {
 
 /* 主题切换仅颜色 200ms 过渡，不动布局（spec 10 §3）。
    transition class 由 theme.ts 在切换期间临时添加，避免常驻全局选择器。 */
-html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki, .callout, .timeline, .timeline-item, .publication-item),
-html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki, .callout, .timeline, .timeline-item, .publication-item)::before,
-html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki, .callout, .timeline, .timeline-item, .publication-item)::after {
+html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki, .callout, .timeline, .timeline-item, .publication-item, .about-hero, .version-pill),
+html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki, .callout, .timeline, .timeline-item, .publication-item, .about-hero, .version-pill)::before,
+html.theme-switching :is(body, .site-nav, .site-main, .site-footer, .icon-btn, .lang-menu, .theme-toggle, .notice-banner, .home-block, .editorial-button, .editorial-item, .editorial-tile, .archive-card, .gh-repo, .rss-card, .markdown-body, .markdown-body pre, .markdown-body code, .stream-block, .shiki, .callout, .timeline, .timeline-item, .publication-item, .about-hero, .version-pill)::after {
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -4648,4 +4648,157 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover .footer-br
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover span,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
   color: var(--color-terracotta, #f87171) !important;
+}
+
+
+/* ---- About 页面 Hero Banner、Slogan 与版本胶囊 Badge ---- */
+.about-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1rem 2.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.about-banner-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.about-logo {
+  display: block;
+  max-width: 100%;
+  width: 360px;
+  height: auto;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about-logo:hover {
+  transform: scale(1.02);
+}
+
+.about-logo-light,
+picture:has(.about-logo-light) {
+  display: block;
+}
+
+.about-logo-dark,
+picture:has(.about-logo-dark) {
+  display: none;
+}
+
+html[data-theme="dark"] .about-logo-light,
+html[data-theme="dark"] picture:has(.about-logo-light) {
+  display: none;
+}
+
+html[data-theme="dark"] .about-logo-dark,
+html[data-theme="dark"] picture:has(.about-logo-dark) {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .about-logo-light,
+  html:not([data-theme="light"]) picture:has(.about-logo-light) {
+    display: none;
+  }
+  html:not([data-theme="light"]) .about-logo-dark,
+  html:not([data-theme="light"]) picture:has(.about-logo-dark) {
+    display: block;
+  }
+}
+
+.about-slogan {
+  margin: 0 0 1.25rem;
+  max-width: 58ch;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.about-slogan strong {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.35rem;
+}
+
+.about-version-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.85rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease,
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.version-pill:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-subtle));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.version-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  display: inline-block;
+  animation: version-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes version-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .version-dot {
+    animation: none;
+  }
+  .about-logo {
+    transition: none;
+  }
+  .version-pill {
+    transition: none;
+  }
+}
+
+.version-label {
+  color: var(--accent);
+  font-weight: 700;
 }
