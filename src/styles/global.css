@@ -4615,25 +4615,39 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
   color: var(--color-terracotta, #f87171) !important;
 }
 
-/* 斜着掠过的光效伪元素 */
+/* 斜着掠过的光效伪元素（高光粒子束） */
 .site-footer a.footer-brand::after,
 .site-footer a[href*="OpenHomepage-V2"]::after {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -120%;
+  top: -60%;
+  left: -140%;
   width: 50%;
-  height: 200%;
+  height: 220%;
   background: linear-gradient(
-    110deg,
+    115deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0.35) 20%,
+    rgba(255, 255, 255, 0.98) 50%,
+    rgba(255, 255, 255, 0.35) 80%,
     rgba(255, 255, 255, 0) 100%
   );
   transform: skewX(-25deg);
   pointer-events: none;
-  mix-blend-mode: overlay;
+  mix-blend-mode: screen;
   opacity: 0;
+}
+
+html[data-theme="dark"] .site-footer a.footer-brand::after,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]::after {
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 20%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.45) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 
 /* 悬停态：亮色立体阴影 + 掠光动画（不浮动） */
@@ -4641,18 +4655,18 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
 .site-footer a[href*="OpenHomepage-V2"]:hover {
   color: var(--text) !important;
   text-decoration: none !important;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.14)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.14));
 }
 
 .site-footer a.footer-brand:hover::after,
 .site-footer a[href*="OpenHomepage-V2"]:hover::after {
-  animation: brand-shimmer 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation: brand-shimmer 1.3s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
 }
 
 /* 悬停态：暗色发光（Glow）+ 掠光动画 */
 html[data-theme="dark"] .site-footer a.footer-brand:hover,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover {
-  filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.55)) drop-shadow(0 0 16px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.65)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.35));
 }
 
 .site-footer a.footer-brand:hover .footer-brand-v2,
@@ -4671,7 +4685,7 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
 
 @keyframes brand-shimmer {
   0% {
-    left: -120%;
+    left: -140%;
     opacity: 0;
   }
   15% {
@@ -4681,7 +4695,7 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
     opacity: 1;
   }
   100% {
-    left: 220%;
+    left: 240%;
     opacity: 0;
   }
 }
