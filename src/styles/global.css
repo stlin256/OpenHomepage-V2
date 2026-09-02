@@ -4564,7 +4564,7 @@ section.footnotes {
   top: -0.35em;
 }
 
-/* 页脚品牌 Logo 与文字排版（立体感微悬浮阴影特效） */
+/* 页脚品牌 Logo 与文字排版（亮色立体阴影 / 暗色发光 / 悬停斜光掠影） */
 .site-footer a.footer-brand,
 .site-footer a[href*="OpenHomepage-V2"] {
   font-family: var(--font-serif);
@@ -4578,12 +4578,13 @@ section.footnotes {
   vertical-align: baseline;
   white-space: nowrap;
   gap: 0.22em;
-  padding: 0 0.15rem;
+  padding: 0.05rem 0.25rem;
   margin: 0 0.15rem;
   background: transparent;
-  transition:
-    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-    filter 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  transition: filter 0.25s ease;
   cursor: pointer;
   user-select: none;
 }
@@ -4614,18 +4615,44 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
   color: var(--color-terracotta, #f87171) !important;
 }
 
-/* 悬停态：鼠标移动上去出现立体感阴影与轻微浮起 */
+/* 斜着掠过的光效伪元素 */
+.site-footer a.footer-brand::after,
+.site-footer a[href*="OpenHomepage-V2"]::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -120%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    110deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.75) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0;
+}
+
+/* 悬停态：亮色立体阴影 + 掠光动画（不浮动） */
 .site-footer a.footer-brand:hover,
 .site-footer a[href*="OpenHomepage-V2"]:hover {
   color: var(--text) !important;
   text-decoration: none !important;
-  transform: translateY(-1px);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.14)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.06));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.14)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12));
 }
 
+.site-footer a.footer-brand:hover::after,
+.site-footer a[href*="OpenHomepage-V2"]:hover::after {
+  animation: brand-shimmer 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* 悬停态：暗色发光（Glow）+ 掠光动画 */
 html[data-theme="dark"] .site-footer a.footer-brand:hover,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95)) drop-shadow(0 5px 12px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.15));
+  filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.55)) drop-shadow(0 0 16px rgba(255, 255, 255, 0.3));
 }
 
 .site-footer a.footer-brand:hover .footer-brand-v2,
@@ -4640,6 +4667,23 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover .footer-br
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover span,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
   color: var(--color-terracotta, #f87171) !important;
+}
+
+@keyframes brand-shimmer {
+  0% {
+    left: -120%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: 220%;
+    opacity: 0;
+  }
 }
 
 
