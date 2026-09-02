@@ -827,27 +827,29 @@ function rehypeContentDecorations(lang: string | undefined, defaultLang?: string
         if (!cls.includes('data-footnote-backref')) {
           node.properties.className = [...cls, 'data-footnote-backref'];
         }
-        node.children = [
-          hEl(
-            'svg',
-            {
-              className: ['footnote-backref-icon'],
-              viewBox: '0 0 24 24',
-              width: '13',
-              height: '13',
-              fill: 'none',
-              stroke: 'currentColor',
-              strokeWidth: '2.2',
-              strokeLinecap: 'round',
-              strokeLinejoin: 'round',
-              ariaHidden: 'true',
-            },
-            [
-              hEl('path', { d: 'M9 14 4 9l5-5' }),
-              hEl('path', { d: 'M20 20v-7a4 4 0 0 0-4-4H4' }),
-            ],
-          ),
-        ];
+        const svgIcon = hEl(
+          'svg',
+          {
+            className: ['footnote-backref-icon'],
+            viewBox: '0 0 24 24',
+            width: '13',
+            height: '13',
+            fill: 'none',
+            stroke: 'currentColor',
+            strokeWidth: '2.2',
+            strokeLinecap: 'round',
+            strokeLinejoin: 'round',
+            ariaHidden: 'true',
+          },
+          [
+            hEl('path', { d: 'M9 14 4 9l5-5' }),
+            hEl('path', { d: 'M20 20v-7a4 4 0 0 0-4-4H4' }),
+          ],
+        );
+        const subIndexChildren = node.children.filter(
+          (c) => c.type !== 'text' || (c.value !== '↩' && c.value.trim() !== '↩')
+        );
+        node.children = [svgIcon, ...subIndexChildren];
       }
       if (node.tagName === 'a' && node.properties && ('dataFootnoteRef' in node.properties || 'data-footnote-ref' in node.properties)) {
         const cls = classesOf(node);
@@ -1267,7 +1269,10 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     footnoteLabel: ui.footnotes.label,
     footnoteLabelTagName: 'h2',
     footnoteLabelProperties: { className: ['footnotes-title'] },
-    footnoteBackLabel: (refIndex) => ui.footnotes.backToRef(refIndex + 1),
+    footnoteBackLabel: (refIndex, rerefIndex) =>
+      rerefIndex && rerefIndex > 1
+        ? ui.footnotes.backToRef(refIndex + 1) + "-" + rerefIndex
+        : ui.footnotes.backToRef(refIndex + 1),
   })
     .use(rehypeRaw)
     .use(rehypeKatex)

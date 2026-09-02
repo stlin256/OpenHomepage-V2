@@ -4551,6 +4551,16 @@ section.footnotes {
   flex-shrink: 0;
 }
 
+.data-footnote-backref sup,
+.footnote-backref sup {
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  font-weight: 700;
+  margin-left: 2px;
+  line-height: 1;
+  top: -0.35em;
+}
+
 /* 页脚品牌 Logo 与文字排版（OpenHomepage V2 方案6：渐进形变为按钮，保持品牌色） */
 .site-footer a.footer-brand,
 .site-footer a[href*="OpenHomepage-V2"] {

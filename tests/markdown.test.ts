@@ -561,4 +561,14 @@ describe('富媒体脚注（Footnotes Pipeline）', () => {
     expect(html).toContain('<code>run()</code>');
     expect(html).toContain('<a href="https://arxiv.org">arXiv</a>');
   });
+
+  it('多处引用同一脚注时保留数字小标与对应 aria-label', async () => {
+    const md = '首处引用[^fn]与二次引用[^fn]以及三次引用[^fn]。\n\n[^fn]: 多次引用的脚注内容';
+    const html = await renderMarkdown(md, { lang: 'zh' });
+    expect(html).toContain('aria-label="返回引用 1"');
+    expect(html).toContain('aria-label="返回引用 1-2"');
+    expect(html).toContain('aria-label="返回引用 1-3"');
+    expect(html).toContain('<sup>2</sup>');
+    expect(html).toContain('<sup>3</sup>');
+  });
 });
