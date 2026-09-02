@@ -90,7 +90,7 @@ html[data-theme='dark'] .gh-repo {
    轨道透明、thumb 圆角、明暗主题适配；Firefox 使用 scrollbar-width/color，
    Chromium/Safari 使用 WebKit 伪元素。 */
 html,
-.markdown-body .katex,
+.markdown-body .katex-display,
 .markdown-body pre,
 .markdown-body .md-table-wrap,
 .publication-links,
@@ -103,7 +103,7 @@ html,
   scrollbar-color: var(--border) transparent;
 }
 html::-webkit-scrollbar,
-.markdown-body .katex::-webkit-scrollbar,
+.markdown-body .katex-display::-webkit-scrollbar,
 .markdown-body pre::-webkit-scrollbar,
 .markdown-body .md-table-wrap::-webkit-scrollbar,
 .publication-links::-webkit-scrollbar,
@@ -116,7 +116,7 @@ html::-webkit-scrollbar,
   height: 6px;
 }
 html::-webkit-scrollbar-track,
-.markdown-body .katex::-webkit-scrollbar-track,
+.markdown-body .katex-display::-webkit-scrollbar-track,
 .markdown-body pre::-webkit-scrollbar-track,
 .markdown-body .md-table-wrap::-webkit-scrollbar-track,
 .publication-links::-webkit-scrollbar-track,
@@ -128,7 +128,7 @@ html::-webkit-scrollbar-track,
   background: transparent;
 }
 html::-webkit-scrollbar-thumb,
-.markdown-body .katex::-webkit-scrollbar-thumb,
+.markdown-body .katex-display::-webkit-scrollbar-thumb,
 .markdown-body pre::-webkit-scrollbar-thumb,
 .markdown-body .md-table-wrap::-webkit-scrollbar-thumb,
 .publication-links::-webkit-scrollbar-thumb,
@@ -141,7 +141,7 @@ html::-webkit-scrollbar-thumb,
   border-radius: 3px;
 }
 html::-webkit-scrollbar-thumb:hover,
-.markdown-body .katex::-webkit-scrollbar-thumb:hover,
+.markdown-body .katex-display::-webkit-scrollbar-thumb:hover,
 .markdown-body pre::-webkit-scrollbar-thumb:hover,
 .markdown-body .md-table-wrap::-webkit-scrollbar-thumb:hover,
 .publication-links::-webkit-scrollbar-thumb:hover,
@@ -1111,12 +1111,17 @@ a.editorial-item.revealed:focus-visible .editorial-item-mask {
   margin: 0;
 }
 
-.markdown-body .katex {
-  display: inline-block;
-  max-width: 100%;
+/* 块级公式滚动与行内公式排版 */
+.markdown-body .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
-  vertical-align: middle;
+  padding: 0.5rem 0;
+  margin: 1.25em 0;
+}
+.markdown-body .katex-display > .katex {
+  display: block;
+  max-width: 100%;
+  text-align: center;
   white-space: nowrap;
 }
 a.editorial-item:hover .editorial-item-index,
