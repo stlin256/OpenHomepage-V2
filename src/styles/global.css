@@ -4564,7 +4564,7 @@ section.footnotes {
   top: -0.35em;
 }
 
-/* 页脚品牌 Logo 与文字排版（OpenHomepage V2 方案6：渐进形变为按钮，保持品牌色） */
+/* 页脚品牌 Logo 与文字排版（立体感微悬浮阴影特效） */
 .site-footer a.footer-brand,
 .site-footer a[href*="OpenHomepage-V2"] {
   font-family: var(--font-serif);
@@ -4578,18 +4578,12 @@ section.footnotes {
   vertical-align: baseline;
   white-space: nowrap;
   gap: 0.22em;
-  padding: 1px 6px;
-  margin: 0 0.2rem;
-  border: 1px solid transparent;
-  border-radius: 9999px;
+  padding: 0 0.15rem;
+  margin: 0 0.15rem;
   background: transparent;
-  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   transition:
-    background-color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-    border-color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
-    padding 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   cursor: pointer;
   user-select: none;
 }
@@ -4620,23 +4614,18 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
   color: var(--color-terracotta, #f87171) !important;
 }
 
-/* 悬停态：平滑展开为胶囊按钮，保持自身品牌色不变 */
+/* 悬停态：鼠标移动上去出现立体感阴影与轻微浮起 */
 .site-footer a.footer-brand:hover,
 .site-footer a[href*="OpenHomepage-V2"]:hover {
   color: var(--text) !important;
   text-decoration: none !important;
-  background: var(--card);
-  border-color: var(--border-strong);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
   transform: translateY(-1px);
-  padding: 1px 11px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.14)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.06));
 }
 
 html[data-theme="dark"] .site-footer a.footer-brand:hover,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover {
-  background: var(--card);
-  border-color: var(--border-strong);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95)) drop-shadow(0 5px 12px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.15));
 }
 
 .site-footer a.footer-brand:hover .footer-brand-v2,
