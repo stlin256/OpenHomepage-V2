@@ -1,3 +1,4 @@
+import { generatePageSkeleton } from '../../shared/skeleton.ts';
 ﻿/**
  * 页面视图（M12e 重写，docs/specs/12 §4）：
  * frontmatter 纵向表单（标题/slug/nav/order/描述/notice）+ 整页源码 textarea（等宽，
@@ -474,6 +475,73 @@ export async function renderPageEditor(
     })();
   };
 
+
+  const doCloneSkeleton = () => {
+    void (async () => {
+      let options: LanguageOption[];
+      let slug: string;
+      try {
+        const { pages } = await api.pages();
+        slug = String(fm.slug ?? file.replace(/\.md$/, ""));
+        const existingLangs = [...new Set(pages.map((p) => p.lang))];
+        const takenLangs = [...new Set(pages.filter((p) => p.slug === slug).map((p) => p.lang))];
+        options = languageOptions(existingLangs, takenLangs);
+      } catch (e) {
+        state.setStatus((e as Error).message, "err");
+        return;
+      }
+      if (options.length === 0) {
+        state.setStatus(t("otherLangExists"), "err");
+        return;
+      }
+
+      const overlay = el("div", { class: "modal-overlay" });
+      const close = () => overlay.remove();
+      const langSel = el("select", { class: "input" }) as HTMLSelectElement;
+      const existingGroup = el("optgroup", { label: t("wizardLangExisting") });
+      const commonGroup = el("optgroup", { label: t("wizardLangCommon") });
+      for (const o of options) {
+        (o.existing ? existingGroup : commonGroup).append(el("option", { value: o.code }, o.label));
+      }
+      if (existingGroup.childElementCount) langSel.append(existingGroup);
+      if (commonGroup.childElementCount) langSel.append(commonGroup);
+
+      const submit = async () => {
+        try {
+          const skeleton = generatePageSkeleton(sourceEl.value);
+          const r = await api.createPage(langSel.value, `${String(fm.title ?? file)} [待翻译]`, slug, skeleton);
+          close();
+          state.setStatus(t("skeletonCloned"), "ok");
+          await state.refreshSidebar();
+          state.navigate(`#/page/${langSel.value}/${r.file}`);
+        } catch (e) {
+          const msg = (e as Error).message;
+          state.setStatus(/已存在/.test(msg) ? t("otherLangExists") : msg, "err");
+        }
+      };
+
+      overlay.append(
+        el(
+          "div",
+          { class: "modal" },
+          el("h3", {}, t("cloneSkeleton")),
+          el("p", { class: "muted" }, t("cloneSkeletonHint")),
+          field(t("translateLang"), langSel),
+          el(
+            "div",
+            { class: "modal-ops" },
+            btn(t("cloneSkeleton"), () => void submit(), "btn-primary"),
+            btn(t("cancel"), close)
+          )
+        )
+      );
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) close();
+      });
+      document.body.append(overlay);
+    })();
+  };
+
   // ---- 「可视化编辑」主按钮：确保托管 dev server 运行后新标签打开 ?edit=1 ----
   const DEV_FALLBACK_ORIGIN = 'http://127.0.0.1:4321';
   const editUrl = (origin: string) =>
@@ -557,6 +625,7 @@ export async function renderPageEditor(
       btn(t('snapshots'), () => void openSnapshots()),
       btn(t('renamePage'), doRename),
       btn(t('createOtherLang'), doTranslate),
+      btn(t('cloneSkeleton'), doCloneSkeleton),
       btn(t('deletePage'), doDelete, 'btn-danger')
     )
   );

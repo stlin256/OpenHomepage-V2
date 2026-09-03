@@ -437,4 +437,102 @@ html[data-theme='dark'] .modal-overlay { background: rgba(0, 0, 0, 0.55); }
 .theme-toggle .icon { display: none; width: 1rem; height: 1rem; }
 html[data-theme='light'] .theme-toggle .icon-light,
 html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
-\n.oh-viewport-btn {}\n.oh-viewport-group {}\n
+.oh-viewport-btn {}
+.oh-viewport-group {}
+.btn-clone {}
+.ready {}
+.fallback {}
+
+
+/* 多语言同步看板 (i18n Sync Dashboard) */
+.i18n-sync-view {
+  padding: 24px;
+  max-width: 1100px;
+}
+.i18n-stats-bar {
+  display: flex;
+  gap: 16px;
+  margin: 20px 0;
+}
+.i18n-stat-card {
+  flex: 1;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.i18n-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.i18n-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: ui-monospace, monospace;
+}
+.i18n-table-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.i18n-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+.i18n-matrix-table th,
+.i18n-matrix-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.i18n-matrix-table th {
+  background: var(--bg-subtle);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.i18n-matrix-table th.col-lang {
+  text-align: center;
+  min-width: 140px;
+}
+.i18n-matrix-table td.cell-status {
+  text-align: center;
+}
+.cell-slug .slug-title {
+  font-weight: 600;
+}
+.cell-slug .slug-path {
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+}
+.i18n-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.i18n-badge.ready {
+  background: rgba(46, 125, 50, 0.1);
+  color: #2e7d32;
+}
+.i18n-badge.ready:hover {
+  background: rgba(46, 125, 50, 0.2);
+}
+.i18n-badge.fallback {
+  background: rgba(230, 81, 0, 0.1);
+  color: #e65100;
+  margin-right: 6px;
+}
+.btn-clone {
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.btn-sm { font-size: 12px; padding: 3px 8px; }

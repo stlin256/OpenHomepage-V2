@@ -1,3 +1,4 @@
+import { renderI18nSync } from './views/i18nsync.ts';
 /**
  * SPA 入口：顶栏（保存状态/预览/语言切换）+ 侧栏（页面/配置/素材）+ 主区路由。
  * 路由用 location.hash：#/page/<lang>/<file>、#/config/<section>、#/assets。
@@ -102,6 +103,9 @@ function renderSidebar(): void {
     sidebar.append(el('a', { class: 'side-item', href: `#/config/${key}` }, label));
   }
 
+  sidebar.append(el('div', { class: 'side-title' }, t('navI18nSync')));
+  sidebar.append(el('a', { class: 'side-item', href: '#/i18n-sync' }, t('navI18nSync')));
+
   sidebar.append(el('div', { class: 'side-title' }, t('navAssets')));
   sidebar.append(el('a', { class: 'side-item', href: '#/assets' }, t('navAssets')));
   updateSideNav(sidebar);
@@ -184,6 +188,8 @@ async function renderMain(): Promise<void> {
         theme: renderThemePicker,
       };
       await (renderers[section] ?? renderSiteConfig)(main, state);
+    } else if (name === 'i18n-sync') {
+      await renderI18nSync(main, state);
     } else if (name === 'assets') {
       await renderAssets(main, state);
     } else {
