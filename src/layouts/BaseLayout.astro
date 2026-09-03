@@ -8,6 +8,8 @@
  * 页脚：site.yaml footer 段（默认开启，显式 false 关闭；内联链接见 src/lib/footer.ts）。
  */
 import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/newsreader';
+import '@fontsource-variable/newsreader/opsz-italic.css';
 import 'katex/dist/katex.min.css';
 import '../styles/fonts.css';
 import '../styles/global.css';
@@ -138,11 +140,6 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- 学术杂志排版 Newsreader 衬线字体 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,600&display=swap" rel="stylesheet" />
-
     <title>{`${title} · ${siteTitle}`}</title>
     <link rel="icon" href={withBase(favicon)} type={faviconType} />
     {description && <meta name="description" content={description} />}

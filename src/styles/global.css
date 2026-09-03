@@ -27,7 +27,7 @@ html {
   --accent-contrast: var(--accent-light-contrast);
   --font-sans:
     'Segoe UI', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
-  --font-serif: 'Newsreader', 'Songti SC', 'Source Han Serif SC', Georgia, 'Times New Roman', serif;
+  --font-serif: 'Newsreader Variable', 'Newsreader', 'Songti SC', 'Source Han Serif SC', Georgia, 'Times New Roman', serif;
   --color-terracotta: #c85a32;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --font-mono-index: 'JetBrains Mono Index Variable', var(--font-mono);
