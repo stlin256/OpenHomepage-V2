@@ -474,10 +474,26 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
     </div>
 
     <div class="lightbox" role="dialog" aria-modal="true" aria-label={ui.lightbox.dialog} data-pagefind-ignore hidden>
-      <img class="lightbox-img" alt="" />
-      <button class="lightbox-close" type="button" aria-label={ui.lightbox.close}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <path d="M6 6l12 12M18 6L6 18" />
+      <div class="lightbox-toolbar">
+        <span class="lightbox-counter" aria-live="polite"></span>
+        <button class="lightbox-close" type="button" aria-label={ui.lightbox.close}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+      <button class="lightbox-nav lightbox-prev" type="button" aria-label={ui.lightbox.prev} hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="lightbox-figure">
+        <img class="lightbox-img" alt="" />
+        <p class="lightbox-caption" aria-live="polite" hidden></p>
+      </div>
+      <button class="lightbox-nav lightbox-next" type="button" aria-label={ui.lightbox.next} hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
       </button>
     </div>

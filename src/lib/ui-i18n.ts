@@ -41,6 +41,8 @@ export interface BgmLabels {
 export interface LightboxLabels {
   dialog: string;
   close: string;
+  prev: string;
+  next: string;
 }
 
 /** 联系卡 / 二维码弹窗 */
@@ -141,7 +143,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: '音量调节',
       trackFallback: '曲目 1',
     },
-    lightbox: { dialog: '图片预览', close: '关闭' },
+    lightbox: { dialog: '图片预览', close: '关闭', prev: '上一张', next: '下一张' },
     contactCard: { close: '关闭联系卡', qrClose: '关闭' },
     stream: { replay: '重播' },
     audio: {
@@ -196,7 +198,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Volume',
       trackFallback: 'Track 1',
     },
-    lightbox: { dialog: 'Image preview', close: 'Close' },
+    lightbox: { dialog: 'Image preview', close: 'Close', prev: 'Previous image', next: 'Next image' },
     contactCard: { close: 'Close contact card', qrClose: 'Close' },
     stream: { replay: 'Replay' },
     audio: {
@@ -251,7 +253,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: '音量',
       trackFallback: 'トラック 1',
     },
-    lightbox: { dialog: '画像プレビュー', close: '閉じる' },
+    lightbox: { dialog: '画像プレビュー', close: '閉じる', prev: '前の画像', next: '次の画像' },
     contactCard: { close: '連絡カードを閉じる', qrClose: '閉じる' },
     stream: { replay: 'リプレイ' },
     audio: {
@@ -306,7 +308,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Volume',
       trackFallback: 'Piste 1',
     },
-    lightbox: { dialog: 'Aperçu de l’image', close: 'Fermer' },
+    lightbox: { dialog: 'Aperçu de l’image', close: 'Fermer', prev: 'Image précédente', next: 'Image suivante' },
     contactCard: { close: 'Fermer la carte de contact', qrClose: 'Fermer' },
     stream: { replay: 'Rejouer' },
     audio: {
@@ -361,7 +363,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Lautstärke',
       trackFallback: 'Titel 1',
     },
-    lightbox: { dialog: 'Bildvorschau', close: 'Schließen' },
+    lightbox: { dialog: 'Bildvorschau', close: 'Schließen', prev: 'Vorheriges Bild', next: 'Nächstes Bild' },
     contactCard: { close: 'Kontakt schließen', qrClose: 'Schließen' },
     stream: { replay: 'Erneut abspielen' },
     audio: {
@@ -416,7 +418,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Volumen',
       trackFallback: 'Pista 1',
     },
-    lightbox: { dialog: 'Vista previa de imagen', close: 'Cerrar' },
+    lightbox: { dialog: 'Vista previa de imagen', close: 'Cerrar', prev: 'Imagen anterior', next: 'Imagen siguiente' },
     contactCard: { close: 'Cerrar tarjeta de contacto', qrClose: 'Cerrar' },
     stream: { replay: 'Reproducir de nuevo' },
     audio: {
@@ -471,7 +473,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: '음량',
       trackFallback: '트랙 1',
     },
-    lightbox: { dialog: '이미지 미리보기', close: '닫기' },
+    lightbox: { dialog: '이미지 미리보기', close: '닫기', prev: '이전 이미지', next: '다음 이미지' },
     contactCard: { close: '연락처 카드 닫기', qrClose: '닫기' },
     stream: { replay: '다시 재생' },
     audio: {
@@ -526,7 +528,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Volume',
       trackFallback: 'Faixa 1',
     },
-    lightbox: { dialog: 'Pré-visualização de imagem', close: 'Fechar' },
+    lightbox: { dialog: 'Pré-visualização de imagem', close: 'Fechar', prev: 'Imagem anterior', next: 'Próxima imagem' },
     contactCard: { close: 'Fechar cartão de contato', qrClose: 'Fechar' },
     stream: { replay: 'Reproduzir novamente' },
     audio: {
@@ -581,7 +583,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Громкость',
       trackFallback: 'Дорожка 1',
     },
-    lightbox: { dialog: 'Просмотр изображения', close: 'Закрыть' },
+    lightbox: { dialog: 'Просмотр изображения', close: 'Закрыть', prev: 'Предыдущее изображение', next: 'Следующее изображение' },
     contactCard: { close: 'Закрыть контактную карту', qrClose: 'Закрыть' },
     stream: { replay: 'Повторить' },
     audio: {
@@ -636,7 +638,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Volume',
       trackFallback: 'Traccia 1',
     },
-    lightbox: { dialog: 'Anteprima immagine', close: 'Chiudi' },
+    lightbox: { dialog: 'Anteprima immagine', close: 'Chiudi', prev: 'Immagine precedente', next: 'Immagine successiva' },
     contactCard: { close: 'Chiudi scheda di contatto', qrClose: 'Chiudi' },
     stream: { replay: 'Riproduci di nuovo' },
     audio: {
@@ -691,7 +693,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Volume',
       trackFallback: 'Nummer 1',
     },
-    lightbox: { dialog: 'Afbeelding voorbeeld', close: 'Sluiten' },
+    lightbox: { dialog: 'Afbeelding voorbeeld', close: 'Sluiten', prev: 'Vorige afbeelding', next: 'Volgende afbeelding' },
     contactCard: { close: 'Contactkaart sluiten', qrClose: 'Sluiten' },
     stream: { replay: 'Opnieuw afspelen' },
     audio: {
@@ -746,7 +748,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Ses',
       trackFallback: 'Parça 1',
     },
-    lightbox: { dialog: 'Görünüm önizleme', close: 'Kapat' },
+    lightbox: { dialog: 'Görünüm önizleme', close: 'Kapat', prev: 'Önceki görsel', next: 'Sonraki görsel' },
     contactCard: { close: 'İletişim kartını kapat', qrClose: 'Kapat' },
     stream: { replay: 'Yeniden oynat' },
     audio: {
@@ -801,7 +803,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Âm lượng',
       trackFallback: 'Bản 1',
     },
-    lightbox: { dialog: 'Xem trước ảnh', close: 'Đóng' },
+    lightbox: { dialog: 'Xem trước ảnh', close: 'Đóng', prev: 'Ảnh trước', next: 'Ảnh tiếp theo' },
     contactCard: { close: 'Đóng thẻ liên hệ', qrClose: 'Đóng' },
     stream: { replay: 'Phát lại' },
     audio: {
@@ -856,7 +858,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'ระดับเสียง',
       trackFallback: 'แทร็ก 1',
     },
-    lightbox: { dialog: 'ดูตัวอย่างรูปภาพ', close: 'ปิด' },
+    lightbox: { dialog: 'ดูตัวอย่างรูปภาพ', close: 'ปิด', prev: 'รูปภาพก่อนหน้า', next: 'รูปภาพถัด็ป' },
     contactCard: { close: 'ปิดการ์ดติดต่อ', qrClose: 'ปิด' },
     stream: { replay: 'เล่นอีกครั้ง' },
     audio: {
@@ -911,7 +913,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'Volume',
       trackFallback: 'Lagu 1',
     },
-    lightbox: { dialog: 'Pratinjau gambar', close: 'Tutup' },
+    lightbox: { dialog: 'Pratinjau gambar', close: 'Tutup', prev: 'Gambar sebelumnya', next: 'Gambar berikutnya' },
     contactCard: { close: 'Tutup kartu kontak', qrClose: 'Tutup' },
     stream: { replay: 'Putar ulang' },
     audio: {
@@ -966,7 +968,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'الصوت',
       trackFallback: 'مقطع 1',
     },
-    lightbox: { dialog: 'معاينة الصورة', close: 'إغلاق' },
+    lightbox: { dialog: 'معاينة الصورة', close: 'إغلاق', prev: 'الصورة السابقة', next: 'الصورة التالية' },
     contactCard: { close: 'إغلاق بطاقة التواصل', qrClose: 'إغلاق' },
     stream: { replay: 'إعادة التشغيل' },
     audio: {
@@ -1021,7 +1023,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       volume: 'वॉल्यूम',
       trackFallback: 'ट्रैक 1',
     },
-    lightbox: { dialog: 'छवि पूर्वावलोकन', close: 'बंद करें' },
+    lightbox: { dialog: 'छवि पूर्वावलोकन', close: 'बंद करें', prev: 'पिछली छवि', next: 'अगली छवि' },
     contactCard: { close: 'संपर्क कार्ड बंद करें', qrClose: 'बंद करें' },
     stream: { replay: 'पुनः चलाएं' },
     audio: {
