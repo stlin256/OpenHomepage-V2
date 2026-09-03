@@ -91,6 +91,12 @@ export interface PublicationsLabels {
   linksAria: string;
 }
 
+
+/** 代码块 */
+export interface CodeLabels {
+  copy: string;
+  copied: string;
+}
 /** 富媒体脚注 */
 export interface FootnotesLabels {
   title: string;
@@ -113,6 +119,7 @@ export interface UiLabels {
   toc: TocLabels;
   publications: PublicationsLabels;
   footnotes: FootnotesLabels;
+  code: CodeLabels;
 }
 
 export const UI_LABELS: Record<UiLang, UiLabels> = {
@@ -169,6 +176,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: '关闭',
       jumpToBottom: '查看文末脚注',
     },
+    code: { copy: '复制代码', copied: '已复制' },
   },
   en: {
     header: {
@@ -223,6 +231,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Close',
       jumpToBottom: 'Jump to footnotes',
     },
+    code: { copy: 'Copy code', copied: 'Copied' },
   },
   ja: {
     header: {
@@ -277,6 +286,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: '閉じる',
       jumpToBottom: '脚注へ移動',
     },
+    code: { copy: 'コピー', copied: 'コピー完了' },
   },
   fr: {
     header: {
@@ -331,6 +341,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Fermer',
       jumpToBottom: 'Aller aux notes de bas de page',
     },
+    code: { copy: 'Copier', copied: 'Copié' },
   },
   de: {
     header: {
@@ -385,6 +396,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Schließen',
       jumpToBottom: 'Zu den Fußnoten springen',
     },
+    code: { copy: 'Kopieren', copied: 'Kopiert' },
   },
   es: {
     header: {
@@ -439,6 +451,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Cerrar',
       jumpToBottom: 'Ir a las notas al pie',
     },
+    code: { copy: 'Copiar', copied: 'Copiado' },
   },
   ko: {
     header: {
@@ -493,6 +506,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: '닫기',
       jumpToBottom: '각주로 이동',
     },
+    code: { copy: '코드 복사', copied: '복사됨' },
   },
   pt: {
     header: {
@@ -547,6 +561,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Fechar',
       jumpToBottom: 'Ir para as notas de rodapé',
     },
+    code: { copy: 'Copiar', copied: 'Copiado' },
   },
   ru: {
     header: {
@@ -601,6 +616,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Закрыть',
       jumpToBottom: 'Перейти к сноскам',
     },
+    code: { copy: 'Копировать', copied: 'Скопировано' },
   },
   it: {
     header: {
@@ -655,6 +671,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Chiudi',
       jumpToBottom: 'Vai alle note a piè di pagina',
     },
+    code: { copy: 'Copia', copied: 'Copiato' },
   },
   nl: {
     header: {
@@ -709,6 +726,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Sluiten',
       jumpToBottom: 'Naar voetnoten springen',
     },
+    code: { copy: 'Kopiëren', copied: 'Gekopieerd' },
   },
   tr: {
     header: {
@@ -763,6 +781,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Kapat',
       jumpToBottom: 'Dipnotlara git',
     },
+    code: { copy: 'Kopyala', copied: 'Kopyalandı' },
   },
   vi: {
     header: {
@@ -817,6 +836,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Đóng',
       jumpToBottom: 'Đi tới chú thích',
     },
+    code: { copy: 'Sao chép', copied: 'Đã sao chép' },
   },
   th: {
     header: {
@@ -871,6 +891,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'ปิด',
       jumpToBottom: 'ไปยังเชิงอรรถ',
     },
+    code: { copy: 'คัดลอก', copied: 'คัดลอกแล้ว' },
   },
   id: {
     header: {
@@ -925,6 +946,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'Tutup',
       jumpToBottom: 'Buka catatan kaki',
     },
+    code: { copy: 'Salin', copied: 'Tersalin' },
   },
   ar: {
     header: {
@@ -979,6 +1001,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'إغلاق',
       jumpToBottom: 'الانتقال إلى الهوامش',
     },
+    code: { copy: 'نسخ الكود', copied: 'تم النسخ' },
   },
   hi: {
     header: {
@@ -1033,6 +1056,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       close: 'बंद करें',
       jumpToBottom: 'पाद टिप्पणियों पर जाएं',
     },
+    code: { copy: 'कोड कॉपी करें', copied: 'कॉपी किया गया' },
   },
 
 };

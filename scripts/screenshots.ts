@@ -443,7 +443,7 @@ const SHOTS: Shot[] = [
       });
     },
   },
-  { name: "markdown-code", page: "features", selector: ".page-content pre.shiki", nth: 0, padding: 28 },
+  { name: "markdown-code", page: "features", selector: ".page-content .code-block-wrapper", nth: 0, padding: 28 },
   { name: "markdown-math", page: "features", selector: ".page-content .katex-display", nth: 0, padding: 28 },
   { name: "markdown-figure", page: "features", selector: ".page-content figure", nth: 0, padding: 28 },
   { name: "markdown-grid", page: "features", selector: ".page-content .md-grid", nth: 0, padding: 28 },

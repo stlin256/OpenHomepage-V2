@@ -591,3 +591,62 @@ describe("interactions：编辑模式下超链接与导航行为", () => {
     expect(document.querySelector(".site-title")?.classList.contains("chrome-fade-out")).toBe(false);
   });
 });
+
+describe("interactions：代码块人体工学与一键复制", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    document.documentElement.className = "";
+    document.documentElement.dataset.routeLang = "zh";
+    vi.resetModules();
+  });
+
+  it("自动为 markdown 中的 pre 代码块添加包裹容器、语言角标与复制按钮", async () => {
+    document.body.innerHTML = [
+      "<main class='site-main'>",
+      "  <div class='markdown-body'>",
+      "    <pre class='shiki language-python'><code>def hello():\n    print('world')</code></pre>",
+      "  </div>",
+      "</main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    const wrapper = document.querySelector(".code-block-wrapper");
+    expect(wrapper).not.toBeNull();
+    const header = wrapper?.querySelector(".code-header");
+    expect(header).not.toBeNull();
+    expect(header?.querySelector(".code-lang")?.textContent).toBe("Python");
+    expect(header?.querySelector(".code-copy-btn")).not.toBeNull();
+    expect(header?.querySelector(".code-copy-text")?.textContent).toBe("复制代码");
+  });
+
+  it("点击复制按钮时调用 clipboard.writeText 并展示已复制反馈", async () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
+
+    document.body.innerHTML = [
+      "<main class='site-main'>",
+      "  <div class='markdown-body'>",
+      "    <pre class='shiki language-ts'><code>const a: number = 42;</code></pre>",
+      "  </div>",
+      "</main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    const copyBtn = document.querySelector<HTMLButtonElement>(".code-copy-btn")!;
+    expect(copyBtn).not.toBeNull();
+
+    copyBtn.click();
+
+    await vi.waitFor(() => {
+      expect(writeTextMock).toHaveBeenCalledWith("const a: number = 42;");
+      expect(copyBtn.classList.contains("copied")).toBe(true);
+    });
+    expect(copyBtn.querySelector(".code-copy-text")?.textContent).toBe("已复制");
+  });
+});

@@ -19,6 +19,7 @@ import { scheduleTabPrefetch } from './tab-prefetch.ts';
 import { fetchPageHtml } from './page-cache.ts';
 import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
 import './lightbox.ts';
+import { getUiLabels } from '../lib/ui-i18n.ts';
 
 const LANGUAGE_STORAGE_KEY = 'oh-language';
 /** 语言切换可见遮罩的最短时长：给 FLIP 动画足够的呈现窗口。 */
@@ -232,6 +233,135 @@ function initEmbeddedMedia(): void {
   }
 }
 
+
+const CODE_LANG_MAP: Record<string, string> = {
+  js: "JavaScript",
+  javascript: "JavaScript",
+  ts: "TypeScript",
+  typescript: "TypeScript",
+  py: "Python",
+  python: "Python",
+  sh: "Bash",
+  bash: "Bash",
+  zsh: "Zsh",
+  shell: "Shell",
+  html: "HTML",
+  css: "CSS",
+  scss: "SCSS",
+  json: "JSON",
+  yaml: "YAML",
+  yml: "YAML",
+  md: "Markdown",
+  markdown: "Markdown",
+  rs: "Rust",
+  rust: "Rust",
+  go: "Go",
+  cpp: "C++",
+  c: "C",
+  java: "Java",
+  sql: "SQL",
+  latex: "LaTeX",
+  tex: "TeX",
+  toml: "TOML",
+  docker: "Docker",
+  dockerfile: "Dockerfile",
+  astro: "Astro",
+};
+
+export function formatCodeLanguage(lang: string): string {
+  const clean = (lang || "").toLowerCase().trim();
+  if (!clean) return "Code";
+  return CODE_LANG_MAP[clean] || (clean.length <= 4 ? clean.toUpperCase() : clean.charAt(0).toUpperCase() + clean.slice(1));
+}
+
+export function initCodeBlocks(): void {
+  const currentLang = document.documentElement.dataset.routeLang || "zh";
+  const labels = getUiLabels(currentLang).code;
+
+  document.querySelectorAll<HTMLElement>(".markdown-body pre, .page-content pre").forEach((pre) => {
+    if (pre.closest(".code-block-wrapper") || pre.dataset.codeEnhanced === "true") return;
+    pre.dataset.codeEnhanced = "true";
+
+    let lang = "";
+    const classList = Array.from(pre.classList);
+    const codeEl = pre.querySelector("code");
+    if (codeEl) classList.push(...Array.from(codeEl.classList));
+
+    for (const cls of classList) {
+      if (cls.startsWith("language-")) {
+        lang = cls.replace("language-", "");
+        break;
+      }
+    }
+    if (!lang && pre.dataset.language) {
+      lang = pre.dataset.language;
+    }
+    if (!lang && codeEl?.dataset.language) {
+      lang = codeEl.dataset.language;
+    }
+
+    const displayLang = formatCodeLanguage(lang);
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "code-block-wrapper";
+
+    const header = document.createElement("div");
+    header.className = "code-header";
+
+    const langSpan = document.createElement("span");
+    langSpan.className = "code-lang";
+    langSpan.textContent = displayLang;
+
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "code-copy-btn";
+    copyBtn.setAttribute("aria-label", labels.copy);
+    copyBtn.setAttribute("title", labels.copy);
+    copyBtn.innerHTML = `
+      <svg class="icon-copy" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      <svg class="icon-check" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span class="code-copy-text">${labels.copy}</span>
+    `;
+
+    copyBtn.addEventListener("click", async () => {
+      const codeText = (codeEl ? codeEl.textContent : pre.textContent) ?? "";
+      try {
+        await navigator.clipboard.writeText(codeText.replace(/\n+$/, ""));
+      } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = codeText.replace(/\n+$/, "");
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+
+      copyBtn.classList.add("copied");
+      const textSpan = copyBtn.querySelector(".code-copy-text");
+      if (textSpan) textSpan.textContent = labels.copied;
+      copyBtn.setAttribute("aria-label", labels.copied);
+
+      setTimeout(() => {
+        copyBtn.classList.remove("copied");
+        if (textSpan) textSpan.textContent = labels.copy;
+        copyBtn.setAttribute("aria-label", labels.copy);
+      }, 2000);
+    });
+
+    header.appendChild(langSpan);
+    header.appendChild(copyBtn);
+
+    pre.parentNode?.insertBefore(wrapper, pre);
+    wrapper.appendChild(header);
+    wrapper.appendChild(pre);
+  });
+}
+
 function initNoticeBanners(): void {
   for (const banner of document.querySelectorAll<HTMLElement>(".notice-banner")) {
     if (banner.dataset.bannerInit === "1") continue;
@@ -430,6 +560,7 @@ function initAll(): void {
   initSearch();
   initToc();
   initFootnotes();
+  initCodeBlocks();
   scheduleTabPrefetch();
 }
 

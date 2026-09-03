@@ -1651,6 +1651,91 @@ a.editorial-item:focus-visible .editorial-item-content {
   border-radius: var(--radius-sm);
   padding: 0.1em 0.35em;
 }
+
+/* ---- 代码块人体工学套件（头部、语言角标与一键复制） ---- */
+.code-block-wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.75rem 0.35rem 1rem;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  user-select: none;
+}
+
+.code-lang {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.code-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.code-copy-btn:hover {
+  background: var(--card);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.code-copy-btn svg {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.code-copy-btn .icon-check {
+  display: none;
+}
+
+.code-copy-btn.copied {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.code-copy-btn.copied .icon-copy {
+  display: none;
+}
+
+.code-copy-btn.copied .icon-check {
+  display: inline-block;
+}
+
+.code-block-wrapper pre,
+.markdown-body .code-block-wrapper pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
 .markdown-body pre {
   background: var(--card);
   padding: 1rem 1.25rem;
