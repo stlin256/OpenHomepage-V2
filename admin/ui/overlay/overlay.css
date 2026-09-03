@@ -819,3 +819,57 @@ textarea.oh-cfgedit-input {
   color: #23272e;
   font-weight: 600;
 }
+
+
+/* 视口断点模拟器 */
+.oh-viewport-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-left: 4px;
+  margin-right: 4px;
+}
+.oh-viewport-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+.oh-viewport-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+.oh-viewport-btn.active {
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-weight: 600;
+}
+
+html.oh-viewport-tablet body {
+  max-width: 768px !important;
+  margin: 0 auto !important;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.45) !important;
+  min-height: 100vh;
+  transition: max-width 0.25s ease;
+}
+
+html.oh-viewport-mobile body {
+  max-width: 390px !important;
+  margin: 0 auto !important;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.45) !important;
+  min-height: 100vh;
+  transition: max-width 0.25s ease;
+}

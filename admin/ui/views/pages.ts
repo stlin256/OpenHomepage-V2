@@ -17,6 +17,41 @@ function fmtTs(ts: string): string {
   return `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)} ${ts.slice(9, 11)}:${ts.slice(11, 13)}:${ts.slice(13, 15)}`;
 }
 
+
+function insertTextAtCursor(textarea: HTMLTextAreaElement, textToInsert: string): void {
+  const start = textarea.selectionStart ?? textarea.value.length;
+  const end = textarea.selectionEnd ?? textarea.value.length;
+  const val = textarea.value;
+  textarea.value = val.slice(0, start) + textToInsert + val.slice(end);
+  const newPos = start + textToInsert.length;
+  textarea.selectionStart = newPos;
+  textarea.selectionEnd = newPos;
+  textarea.focus();
+}
+
+async function uploadAndInsertImage(
+  file: File,
+  textarea: HTMLTextAreaElement,
+  autosave: { touch: () => void },
+  state: AppState
+) {
+  state.setStatus(state.t("saving"));
+  try {
+    const extMatch = /\.[a-zA-Z0-9]+$/.exec(file.name || "");
+    const ext = extMatch ? extMatch[0].toLowerCase() : ".png";
+    const cleanStem = (file.name || "").replace(/\.[^.]+$/, "").replace(/[^\w-]/g, "");
+    const safeName = `${cleanStem || "pasted-image"}-${Date.now()}${ext}`;
+    const buf = await file.arrayBuffer();
+    const uploaded = await api.uploadAsset(safeName, buf);
+    const snippet = `\n\n:::figure{src="assets/${uploaded.name}" caption="图片描述" width="100%"}\n:::\n\n`;
+    insertTextAtCursor(textarea, snippet);
+    autosave.touch();
+    state.setStatus(state.t("imageUploaded"), "ok");
+  } catch (err) {
+    state.setStatus(`${state.t("saveFailed")}: ${(err as Error).message}`, "err");
+  }
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -142,13 +177,124 @@ export async function renderPageEditor(
     },
   };
 
+
+  // ---- 源码编辑器工具栏与快捷指令插入器 ----
+
+  const DIRECTIVE_TEMPLATES: Record<string, string> = {
+    callout: "\n\n:::note{title=\"注记标题\"}\n注记正文内容。\n:::\n\n",
+    figure: "\n\n:::figure{src=\"assets/example.jpg\" caption=\"图 1：说明文字\" width=\"80%\" align=\"center\"}\n:::\n\n",
+    ghcard: "\n\n::ghcard{repo=\"owner/repo\"}\n\n",
+    publications: "\n\n::publications{tag=\"all\" limit=\"5\" group=\"year\" sort=\"date-desc\"}\n\n",
+    timeline: "\n\n::::timeline{title=\"经历与里程碑\"}\n:::timeline-item{start=\"2024\" end=\"2026\" title=\"职位 / 经历\" org=\"单位 / 机构\"}\n简要描述。\n:::\n::::\n\n",
+    grid: "\n\n::::grid{cols=2}\n:::cell\n左栏内容\n:::\n:::cell\n右栏内容\n:::\n::::\n\n",
+    stream: "\n\n::stream{id=\"welcome\"}\n\n",
+    video: "\n\n::bilibili{bvid=\"BV1...\" title=\"视频标题\"}\n\n",
+    audio: "\n\n:::audio{src=\"assets/bgm.mp3\" title=\"音频标题\"}\n:::\n\n",
+  };
+
+  const directiveSelect = el("select", { class: "input" }) as HTMLSelectElement;
+  directiveSelect.append(
+    el("option", { value: "" }, `-- ${t("insertDirective")} --`),
+    el("option", { value: "callout" }, t("directiveCallout")),
+    el("option", { value: "figure" }, t("directiveFigure")),
+    el("option", { value: "ghcard" }, t("directiveGhcard")),
+    el("option", { value: "publications" }, t("directivePublications")),
+    el("option", { value: "timeline" }, t("directiveTimeline")),
+    el("option", { value: "grid" }, t("directiveGrid")),
+    el("option", { value: "stream" }, t("directiveStream")),
+    el("option", { value: "video" }, t("directiveVideo")),
+    el("option", { value: "audio" }, t("directiveAudio"))
+  );
+  directiveSelect.addEventListener("change", () => {
+    const val = directiveSelect.value;
+    if (val && DIRECTIVE_TEMPLATES[val]) {
+      insertTextAtCursor(sourceEl, DIRECTIVE_TEMPLATES[val]);
+      autosave.touch();
+      updateHints();
+    }
+    directiveSelect.value = "";
+  });
+
+  const fileInput = el("input", { type: "file", accept: "image/*", style: "display:none" }) as HTMLInputElement;
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (file) {
+      void uploadAndInsertImage(file, sourceEl, autosave, state);
+      fileInput.value = "";
+    }
+  });
+
+  const uploadBtn = btn(`🖼️ ${t("uploadImage")}`, () => fileInput.click(), "btn-sm");
+  const quickNoteBtn = btn("+ " + t("directiveCallout").split(" ")[0], () => {
+    insertTextAtCursor(sourceEl, DIRECTIVE_TEMPLATES.callout);
+    autosave.touch();
+    updateHints();
+  }, "btn-sm");
+  const quickFigureBtn = btn("+ " + t("directiveFigure").split(" ")[0], () => {
+    insertTextAtCursor(sourceEl, DIRECTIVE_TEMPLATES.figure);
+    autosave.touch();
+    updateHints();
+  }, "btn-sm");
+  const quickGridBtn = btn("+ " + t("directiveGrid").split(" ")[0], () => {
+    insertTextAtCursor(sourceEl, DIRECTIVE_TEMPLATES.grid);
+    autosave.touch();
+    updateHints();
+  }, "btn-sm");
+
+  const editorToolbar = el(
+    "div",
+    { class: "editor-toolbar" },
+    directiveSelect,
+    quickNoteBtn,
+    quickFigureBtn,
+    quickGridBtn,
+    uploadBtn,
+    fileInput
+  );
+
   // ---- 整页源码（兜底编辑面，等宽 textarea）----
   const sourceEl = el('textarea', {
-    class: 'source-editor',
+    class: 'source-editor with-toolbar',
     'aria-label': t('pageSourceLabel'),
     spellcheck: 'false',
   }) as HTMLTextAreaElement;
   sourceEl.value = page.body;
+
+  sourceEl.addEventListener("paste", (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          e.preventDefault();
+          void uploadAndInsertImage(file, sourceEl, autosave, state);
+          break;
+        }
+      }
+    }
+  });
+
+  sourceEl.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    sourceEl.classList.add("drag-over");
+  });
+  sourceEl.addEventListener("dragleave", () => {
+    sourceEl.classList.remove("drag-over");
+  });
+  sourceEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    sourceEl.classList.remove("drag-over");
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        if (files[i].type.indexOf("image") !== -1) {
+          void uploadAndInsertImage(files[i], sourceEl, autosave, state);
+        }
+      }
+    }
+  });
+
   sourceEl.addEventListener('input', () => {
     autosave.touch();
     updateHints();
@@ -416,7 +562,7 @@ export async function renderPageEditor(
   );
 
   container.replaceChildren(
-    el('div', { class: 'page-editor' }, opsBar, externalHint, form, tocHintEl, readingProgressHintEl, sourceEl)
+    el('div', { class: 'page-editor' }, opsBar, externalHint, form, tocHintEl, readingProgressHintEl, editorToolbar, sourceEl)
   );
   updateHints();
 

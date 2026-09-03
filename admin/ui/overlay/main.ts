@@ -109,6 +109,27 @@ function createTopBar(
     onOpenSettings: () => void;
   }
 ): HTMLElement {
+
+  const viewGroup = el("div", { class: "oh-viewport-group" });
+  const btnDesktop = el("button", { class: "oh-viewport-btn", type: "button", title: t("viewportDesktop") }, "💻 " + t("viewportDesktop"));
+  btnDesktop.classList.add("active");
+  const btnTablet = el("button", { class: "oh-viewport-btn", type: "button", title: t("viewportTablet") }, "📱 " + t("viewportTablet"));
+  const btnMobile = el("button", { class: "oh-viewport-btn", type: "button", title: t("viewportMobile") }, "📱 " + t("viewportMobile"));
+
+  const setViewport = (mode: "desktop" | "tablet" | "mobile") => {
+    document.documentElement.classList.remove("oh-viewport-tablet", "oh-viewport-mobile");
+    btnDesktop.classList.toggle("active", mode === "desktop");
+    btnTablet.classList.toggle("active", mode === "tablet");
+    btnMobile.classList.toggle("active", mode === "mobile");
+    if (mode === "tablet") document.documentElement.classList.add("oh-viewport-tablet");
+    if (mode === "mobile") document.documentElement.classList.add("oh-viewport-mobile");
+  };
+
+  btnDesktop.addEventListener("click", () => setViewport("desktop"));
+  btnTablet.addEventListener("click", () => setViewport("tablet"));
+  btnMobile.addEventListener("click", () => setViewport("mobile"));
+  viewGroup.append(btnDesktop, btnTablet, btnMobile);
+
   const exit = el('button', { class: 'oh-exit', type: 'button' }, t('exitEdit'));
   exit.addEventListener('click', () => {
     try {

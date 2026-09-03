@@ -206,4 +206,28 @@ describe('页面视图（M12e）', () => {
 
     cleanup();
   });
+
+  it("编辑器工具栏：支持指令模板一键插入与快捷按钮", async () => {
+    const { container, cleanup } = await openView();
+    const toolbar = container.querySelector(".editor-toolbar");
+    expect(toolbar).not.toBeNull();
+
+    const select = toolbar?.querySelector("select") as HTMLSelectElement;
+    expect(select).not.toBeNull();
+
+    const source = container.querySelector<HTMLTextAreaElement>(".source-editor")!;
+    source.value = "# 原有标题\n\n";
+    source.selectionStart = source.value.length;
+    source.selectionEnd = source.value.length;
+
+    // 选择 note 模版
+    select.value = "callout";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+
+    expect(source.value).toContain(":::note");
+    expect(source.value).toContain("注记标题");
+
+    cleanup();
+  });
+
 });
