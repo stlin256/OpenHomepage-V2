@@ -536,3 +536,72 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
 }
 
 .btn-sm { font-size: 12px; padding: 3px 8px; }
+
+
+/* 实时写作诊断面板 (Diagnostics Panel) */
+.page-diagnostics-panel {
+  margin: 10px 0 14px;
+}
+.diagnostics-card {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+.diagnostics-card.pass {
+  background: rgba(46, 125, 50, 0.08);
+  border-color: rgba(46, 125, 50, 0.25);
+  color: #2e7d32;
+}
+.diagnostics-card.has-issues {
+  background: rgba(230, 81, 0, 0.06);
+  border-color: rgba(230, 81, 0, 0.25);
+}
+.diagnostics-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.diagnostic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.diagnostic-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.diagnostic-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 11px;
+}
+.diagnostic-badge.error {
+  background: rgba(192, 57, 43, 0.15);
+  color: var(--danger);
+}
+.diagnostic-badge.warning {
+  background: rgba(230, 81, 0, 0.15);
+  color: #e65100;
+}
+.diagnostic-msg {
+  color: var(--text);
+}
+.diagnostic-line {
+  color: var(--text-muted);
+  font-family: ui-monospace, monospace;
+}
+.diagnostic-fix {
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+.has-issues {}
+.pass {}
+.error {}
+.warning {}
+

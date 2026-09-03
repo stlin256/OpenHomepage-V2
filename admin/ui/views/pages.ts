@@ -1,3 +1,4 @@
+import { lintMarkdownContent } from '../../shared/diagnostics.ts';
 import { generatePageSkeleton } from '../../shared/skeleton.ts';
 ﻿/**
  * 页面视图（M12e 重写，docs/specs/12 §4）：
@@ -301,6 +302,50 @@ export async function renderPageEditor(
     updateHints();
   });
 
+
+  let assetsSet = new Set<string>();
+  void api.assets().then(({ assets }) => {
+    assetsSet = new Set(assets.map((a) => a.name));
+    updateDiagnostics();
+  }).catch(() => {});
+
+  const diagnosticsEl = el("div", { class: "page-diagnostics-panel" });
+
+  const updateDiagnostics = () => {
+    const text = sourceEl ? sourceEl.value : page.body;
+    const res = lintMarkdownContent(text, fm, assetsSet);
+    const totalIssues = res.errors.length + res.warnings.length;
+
+    if (totalIssues === 0) {
+      diagnosticsEl.replaceChildren(
+        el("div", { class: "diagnostics-card pass" }, `✓ ${t("diagnosticsPass")}`)
+      );
+      return;
+    }
+
+    const list = el("div", { class: "diagnostic-list" });
+    for (const item of [...res.errors, ...res.warnings]) {
+      const lineText = item.line ? `[${t("diagnosticsLine").replace("{0}", String(item.line))}] ` : "";
+      list.append(
+        el(
+          "div",
+          { class: "diagnostic-item" },
+          el("span", { class: `diagnostic-badge ${item.type}` }, item.type === "error" ? t("diagnosticsError") : t("diagnosticsWarning")),
+          el("span", { class: "diagnostic-msg" }, `${lineText}${item.message}${item.fixSuggestion ? ` (${item.fixSuggestion})` : ""}`)
+        )
+      );
+    }
+
+    diagnosticsEl.replaceChildren(
+      el(
+        "div",
+        { class: "diagnostics-card has-issues" },
+        el("div", { class: "diagnostics-header" }, `⚠️ ${t("diagnosticsTitle")} (${totalIssues})`),
+        list
+      )
+    );
+  };
+
   const tocHintEl = el('div', { class: 'page-toc-hint', hidden: true });
   const readingProgressHintEl = el('div', { class: 'page-toc-hint', hidden: true });
 
@@ -329,6 +374,7 @@ export async function renderPageEditor(
     }
 
     const hasReadingProgress = Boolean(fm.reading_progress ?? fm.readingProgress);
+    updateDiagnostics();
     if (long && !hasReadingProgress) {
       readingProgressHintEl.hidden = false;
       readingProgressHintEl.replaceChildren(
@@ -631,7 +677,7 @@ export async function renderPageEditor(
   );
 
   container.replaceChildren(
-    el('div', { class: 'page-editor' }, opsBar, externalHint, form, tocHintEl, readingProgressHintEl, editorToolbar, sourceEl)
+    el('div', { class: 'page-editor' }, opsBar, externalHint, form, tocHintEl, readingProgressHintEl, diagnosticsEl, editorToolbar, sourceEl)
   );
   updateHints();
 
