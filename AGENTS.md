@@ -41,3 +41,14 @@
 - **移动端**（@media (max-width: 768px)）：点按 .bgm-toggle 切换 .bgm-drawer.open（底部抽屉上滑动画 + .bgm-backdrop 淡入遮罩，同搜索）；点遮罩 / Esc 关闭。卡片显隐与遮罩均由 opacity/visibility/transform 过渡完成（开关动画）。
 - **JS**：src/scripts/bgm.ts 用 setDrawerOpen(drawer, open) 切换 .open 与 aria-expanded；isMobile() 按 (max-width: 768px) 区分点击行为。原有 openDrawer/closeDrawer/hidden+animationend 方案已移除。
 - 卡片内按钮（播放/上一首/下一首）的 hover scale + active 缩放反馈见 .bgm-ctrl-btn。
+
+## OOTB 开箱即用体系（2026-09-04 落地）
+
+总纲文档：`docs/ootb-experience-optimization-2026-09-04.md`；各工作流详细规格见 `docs/specs/15` ~ `19`。
+
+- **交互式初始化向导**：`npm run setup`（`scripts/setup.mjs` 薄 CLI + `scripts/setup-lib.mjs` 纯逻辑）。三模式：快速向导（裁剪语言/模块并写入个人信息）/ 完整示例 / 纯净空白。非交互环境（`!isTTY`、`CI=true`、`--example|--blank|--yes`）自动回退完整示例复制；`data/` 已存在无条件跳过。注意：site.yaml 的 `github.username` 为必填，关闭 GitHub 模块时保留最小 `github:` 段而非删除。
+- **健康自检**：`npm run doctor`（`scripts/doctor.ts` + `scripts/doctor-lib.ts`）。默认离线，`--online` 才查 GitHub API / RSS；退出码 1 = 有致命错误（可接 CI）。
+- **多平台部署**：根目录 `Dockerfile`（多阶段 node:24-slim → nginx:alpine，nginx 配置在 `deploy/nginx.conf`）、`docker-compose.yml`、`vercel.json`、`netlify.toml`、`.devcontainer/devcontainer.json`。隐私约束：`data/` 经 `.dockerignore` 排除，私有数据仅可通过 `DATA_SOURCE_URL` 构建参数注入。
+- **后台数据导入**（spec 18，`admin/server/import.ts`）：BibTeX 导入（侧栏「配置 → 学术成果」，预览→去重→合并 publications.yaml，DOI/标题去重）与 data.zip 导入（顶栏「📥 导入 data.zip」，路径穿越整包拒绝，覆盖前自动备份至 `data/.snapshots/import-backup/`）。
+- **新手欢迎向导**（spec 19）：`ensureDataDir()` 返回 `initialized=true` 且无 `data/.onboarding-done` 标记时后台自动弹三步卡片（名片/模块编排/主题色盘）；顶栏「🚀 新手向导」可随时重开；完成或任意跳过均写标记。
+- **仅出规格未实现**：语言管理面板（spec 19 §4，实施前必读其风险清单：默认语言锁定、en 回退链、i18n <2 语言时整站关闭等）。
