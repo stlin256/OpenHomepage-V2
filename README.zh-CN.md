@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-banner-dark.webp">
     <img alt="OpenHomepage V2" src="docs/images/logo-banner.webp" width="360">
@@ -18,6 +18,12 @@
   <a href="https://vitest.dev/"><img src="https://img.shields.io/badge/Tested%20with-Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white" alt="Vitest"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-informational?style=flat-square" alt="License"></a>
   <a href="https://deepwiki.com/stlin256/OpenHomepage-V2"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/stlin256/OpenHomepage-V2/generate"><img src="https://img.shields.io/badge/Use%20this%20template-2EA44F?style=flat-square&logo=github&logoColor=white" alt="Use this template"></a>
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fstlin256%2FOpenHomepage-V2"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
+  <a href="https://app.netlify.com/start/deploy?repository=https://github.com/stlin256/OpenHomepage-V2"><img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify"></a>
 </p>
 
 <p align="center">
@@ -411,6 +417,55 @@ npm run admin       # 浏览器访问 http://127.0.0.1:4174（仅监听本地安
 ### 容灾降级与邮件告警机制
 - **容灾快照恢复**：若配置的 `DATA_SOURCE_URL` 下载失败，CI 会自动拉取上一次成功构建的快照包（`data-snapshot.zip`）继续构建，刷新动态 GitHub/RSS 数据后完成发布，确保线上站点绝不宕机。
 - **邮件提醒触发**：快照恢复执行后，工作流会以告警状态结束，利用 GitHub 原生机制向维护者发送邮件提醒。
+
+> [!NOTE]
+> **隐私设计**：以下所有平台默认使用仓库内置的 `data.example/` 示例数据构建。私有 `data/` 目录已被 git 忽略，并通过 `.dockerignore` 排除在镜像之外；如需部署真实内容，请使用 `DATA_SOURCE_URL` 机制（GitHub Actions Secret 或 Docker 构建参数），或直接 Fork 为私有仓库。
+
+### Vercel
+
+点击上方的 **Deploy with Vercel** 按钮，或在 Vercel 控制台手动导入仓库。仓库内置 `vercel.json` 已锁定全部配置：
+
+- **Build Command**：`npm run build` · **Output Directory**：`dist` · **Install Command**：`npm ci`
+- Node.js 版本在项目中设置（Vercel 控制台 → *Settings → General → Node.js Version*；推荐 24.x，任意 `>= 18.17` 均可）。
+
+### Netlify
+
+点击上方的 **Deploy to Netlify** 按钮，或手动添加站点。`netlify.toml` 已声明：
+
+- **Build Command**：`npm run build` · **Publish Directory**：`dist` · **Node 版本**：`24`
+- 已通过 `[[headers]]` 预配置 Astro 哈希产物 `/_astro/*` 的长期 immutable 缓存。
+
+### Cloudflare Pages
+
+无需配置文件，在 Pages 项目控制台设置：
+
+- **Build Command**：`npm run build` · **Build Output Directory**：`dist`
+- **环境变量**：`NODE_VERSION = 24`（任意 `>= 18.17` 均可）
+
+### Docker
+
+构建并运行自包含镜像（构建阶段 `node:24-slim`，运行阶段 `nginx:alpine`，静态缓存策略见 `deploy/nginx.conf`）：
+
+```bash
+# 演示站（使用内置 data.example/ 构建）
+docker build -t openhomepage-v2 .
+docker run -d -p 8080:80 openhomepage-v2
+
+# 构建时注入私有数据
+docker build --build-arg DATA_SOURCE_URL="https://example.com/data.zip" -t openhomepage-v2 .
+```
+
+访问 `http://localhost:8080`。细节见 `docs/specs/17-deployment.md`。
+
+### Docker Compose
+
+```bash
+docker compose up --build -d     # 访问 http://localhost:8080
+```
+
+### GitHub Codespaces / Dev Container
+
+`.devcontainer/devcontainer.json` 提供了开箱即用的 Node 24 环境。在 GitHub 网页端 *Code → Codespaces → Create* 打开，或在 VS Code 中使用 Dev Containers 扩展；依赖自动安装（`postCreateCommand`），端口 `4321`（开发/预览）与 `4174`（管理后台）自动转发。
 
 ---
 

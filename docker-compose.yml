@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    # To inject private data at build time:
+    #   DATA_SOURCE_URL="https://.../data.zip" docker compose up --build
+    # or uncomment:
+    # build:
+    #   context: .
+    #   args:
+    #     DATA_SOURCE_URL: "https://.../data.zip"
+    ports:
+      - "8080:80"
+    restart: unless-stopped

@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-banner-dark.webp">
     <img alt="OpenHomepage V2" src="docs/images/logo-banner.webp" width="360">
@@ -18,6 +18,12 @@
   <a href="https://vitest.dev/"><img src="https://img.shields.io/badge/Tested%20with-Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white" alt="Vitest"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-informational?style=flat-square" alt="License"></a>
   <a href="https://deepwiki.com/stlin256/OpenHomepage-V2"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/stlin256/OpenHomepage-V2/generate"><img src="https://img.shields.io/badge/Use%20this%20template-2EA44F?style=flat-square&logo=github&logoColor=white" alt="Use this template"></a>
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fstlin256%2FOpenHomepage-V2"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
+  <a href="https://app.netlify.com/start/deploy?repository=https://github.com/stlin256/OpenHomepage-V2"><img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify"></a>
 </p>
 
 <p align="center">
@@ -411,6 +417,55 @@ The project includes an automated GitHub Actions workflow (`.github/workflows/de
 ### Fail-Safe Snapshot Disaster Recovery
 - **Snapshot Recovery**: If `DATA_SOURCE_URL` becomes unreachable, CI automatically restores `data-snapshot.zip` from the previous successful deployment, refreshes dynamic GitHub/RSS data, and publishes successfully to prevent any downtime.
 - **Email Alert Trigger**: When a snapshot recovery occurs, the workflow terminates with an alert notice to notify repository maintainers via GitHub's native email notifications.
+
+> [!NOTE]
+> **Privacy by design**: all platforms below build from the bundled `data.example/` demo data by default. Your private `data/` directory is git-ignored and excluded from the Docker image via `.dockerignore`; to deploy real content, use the `DATA_SOURCE_URL` mechanism (GitHub Actions secret, Docker build arg) or fork privately.
+
+### Vercel
+
+Click the **Deploy with Vercel** button above, or import the repository manually in the Vercel dashboard. The included `vercel.json` pins everything:
+
+- **Build Command**: `npm run build` · **Output Directory**: `dist` · **Install Command**: `npm ci`
+- Node.js version follows the project setting (Vercel dashboard → *Settings → General → Node.js Version*; 24.x recommended, any `>= 18.17` works).
+
+### Netlify
+
+Click the **Deploy to Netlify** button above, or add the site manually. `netlify.toml` already declares:
+
+- **Build Command**: `npm run build` · **Publish Directory**: `dist` · **Node Version**: `24`
+- Long-term immutable caching for Astro's hashed `/_astro/*` bundles is preconfigured via `[[headers]]`.
+
+### Cloudflare Pages
+
+No config file is required — set these in the Pages project dashboard:
+
+- **Build Command**: `npm run build` · **Build Output Directory**: `dist`
+- **Environment Variable**: `NODE_VERSION = 24` (any `>= 18.17` works)
+
+### Docker
+
+Build and run a self-contained image (build stage: `node:24-slim`; runtime: `nginx:alpine` with tuned static caching in `deploy/nginx.conf`):
+
+```bash
+# Demo site (built from bundled data.example/)
+docker build -t openhomepage-v2 .
+docker run -d -p 8080:80 openhomepage-v2
+
+# With private data injected at build time
+docker build --build-arg DATA_SOURCE_URL="https://example.com/data.zip" -t openhomepage-v2 .
+```
+
+Open `http://localhost:8080`. See `docs/specs/17-deployment.md` for details.
+
+### Docker Compose
+
+```bash
+docker compose up --build -d     # serves http://localhost:8080
+```
+
+### GitHub Codespaces / Dev Container
+
+The `.devcontainer/devcontainer.json` provides a ready-made Node 24 environment. Open the repository in a Codespace (GitHub → *Code → Codespaces → Create*) or in VS Code with the Dev Containers extension; dependencies install automatically (`postCreateCommand`), and ports `4321` (dev/preview) and `4174` (admin console) are forwarded.
 
 ---
 

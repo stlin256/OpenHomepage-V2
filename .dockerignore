@@ -1,0 +1,37 @@
+# ---- Privacy-critical ----
+# Private user data must never enter the image; the build falls back to
+# data.example/, or injects data via the DATA_SOURCE_URL build arg.
+/data/
+# Generated OG cards can contain private page titles; they are rebuilt
+# during `npm run build`.
+/public/assets/og/
+# Generated font subsets are rebuilt during `npm run build`.
+/public/fonts/
+
+# ---- Build artifacts & caches ----
+node_modules/
+dist/
+dist-*/
+.cache/
+.astro/
+.tmp/
+.scratch/
+/certs/
+
+# ---- VCS & CI ----
+.git/
+.github/
+
+# ---- Not needed for the Docker build ----
+docs/
+tests/
+skills/
+admin/
+.devcontainer/
+
+# ---- Misc ----
+debug.log
+*.log
+.dockerignore
+Dockerfile
+docker-compose.yml

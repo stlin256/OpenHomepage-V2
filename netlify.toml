@@ -1,0 +1,14 @@
+# Netlify build configuration — see docs/specs/17-deployment.md
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Keep parity with .github/workflows/deploy.yml (Node 24).
+  NODE_VERSION = "24"
+
+# Astro emits content-hashed bundles; cache them aggressively.
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

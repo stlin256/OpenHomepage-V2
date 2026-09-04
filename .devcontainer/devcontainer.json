@@ -1,0 +1,15 @@
+{
+  "name": "OpenHomepage-V2",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+  "postCreateCommand": "npm install",
+  "forwardPorts": [4321, 4174],
+  "portsAttributes": {
+    "4321": { "label": "Astro Dev / Preview" },
+    "4174": { "label": "Admin Console" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["astro-build.astro-vscode"]
+    }
+  }
+}
