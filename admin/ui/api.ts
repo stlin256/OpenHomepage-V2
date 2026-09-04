@@ -74,6 +74,9 @@ export const api = {
   /** 新手向导第 1 步（spec 19 §3.1）：从 GitHub API 拉取公开资料预填名片表单 */
   githubPrefill: (username: string) =>
     req<GithubPrefillData>(`/api/github/prefill?username=${encodeURIComponent(username)}`),
+  /** 新手向导第 1 步（spec 19 §3.2）：下载 GitHub 头像落盘并写回 profile.avatar */
+  githubAvatar: (username: string) =>
+    req<{ avatar: string }>('/api/github/avatar', json('POST', { username })),
   pages: () => req<{ pages: PageMeta[] }>('/api/pages'),
   page: (lang: string, file: string) =>
     req<PageContent>(`/api/page?lang=${encodeURIComponent(lang)}&file=${encodeURIComponent(file)}`),

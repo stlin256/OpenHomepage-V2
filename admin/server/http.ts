@@ -36,6 +36,7 @@ import {
   GithubPrefillError,
   GITHUB_USERNAME_RE,
 } from './github-prefill.ts';
+import { syncGithubAvatar } from './github-avatar.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
@@ -282,6 +283,22 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         ),
       '/api/languages/restore': ({ body, res }) =>
         sendJson(res, 200, restoreLanguage(dataDir, String(body.lang ?? ''))),
+      // 新手向导第 1 步「同步头像」（spec 19 §3.2）：下载 GitHub 头像落盘 data/assets/
+      // 并写回 site.yaml 的 profile.avatar（schema 校验 + 快照）；用户名非法 400，
+      // 用户不存在 404，网络失败/超时/超限/非 PNG/JPEG 一律 502（GithubAvatarError
+      // 继承 GithubPrefillError，经 sendError 同一映射），失败不落盘半成品
+      '/api/github/avatar': async ({ body, res }) => {
+        const username = String(body.username ?? '').trim();
+        if (!GITHUB_USERNAME_RE.test(username)) {
+          sendJson(res, 400, { error: '非法的 GitHub 用户名 / Invalid GitHub username' });
+          return;
+        }
+        sendJson(
+          res,
+          200,
+          await syncGithubAvatar(dataDir, username, opts.githubFetch ?? fetch, opts.githubTimeoutMs)
+        );
+      },
       // 可视化编辑（M12a）：单块 replace/insert/delete/move（hash 防陈旧写 + 快照 + 落盘）
       '/api/page/block': ({ body, res }) => sendJson(res, 200, applyBlockOp(dataDir, body)),
       // 可视化编辑（M12d）：单字段写回（就地改字；路径校验 + schema 校验 + 快照）

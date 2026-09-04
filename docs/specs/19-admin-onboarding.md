@@ -30,6 +30,7 @@
 | GET | `/api/onboarding` | — | `{ show: boolean }` |
 | POST | `/api/onboarding/done` | — | `{ ok: true }`（写 `data/.onboarding-done`，幂等覆盖） |
 | GET | `/api/github/prefill?username=<name>` | — | `{ name, bio, blog, avatarUrl, htmlUrl }`（GitHub 公开资料预填，见 §3.1；上游 null 归一为空串） |
+| POST | `/api/github/avatar` | `{ username: string }` | `{ avatar: 'assets/avatar.png'\|'assets/avatar.jpg' }`（下载 GitHub 头像落盘并写回 `profile.avatar`，见 §3.2） |
 
 ## 3. 三步卡片（`admin/ui/views/onboarding.ts`）
 
@@ -49,10 +50,21 @@
   - 请求 `https://api.github.com/users/<username>`，带 `User-Agent` 头（GitHub API 必需）与 `AbortController` **5 秒超时**；
   - `username` 参数先经 `GITHUB_USERNAME_RE`（字母数字/连字符，1–39 位，不得以连字符开头）校验，非法 → **400**；
   - 上游 404（用户不存在）→ **404** + 友好错误；网络失败 / 超时 / 其他非 2xx（如匿名限流 403）→ **502** + 友好错误（`GithubPrefillError.status` 经 `sendError` 映射）；
-  - 成功 → 200 `{ name, bio, blog, avatarUrl, htmlUrl }`（上游 null 字段归一为空串）。`avatarUrl`/`htmlUrl` 目前仅透传，前端暂不消费。
+  - 成功 → 200 `{ name, bio, blog, avatarUrl, htmlUrl }`（上游 null 字段归一为空串）。`avatarUrl` 由 §3.2 的「同步头像」消费；`htmlUrl` 目前仅透传，前端暂不消费。
 - **超时降级语义**：5 秒内拿不到响应即按 502 处理并向用户提示「网络失败或超时，请稍后重试」；向导不因此中断，用户可改用户名重试或直接手动填写。离线环境（无 GitHub 可达性）下该按钮等同 502 降级路径。
 - **填充策略**（纯函数 `githubPrefillSuggestions`，可单测）：GitHub `name`/`bio` 无语言维度，对 zh/en 两侧按同一规则各自判定——**仅填充「当前为空」或「用户尚未手改过」的字段，用户已输入的内容一律不覆盖**（视图以 `touched` 标记跟踪手改状态）。
 - **博客链接**：`applyGithubBlogLink(cfg, blog)` 把 GitHub `blog` 主页链接并入 `profile.links` 社交链接（裸域名补 `https://`；忽略大小写与末尾斜杠去重，已存在则不动；blog 为空不动配置），返回是否改动。
+
+### 3.2 GitHub 头像同步（「同步头像」按钮）
+
+- **交互**：§3.1 预填成功且返回非空 `avatarUrl` 时，第 1 步卡片内追加一行「同步头像」——远程头像小预览（`.onboarding-avatar-preview`）+ 「同步头像」按钮。点击调 `POST /api/github/avatar`，成功后预览换为本地新头像（`/api/asset/file?name=avatar.<ext>`，带时间戳破缓存）、本地 `cfg.profile.avatar` 同步并置 `dirty`（随后「保存并继续」统一走 `PUT /api/config/site`，与服务端已写回的值一致）；失败就地显示错误（复用 `.form-error`），**不关闭、不阻断向导**，按钮恢复可重试。**与文字预填相互独立**：头像同步失败不影响已预填的文字，跳过头像同步也不影响名片保存。
+- **端点契约**（`admin/server/github-avatar.ts`，零新增依赖）：
+  - 先经 `fetchGithubProfile`（与 §3.1 同一实现）取 `avatar_url`，再二次请求下载头像：同一 `AdminServerOptions.githubFetch` / `githubTimeoutMs` 注入替身，5 秒 `AbortController` 超时 + `User-Agent` 头；
+  - `username` 先过 `GITHUB_USERNAME_RE`，非法 → **400**（不发任何上游请求）；用户不存在 → **404**；网络失败/超时/限流等 → **502**（`GithubAvatarError` 继承 `GithubPrefillError`，经 `sendError` 同一 status 映射）；
+  - **嗅探语义**：扩展名不看 Content-Type / URL，按 magic bytes 判定——PNG（`89 50 4E 47`）→ `avatar.png`，JPEG（`FF D8 FF`）→ `avatar.jpg`，其他内容（WebP/GIF/错误页 HTML 等）→ **502** 拒绝；
+  - **大小上限 10MB**（`MAX_AVATAR_BYTES`），超限 → **502** 拒绝；
+  - 成功 → 200 `{ avatar }`：写 `data/assets/avatar.<ext>` → 经 `writeSiteConfig` 把 `profile.avatar` 更新为 `assets/avatar.<ext>`（schema 校验 + 快照 + 撤销链，与配置保存同链路）→ 清理同名旧扩展名的头像文件（`avatar.png/jpg/jpeg` 中与新扩展名不同者；清理放在配置写回之后，失败路径不留悬空引用）。
+- **降级语义**：所有校验（下载、大小、格式）在任何磁盘写入之前完成，失败一律**不落盘半成品、不动 site.yaml**；向导内就地提示后可改用户名重试或直接跳过。
 
 ### 第 2 步 模块编排
 
@@ -116,12 +128,13 @@
   - `applyFeatureToggles`：bgm/contact 开关落键；
   - `applyAccent`：hex 规范化（#rgb→#rrggbb 小写）与非法值拒绝。
 - GitHub 预填（§3.1）：注入 fetch 替身经 `AdminServerOptions.githubFetch` / `githubTimeoutMs` 透传，覆盖端点三路径——成功（200 + 字段映射 + User-Agent/URL 断言）、上游 404（→ 404）、网络失败与超时（→ 502）；非法用户名 400。纯逻辑 `githubPrefillSuggestions`（空字段/未手改才填、已手改不覆盖、空输入不出建议）与 `applyGithubBlogLink`（补 scheme、去重、空值不动）。
+- GitHub 头像同步（§3.2，`tests/admin-github-avatar.test.ts`）：替身 fetch 两段式（用户 JSON → 头像二进制）覆盖——成功 PNG/JPEG（嗅探扩展名、`data/assets/avatar.<ext>` 落盘且字节一致、`profile.avatar` 写回、site.yaml 快照产生）、旧扩展名清理（且不误删其他素材）、上游 404、网络失败/下载超时/下载 HTTP 错误（→ 502）、非法用户名 400（零上游请求）、>10MB 拒绝、非 PNG/JPEG 内容拒绝、空 `avatar_url`（不发起第二次请求）；失败路径断言不落盘、配置不变。纯函数 `sniffAvatarExt` 魔数识别。
 - 语言管理面板（§4，`tests/admin-languages.test.ts`）：归档/恢复往返（pages 与 streaming 子树）、默认语言锁定（400）、en 警告标记（`en-fallback`）、<2 语言无 confirm 409 / 带 confirm 通过（`i18n-off`）、归档/恢复目标已存在 409、归档不存在 400、LocalizedText 键逐字节保留、快照产生、导出 zip 包含 `.archived_langs/`、doctor 语言扫描只见活跃 pages/。
 - 回归：`tests/admin-i18n.test.ts`（字典键同步）、`admin-configs` / `admin-api` / `admin-color` 等相邻测试；前端用 esbuild 内存打包验证编译。
 
 ## 6. 已知限制
 
 - 向导第 2 步只做勾选启停，不支持排序（排序仍用「配置 → 流式块」拖拽）；模块勾选不影响正文里手写的 `::stream` / `::editorial` 指令。
-- GitHub 预填（§3.1）依赖外网可达性：离线/超时按 502 就地提示降级，不打断向导；匿名调用受 GitHub API 限流（60 次/小时/IP）约束，超限同样落 502 提示稍后重试。预填只消费 `name`/`bio`/`blog`，`avatarUrl`/`htmlUrl` 仅透传暂不使用。
+- GitHub 预填（§3.1）依赖外网可达性：离线/超时按 502 就地提示降级，不打断向导；匿名调用受 GitHub API 限流（60 次/小时/IP）约束，超限同样落 502 提示稍后重试。预填只消费 `name`/`bio`/`blog`，`avatarUrl` 由 §3.2 头像同步消费，`htmlUrl` 仅透传暂不使用。头像同步只认 PNG/JPEG（GitHub 头像的实际格式集合），其他格式按 502 拒绝降级。
 - 完成标记随 data/ 目录走：删除 `data/` 重新初始化后视为全新首次启动，向导会再次自动弹出（符合直觉）。
 - 语言管理面板（§4）已实现；已知限制：归档/恢复目标冲突（残留旧归档、恢复目标已存在）一律 409 拒绝覆盖，需用户手动处理；面板只做目录级启停，不提供语言内页面的批量翻译/删除。

@@ -105,6 +105,48 @@ export function openOnboardingWizard(state: AppState): void {
     const taglineZhInput = textInput(tagline.zh, (v) => { tagline.zh = v; touched.taglineZh = true; dirty = true; });
     const taglineEnInput = textInput(tagline.en, (v) => { tagline.en = v; touched.taglineEn = true; dirty = true; });
 
+    // 「同步 GitHub 头像」行（spec 19 §3.2）：预填成功且拿到 avatarUrl 后追加；
+    // 与文字预填相互独立（头像同步失败就地提示，不影响已预填的文字，也不打断向导）。
+    // 服务端落盘 data/assets/ 并写回 site.yaml，成功后本地 cfg 同步 profile.avatar
+    // 并置 dirty（随后「保存并继续」统一保存），预览换成本地新头像路径
+    let avatarRow: HTMLElement | null = null;
+    const showAvatarRow = (avatarUrl: string): void => {
+      if (avatarRow) return;
+      const preview = el('img', {
+        class: 'onboarding-avatar-preview',
+        src: avatarUrl,
+        alt: t('profileAvatar'),
+      }) as HTMLImageElement;
+      const avatarBtn = btn(t('onboardingAvatarSync'), () => {
+        void (async () => {
+          const username = githubUsername.trim();
+          if (!username) {
+            error.textContent = t('onboardingGithubNeedUsername');
+            return;
+          }
+          error.textContent = '';
+          avatarBtn.disabled = true; // loading 态防重复点击
+          avatarBtn.textContent = t('onboardingAvatarSyncing');
+          try {
+            const { avatar } = await api.githubAvatar(username);
+            ((cfg!.profile ??= {}) as Obj).avatar = avatar;
+            dirty = true;
+            // 预览从远程 URL 换为刚落盘的本地文件（t 参数破缓存）
+            const name = avatar.split('/').pop() ?? avatar;
+            preview.src = `/api/asset/file?name=${encodeURIComponent(name)}&t=${Date.now()}`;
+            state.setStatus(t('onboardingAvatarDone').replace('{0}', avatar), 'ok');
+          } catch (e) {
+            error.textContent = (e as Error).message;
+          } finally {
+            avatarBtn.disabled = false;
+            avatarBtn.textContent = t('onboardingAvatarSync');
+          }
+        })();
+      });
+      avatarRow = el('div', { class: 'onboarding-avatar-row' }, preview, avatarBtn);
+      body.append(avatarRow);
+    };
+
     // 「⚡ 自动同步信息」：调 GET /api/github/prefill 拉公开资料预填表单；失败就地提示，不打断向导
     const syncBtn = btn(t('onboardingGithubSync'), () => {
       void (async () => {
@@ -131,6 +173,8 @@ export function openOnboardingWizard(state: AppState): void {
           // 博客/主页链接并入 site.yaml 的 profile.links 社交链接（去重，已存在则不动）
           if (applyGithubBlogLink(cfg!, gh.blog)) filled = true;
           if (filled) dirty = true;
+          // 拿到头像地址则追加「同步头像」行（独立于文字预填，可跳过）
+          if (gh.avatarUrl) showAvatarRow(gh.avatarUrl);
           state.setStatus(t('onboardingGithubSyncDone'), 'ok');
         } catch (e) {
           error.textContent = (e as Error).message;

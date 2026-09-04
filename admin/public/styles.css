@@ -651,6 +651,15 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
 .onboarding-github-row { display: flex; gap: 8px; align-items: center; }
 .onboarding-github-row .input { flex: 1; min-width: 0; }
 .onboarding-github-row .btn { white-space: nowrap; }
+/* 第 1 步「同步头像」行（spec 19 §3.2）：预填拿到 avatarUrl 后出现，小预览 + 按钮 */
+.onboarding-avatar-row { display: flex; gap: 10px; align-items: center; }
+.onboarding-avatar-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  object-fit: cover;
+}
 
 
 /* 语言管理面板（spec 19 §4）：语言行与确认对话框风险文案 */
