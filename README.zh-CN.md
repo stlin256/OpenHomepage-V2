@@ -24,6 +24,8 @@
   <a href="https://github.com/stlin256/OpenHomepage-V2/generate"><img src="https://img.shields.io/badge/Use%20this%20template-2EA44F?style=flat-square&logo=github&logoColor=white" alt="Use this template"></a>
   <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fstlin256%2FOpenHomepage-V2"><img src="https://vercel.com/button" alt="Deploy with Vercel"></a>
   <a href="https://app.netlify.com/start/deploy?repository=https://github.com/stlin256/OpenHomepage-V2"><img src="https://www.netlify.com/img/deploy/button.svg" alt="Deploy to Netlify"></a>
+  <a href="https://codespaces.new/stlin256/OpenHomepage-V2"><img src="https://img.shields.io/badge/Open%20in-GitHub%20Codespaces-24292F?style=flat-square&logo=github&logoColor=white" alt="Open in GitHub Codespaces"></a>
+  <a href="https://stackblitz.com/github/stlin256/OpenHomepage-V2"><img src="https://img.shields.io/badge/Open%20in-StackBlitz-1269D3?style=flat-square&logo=stackblitz&logoColor=white" alt="Open in StackBlitz"></a>
 </p>
 
 <p align="center">
