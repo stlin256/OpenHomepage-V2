@@ -44,6 +44,28 @@ export interface AssetInfo {
   mtime: string;
 }
 
+/** 语言管理（spec 19 §4）：单个语言目录（含页面数） */
+export interface LangDirInfo {
+  lang: string;
+  pages: number;
+}
+
+/** 语言管理（spec 19 §4）：GET /api/languages 响应 */
+export interface LanguageState {
+  languages: LangDirInfo[];
+  archived: LangDirInfo[];
+  defaultLang: string | null;
+  hasEn: boolean;
+  total: number;
+}
+
+/** 归档/恢复响应：warnings 为机读标记（en-fallback / i18n-off） */
+export interface LangOpResult {
+  ok: true;
+  lang: string;
+  warnings: string[];
+}
+
 export const api = {
   info: () => req<{ initialized: boolean }>('/api/info'),
   /** 新手向导（spec 19）：是否应自动弹出（首次初始化且未完成） */
@@ -68,6 +90,13 @@ export const api = {
   saveSite: (data: unknown) => req('/api/config/site', json('PUT', { data })),
   rss: () => req<{ data: Record<string, unknown> }>('/api/config/rss'),
   saveRss: (data: unknown) => req('/api/config/rss', json('PUT', { data })),
+
+  // 语言管理（spec 19 §4）：停用（归档）/恢复；confirm 用于 <2 语言的二次确认
+  languages: () => req<LanguageState>('/api/languages'),
+  archiveLanguage: (lang: string, confirm = false) =>
+    req<LangOpResult>('/api/languages/archive', json('POST', { lang, confirm })),
+  restoreLanguage: (lang: string) =>
+    req<LangOpResult>('/api/languages/restore', json('POST', { lang })),
 
   assets: () => req<{ assets: AssetInfo[] }>('/api/assets'),
   uploadAsset: async (name: string, buf: ArrayBuffer) => {

@@ -26,6 +26,12 @@ import { buildZip, collectDataEntries, exportZipName } from './export.ts';
 import { importDataZip, previewBibtexImport, mergeBibtexImport } from './import.ts';
 import { shouldShowOnboarding, markOnboardingDone } from './onboarding.ts';
 import {
+  listLanguageState,
+  archiveLanguage,
+  restoreLanguage,
+  LangConflictError,
+} from './languages.ts';
+import {
   fetchGithubProfile,
   GithubPrefillError,
   GITHUB_USERNAME_RE,
@@ -123,7 +129,9 @@ function sendError(res: http.ServerResponse, e: unknown): void {
         ? 404
         : e instanceof HashConflictError
           ? 409
-          : e instanceof GithubPrefillError
+          : e instanceof LangConflictError
+            ? 409
+            : e instanceof GithubPrefillError
             ? e.status
             : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
               ? 400
@@ -194,6 +202,8 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       },
       '/api/config/site': ({ res }) => sendJson(res, 200, { data: readSiteConfig(dataDir) }),
       '/api/config/rss': ({ res }) => sendJson(res, 200, { data: readRssConfig(dataDir) }),
+      // 语言管理（spec 19 §4）：当前启用/已归档语言列表、默认语言、en 是否在列、当前语言数
+      '/api/languages': ({ res }) => sendJson(res, 200, listLanguageState(dataDir)),
       '/api/assets': ({ res }) => sendJson(res, 200, { assets: listAssets(dataDir) }),
       '/api/asset/file': ({ query, res }) => {
         const name = query.get('name') ?? '';
@@ -261,6 +271,17 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         markOnboardingDone(dataDir);
         sendJson(res, 200, { ok: true });
       },
+      // 语言管理（spec 19 §4）：停用=归档到 data/.archived_langs/（默认语言 400 拒绝；
+      // 归档后剩余 <2 语言需 confirm:true 否则 409；归档目标已存在 409；en 归档响应带
+      // warnings:['en-fallback']）；恢复反向移回（归档不存在 400、目标已存在 409）
+      '/api/languages/archive': ({ body, res }) =>
+        sendJson(
+          res,
+          200,
+          archiveLanguage(dataDir, String(body.lang ?? ''), body.confirm === true)
+        ),
+      '/api/languages/restore': ({ body, res }) =>
+        sendJson(res, 200, restoreLanguage(dataDir, String(body.lang ?? ''))),
       // 可视化编辑（M12a）：单块 replace/insert/delete/move（hash 防陈旧写 + 快照 + 落盘）
       '/api/page/block': ({ body, res }) => sendJson(res, 200, applyBlockOp(dataDir, body)),
       // 可视化编辑（M12d）：单字段写回（就地改字；路径校验 + schema 校验 + 快照）

@@ -652,3 +652,17 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
 .onboarding-github-row .input { flex: 1; min-width: 0; }
 .onboarding-github-row .btn { white-space: nowrap; }
 
+
+/* 语言管理面板（spec 19 §4）：语言行与确认对话框风险文案 */
+.lang-list { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 20px; }
+.lang-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.lang-name { font-weight: 600; font-family: ui-monospace, monospace; min-width: 36px; }
+.lang-row .btn { margin-left: auto; }
+.lang-warn { font-size: 13px; line-height: 1.7; margin: 6px 0; }

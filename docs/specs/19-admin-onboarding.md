@@ -1,6 +1,6 @@
 # 19：Admin 新手欢迎向导 + 语言管理面板（规格）
 
-> 状态：上半（欢迎向导）已实现；下半（语言管理面板）仅规格，本期不实现。
+> 状态：上半（欢迎向导）与下半（语言管理面板）均已实现。
 > 来源：OOTB 总纲 `docs/ootb-experience-optimization-2026-09-04.md`「支柱二」（痛点 #3 全量示例覆盖无向导、#4 四语认知负荷高）。
 > 全局约束：零新增 npm 依赖；配置写盘只走既有 `PUT /api/config/site`（schema 校验 + 快照 + 撤销链），不新造配置体系；标记文件等轻量状态不走快照（`admin/server/paths.ts` 的 `assertSnapshottable` 仅放行 pages/**、streaming/** 与根下 *.yaml/*.bib）。
 
@@ -72,26 +72,40 @@
 
 全部进 `admin/shared/i18n.ts`（zh/en 键集合一致，`tests/admin-i18n.test.ts` 守护）；姓名/Tagline/GitHub 用户名等字段标签复用既有 `profileNameZh` 等键，仅新增向导自身与模块名文案（`onboarding*`、`mod*`）。
 
-## 4. 语言管理面板（仅规格，本期不实现）
+## 4. 语言管理面板（已实现）
 
-> 目标：把四语示例数据的认知负荷降为可勾选——在后台勾选启停语言，停用语言整体归档至 `data/.archived_langs/`，可随时恢复。入口建议放侧栏「多语言同步」看板顶部（与缺译/回退视图同语境）。
+> 目标：把四语示例数据的认知负荷降为可勾选——后台勾选启停语言，停用语言整体归档至 `data/.archived_langs/`，可随时恢复。入口在侧栏「配置 → 语言管理」（`#/config/languages`）。
 
-### 4.1 交互与数据模型
+### 4.1 交互与数据模型（实现形态）
 
-- 面板列出 `data/pages/` 下现有语言目录（如 zh/en/ja/fr），每项一个启用勾选 + 页面数统计；`site.language` 归一化（`normalizeLang`）得到的默认语言**不可停用**（置灰并标注）。
-- 「停用」= 将 `data/pages/<lang>/` 整目录移动到 `data/.archived_langs/pages/<lang>/`，并同步处理该语言专属内容：`data/streaming/` 中按语言命名的流式内容文件（如有 `<id>.<lang>.md` 约定）一并归档；`site.yaml` 内 LocalizedText 对象中的该语言键**保留不删**（纯字符串字段无语言维度；保留键使恢复无损，且渲染端对多余键容忍）。
-- 「恢复」= 反向移动回原位。
-- 归档/恢复前对涉及文件留快照（pages/** 与 streaming/** 均在 `assertSnapshottable` 白名单内；目录级操作需逐文件快照或整体打包进 `.snapshots/import-backup/` 式 zip）。
+- 面板（`admin/ui/views/languages.ts`）分「当前启用的语言 / 已归档（已停用）」两组列出语言目录，每项显示页面数统计；默认语言行带锁定徽标、停用按钮置灰。
+- 「停用」= 将 `data/pages/<lang>/` 整目录移动到 `data/.archived_langs/pages/<lang>/`，并同步归档 `data/streaming/<lang>/`（流式内容按语言分目录，见 `src/lib/stream.ts` 的 `resolveStreamingFile`）至 `data/.archived_langs/streaming/<lang>/`；「恢复」为反向移动。移动前对涉及文件逐个 `createSnapshot`（pages/**、streaming/** 均在 `assertSnapshottable` 白名单内）。
+- `site.yaml` 内 LocalizedText 对象中的停用语言键**保留不删**（纯字符串字段无语言维度；保留键使恢复无损，且渲染端对多余键容忍）。
+- 归档目标已存在（残留旧归档）→ 409 拒绝覆盖；恢复目标已存在 → 409 拒绝；归档不存在的语言 / 恢复不存在的归档 → 400。
 
-### 4.2 风险与设计要点
+### 4.2 HTTP 端点契约
 
-1. **路由与默认语言**（`src/lib/routes.ts`、`src/pages/[...slug].astro`）：`langs` 来自 `detectLanguages(pages)` 即目录扫描——停用语言移出 `pages/` 后自动从 `langs` 消失，路由、导航、`alternateLinks`（hreflang/语言切换器）自然收缩，无需改构建代码。但 `site.language` 指向被停用语言时 `defaultLang` 回退为 `langs[0]`，URL 前缀规则整体漂移（原无前缀语言变成带前缀）——因此面板必须禁止停用默认语言，或停用时联动改写 `site.language`（推荐前者，简单可预期）。
-2. **回退链断裂**：`resolvePageForLang` 的回退链为「当前语言 → en → 默认语言 → 任一可用版本」。停用 en 会显著改变其他语言的回退行为（en 是链上固定一环）；面板应对此给出警告文案，但不禁止。
-3. **i18n 开关阈值**：`isI18nEnabled(langs)` 要求 ≥2 种语言。停用至只剩 1 种时整站 i18n 关闭（语言切换器、`/lang/` 前缀路由全部消失），站内既有带前缀外链/书签 404——面板在勾选结果 <2 时应二次确认。
-4. **构建面影响**：搜索索引、feed（`[lang]/feed.*.xml.ts`）、OG 图、流式块语言回退均按 `langs` 派生，随目录扫描自动一致；主要风险是 `.archived_langs/` 不能被 `loadPages`/素材/导出等扫描误拾——归档目录以 `.` 开头，需逐一核实各扫描点（`collectDataEntries` 导出、doctor 素材检查、搜索构建）对点目录的排除策略，必要时显式跳过。
-5. **非破坏原则**：归档目录不入 git（data/ 整体 gitignore），导出 data.zip 时应**包含** `.archived_langs/` 以便整包迁移后可恢复。
+| 方法 | 路径 | 请求体 | 响应 |
+|------|------|--------|------|
+| GET | `/api/languages` | — | `{ languages: [{lang, pages}], archived: [{lang, pages}], defaultLang: string\|null, hasEn: boolean, total: number }` |
+| POST | `/api/languages/archive` | `{ lang: string, confirm?: boolean }` | 200 `{ ok: true, lang, warnings: string[] }`；warnings 为机读标记：`en-fallback`（归档的是 en）/ `i18n-off`（归档后剩余 <2 语言） |
+| POST | `/api/languages/restore` | `{ lang: string }` | 200 `{ ok: true, lang, warnings }`（en 恢复同样带 `en-fallback`） |
 
-## 5. 测试（`tests/admin-onboarding.test.ts`）
+错误码：非法语言码 / 语言目录不存在 / 归档不存在 → 400；停用默认语言 → 400；归档后剩余 <2 语言且未带 `confirm: true` → 409（`LangConflictError`，提示语说明 i18n 关闭后果）；归档/恢复目标已存在 → 409。
+
+### 4.3 风险处置结论（对应原五条风险）
+
+1. **路由与默认语言**：`langs` 来自 `detectLanguages(pages)` 即目录扫描——停用语言移出 `pages/` 后自动从 `langs` 消失，路由、导航、`alternateLinks` 自然收缩，构建代码零改动。`site.language` 指向被停用语言时 `defaultLang` 回退 `langs[0]`，URL 前缀规则整体漂移——**已按推荐方案实现为默认语言锁定**：`site.language` 归一化（`normalizeLang`）得到的语言停用返回 400，前端置灰并标注；`site.yaml` 读不出时 `defaultLang` 为 null，不做锁定。
+2. **回退链断裂**：en 是 `resolvePageForLang` 回退链固定一环。**不禁止停用 en**，但响应携带 `warnings: ['en-fallback']`，前端确认对话框展示风险文案。
+3. **i18n 开关阈值**：归档后剩余 <2 语言时整站 i18n 关闭、带前缀外链 404——**二次确认已实现**：无 `confirm: true` 返回 409，前端弹确认框展示风险文案后带 `confirm: true` 重发。
+4. **构建面影响（扫描点排查结论）**：归档目录为 `data/.archived_langs/`（点目录），逐一核实结果——
+   - `src/lib/config.ts loadPages` / `admin/server/pages.ts listPages` / `src/lib/search-index.ts`：只扫 `data/pages/` 一层语言目录，归档目录在其之外，**天然排除**；
+   - `scripts/doctor-lib.ts`：`listLangDirs` 只扫 `data/pages/`；素材引用与指令配平检查只扫 `data/pages/`、`data/streaming/` 与根下 yaml，**天然排除**（有测试守护：归档后 doctor 只见活跃语言）；
+   - `admin/server/export.ts collectDataEntries`：data/ 全量递归，**包含** `.archived_langs/`（与风险⑤结论一致，有测试守护）；
+   - 无需任何排除性代码修正。
+5. **非破坏原则**：归档目录不入 git（data/ 整体 gitignore）；导出 data.zip **包含** `.archived_langs/`，整包迁移后可恢复；归档/恢复前逐文件留快照（`.snapshots/pages/<lang>/…`、`.snapshots/streaming/<lang>/…`），恢复方向因目标必不存在（否则 409）无可快照对象，且操作本身可逆（可再次归档）。
+
+## 5. 测试（`tests/admin-onboarding.test.ts`、`tests/admin-languages.test.ts`）
 
 - 触发逻辑：`shouldShowOnboarding` 的 initialized × 标记文件矩阵；
 - 标记读写：`markOnboardingDone` 生成 `data/.onboarding-done`、幂等覆盖；
@@ -102,6 +116,7 @@
   - `applyFeatureToggles`：bgm/contact 开关落键；
   - `applyAccent`：hex 规范化（#rgb→#rrggbb 小写）与非法值拒绝。
 - GitHub 预填（§3.1）：注入 fetch 替身经 `AdminServerOptions.githubFetch` / `githubTimeoutMs` 透传，覆盖端点三路径——成功（200 + 字段映射 + User-Agent/URL 断言）、上游 404（→ 404）、网络失败与超时（→ 502）；非法用户名 400。纯逻辑 `githubPrefillSuggestions`（空字段/未手改才填、已手改不覆盖、空输入不出建议）与 `applyGithubBlogLink`（补 scheme、去重、空值不动）。
+- 语言管理面板（§4，`tests/admin-languages.test.ts`）：归档/恢复往返（pages 与 streaming 子树）、默认语言锁定（400）、en 警告标记（`en-fallback`）、<2 语言无 confirm 409 / 带 confirm 通过（`i18n-off`）、归档/恢复目标已存在 409、归档不存在 400、LocalizedText 键逐字节保留、快照产生、导出 zip 包含 `.archived_langs/`、doctor 语言扫描只见活跃 pages/。
 - 回归：`tests/admin-i18n.test.ts`（字典键同步）、`admin-configs` / `admin-api` / `admin-color` 等相邻测试；前端用 esbuild 内存打包验证编译。
 
 ## 6. 已知限制
@@ -109,4 +124,4 @@
 - 向导第 2 步只做勾选启停，不支持排序（排序仍用「配置 → 流式块」拖拽）；模块勾选不影响正文里手写的 `::stream` / `::editorial` 指令。
 - GitHub 预填（§3.1）依赖外网可达性：离线/超时按 502 就地提示降级，不打断向导；匿名调用受 GitHub API 限流（60 次/小时/IP）约束，超限同样落 502 提示稍后重试。预填只消费 `name`/`bio`/`blog`，`avatarUrl`/`htmlUrl` 仅透传暂不使用。
 - 完成标记随 data/ 目录走：删除 `data/` 重新初始化后视为全新首次启动，向导会再次自动弹出（符合直觉）。
-- 语言管理面板（§4）本期仅为规格，未实现；其风险清单（默认语言锁定、en 回退环、<2 语言确认、点目录扫描排除）是实施前的必读约束。
+- 语言管理面板（§4）已实现；已知限制：归档/恢复目标冲突（残留旧归档、恢复目标已存在）一律 409 拒绝覆盖，需用户手动处理；面板只做目录级启停，不提供语言内页面的批量翻译/删除。

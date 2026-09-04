@@ -23,6 +23,7 @@ import {
   renderStreamingConfig,
 } from './views/configs.ts';
 import { renderThemePicker } from './views/theme.ts';
+import { renderLanguages } from './views/languages.ts';
 import { renderAssets } from './views/assets.ts';
 import { renderPublicationsImport } from './views/publications.ts';
 import { openOnboardingWizard } from './views/onboarding.ts';
@@ -100,6 +101,7 @@ function renderSidebar(): void {
     ['github', t('configGithub')],
     ['rss', t('configRss')],
     ['streaming', t('configStreaming')],
+    ['languages', t('configLanguages')],
     ['publications', t('configPublications')],
     ['theme', t('configTheme')],
   ] as const) {
@@ -188,6 +190,7 @@ async function renderMain(): Promise<void> {
         github: renderGithubConfig,
         rss: renderRssConfig,
         streaming: renderStreamingConfig,
+        languages: renderLanguages,
         publications: renderPublicationsImport,
         theme: renderThemePicker,
       };

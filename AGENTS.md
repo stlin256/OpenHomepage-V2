@@ -46,9 +46,9 @@
 
 总纲文档：`docs/ootb-experience-optimization-2026-09-04.md`；各工作流详细规格见 `docs/specs/15` ~ `19`。
 
-- **交互式初始化向导**：`npm run setup`（`scripts/setup.mjs` 薄 CLI + `scripts/setup-lib.mjs` 纯逻辑）。三模式：快速向导（裁剪语言/模块并写入个人信息）/ 完整示例 / 纯净空白。非交互环境（`!isTTY`、`CI=true`、`--example|--blank|--yes`）自动回退完整示例复制；`data/` 已存在无条件跳过。注意：site.yaml 的 `github.username` 为必填，关闭 GitHub 模块时保留最小 `github:` 段而非删除。
+- **交互式初始化向导**：`npm run setup`（`scripts/setup.mjs` 薄 CLI + `scripts/setup-lib.mjs` 纯逻辑）。三模式：快速向导（裁剪语言/模块并写入个人信息）/ 完整示例 / 纯净空白。快速向导支持**场景化预设**（`SCENE_PRESETS`：academic/developer/creator/minimal/custom，仅作模块与语言的默认值，可逐项覆盖）与 **GitHub API 预填**（`fetchGithubProfile`，5s 超时静默降级，仅交互模式触发，非交互路径零触网）。非交互环境（`!isTTY`、`CI=true`、`--example|--blank|--yes`）自动回退完整示例复制；`data/` 已存在无条件跳过。注意：site.yaml 的 `github.username` 为必填，关闭 GitHub 模块时保留最小 `github:` 段而非删除。
 - **健康自检**：`npm run doctor`（`scripts/doctor.ts` + `scripts/doctor-lib.ts`）。默认离线，`--online` 才查 GitHub API / RSS；退出码 1 = 有致命错误（可接 CI）。
 - **多平台部署**：根目录 `Dockerfile`（多阶段 node:24-slim → nginx:alpine，nginx 配置在 `deploy/nginx.conf`）、`docker-compose.yml`、`vercel.json`、`netlify.toml`、`.devcontainer/devcontainer.json`。隐私约束：`data/` 经 `.dockerignore` 排除，私有数据仅可通过 `DATA_SOURCE_URL` 构建参数注入。
 - **后台数据导入**（spec 18，`admin/server/import.ts`）：BibTeX 导入（侧栏「配置 → 学术成果」，预览→去重→合并 publications.yaml，DOI/标题去重）与 data.zip 导入（顶栏「📥 导入 data.zip」，路径穿越整包拒绝，覆盖前自动备份至 `data/.snapshots/import-backup/`）。
-- **新手欢迎向导**（spec 19）：`ensureDataDir()` 返回 `initialized=true` 且无 `data/.onboarding-done` 标记时后台自动弹三步卡片（名片/模块编排/主题色盘）；顶栏「🚀 新手向导」可随时重开；完成或任意跳过均写标记。
-- **仅出规格未实现**：语言管理面板（spec 19 §4，实施前必读其风险清单：默认语言锁定、en 回退链、i18n <2 语言时整站关闭等）。
+- **新手欢迎向导**（spec 19）：`ensureDataDir()` 返回 `initialized=true` 且无 `data/.onboarding-done` 标记时后台自动弹三步卡片（名片/模块编排/主题色盘）；顶栏「🚀 新手向导」可随时重开；完成或任意跳过均写标记。第 1 步支持「⚡ 自动同步信息」：`GET /api/github/prefill?username=`（`admin/server/github-prefill.ts`，5s 超时，404/502 友好降级），仅填充空字段、不覆盖用户已输入内容。
+- **语言管理面板**（spec 19 §4，`admin/server/languages.ts` + 侧栏「配置 → 语言管理」）：勾选式启停语言，停用 = `data/pages/<lang>/` 与 `data/streaming/<lang>/` 整目录归档至 `data/.archived_langs/`（可无损恢复，LocalizedText 键保留）。防护：默认语言（`site.language` 归一化后）锁定 400；停用 en 或剩余 <2 语言需 `confirm: true` 二次确认（响应带 `en-fallback`/`i18n-off` 机读警告）；归档/恢复目标冲突一律 409 不覆盖；操作前逐文件快照。扫描点结论：doctor/搜索/src 侧只扫活跃 `pages/` 天然排除归档，`data.zip` 导出包含归档目录（有测试守护）。
