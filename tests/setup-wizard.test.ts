@@ -17,6 +17,11 @@ import {
   generateBlankData,
   runSetup,
   GITHUB_USERNAME_PLACEHOLDER,
+  SCENE_PRESETS,
+  SCENE_PRESET_KEYS,
+  resolveScenePreset,
+  langPresetKeyFor,
+  fetchGithubProfile,
 } from '../scripts/setup-lib.mjs';
 import { loadSiteConfig } from '../src/lib/config.ts';
 
@@ -280,5 +285,151 @@ describe('runSetup 编排（临时目录）', () => {
     const dataDir = path.join(rootDir, 'data');
     expect(readdirSync(path.join(dataDir, 'pages'))).toEqual(['zh']);
     expect(loadSiteConfig(dataDir).github.username).toBe('si-li');
+  });
+});
+
+describe('场景化预设（SCENE_PRESETS / resolveScenePreset / langPresetKeyFor）', () => {
+  it('映射表：五个预设的模块与语言默认值', () => {
+    expect(SCENE_PRESET_KEYS).toEqual(['academic', 'developer', 'creator', 'minimal', 'custom']);
+    expect(resolveScenePreset('academic')).toEqual({
+      langs: ['zh', 'en'],
+      modules: { publications: true, github: true, rss: true, bgm: false, contact: true },
+    });
+    expect(resolveScenePreset('developer')).toEqual({
+      langs: ['zh', 'en'],
+      modules: { publications: false, github: true, rss: false, bgm: false, contact: true },
+    });
+    expect(resolveScenePreset('creator')).toEqual({
+      langs: ['zh'],
+      modules: { publications: false, github: false, rss: false, bgm: true, contact: true },
+    });
+    expect(resolveScenePreset('minimal')).toEqual({
+      langs: ['zh'],
+      modules: { publications: false, github: false, rss: false, bgm: false, contact: true },
+    });
+    expect(resolveScenePreset('custom')).toEqual({
+      langs: ['zh', 'en'],
+      modules: { publications: true, github: true, rss: true, bgm: true, contact: true },
+    });
+    // 数据表每个预设都覆盖全部模块 key
+    for (const key of SCENE_PRESET_KEYS) {
+      expect(Object.keys(SCENE_PRESETS[key].modules).sort()).toEqual(
+        ['bgm', 'contact', 'github', 'publications', 'rss'],
+      );
+    }
+  });
+
+  it('未知/空 key 回退 custom；返回深拷贝，覆盖默认值不污染数据表', () => {
+    expect(resolveScenePreset('nope')).toEqual(resolveScenePreset('custom'));
+    expect(resolveScenePreset(undefined)).toEqual(resolveScenePreset('custom'));
+    const p = resolveScenePreset('minimal');
+    p.modules.github = true;
+    p.langs.push('en');
+    expect(SCENE_PRESETS.minimal.modules.github).toBe(false);
+    expect(SCENE_PRESETS.minimal.langs).toEqual(['zh']);
+  });
+
+  it('预设默认值可被用户逐项覆盖：minimal 预设 + 手动打开 github、改中英双语', () => {
+    const preset = resolveScenePreset('minimal');
+    const modules = { ...preset.modules, github: true }; // 用户覆盖：保留 GitHub 卡片
+    const langs = ['zh', 'en']; // 用户覆盖：预设仅中文 → 改中英双语
+    const out = transformSiteConfig(readSite(exampleDir), {
+      nameZh: '张三',
+      nameEn: 'San Zhang',
+      taglineZh: '',
+      taglineEn: '',
+      githubUser: 'octocat-dev',
+      website: '',
+      langs,
+      modules,
+    });
+    // github 开启：完整 github 段与 home.layout 区块保留
+    expect(out.github.username).toBe('octocat-dev');
+    expect(out.github.pinned.length).toBeGreaterThan(0);
+    expect(out.home.layout.map((b: any) => b.block)).toContain('github');
+    // 其余模块仍按 minimal 预设关闭
+    expect(out.rss).toBeUndefined();
+    expect(out.bgm).toBeUndefined();
+    expect(out.site.language).toBe('zh-CN');
+  });
+
+  it('langPresetKeyFor：语言数组反查预设 key，无匹配回退 zh-en', () => {
+    expect(langPresetKeyFor(['zh'])).toBe('zh');
+    expect(langPresetKeyFor(['en'])).toBe('en');
+    expect(langPresetKeyFor(['zh', 'en'])).toBe('zh-en');
+    expect(langPresetKeyFor(['zh', 'en', 'ja', 'fr'])).toBe('all');
+    expect(langPresetKeyFor(['fr'])).toBe('zh-en');
+    expect(langPresetKeyFor(undefined)).toBe('zh-en');
+  });
+
+  it('transformSiteConfig：website（预填 blog）去重后置入 profile.links 首位', () => {
+    const base = {
+      nameZh: '',
+      nameEn: '',
+      taglineZh: '',
+      taglineEn: '',
+      githubUser: '',
+      langs: ['zh'],
+      modules: ALL_ON,
+    };
+    const out = transformSiteConfig(readSite(exampleDir), { ...base, website: 'https://example.com' });
+    expect(out.profile.links[0]).toEqual({ label: 'Website', url: 'https://example.com' });
+    // 重复 url 不再追加
+    const again = transformSiteConfig(out, { ...base, website: 'https://example.com' });
+    expect(again.profile.links.filter((l: any) => l.url === 'https://example.com')).toHaveLength(1);
+    // 留空不动 links
+    const untouched = transformSiteConfig(readSite(exampleDir), { ...base, website: '  ' });
+    expect(untouched.profile.links.some((l: any) => l.label === 'Website')).toBe(false);
+  });
+});
+
+describe('fetchGithubProfile（注入 fetch 替身）', () => {
+  it('成功：请求 URL/User-Agent 正确，返回 name/bio/blog', async () => {
+    const calls: any[] = [];
+    const fakeFetch = async (url: string, init: any) => {
+      calls.push({ url, init });
+      return {
+        ok: true,
+        json: async () => ({ name: 'The Octocat', bio: 'GitHub mascot', blog: 'https://octocat.dev' }),
+      };
+    };
+    const gh = await fetchGithubProfile('octocat', { fetchImpl: fakeFetch });
+    expect(gh).toEqual({ name: 'The Octocat', bio: 'GitHub mascot', blog: 'https://octocat.dev' });
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe('https://api.github.com/users/octocat');
+    expect(calls[0].init.headers['User-Agent']).toContain('openhomepage-v2-setup');
+    expect(calls[0].init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('成功但字段缺失：name/bio/blog 回退为空字符串', async () => {
+    const fakeFetch = async () => ({ ok: true, json: async () => ({ login: 'octocat', name: null }) });
+    // @ts-expect-error 替身无需完整 Response 形态
+    const gh = await fetchGithubProfile('octocat', { fetchImpl: fakeFetch });
+    expect(gh).toEqual({ name: '', bio: '', blog: '' });
+  });
+
+  it('404 / 非 200：静默返回 null，不抛出', async () => {
+    const fakeFetch = async () => ({ ok: false, status: 404, json: async () => ({ message: 'Not Found' }) });
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(fetchGithubProfile('ghost-user', { fetchImpl: fakeFetch })).resolves.toBeNull();
+  });
+
+  it('超时：AbortController 中止请求，静默返回 null', async () => {
+    const fakeFetch = (_url: string, init: any) =>
+      new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => reject(new Error('The operation was aborted')));
+      });
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(fetchGithubProfile('slow-user', { fetchImpl: fakeFetch, timeoutMs: 20 })).resolves.toBeNull();
+  });
+
+  it('网络错误 / 空用户名 / 无可用 fetch：静默返回 null', async () => {
+    const boom = async () => {
+      throw new Error('ECONNREFUSED');
+    };
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(fetchGithubProfile('octocat', { fetchImpl: boom })).resolves.toBeNull();
+    await expect(fetchGithubProfile('   ')).resolves.toBeNull();
+    await expect(fetchGithubProfile('octocat', { fetchImpl: null })).resolves.toBeNull();
   });
 });

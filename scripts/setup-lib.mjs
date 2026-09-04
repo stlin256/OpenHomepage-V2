@@ -27,6 +27,94 @@ export const GITHUB_USERNAME_PLACEHOLDER = 'octocat';
 export const MODULE_KEYS = ['publications', 'github', 'rss', 'bgm', 'contact'];
 
 /**
+ * 场景化预设（纯数据表）：快速向导的模块勾选与语言建议默认值。
+ * 预设只是默认值——用户随后仍可逐项调整语言与模块。
+ * 注意：映射只覆盖 MODULE_KEYS 五个可裁剪模块；经历时间轴 / 画廊 / 流式块由页面与
+ * editorial_blocks 自带，不参与模块裁剪（见 spec 15 §2.1）。
+ */
+export const SCENE_PRESETS = {
+  // 🎓 学术科研型：学术成果 + RSS 前沿动态 + GitHub 卡片，默认中英双语
+  academic: {
+    langs: LANG_PRESETS['zh-en'],
+    modules: { publications: true, github: true, rss: true, bgm: false, contact: true },
+  },
+  // 💻 开发者与开源作者：GitHub 热力图 + Pinned 仓库卡（流式块为示例页自带内容），默认中英双语
+  developer: {
+    langs: LANG_PRESETS['zh-en'],
+    modules: { publications: false, github: true, rss: false, bgm: false, contact: true },
+  },
+  // 🎨 创作者与摄影博主：BGM 播放列表 + 联系卡（画廊为示例页自带内容），默认仅中文
+  creator: {
+    langs: LANG_PRESETS['zh'],
+    modules: { publications: false, github: false, rss: false, bgm: true, contact: true },
+  },
+  // ⚡ 极简纯净名片：仅 profile + 联系卡，默认仅中文
+  minimal: {
+    langs: LANG_PRESETS['zh'],
+    modules: { publications: false, github: false, rss: false, bgm: false, contact: true },
+  },
+  // 🛠️ 自定义：现状全手动（中英双语 + 全模块默认开启）
+  custom: {
+    langs: LANG_PRESETS['zh-en'],
+    modules: { publications: true, github: true, rss: true, bgm: true, contact: true },
+  },
+};
+
+/** 场景预设 key 列表（向导按此顺序展示；custom 恒为兜底） */
+export const SCENE_PRESET_KEYS = ['academic', 'developer', 'creator', 'minimal', 'custom'];
+
+/**
+ * 解析场景预设（纯函数）：未知/空 key 回退 custom。
+ * 返回深拷贝，调用方可自由覆盖默认值而不污染数据表。
+ */
+export function resolveScenePreset(key) {
+  const preset = SCENE_PRESETS[key] ?? SCENE_PRESETS.custom;
+  return { langs: [...preset.langs], modules: { ...preset.modules } };
+}
+
+/** 反查语言数组对应的 LANG_PRESETS key（把预设语言作为语言问题的默认选项）；无匹配回退 zh-en */
+export function langPresetKeyFor(langs) {
+  const list = Array.isArray(langs) ? langs : [];
+  for (const [key, value] of Object.entries(LANG_PRESETS)) {
+    if (value.length === list.length && value.every((v, i) => v === list[i])) return key;
+  }
+  return 'zh-en';
+}
+
+/** GitHub API 预填的超时时间（AbortController） */
+export const GITHUB_API_TIMEOUT_MS = 5000;
+
+/**
+ * 拉取 GitHub 公开资料用于快速向导预填（纯逻辑，fetch 可注入替身）。
+ * 请求 https://api.github.com/users/<username>，带 User-Agent 头与 5 秒超时。
+ * 任何失败（网络错误 / 非 200 / 超时 / JSON 异常 / 无 fetch）均静默返回 null，绝不抛出。
+ * 成功返回 { name, bio, blog }（缺失字段为空字符串）。
+ */
+export async function fetchGithubProfile(username, { fetchImpl = globalThis.fetch, timeoutMs = GITHUB_API_TIMEOUT_MS } = {}) {
+  const user = username?.trim();
+  if (!user || typeof fetchImpl !== 'function') return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetchImpl(`https://api.github.com/users/${encodeURIComponent(user)}`, {
+      headers: { 'User-Agent': 'openhomepage-v2-setup', Accept: 'application/vnd.github+json' },
+      signal: controller.signal,
+    });
+    if (!res?.ok) return null;
+    const data = await res.json();
+    return {
+      name: typeof data?.name === 'string' ? data.name.trim() : '',
+      bio: typeof data?.bio === 'string' ? data.bio.trim() : '',
+      blog: typeof data?.blog === 'string' ? data.blog.trim() : '',
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
  * 解析命令行参数（纯函数）。
  * --example 完整示例；--blank 纯净空白；--yes 非交互默认（完整示例）。
  */
@@ -72,7 +160,7 @@ export function trimLangMaps(node, langs) {
 
 /**
  * 按向导选项变换 site.yaml 配置对象（纯函数）。
- * options: { nameZh, nameEn, taglineZh, taglineEn, githubUser, langs, modules }
+ * options: { nameZh, nameEn, taglineZh, taglineEn, githubUser, website, langs, modules }
  * modules: { publications, github, rss, bgm, contact }（布尔，true=保留）
  */
 export function transformSiteConfig(cfg, options) {
@@ -93,6 +181,13 @@ export function transformSiteConfig(cfg, options) {
   }
   if (options.taglineEn && langs.includes('en') && out.profile.tagline) {
     out.profile.tagline.en = options.taglineEn;
+  }
+  // 个人网站（GitHub 预填 blog 或手填）：去重后置入 profile.links 首位
+  if (options.website && Array.isArray(out.profile?.links)) {
+    const url = options.website.trim();
+    if (url && !out.profile.links.some((link) => link?.url === url)) {
+      out.profile.links.unshift({ label: 'Website', url });
+    }
   }
 
   out.site.language = LANG_TO_SITE_LANGUAGE[langs[0]] ?? langs[0];
