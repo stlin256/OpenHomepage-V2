@@ -43,6 +43,12 @@ describe('基础 markdown / GFM', () => {
 });
 
 describe('代码高亮（Shiki 双主题）', () => {
+  it('代码块输出 data-language 属性与 code language class', async () => {
+    const html = await renderMarkdown('```python\ndef test():\n    pass\n```');
+    expect(html).toContain('data-language="python"');
+    expect(html).toContain('class="language-python"');
+  });
+
   it('代码块带 shiki class 与明暗双主题 CSS 变量', async () => {
     const html = await renderMarkdown('```js\nconst a = 1;\n```');
     expect(html).toMatch(/<pre[^>]*class="[^"]*shiki/);

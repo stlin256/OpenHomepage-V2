@@ -1670,11 +1670,11 @@ a.editorial-item:focus-visible .editorial-item-content {
   padding: 0.35rem 0.75rem 0.35rem 1rem;
   background: var(--bg-subtle);
   border-bottom: 1px solid var(--border);
-  font-family: var(--font-mono);
   user-select: none;
 }
 
 .code-lang {
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -1691,8 +1691,9 @@ a.editorial-item:focus-visible .editorial-item-content {
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
   line-height: 1.2;
@@ -1700,8 +1701,15 @@ a.editorial-item:focus-visible .editorial-item-content {
 
 .code-copy-btn:hover {
   background: var(--card);
-  color: var(--text-primary);
+  color: var(--text);
   border-color: var(--border);
+}
+
+.code-copy-text {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .code-copy-btn svg {

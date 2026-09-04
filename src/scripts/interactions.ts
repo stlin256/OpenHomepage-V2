@@ -237,8 +237,12 @@ function initEmbeddedMedia(): void {
 const CODE_LANG_MAP: Record<string, string> = {
   js: "JavaScript",
   javascript: "JavaScript",
+  mjs: "JavaScript",
+  cjs: "JavaScript",
+  jsx: "JSX",
   ts: "TypeScript",
   typescript: "TypeScript",
+  tsx: "TSX",
   py: "Python",
   python: "Python",
   sh: "Bash",
@@ -246,18 +250,27 @@ const CODE_LANG_MAP: Record<string, string> = {
   zsh: "Zsh",
   shell: "Shell",
   html: "HTML",
+  htm: "HTML",
   css: "CSS",
   scss: "SCSS",
+  sass: "Sass",
+  less: "Less",
   json: "JSON",
+  json5: "JSON5",
+  jsonc: "JSONC",
   yaml: "YAML",
   yml: "YAML",
   md: "Markdown",
   markdown: "Markdown",
+  mdx: "MDX",
   rs: "Rust",
   rust: "Rust",
   go: "Go",
+  golang: "Go",
   cpp: "C++",
   c: "C",
+  cs: "C#",
+  csharp: "C#",
   java: "Java",
   sql: "SQL",
   latex: "LaTeX",
@@ -266,6 +279,27 @@ const CODE_LANG_MAP: Record<string, string> = {
   docker: "Docker",
   dockerfile: "Dockerfile",
   astro: "Astro",
+  xml: "XML",
+  svg: "SVG",
+  vue: "Vue",
+  svelte: "Svelte",
+  ruby: "Ruby",
+  rb: "Ruby",
+  php: "PHP",
+  swift: "Swift",
+  kotlin: "Kotlin",
+  kt: "Kotlin",
+  r: "R",
+  dart: "Dart",
+  lua: "Lua",
+  powershell: "PowerShell",
+  ps: "PowerShell",
+  ps1: "PowerShell",
+  diff: "Diff",
+  graphql: "GraphQL",
+  gql: "GraphQL",
+  ini: "INI",
+  wasm: "WebAssembly",
 };
 
 export function formatCodeLanguage(lang: string): string {
@@ -292,12 +326,22 @@ export function initCodeBlocks(): void {
         lang = cls.replace("language-", "");
         break;
       }
+      if (cls.startsWith("lang-")) {
+        lang = cls.replace("lang-", "");
+        break;
+      }
     }
     if (!lang && pre.dataset.language) {
       lang = pre.dataset.language;
     }
     if (!lang && codeEl?.dataset.language) {
       lang = codeEl.dataset.language;
+    }
+    if (!lang && pre.dataset.lang) {
+      lang = pre.dataset.lang;
+    }
+    if (!lang && codeEl?.dataset.lang) {
+      lang = codeEl.dataset.lang;
     }
 
     const displayLang = formatCodeLanguage(lang);

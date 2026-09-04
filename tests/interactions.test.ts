@@ -649,4 +649,34 @@ describe("interactions：代码块人体工学与一键复制", () => {
     });
     expect(copyBtn.querySelector(".code-copy-text")?.textContent).toBe("已复制");
   });
+  it("通过 pre data-language 属性或 code class 准确识别并格式化代码语言角标", async () => {
+    document.body.innerHTML = [
+      "<main class='site-main'>",
+      "  <div class='markdown-body'>",
+      "    <pre class='shiki' data-language='python'><code class='language-python'>import torch</code></pre>",
+      "    <pre class='shiki' data-language='sh'><code>npm run build</code></pre>",
+      "    <pre class='plain-code'><code>no lang</code></pre>",
+      "  </div>",
+      "</main>",
+    ].join("");
+
+    const { formatCodeLanguage } = await import("../src/scripts/interactions.ts");
+    expect(formatCodeLanguage("python")).toBe("Python");
+    expect(formatCodeLanguage("py")).toBe("Python");
+    expect(formatCodeLanguage("typescript")).toBe("TypeScript");
+    expect(formatCodeLanguage("ts")).toBe("TypeScript");
+    expect(formatCodeLanguage("sh")).toBe("Bash");
+    expect(formatCodeLanguage("bash")).toBe("Bash");
+    expect(formatCodeLanguage("rust")).toBe("Rust");
+    expect(formatCodeLanguage("rs")).toBe("Rust");
+    expect(formatCodeLanguage("cpp")).toBe("C++");
+    expect(formatCodeLanguage("")).toBe("Code");
+    expect(formatCodeLanguage("customlang")).toBe("Customlang");
+
+    const wrappers = document.querySelectorAll(".code-block-wrapper");
+    expect(wrappers.length).toBe(3);
+    expect(wrappers[0].querySelector(".code-lang")?.textContent).toBe("Python");
+    expect(wrappers[1].querySelector(".code-lang")?.textContent).toBe("Bash");
+    expect(wrappers[2].querySelector(".code-lang")?.textContent).toBe("Code");
+  });
 });

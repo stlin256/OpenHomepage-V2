@@ -1276,7 +1276,18 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   })
     .use(rehypeRaw)
     .use(rehypeKatex)
-    .use(rehypeShiki, { themes, defaultColor: false })
+    .use(rehypeShiki, {
+    themes,
+    defaultColor: false,
+    addLanguageClass: true,
+    transformers: [
+      {
+        pre(node) {
+          node.properties["data-language"] = this.options.lang;
+        },
+      },
+    ],
+  })
     .use(() => rehypeNormalizeAssetPaths(baseUrl))
     .use(rehypeLazyImages)
     .use(rehypeSanitize, buildSanitizeSchema())
