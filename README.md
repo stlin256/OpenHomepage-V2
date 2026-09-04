@@ -338,7 +338,7 @@ Use these expressive directives in any `.md` file to unlock magazine-quality typ
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js**: `>= 18.17.0` (Node 20+ recommended)
+- **Node.js**: `>= 18.17.0` (Node 24+ recommended)
 - **Package Manager**: `npm` / `pnpm` / `yarn`
 
 ### 4-Step Quick Launch
