@@ -28,9 +28,19 @@ const showAvatar = Boolean(avatarUrl);
     {site.profile.tagline && <p class="profile-tagline" {...editCfgAttr('profile.tagline', lang)}>{resolveText(site.profile.tagline, lang, defaultLang)}</p>}
     {site.profile.links && site.profile.links.length > 0 && (
       <ul class="profile-links">
-        {site.profile.links.map((link) => (
-          <li><a href={link.url}>{link.label}</a></li>
-        ))}
+        {site.profile.links.map((link) => {
+          const isExternal = /^https?:\/\//i.test(link.url) || /^\/\//i.test(link.url);
+          return (
+            <li>
+              <a
+                href={link.url}
+                {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+              >
+                {link.label}
+              </a>
+            </li>
+          );
+        })}
       </ul>
     )}
   </div>

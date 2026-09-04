@@ -195,6 +195,37 @@ a:focus-visible {
   text-decoration: underline;
   text-decoration-color: currentColor;
 }
+
+/* 外部链接明确标识与防 emoji 矢量微弱小图标（↗） */
+.external-link-icon {
+  display: inline-block;
+  width: 0.82em;
+  height: 0.82em;
+  margin-left: 0.22em;
+  margin-right: 0.04em;
+  vertical-align: 0.08em;
+  opacity: 0.45;
+  flex-shrink: 0;
+  transition:
+    opacity 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+a:hover .external-link-icon,
+a:focus-visible .external-link-icon,
+a.external-link:hover .external-link-icon,
+a.external-link:focus-visible .external-link-icon {
+  opacity: 0.95;
+  transform: translate(1px, -1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .external-link-icon {
+    transition: none !important;
+    transform: none !important;
+  }
+}
 img {
   max-width: 100%;
   height: auto;

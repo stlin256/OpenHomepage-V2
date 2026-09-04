@@ -599,6 +599,19 @@ function updateNavActive(path: string): void {
   }
 }
 
+function initExternalLinks(): void {
+  const links = document.querySelectorAll<HTMLAnchorElement>(
+    '.markdown-body a[href^="http://"], .markdown-body a[href^="https://"], .markdown-body a[href^="//"], .page-content a[href^="http://"], .page-content a[href^="https://"], .page-content a[href^="//"]'
+  );
+  for (const link of links) {
+    if (!link.getAttribute('target')) link.setAttribute('target', '_blank');
+    const rel = link.getAttribute('rel');
+    if (!rel) link.setAttribute('rel', 'noopener noreferrer');
+    else if (!rel.includes('noopener')) link.setAttribute('rel', 'noopener noreferrer');
+    if (!link.classList.contains('external-link')) link.classList.add('external-link');
+  }
+}
+
 function initAll(): void {
   initThemeToggle();
   initNavToggle();
@@ -613,6 +626,7 @@ function initAll(): void {
   initToc();
   initFootnotes();
   initCodeBlocks();
+  initExternalLinks();
   scheduleTabPrefetch();
 }
 

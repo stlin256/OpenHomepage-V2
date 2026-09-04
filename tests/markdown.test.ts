@@ -36,9 +36,28 @@ describe('基础 markdown / GFM', () => {
     expect(html).toContain('disabled');
   });
 
-  it('链接与外链属性正常输出', async () => {
+  it('链接与外链属性正常输出：外链自动添加 target=_blank、rel=noopener noreferrer 与矢量 ↗ 图标', async () => {
     const html = await renderMarkdown('[示例](https://example.com)');
-    expect(html).toContain('<a href="https://example.com">示例</a>');
+    expect(html).toContain('href="https://example.com"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain('class="external-link"');
+    expect(html).toContain('class="external-link-icon"');
+    expect(html).toContain('viewBox="0 0 24 24"');
+  });
+
+  it('站内链接不添加 target=_blank 与外链图标', async () => {
+    const html = await renderMarkdown('[关于](/about) 与 [章节](#heading)');
+    expect(html).toContain('<a href="/about">关于</a>');
+    expect(html).toContain('<a href="#heading">章节</a>');
+    expect(html).not.toContain('external-link-icon');
+  });
+
+  it('纯图片外链添加 target=_blank 但不插入文本尾部图标', async () => {
+    const html = await renderMarkdown('[![封面](assets/pic.jpg)](https://example.com)');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).not.toContain('external-link-icon');
   });
 });
 
@@ -565,7 +584,11 @@ describe('富媒体脚注（Footnotes Pipeline）', () => {
     const html = await renderMarkdown(md, { lang: 'zh' });
     expect(html).toContain('katex');
     expect(html).toContain('<code>run()</code>');
-    expect(html).toContain('<a href="https://arxiv.org">arXiv</a>');
+    expect(html).toContain('href="https://arxiv.org"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain('external-link-icon');
+    expect(html).toContain('arXiv');
   });
 
   it('多处引用同一脚注时保留数字小标与对应 aria-label', async () => {

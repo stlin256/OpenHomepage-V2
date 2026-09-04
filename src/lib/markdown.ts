@@ -127,6 +127,7 @@ function buildSanitizeSchema(): Schema {
     iframe: ['src', 'width', 'height', 'allowFullScreen', 'loading', 'referrerPolicy', 'title'],
     video: ['src', 'poster', 'controls', 'preload', 'width', 'height'],
     audio: ['src', 'controls', 'preload'],
+    a: [...(defaultSchema.attributes?.a ?? ['href']), 'target', 'rel'],
     img: [...(defaultSchema.attributes?.img ?? ['src', 'alt', 'title']), 'loading', 'decoding', 'sizes', 'width', 'height', 'referrerPolicy', 'referrerpolicy'],
     button: ['type', 'ariaLabel', 'ariaPressed', 'disabled'],
     svg: ['viewBox', 'fill', 'stroke', 'strokeWidth', 'strokeLinecap', 'strokeLinejoin', 'width', 'height', 'ariaHidden', 'ariaLabel', 'xmlns'],
@@ -856,6 +857,54 @@ function rehypeContentDecorations(lang: string | undefined, defaultLang?: string
         if (!cls.includes('footnote-ref')) {
           node.properties.className = [...cls, 'footnote-ref'];
         }
+      } else if (node.tagName === 'a' && node.properties?.href) {
+        const href = String(node.properties.href).trim();
+        const isExternal = /^https?:\/\//i.test(href) || /^\/\//i.test(href);
+        if (isExternal) {
+          node.properties.target = '_blank';
+          node.properties.rel = 'noopener noreferrer';
+          const cls = classesOf(node);
+          if (!cls.includes('external-link')) {
+            node.properties.className = [...cls, 'external-link'];
+          }
+          const isImageOnly =
+            node.children.length > 0 &&
+            node.children.every(
+              (c) =>
+                (c.type === 'element' && (c.tagName === 'img' || c.tagName === 'video' || c.tagName === 'audio')) ||
+                (c.type === 'text' && !c.value.trim()),
+            );
+          const hasExternalIcon = node.children.some(
+            (c) =>
+              c.type === 'element' &&
+              (c.tagName === 'svg' || c.tagName === 'span') &&
+              classesOf(c).some(
+                (cn) => cn.includes('external-link-icon') || cn.includes('footnote-backref-icon'),
+              ),
+          );
+          if (!isImageOnly && !hasExternalIcon) {
+            const extSvg = hEl(
+              'svg',
+              {
+                className: ['external-link-icon'],
+                viewBox: '0 0 24 24',
+                width: '12',
+                height: '12',
+                fill: 'none',
+                stroke: 'currentColor',
+                strokeWidth: '2',
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                ariaHidden: 'true',
+              },
+              [
+                hEl('path', { d: 'M7 17 17 7' }),
+                hEl('path', { d: 'M7 7h10v10' }),
+              ],
+            );
+            node.children.push(extSvg);
+          }
+        }
       }
       if (node.tagName === 'section' && (classesOf(node).includes('footnotes') || node.properties?.dataFootnotes != null || ('data-footnotes' in (node.properties || {})))) {
         const cls = classesOf(node);
@@ -905,10 +954,39 @@ function rehypeContentDecorations(lang: string | undefined, defaultLang?: string
         const itemTitle = String(item.properties?.dataTimelineTitle ?? '');
         const org = String(item.properties?.dataOrg ?? '');
         const url = safeTimelineUrl(item.properties?.dataUrl == null ? undefined : String(item.properties.dataUrl));
+        const isExt = Boolean(url && (/^https?:\/\//i.test(url) || /^\/\//i.test(url)));
         const heading = hEl(
           url ? 'a' : 'h3',
-          url ? { className: ['timeline-item-title'], href: url } : { className: ['timeline-item-title'] },
-          itemTitle ? [hTxt(itemTitle)] : []
+          url
+            ? {
+                className: isExt ? ['timeline-item-title', 'external-link'] : ['timeline-item-title'],
+                href: url,
+                ...(isExt ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
+              }
+            : { className: ['timeline-item-title'] },
+          itemTitle
+            ? isExt
+              ? [
+                  hTxt(itemTitle),
+                  hEl(
+                    'svg',
+                    {
+                      className: ['external-link-icon'],
+                      viewBox: '0 0 24 24',
+                      width: '12',
+                      height: '12',
+                      fill: 'none',
+                      stroke: 'currentColor',
+                      strokeWidth: '2',
+                      strokeLinecap: 'round',
+                      strokeLinejoin: 'round',
+                      ariaHidden: 'true',
+                    },
+                    [hEl('path', { d: 'M7 17 17 7' }), hEl('path', { d: 'M7 7h10v10' })],
+                  ),
+                ]
+              : [hTxt(itemTitle)]
+            : []
         );
         const meta = hEl('div', { className: ['timeline-item-meta'] }, [
           heading,
