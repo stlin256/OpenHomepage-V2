@@ -88,7 +88,7 @@ export const GITHUB_API_TIMEOUT_MS = 5000;
  * 拉取 GitHub 公开资料用于快速向导预填（纯逻辑，fetch 可注入替身）。
  * 请求 https://api.github.com/users/<username>，带 User-Agent 头与 5 秒超时。
  * 任何失败（网络错误 / 非 200 / 超时 / JSON 异常 / 无 fetch）均静默返回 null，绝不抛出。
- * 成功返回 { name, bio, blog }（缺失字段为空字符串）。
+ * 成功返回 { name, bio, blog, avatarUrl }（缺失字段为空字符串）。
  */
 export async function fetchGithubProfile(username, { fetchImpl = globalThis.fetch, timeoutMs = GITHUB_API_TIMEOUT_MS } = {}) {
   const user = username?.trim();
@@ -106,7 +106,50 @@ export async function fetchGithubProfile(username, { fetchImpl = globalThis.fetc
       name: typeof data?.name === 'string' ? data.name.trim() : '',
       bio: typeof data?.bio === 'string' ? data.bio.trim() : '',
       blog: typeof data?.blog === 'string' ? data.blog.trim() : '',
+      avatarUrl: typeof data?.avatar_url === 'string' ? data.avatar_url.trim() : '',
     };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** 头像下载的体积 sanity 上限（超过即放弃） */
+export const GITHUB_AVATAR_MAX_BYTES = 10 * 1024 * 1024;
+
+/** 按 magic bytes 嗅探图片格式：PNG → 'png'，JPEG → 'jpg'，其余返回 null */
+function sniffImageExt(buf) {
+  if (buf.length >= 4 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png';
+  if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xd8) return 'jpg';
+  return null;
+}
+
+/**
+ * 下载 GitHub 头像（纯逻辑，fetch 可注入替身）。
+ * GET avatar_url，带 User-Agent 头与 5 秒超时；Content-Length 或实际体积超过
+ * GITHUB_AVATAR_MAX_BYTES 即放弃。按 magic bytes 嗅探扩展名（png/jpg）。
+ * 任何失败（网络错误 / 非 200 / 超时 / 超限 / 无法识别的格式）均静默返回 null，绝不抛出。
+ * 成功返回 { buffer: Buffer, ext: 'png' | 'jpg' }。
+ */
+export async function downloadGithubAvatar(avatarUrl, { fetchImpl = globalThis.fetch, timeoutMs = GITHUB_API_TIMEOUT_MS } = {}) {
+  const url = avatarUrl?.trim();
+  if (!url || typeof fetchImpl !== 'function') return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetchImpl(url, {
+      headers: { 'User-Agent': 'openhomepage-v2-setup' },
+      signal: controller.signal,
+    });
+    if (!res?.ok) return null;
+    const contentLength = Number(res.headers?.get?.('content-length') ?? 0);
+    if (contentLength > GITHUB_AVATAR_MAX_BYTES) return null;
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length === 0 || buffer.length > GITHUB_AVATAR_MAX_BYTES) return null;
+    const ext = sniffImageExt(buffer);
+    if (!ext) return null;
+    return { buffer, ext };
   } catch {
     return null;
   } finally {
@@ -160,8 +203,9 @@ export function trimLangMaps(node, langs) {
 
 /**
  * 按向导选项变换 site.yaml 配置对象（纯函数）。
- * options: { nameZh, nameEn, taglineZh, taglineEn, githubUser, website, langs, modules }
+ * options: { nameZh, nameEn, taglineZh, taglineEn, githubUser, website, avatar, langs, modules }
  * modules: { publications, github, rss, bgm, contact }（布尔，true=保留）
+ * avatar: 相对 data/ 根的头像路径（如 assets/avatar.png），非空时覆盖 profile.avatar
  */
 export function transformSiteConfig(cfg, options) {
   const { langs, modules } = options;
@@ -188,6 +232,10 @@ export function transformSiteConfig(cfg, options) {
     if (url && !out.profile.links.some((link) => link?.url === url)) {
       out.profile.links.unshift({ label: 'Website', url });
     }
+  }
+  // 头像（GitHub 预填下载）：非空路径覆盖 profile.avatar；缺省保留示例默认
+  if (typeof options.avatar === 'string' && options.avatar.trim()) {
+    out.profile.avatar = options.avatar.trim();
   }
 
   out.site.language = LANG_TO_SITE_LANGUAGE[langs[0]] ?? langs[0];
@@ -235,11 +283,21 @@ function rmIfExists(target) {
 
 /**
  * 快速向导模式：以 data.example 为基底生成裁剪后的个性化 data/。
- * options 同 transformSiteConfig。
+ * options 同 transformSiteConfig，另支持 avatarFile: { buffer, ext }（GitHub 头像下载结果）——
+ * 存在时写入 assets/avatar.<ext> 并把 site.yaml 的 profile.avatar 指向它；缺省保留示例默认头像。
  */
 export function generateQuickData(options, { exampleDir, destDir }) {
   copyExampleData(exampleDir, destDir);
   const { langs, modules } = options;
+
+  // GitHub 头像落盘（下载结果由 CLI 层注入；失败/拒绝时本字段为空，静默保留示例默认）
+  let avatar = '';
+  if (options.avatarFile?.buffer?.length && options.avatarFile?.ext) {
+    mkdirSync(path.join(destDir, 'assets'), { recursive: true });
+    const file = `avatar.${options.avatarFile.ext}`;
+    writeFileSync(path.join(destDir, 'assets', file), options.avatarFile.buffer);
+    avatar = `assets/${file}`;
+  }
 
   // 语言裁剪：pages/ 与 streaming/ 的语言子目录
   for (const top of ['pages', 'streaming']) {
@@ -275,7 +333,7 @@ export function generateQuickData(options, { exampleDir, destDir }) {
   // site.yaml 变换重写（注释不保留，见 spec 15 §6）
   const sitePath = path.join(destDir, 'site.yaml');
   const cfg = loadYaml(readFileSync(sitePath, 'utf8'));
-  writeFileSync(sitePath, dumpYaml(transformSiteConfig(cfg, options), { lineWidth: 120, noRefs: true }));
+  writeFileSync(sitePath, dumpYaml(transformSiteConfig(cfg, { ...options, avatar }), { lineWidth: 120, noRefs: true }));
 }
 
 /**

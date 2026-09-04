@@ -14,6 +14,7 @@ import {
   resolveScenePreset,
   langPresetKeyFor,
   fetchGithubProfile,
+  downloadGithubAvatar,
 } from './setup-lib.mjs';
 
 const MODULE_LABELS = {
@@ -88,6 +89,14 @@ async function ask() {
     const taglineEn = await askWithDefault('Tagline（英文，可留空）', gh?.bio ?? '');
     const website = await askWithDefault('个人网站（可留空，写入联系链接）', gh?.blog ?? '');
 
+    // ③.5 GitHub 头像（预填带回了 avatar_url 时才提问；下载失败/拒绝均静默保留示例默认头像）
+    let avatarFile = null;
+    if (gh?.avatarUrl && (await askYesNo('下载 GitHub 头像作为站点头像', true))) {
+      process.stdout.write('  正在下载头像（5 秒超时，失败自动跳过）…');
+      avatarFile = await downloadGithubAvatar(gh.avatarUrl);
+      process.stdout.write(avatarFile ? ` 已保存为 assets/avatar.${avatarFile.ext}。\n` : ' 失败，保留默认头像。\n');
+    }
+
     // ④ 语言体系（默认选项来自场景预设）
     const presetLangKey = langPresetKeyFor(preset.langs);
     console.log('\n语言体系：');
@@ -101,7 +110,7 @@ async function ask() {
     const modules = {};
     for (const key of MODULE_KEYS) modules[key] = await askYesNo(MODULE_LABELS[key], preset.modules[key] ?? true);
 
-    return { mode: 'quick', options: { nameZh, nameEn, taglineZh, taglineEn, githubUser, website, langs, modules } };
+    return { mode: 'quick', options: { nameZh, nameEn, taglineZh, taglineEn, githubUser, website, avatarFile, langs, modules } };
   } finally {
     rl.close();
   }

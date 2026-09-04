@@ -25,6 +25,7 @@
 | ③ | 姓名（中文 / 英文） | `profile.name.zh/en`、`site.title.zh/en`；默认值为预填 `name`（中文项仅当含 CJK 字符） |
 | ③ | Tagline（中文 / 英文） | `profile.tagline.zh/en`；默认值为预填 `bio`（中文项仅当含 CJK 字符） |
 | ③ | 个人网站 | 去重后写入 `profile.links` 首位 `{ label: "Website", url }`；默认值为预填 `blog` |
+| ③.5 | 下载 GitHub 头像？（默认 Y，仅预填带回 `avatar_url` 时提问） | 成功则存为 `data/assets/avatar.<ext>` 并把 `profile.avatar` 设为 `assets/avatar.<ext>`；失败/拒绝保留示例默认（见 §2.1.3） |
 | ④ | 语言体系 | 仅中文 `['zh']` / 仅英文 `['en']` / 中英双语 `['zh','en']` / 四语 `['zh','en','ja','fr']`；默认选项来自场景预设 |
 | ⑤ | 模块勾选 | 学术成果 publications、GitHub 卡片 github、RSS、BGM、二维码联系 contact；逐项 Y/n 默认值来自场景预设 |
 
@@ -34,9 +35,19 @@
 
 - **触发条件**：仅交互式快速向导、且用户输入了非空 GitHub 用户名。非交互回退（`!isTTY` / `CI=true` / `--example|--blank|--yes`）绝不触网。
 - **请求**：`GET https://api.github.com/users/<username>`（`encodeURIComponent` 转义），请求头 `User-Agent: openhomepage-v2-setup`、`Accept: application/vnd.github+json`；`AbortController` 5 秒超时（`GITHUB_API_TIMEOUT_MS`）。
-- **成功**：取 `name` / `bio` / `blog` 作为 ③ 各提问的默认值（缺失字段视为空字符串）。`name`/`bio` 仅当含 CJK 字符时才同时作为中文提问默认值，避免把英文 bio 塞进中文 Tagline。
+- **成功**：取 `name` / `bio` / `blog` 作为 ③ 各提问的默认值（缺失字段视为空字符串）；`avatar_url` 一并带出（返回值字段 `avatarUrl`），供头像下载使用（见 §2.1.3）。`name`/`bio` 仅当含 CJK 字符时才同时作为中文提问默认值，避免把英文 bio 塞进中文 Tagline。
 - **降级语义**：网络错误、非 200（含 404 / rate limit 403）、超时 abort、JSON 解析异常、`fetch` 不可用——一律静默返回 `null`，打印一行「未获取到，继续手动填写」，向导照常继续，**绝不阻断、绝不抛出**。
-- **实现**：`fetchGithubProfile(username, { fetchImpl, timeoutMs })`（`scripts/setup-lib.mjs`），`fetchImpl` 可注入替身以便测试；CLI 层默认用全局 `fetch`。
+- **实现**：`fetchGithubProfile(username, { fetchImpl, timeoutMs })`（`scripts/setup-lib.mjs`），`fetchImpl` 可注入替身以便测试；CLI 层默认用全局 `fetch`。返回值 `{ name, bio, blog, avatarUrl }`（向后兼容：旧调用方解构 `name`/`bio`/`blog` 不受影响）。
+
+#### 2.1.3 GitHub 头像自动下载
+
+- **触发条件**：仅交互式快速向导、且预填成功带回非空 `avatarUrl`；预填后询问「下载 GitHub 头像作为站点头像？」（默认 Y）。
+- **下载**：`downloadGithubAvatar(avatarUrl, { fetchImpl, timeoutMs })`（`scripts/setup-lib.mjs`），GET 头像 URL，请求头 `User-Agent: openhomepage-v2-setup`，`AbortController` 5 秒超时（复用 `GITHUB_API_TIMEOUT_MS`），`fetchImpl` 可注入替身。
+- **格式嗅探**：按 magic bytes 判定扩展名——PNG（`89 50 4E 47`）→ `png`，JPEG（`FF D8`）→ `jpg`；其他格式（GIF/WebP 等）不支持，静默放弃。
+- **体积 sanity**：`Content-Length` 或实际字节数超过 `GITHUB_AVATAR_MAX_BYTES`（10MB）即放弃（前者不读 body）。
+- **落盘**：成功返回 `{ buffer, ext }`，由 `generateQuickData` 写入 `data/assets/avatar.<ext>`，并把生成的 `site.yaml` 的 `profile.avatar` 设为 `assets/avatar.<ext>`（`transformSiteConfig` 的 `options.avatar`，CLI 经 `options.avatarFile` 传入）。
+- **降级语义**：网络错误 / 非 200 / 超时 / 超限 / 格式不识别 / 无 `fetch`——一律静默返回 `null`，**绝不抛出**；下载失败或用户回答 n 时，不改动 `assets/`，`profile.avatar` 保留 data.example 默认（现状为空串 = 不渲染头像），向导照常继续。
+- 非交互路径（`!isTTY` / `CI=true` / `--example|--blank|--yes`）不经过 `ask()`，完全不触网，行为不变。
 
 #### 2.1.2 场景化预设（总纲支柱四）
 
@@ -98,6 +109,7 @@
   - `KNOWN_LANGS`、`LANG_TO_SITE_LANGUAGE`、`LANG_PRESETS`、`MODULE_KEYS`、`GITHUB_USERNAME_PLACEHOLDER`；
   - `SCENE_PRESETS`、`SCENE_PRESET_KEYS`、`resolveScenePreset(key)`、`langPresetKeyFor(langs)`（场景化预设，纯数据表 + 纯函数）；
   - `fetchGithubProfile(username, { fetchImpl, timeoutMs })`、`GITHUB_API_TIMEOUT_MS`（GitHub API 预填，fetch 可注入，失败静默返回 `null`）；
+  - `downloadGithubAvatar(avatarUrl, { fetchImpl, timeoutMs })`、`GITHUB_AVATAR_MAX_BYTES`（头像下载，magic bytes 嗅探 png/jpg，失败/超限静默返回 `null`，见 §2.1.3）；
   - `parseCliArgs(argv)`、`isNonInteractive({ isTTY, env, args })`（纯函数）；
   - `trimLangMaps(node, langs)`、`transformSiteConfig(cfg, options)`、`stripModuleDirectives(markdown, names)`（纯函数）；
   - `generateQuickData(options, { exampleDir, destDir })`、`generateBlankData(destDir, { lang })`、`copyExampleData(exampleDir, destDir)`；
@@ -113,14 +125,16 @@
 5. 非交互回退：`isTTY=false` / `CI=true` / `--yes` 均走完整示例复制；`--blank` 走空白骨架；
 6. 已存在跳过：`data/` 已存在时返回 `skipped` 且不改动目录内容；
 7. blank 骨架：`site.yaml` + `pages/zh/index.md` 存在且通过 `loadSiteConfig` 校验；
-8. GitHub 预填：注入 fetch 替身覆盖成功（URL / User-Agent / 字段映射）/ 404 / 超时 abort / 网络错误 / 空用户名 / 无 fetch，失败路径全部返回 `null` 不抛出；
-9. 场景化预设：`SCENE_PRESETS` 五预设映射表与 `MODULE_KEYS` 全键覆盖、`resolveScenePreset` 未知 key 回退 `custom` 且返回深拷贝、`langPresetKeyFor` 反查；
-10. 预设可覆盖：minimal 预设默认值被用户逐项覆盖（手动开 github、改中英双语）后 `transformSiteConfig` 结果以覆盖值为准；
-11. 个人网站写入：`website` 去重后置入 `profile.links` 首位，留空不动 links。
+8. GitHub 预填：注入 fetch 替身覆盖成功（URL / User-Agent / 字段映射含 `avatarUrl`）/ 404 / 超时 abort / 网络错误 / 空用户名 / 无 fetch，失败路径全部返回 `null` 不抛出；
+9. GitHub 头像下载：注入 fetch 替身覆盖成功（PNG/JPEG magic bytes 嗅探、User-Agent 头）/ 格式不识别 / `Content-Length` 超限（不读 body）/ 实际体积超限 / 非 200 / 网络错误 / 超时 / 空 URL / 无 fetch，失败路径全部返回 `null` 不抛出；
+10. 头像落盘：`avatarFile` 存在时写入 `data/assets/avatar.<ext>` 且 `site.yaml` 的 `profile.avatar` 指向它（通过 `loadSiteConfig` 校验）；不带 `avatarFile`（下载失败或用户拒绝）时不动 `assets/`、保留示例默认头像；`transformSiteConfig` 的 `options.avatar` 非空覆盖、空值不动；
+11. 场景化预设：`SCENE_PRESETS` 五预设映射表与 `MODULE_KEYS` 全键覆盖、`resolveScenePreset` 未知 key 回退 `custom` 且返回深拷贝、`langPresetKeyFor` 反查；
+12. 预设可覆盖：minimal 预设默认值被用户逐项覆盖（手动开 github、改中英双语）后 `transformSiteConfig` 结果以覆盖值为准；
+13. 个人网站写入：`website` 去重后置入 `profile.links` 首位，留空不动 links。
 
 ## 6. 已知限制与后续项
 
-- 预填只读取 GitHub 公开资料的 `name` / `bio` / `blog`；头像（`avatar_url`）不落盘（需下载素材，列为后续项）。
+- 头像仅支持 GitHub 头像 CDN 返回的 PNG/JPEG（magic bytes 嗅探）；其他格式静默放弃并保留示例默认头像。
 - 预填的失败对用户只显示一行提示，不区分 404 / 超时 / 网络错误的具体原因（rate limit 细节可由 `npm run doctor --online` 排查）。
 - 场景化预设只覆盖模块勾选与语言建议；页面内容（时间轴 / 画廊 / 流式块文案）不随预设改写。
 - quick 模式重写 `site.yaml` 后原文件注释丢失；example 模式不受影响。

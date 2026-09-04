@@ -22,6 +22,8 @@ import {
   resolveScenePreset,
   langPresetKeyFor,
   fetchGithubProfile,
+  downloadGithubAvatar,
+  GITHUB_AVATAR_MAX_BYTES,
 } from '../scripts/setup-lib.mjs';
 import { loadSiteConfig } from '../src/lib/config.ts';
 
@@ -384,28 +386,38 @@ describe('场景化预设（SCENE_PRESETS / resolveScenePreset / langPresetKeyFo
 });
 
 describe('fetchGithubProfile（注入 fetch 替身）', () => {
-  it('成功：请求 URL/User-Agent 正确，返回 name/bio/blog', async () => {
+  it('成功：请求 URL/User-Agent 正确，返回 name/bio/blog/avatarUrl', async () => {
     const calls: any[] = [];
     const fakeFetch = async (url: string, init: any) => {
       calls.push({ url, init });
       return {
         ok: true,
-        json: async () => ({ name: 'The Octocat', bio: 'GitHub mascot', blog: 'https://octocat.dev' }),
+        json: async () => ({
+          name: 'The Octocat',
+          bio: 'GitHub mascot',
+          blog: 'https://octocat.dev',
+          avatar_url: 'https://avatars.githubusercontent.com/u/583231?v=4',
+        }),
       };
     };
     const gh = await fetchGithubProfile('octocat', { fetchImpl: fakeFetch });
-    expect(gh).toEqual({ name: 'The Octocat', bio: 'GitHub mascot', blog: 'https://octocat.dev' });
+    expect(gh).toEqual({
+      name: 'The Octocat',
+      bio: 'GitHub mascot',
+      blog: 'https://octocat.dev',
+      avatarUrl: 'https://avatars.githubusercontent.com/u/583231?v=4',
+    });
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe('https://api.github.com/users/octocat');
     expect(calls[0].init.headers['User-Agent']).toContain('openhomepage-v2-setup');
     expect(calls[0].init.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it('成功但字段缺失：name/bio/blog 回退为空字符串', async () => {
+  it('成功但字段缺失：name/bio/blog/avatarUrl 回退为空字符串', async () => {
     const fakeFetch = async () => ({ ok: true, json: async () => ({ login: 'octocat', name: null }) });
     // @ts-expect-error 替身无需完整 Response 形态
     const gh = await fetchGithubProfile('octocat', { fetchImpl: fakeFetch });
-    expect(gh).toEqual({ name: '', bio: '', blog: '' });
+    expect(gh).toEqual({ name: '', bio: '', blog: '', avatarUrl: '' });
   });
 
   it('404 / 非 200：静默返回 null，不抛出', async () => {
@@ -431,5 +443,134 @@ describe('fetchGithubProfile（注入 fetch 替身）', () => {
     await expect(fetchGithubProfile('octocat', { fetchImpl: boom })).resolves.toBeNull();
     await expect(fetchGithubProfile('   ')).resolves.toBeNull();
     await expect(fetchGithubProfile('octocat', { fetchImpl: null })).resolves.toBeNull();
+  });
+});
+
+const PNG_BYTES = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x01, 0x02]);
+const JPEG_BYTES = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]);
+const GIF_BYTES = Buffer.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]); // GIF：不在支持范围
+
+/** 构造 avatar 下载替身：固定字节 + 可选 Content-Length */
+function avatarFetch(bytes: Buffer, contentLength?: number) {
+  const calls: any[] = [];
+  const fakeFetch = async (url: string, init: any) => {
+    calls.push({ url, init });
+    return {
+      ok: true,
+      headers: { get: (k: string) => (k.toLowerCase() === 'content-length' && contentLength != null ? String(contentLength) : null) },
+      arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+    };
+  };
+  return { fakeFetch, calls };
+}
+
+describe('downloadGithubAvatar（注入 fetch 替身）', () => {
+  it('成功：PNG magic bytes 嗅探为 png，带回原始字节与请求头', async () => {
+    const { fakeFetch, calls } = avatarFetch(PNG_BYTES);
+    // @ts-expect-error 替身无需完整 Response 形态
+    const got = await downloadGithubAvatar('https://avatars.githubusercontent.com/u/583231?v=4', { fetchImpl: fakeFetch });
+    expect(got?.ext).toBe('png');
+    expect(Buffer.compare(got!.buffer, PNG_BYTES)).toBe(0);
+    expect(calls[0].init.headers['User-Agent']).toContain('openhomepage-v2-setup');
+    expect(calls[0].init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('成功：JPEG magic bytes 嗅探为 jpg', async () => {
+    const { fakeFetch } = avatarFetch(JPEG_BYTES);
+    // @ts-expect-error 替身无需完整 Response 形态
+    const got = await downloadGithubAvatar('https://example.com/a', { fetchImpl: fakeFetch });
+    expect(got?.ext).toBe('jpg');
+    expect(Buffer.compare(got!.buffer, JPEG_BYTES)).toBe(0);
+  });
+
+  it('无法识别的格式（非 PNG/JPEG）：静默返回 null', async () => {
+    const { fakeFetch } = avatarFetch(GIF_BYTES);
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(downloadGithubAvatar('https://example.com/a.gif', { fetchImpl: fakeFetch })).resolves.toBeNull();
+  });
+
+  it('Content-Length 超上限：直接放弃返回 null（不读 body）', async () => {
+    let bodyRead = false;
+    const fakeFetch = async () => ({
+      ok: true,
+      headers: { get: () => String(GITHUB_AVATAR_MAX_BYTES + 1) },
+      arrayBuffer: async () => {
+        bodyRead = true;
+        return new ArrayBuffer(0);
+      },
+    });
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(downloadGithubAvatar('https://example.com/big.png', { fetchImpl: fakeFetch })).resolves.toBeNull();
+    expect(bodyRead).toBe(false);
+  });
+
+  it('实际体积超上限（无 Content-Length）：读完仍放弃返回 null', async () => {
+    const { fakeFetch } = avatarFetch(Buffer.concat([PNG_BYTES, Buffer.alloc(GITHUB_AVATAR_MAX_BYTES)]));
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(downloadGithubAvatar('https://example.com/big.png', { fetchImpl: fakeFetch })).resolves.toBeNull();
+  });
+
+  it('非 200 / 网络错误 / 超时 / 空 URL / 无 fetch：静默返回 null', async () => {
+    const notOk = async () => ({ ok: false, status: 404 });
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: notOk })).resolves.toBeNull();
+    const boom = async () => {
+      throw new Error('ECONNREFUSED');
+    };
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: boom })).resolves.toBeNull();
+    const slow = (_url: string, init: any) =>
+      new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => reject(new Error('The operation was aborted')));
+      });
+    // @ts-expect-error 替身无需完整 Response 形态
+    await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: slow, timeoutMs: 20 })).resolves.toBeNull();
+    await expect(downloadGithubAvatar('  ')).resolves.toBeNull();
+    await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: null })).resolves.toBeNull();
+  });
+});
+
+describe('GitHub 头像落盘（generateQuickData + transformSiteConfig）', () => {
+  const base = {
+    nameZh: '',
+    nameEn: '',
+    taglineZh: '',
+    taglineEn: '',
+    githubUser: 'octocat',
+    langs: ['zh'],
+    modules: ALL_ON,
+  };
+
+  it('带 avatarFile：写入 data/assets/avatar.png 且 site.yaml profile.avatar 指向它', () => {
+    const destDir = path.join(makeTmp(), 'data');
+    generateQuickData({ ...base, avatarFile: { buffer: PNG_BYTES, ext: 'png' } }, { exampleDir, destDir });
+    const saved = readFileSync(path.join(destDir, 'assets', 'avatar.png'));
+    expect(Buffer.compare(saved, PNG_BYTES)).toBe(0);
+    const cfg = loadSiteConfig(destDir);
+    expect(cfg.profile.avatar).toBe('assets/avatar.png');
+  });
+
+  it('带 avatarFile（jpg 嗅探结果）：落盘为 avatar.jpg', () => {
+    const destDir = path.join(makeTmp(), 'data');
+    generateQuickData({ ...base, avatarFile: { buffer: JPEG_BYTES, ext: 'jpg' } }, { exampleDir, destDir });
+    expect(existsSync(path.join(destDir, 'assets', 'avatar.jpg'))).toBe(true);
+    expect(loadSiteConfig(destDir).profile.avatar).toBe('assets/avatar.jpg');
+  });
+
+  it('不带 avatarFile（下载失败或用户拒绝）：不动 assets/ 且保留示例默认头像', () => {
+    const destDir = path.join(makeTmp(), 'data');
+    const exampleAvatar = readSite(exampleDir).profile.avatar ?? '';
+    generateQuickData(base, { exampleDir, destDir });
+    expect(existsSync(path.join(destDir, 'assets', 'avatar.png'))).toBe(false);
+    expect(existsSync(path.join(destDir, 'assets', 'avatar.jpg'))).toBe(false);
+    // 示例默认 avatar 原样保留（data.example 现状为空串 = 不渲染头像）
+    expect(loadSiteConfig(destDir).profile.avatar ?? '').toBe(exampleAvatar);
+  });
+
+  it('transformSiteConfig：options.avatar 非空覆盖 profile.avatar，空值不动', () => {
+    const out = transformSiteConfig(readSite(exampleDir), { ...base, avatar: 'assets/avatar.png' });
+    expect(out.profile.avatar).toBe('assets/avatar.png');
+    const untouched = transformSiteConfig(readSite(exampleDir), { ...base, avatar: '  ' });
+    expect(untouched.profile.avatar ?? '').toBe(readSite(exampleDir).profile.avatar ?? '');
   });
 });
