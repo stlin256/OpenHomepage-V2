@@ -23,6 +23,7 @@ import { createDevServerManager, type DevServerManager } from './devserver.ts';
 import { listPageBlocks, applyBlockOp, HashConflictError } from './blocks.ts';
 import { readStreamContent, writeStreamContent, NotFoundError } from './stream.ts';
 import { buildZip, collectDataEntries, exportZipName } from './export.ts';
+import { importDataZip, previewBibtexImport, mergeBibtexImport } from './import.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
@@ -290,6 +291,20 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         const outputs = await convertFavicon(raw);
         sendJson(res, 200, saveFavicon(dataDir, outputs));
       },
+      // data.zip 导入（spec 18）：整包备份当前 data/ → 路径校验 → 覆盖写入，返回文件数与备份路径
+      '/api/import-data': ({ raw, res }) => sendJson(res, 200, importDataZip(dataDir, raw)),
+      // BibTeX 导入（spec 18）：预览（解析 + 映射 + 去重，不写盘）与确认合并（快照 + 落盘）
+      '/api/import/bibtex/preview': ({ body, res }) => {
+        const bibtex = body.bibtex;
+        if (typeof bibtex !== 'string') throw new Error('非法的内容：bibtex 必须是字符串');
+        const { added, skipped } = previewBibtexImport(dataDir, bibtex);
+        sendJson(res, 200, { added, skipped });
+      },
+      '/api/import/bibtex': ({ body, res }) => {
+        const bibtex = body.bibtex;
+        if (typeof bibtex !== 'string') throw new Error('非法的内容：bibtex 必须是字符串');
+        sendJson(res, 200, mergeBibtexImport(dataDir, bibtex));
+      },
     },
   };
 
@@ -316,8 +331,11 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       }
       const handler = routes[req.method ?? '']?.[url.pathname];
       if (handler) {
-        // 原始二进制上传（素材 / favicon 图片）；其余按 JSON 解析
-        const isUpload = url.pathname === '/api/asset' || url.pathname === '/api/favicon';
+        // 原始二进制上传（素材 / favicon 图片 / data.zip 导入）；其余按 JSON 解析
+        const isUpload =
+          url.pathname === '/api/asset' ||
+          url.pathname === '/api/favicon' ||
+          url.pathname === '/api/import-data';
         const raw = await readBody(req, isUpload ? MAX_ASSET_BYTES + 1024 : MAX_JSON_BYTES);
         let body: Json = {};
         if (!isUpload && raw.byteLength > 0) {

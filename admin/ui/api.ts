@@ -95,4 +95,39 @@ export const api = {
   devStatus: () => req<DevStatus>('/api/dev-status'),
   devStart: () => req<DevStatus>('/api/dev/start', { method: 'POST' }),
   devStop: () => req<DevStatus>('/api/dev/stop', { method: 'POST' }),
+
+  /** data.zip 导入（spec 18）：整包备份后覆盖写入 */
+  importDataZip: async (buf: ArrayBuffer) => {
+    const res = await fetch('/api/import-data', {
+      method: 'POST',
+      headers: { 'content-type': 'application/zip' },
+      body: buf,
+    });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!res.ok) throw new Error((data.error as string) ?? `HTTP ${res.status}`);
+    return data as { ok: true; files: number; backup: string };
+  },
+
+  /** BibTeX 导入（spec 18）：预览不写盘；确认后合并进 publications.yaml */
+  previewBibtex: (bibtex: string) =>
+    req<{ added: ImportedPub[]; skipped: { key: string; reason: string }[] }>(
+      '/api/import/bibtex/preview',
+      json('POST', { bibtex })
+    ),
+  importBibtex: (bibtex: string) =>
+    req<{ ok: true; added: number; skipped: { key: string; reason: string }[] }>(
+      '/api/import/bibtex',
+      json('POST', { bibtex })
+    ),
 };
+
+/** BibTeX 预览返回的新增条目（publications.yaml schema 子集） */
+export interface ImportedPub {
+  id: string;
+  title: string;
+  authors: string[];
+  year: number;
+  type: string;
+  venue: string;
+  bibtex_key: string;
+}

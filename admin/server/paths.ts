@@ -30,9 +30,9 @@ export function safeResolve(baseDir: string, rel: string): string {
   return abs;
 }
 
-/** 允许快照/回滚的路径：pages/**、streaming/** 与根下 *.yaml */
+/** 允许快照/回滚的路径：pages/**、streaming/** 与根下 *.yaml、*.bib（BibTeX 导入追加前快照，spec 18） */
 export function assertSnapshottable(rel: string): void {
   const ok =
-    /^(pages|streaming)\/[^/].*/.test(rel) || /^[^/]+\.ya?ml$/.test(rel);
+    /^(pages|streaming)\/[^/].*/.test(rel) || /^[^/]+\.(ya?ml|bib)$/.test(rel);
   if (!ok) throw new PathError(rel);
 }

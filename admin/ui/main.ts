@@ -24,6 +24,7 @@ import {
 } from './views/configs.ts';
 import { renderThemePicker } from './views/theme.ts';
 import { renderAssets } from './views/assets.ts';
+import { renderPublicationsImport } from './views/publications.ts';
 
 export interface AppState {
   lang: Lang;
@@ -98,6 +99,7 @@ function renderSidebar(): void {
     ['github', t('configGithub')],
     ['rss', t('configRss')],
     ['streaming', t('configStreaming')],
+    ['publications', t('configPublications')],
     ['theme', t('configTheme')],
   ] as const) {
     sidebar.append(el('a', { class: 'side-item', href: `#/config/${key}` }, label));
@@ -185,6 +187,7 @@ async function renderMain(): Promise<void> {
         github: renderGithubConfig,
         rss: renderRssConfig,
         streaming: renderStreamingConfig,
+        publications: renderPublicationsImport,
         theme: renderThemePicker,
       };
       await (renderers[section] ?? renderSiteConfig)(main, state);
@@ -259,6 +262,34 @@ async function boot(): Promise<void> {
     { class: 'btn', href: '/api/export-data', title: state.t('exportData') },
     state.t('exportData')
   );
+
+  // 导入 data.zip（spec 18）：选择 zip → 确认 → POST /api/import-data，完成后提示并刷新
+  const importFileInput = el('input', {
+    type: 'file',
+    accept: '.zip,application/zip',
+    style: 'display:none',
+  }) as HTMLInputElement;
+  importFileInput.addEventListener('change', () => {
+    const f = importFileInput.files?.[0];
+    importFileInput.value = '';
+    if (!f) return;
+    if (!confirm(state.t('importDataConfirm'))) return;
+    void (async () => {
+      try {
+        state.setStatus(state.t('importDataUploading'));
+        const r = await api.importDataZip(await f.arrayBuffer());
+        state.setStatus(
+          state.t('importDataDone').replace('{0}', String(r.files)),
+          'ok'
+        );
+        // 配置/页面可能已被覆盖，稍后整页刷新
+        setTimeout(() => location.reload(), 1200);
+      } catch (e) {
+        state.setStatus((e as Error).message, 'err');
+      }
+    })();
+  });
+  const importBtn = btn(state.t('importData'), () => importFileInput.click());
 
   // 预览服务状态指示灯：绿=运行 / 黄=启动中 / 灰=未运行；点击手动停止/启动（重启=停后再启）
   const devDot = el('button', { class: 'dev-indicator', type: 'button' }) as HTMLButtonElement;
@@ -353,6 +384,8 @@ async function boot(): Promise<void> {
       sidebarToggle,
       statusEl,
       el('span', { class: 'topbar-spacer' }),
+      importBtn,
+      importFileInput,
       exportBtn,
       devDot,
       previewBtn,
