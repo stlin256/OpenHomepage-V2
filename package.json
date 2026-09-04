@@ -17,6 +17,7 @@
   "scripts": {
     "test": "vitest run",
     "prefetch": "tsx scripts/prefetch.ts",
+    "doctor": "tsx scripts/doctor.ts",
     "dev": "tsx scripts/generate-fonts.ts && astro dev",
     "build": "tsx scripts/generate-fonts.ts && tsx scripts/generate-og-images.ts && astro build && npm run optimize:critical-css && npm run optimize:images",
     "optimize:images": "tsx scripts/optimize-images.ts",
