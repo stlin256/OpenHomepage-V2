@@ -24,6 +24,7 @@ import { listPageBlocks, applyBlockOp, HashConflictError } from './blocks.ts';
 import { readStreamContent, writeStreamContent, NotFoundError } from './stream.ts';
 import { buildZip, collectDataEntries, exportZipName } from './export.ts';
 import { importDataZip, previewBibtexImport, mergeBibtexImport } from './import.ts';
+import { shouldShowOnboarding, markOnboardingDone } from './onboarding.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
@@ -149,6 +150,9 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
     GET: {
       '/api/info': ({ res }) =>
         sendJson(res, 200, { initialized: opts.initialized, dataDir: path.basename(dataDir) }),
+      // 新手向导（spec 19）：仅首次初始化（initialized）且未完成标记时自动弹出；实时查标记文件
+      '/api/onboarding': ({ res }) =>
+        sendJson(res, 200, { show: shouldShowOnboarding(dataDir, opts.initialized) }),
       // M12d：每页附 previewPath（overlay 顶栏页面切换下拉的跳转目标）
       '/api/pages': ({ res }) =>
         sendJson(res, 200, {
@@ -227,6 +231,11 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       },
     },
     POST: {
+      // 新手向导（spec 19）：完成或跳过即写 data/.onboarding-done 标记，不再自动弹出
+      '/api/onboarding/done': ({ res }) => {
+        markOnboardingDone(dataDir);
+        sendJson(res, 200, { ok: true });
+      },
       // 可视化编辑（M12a）：单块 replace/insert/delete/move（hash 防陈旧写 + 快照 + 落盘）
       '/api/page/block': ({ body, res }) => sendJson(res, 200, applyBlockOp(dataDir, body)),
       // 可视化编辑（M12d）：单字段写回（就地改字；路径校验 + schema 校验 + 快照）

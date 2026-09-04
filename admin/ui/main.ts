@@ -25,6 +25,7 @@ import {
 import { renderThemePicker } from './views/theme.ts';
 import { renderAssets } from './views/assets.ts';
 import { renderPublicationsImport } from './views/publications.ts';
+import { openOnboardingWizard } from './views/onboarding.ts';
 
 export interface AppState {
   lang: Lang;
@@ -291,6 +292,9 @@ async function boot(): Promise<void> {
   });
   const importBtn = btn(state.t('importData'), () => importFileInput.click());
 
+  // 新手欢迎向导（spec 19）：顶栏按钮随时重开；首次初始化时自动弹出（见 boot 末尾）
+  const onboardingBtn = btn(state.t('onboardingOpen'), () => openOnboardingWizard(state));
+
   // 预览服务状态指示灯：绿=运行 / 黄=启动中 / 灰=未运行；点击手动停止/启动（重启=停后再启）
   const devDot = el('button', { class: 'dev-indicator', type: 'button' }) as HTMLButtonElement;
   devDot.append(el('span', { class: 'dev-dot' }));
@@ -384,6 +388,7 @@ async function boot(): Promise<void> {
       sidebarToggle,
       statusEl,
       el('span', { class: 'topbar-spacer' }),
+      onboardingBtn,
       importBtn,
       importFileInput,
       exportBtn,
@@ -407,6 +412,17 @@ async function boot(): Promise<void> {
     void renderMain();
   });
   await renderMain();
+
+  // 新手向导自动弹出（spec 19）：仅后端判定「首次初始化 + 无完成标记」时触发；
+  // 完成/跳过会写 data/.onboarding-done，之后只能由顶栏按钮手动打开
+  void api
+    .onboarding()
+    .then(({ show }) => {
+      if (show) openOnboardingWizard(state);
+    })
+    .catch(() => {
+      /* 探测失败不阻塞后台使用 */
+    });
 }
 
 void boot();

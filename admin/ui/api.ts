@@ -45,6 +45,9 @@ export interface AssetInfo {
 
 export const api = {
   info: () => req<{ initialized: boolean }>('/api/info'),
+  /** 新手向导（spec 19）：是否应自动弹出（首次初始化且未完成） */
+  onboarding: () => req<{ show: boolean }>('/api/onboarding'),
+  onboardingDone: () => req('/api/onboarding/done', { method: 'POST' }),
   pages: () => req<{ pages: PageMeta[] }>('/api/pages'),
   page: (lang: string, file: string) =>
     req<PageContent>(`/api/page?lang=${encodeURIComponent(lang)}&file=${encodeURIComponent(file)}`),

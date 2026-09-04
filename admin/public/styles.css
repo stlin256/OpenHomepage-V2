@@ -621,3 +621,30 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
   line-height: 1.8;
 }
 
+/* 新手欢迎向导（spec 19）：三步卡片弹窗，移动端可用（窄屏自适应宽度） */
+.onboarding-overlay {}
+.onboarding-modal {
+  width: min(560px, calc(100vw - 32px));
+  min-width: 0;
+}
+.onboarding-intro { margin: 4px 0 10px; }
+.onboarding-progress { font-size: 12px; margin-bottom: 8px; }
+.onboarding-body { display: flex; flex-direction: column; gap: 10px; }
+.onboarding-modules { display: flex; flex-direction: column; gap: 4px; }
+.onboarding-subtitle { margin: 10px 0 2px; text-transform: none; letter-spacing: 0; }
+.onboarding-module {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.onboarding-module:hover { border-color: var(--accent); }
+.onboarding-swatches { flex-wrap: wrap; }
+.onboarding-swatches .swatch.on { outline: 2px solid var(--text); outline-offset: 2px; }
+.onboarding-ops { flex-wrap: wrap; align-items: center; }
+.onboarding-ops .topbar-spacer { flex: 1; }
+
