@@ -2136,7 +2136,7 @@ html.js .timeline-item.reveal.revealed {
   background: var(--bg-subtle);
   color: var(--text);
   text-decoration: none;
-  font: inherit;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.35;
@@ -2160,15 +2160,19 @@ html.js .timeline-item.reveal.revealed {
 }
 .publication-bibtex pre,
 .markdown-body .publication-bibtex pre {
+  font-family: var(--font-mono);
   max-height: 9.5rem;
   margin: 0.25rem 0 0 !important;
   padding: 0.45rem 0.65rem !important;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-subtle);
+  color: var(--text);
   font-size: 0.76rem;
-  line-height: 1.4;
+  line-height: 1.45;
   overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
 }
 .publication-teaser {
   display: block;

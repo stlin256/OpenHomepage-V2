@@ -313,7 +313,15 @@ export function initCodeBlocks(): void {
   const labels = getUiLabels(currentLang).code;
 
   document.querySelectorAll<HTMLElement>(".markdown-body pre, .page-content pre").forEach((pre) => {
-    if (pre.closest(".code-block-wrapper") || pre.dataset.codeEnhanced === "true") return;
+    if (
+      pre.closest(".code-block-wrapper") ||
+      pre.closest(".publication-bibtex") ||
+      pre.closest(".publication-item") ||
+      pre.dataset.codeEnhanced === "true" ||
+      pre.id?.startsWith("bibtex-")
+    ) {
+      return;
+    }
     pre.dataset.codeEnhanced = "true";
 
     let lang = "";

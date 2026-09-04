@@ -679,4 +679,29 @@ describe("interactions：代码块人体工学与一键复制", () => {
     expect(wrappers[1].querySelector(".code-lang")?.textContent).toBe("Bash");
     expect(wrappers[2].querySelector(".code-lang")?.textContent).toBe("Code");
   });
+  it("自动跳过学术成果中的 BibTeX pre 元素，保留原生抽屉样式与单复制按钮", async () => {
+    document.body.innerHTML = [
+      "<main class='site-main'>",
+      "  <div class='markdown-body'>",
+      "    <div class='publication-item'>",
+      "      <button type='button' class='publication-copy' data-copy-bibtex='bibtex-paper1'>复制 BibTeX</button>",
+      "      <div class='publication-bibtex'>",
+      "        <pre id='bibtex-paper1' tabindex='0' data-pagefind-ignore>@article{paper1, title={Test Paper}}</pre>",
+      "      </div>",
+      "    </div>",
+      "  </div>",
+      "</main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    const wrappers = document.querySelectorAll(".code-block-wrapper");
+    expect(wrappers.length).toBe(0);
+
+    const bibtexPre = document.querySelector("#bibtex-paper1");
+    expect(bibtexPre).not.toBeNull();
+    expect(bibtexPre?.closest(".code-block-wrapper")).toBeNull();
+    expect(document.querySelectorAll(".code-copy-btn").length).toBe(0);
+    expect(document.querySelectorAll(".publication-copy").length).toBe(1);
+  });
 });
