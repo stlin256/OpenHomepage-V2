@@ -1,4 +1,5 @@
 /** 编辑器前端 API 客户端：薄封装 fetch，错误抛后端 message */
+import type { GithubPrefillData } from '../shared/onboarding.ts';
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init);
@@ -48,6 +49,9 @@ export const api = {
   /** 新手向导（spec 19）：是否应自动弹出（首次初始化且未完成） */
   onboarding: () => req<{ show: boolean }>('/api/onboarding'),
   onboardingDone: () => req('/api/onboarding/done', { method: 'POST' }),
+  /** 新手向导第 1 步（spec 19 §3.1）：从 GitHub API 拉取公开资料预填名片表单 */
+  githubPrefill: (username: string) =>
+    req<GithubPrefillData>(`/api/github/prefill?username=${encodeURIComponent(username)}`),
   pages: () => req<{ pages: PageMeta[] }>('/api/pages'),
   page: (lang: string, file: string) =>
     req<PageContent>(`/api/page?lang=${encodeURIComponent(lang)}&file=${encodeURIComponent(file)}`),

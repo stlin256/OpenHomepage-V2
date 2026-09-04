@@ -127,6 +127,65 @@ export function applyOnboardingProfile(
 /** 主题色盘预设（accent 候选；第一色为默认主题色） */
 export const ACCENT_PRESETS = ['#3a7bd5', '#0f766e', '#2f7d4f', '#c2611f', '#c0392b', '#7c5cbf'];
 
+/** GitHub 预填（GET /api/github/prefill）返回的名片字段；上游 null 统一归一为空串 */
+export interface GithubPrefillData {
+  name: string;
+  bio: string;
+  blog: string;
+  avatarUrl: string;
+  htmlUrl: string;
+}
+
+/** 名片表单四个多语言输入框的当前值 */
+export interface ProfileFormState {
+  nameZh: string;
+  nameEn: string;
+  taglineZh: string;
+  taglineEn: string;
+}
+
+/**
+ * GitHub 预填的字段填充策略（spec 19 §3.1）：
+ * 仅对「当前为空」或「用户尚未手改过」的字段给出建议值，用户已输入的内容一律不覆盖；
+ * GitHub 的 name/bio 无语言维度，zh/en 两侧按同一策略各自判定。
+ */
+export function githubPrefillSuggestions(
+  current: ProfileFormState,
+  touched: Record<keyof ProfileFormState, boolean>,
+  gh: Pick<GithubPrefillData, 'name' | 'bio'>
+): Partial<ProfileFormState> {
+  const fillable = (key: keyof ProfileFormState): boolean => !current[key].trim() || !touched[key];
+  const out: Partial<ProfileFormState> = {};
+  const name = gh.name.trim();
+  if (name) {
+    if (fillable('nameZh')) out.nameZh = name;
+    if (fillable('nameEn')) out.nameEn = name;
+  }
+  const bio = gh.bio.trim();
+  if (bio) {
+    if (fillable('taglineZh')) out.taglineZh = bio;
+    if (fillable('taglineEn')) out.taglineEn = bio;
+  }
+  return out;
+}
+
+/**
+ * 把 GitHub 的 blog 主页链接并入 profile.links（site.yaml 的社交链接字段）：
+ * 无 scheme 的裸域名补 https://；已有同 URL（忽略大小写与末尾斜杠）的链接则不重复添加。
+ * blog 为空时不动配置。返回是否产生改动（供调用方置 dirty）。
+ */
+export function applyGithubBlogLink(cfg: Obj, blog: string): boolean {
+  const raw = blog.trim();
+  if (!raw) return false;
+  const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  const canon = (u: string): string => u.trim().toLowerCase().replace(/\/+$/, '');
+  const profile = (cfg.profile ??= {}) as Obj;
+  const links = Array.isArray(profile.links) ? (profile.links as Obj[]) : [];
+  if (links.some((l) => typeof l?.url === 'string' && canon(l.url) === canon(url))) return false;
+  profile.links = [...links, { label: 'Website', url }];
+  return true;
+}
+
 /** 应用预设强调色到 theme.accent（复用取色器的 normalizeHex）；非法 hex 返回 false 且不改配置 */
 export function applyAccent(cfg: Obj, hex: string): boolean {
   const norm = normalizeHex(hex);

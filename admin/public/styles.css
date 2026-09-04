@@ -647,4 +647,8 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
 .onboarding-swatches .swatch.on { outline: 2px solid var(--text); outline-offset: 2px; }
 .onboarding-ops { flex-wrap: wrap; align-items: center; }
 .onboarding-ops .topbar-spacer { flex: 1; }
+/* 第 1 步 GitHub 用户名输入框 + 「⚡ 自动同步信息」按钮同行 */
+.onboarding-github-row { display: flex; gap: 8px; align-items: center; }
+.onboarding-github-row .input { flex: 1; min-width: 0; }
+.onboarding-github-row .btn { white-space: nowrap; }
 

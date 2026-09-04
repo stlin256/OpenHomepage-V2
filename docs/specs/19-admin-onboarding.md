@@ -29,6 +29,7 @@
 |------|------|--------|------|
 | GET | `/api/onboarding` | — | `{ show: boolean }` |
 | POST | `/api/onboarding/done` | — | `{ ok: true }`（写 `data/.onboarding-done`，幂等覆盖） |
+| GET | `/api/github/prefill?username=<name>` | — | `{ name, bio, blog, avatarUrl, htmlUrl }`（GitHub 公开资料预填，见 §3.1；上游 null 归一为空串） |
 
 ## 3. 三步卡片（`admin/ui/views/onboarding.ts`）
 
@@ -40,6 +41,18 @@
 
 - 字段：姓名（zh/en 双输入）、Tagline（zh/en 双输入）、GitHub 用户名。
 - `applyOnboardingProfile`：`profile.name` / `profile.tagline` 沿用 `localizedField` 语义写多语言对象（**保留 ja/fr 等其他语言键**，双空视为未填写不动原值）；`github.username` 去空白后非空才写。
+
+### 3.1 GitHub 公开资料预填（「⚡ 自动同步信息」按钮）
+
+- **交互**：第 1 步 GitHub 用户名输入框旁固定「⚡ 自动同步信息」按钮。点击以当前输入的用户名调 `GET /api/github/prefill`，成功后按填充策略（见下）就地填入表单并置 `dirty`（随后「保存并继续」统一走 `PUT /api/config/site` 落盘）；按钮请求期间进入 loading 态（禁用 + 文案切换）防重复点击。失败在卡片内就地显示错误提示（复用 `.form-error`），**不关闭、不阻断向导**，用户名等已填内容保持原样。
+- **端点契约**（`admin/server/github-prefill.ts`，零新增依赖，全局 fetch）：
+  - 请求 `https://api.github.com/users/<username>`，带 `User-Agent` 头（GitHub API 必需）与 `AbortController` **5 秒超时**；
+  - `username` 参数先经 `GITHUB_USERNAME_RE`（字母数字/连字符，1–39 位，不得以连字符开头）校验，非法 → **400**；
+  - 上游 404（用户不存在）→ **404** + 友好错误；网络失败 / 超时 / 其他非 2xx（如匿名限流 403）→ **502** + 友好错误（`GithubPrefillError.status` 经 `sendError` 映射）；
+  - 成功 → 200 `{ name, bio, blog, avatarUrl, htmlUrl }`（上游 null 字段归一为空串）。`avatarUrl`/`htmlUrl` 目前仅透传，前端暂不消费。
+- **超时降级语义**：5 秒内拿不到响应即按 502 处理并向用户提示「网络失败或超时，请稍后重试」；向导不因此中断，用户可改用户名重试或直接手动填写。离线环境（无 GitHub 可达性）下该按钮等同 502 降级路径。
+- **填充策略**（纯函数 `githubPrefillSuggestions`，可单测）：GitHub `name`/`bio` 无语言维度，对 zh/en 两侧按同一规则各自判定——**仅填充「当前为空」或「用户尚未手改过」的字段，用户已输入的内容一律不覆盖**（视图以 `touched` 标记跟踪手改状态）。
+- **博客链接**：`applyGithubBlogLink(cfg, blog)` 把 GitHub `blog` 主页链接并入 `profile.links` 社交链接（裸域名补 `https://`；忽略大小写与末尾斜杠去重，已存在则不动；blog 为空不动配置），返回是否改动。
 
 ### 第 2 步 模块编排
 
@@ -88,11 +101,12 @@
   - `listModuleCandidates` / `enabledModuleKeys` / `applyModuleSelection`：候选顺序、勾选移除/按规范序回补、无效 id 忽略、空勾选不改、未知条目保留；
   - `applyFeatureToggles`：bgm/contact 开关落键；
   - `applyAccent`：hex 规范化（#rgb→#rrggbb 小写）与非法值拒绝。
+- GitHub 预填（§3.1）：注入 fetch 替身经 `AdminServerOptions.githubFetch` / `githubTimeoutMs` 透传，覆盖端点三路径——成功（200 + 字段映射 + User-Agent/URL 断言）、上游 404（→ 404）、网络失败与超时（→ 502）；非法用户名 400。纯逻辑 `githubPrefillSuggestions`（空字段/未手改才填、已手改不覆盖、空输入不出建议）与 `applyGithubBlogLink`（补 scheme、去重、空值不动）。
 - 回归：`tests/admin-i18n.test.ts`（字典键同步）、`admin-configs` / `admin-api` / `admin-color` 等相邻测试；前端用 esbuild 内存打包验证编译。
 
 ## 6. 已知限制
 
 - 向导第 2 步只做勾选启停，不支持排序（排序仍用「配置 → 流式块」拖拽）；模块勾选不影响正文里手写的 `::stream` / `::editorial` 指令。
-- 向导不拉取 GitHub API 预填（总纲提及的"自动同步"属 CLI 向导 spec 15 的能力，后台向导保持离线零依赖）。
+- GitHub 预填（§3.1）依赖外网可达性：离线/超时按 502 就地提示降级，不打断向导；匿名调用受 GitHub API 限流（60 次/小时/IP）约束，超限同样落 502 提示稍后重试。预填只消费 `name`/`bio`/`blog`，`avatarUrl`/`htmlUrl` 仅透传暂不使用。
 - 完成标记随 data/ 目录走：删除 `data/` 重新初始化后视为全新首次启动，向导会再次自动弹出（符合直觉）。
 - 语言管理面板（§4）本期仅为规格，未实现；其风险清单（默认语言锁定、en 回退环、<2 语言确认、点目录扫描排除）是实施前的必读约束。

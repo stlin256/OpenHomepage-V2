@@ -13,6 +13,8 @@ import {
   applyFeatureToggles,
   applyOnboardingProfile,
   applyAccent,
+  githubPrefillSuggestions,
+  applyGithubBlogLink,
   ACCENT_PRESETS,
   type Obj,
 } from '../../shared/onboarding.ts';
@@ -96,23 +98,71 @@ export function openOnboardingWizard(state: AppState): void {
     const name = locParts(profile.name);
     const tagline = locParts(profile.tagline);
     let githubUsername = String(github.username ?? '');
+    // 各输入框「用户已手改」标记：GitHub 预填只覆盖空字段或未手改字段（策略见 shared/onboarding.ts）
+    const touched = { nameZh: false, nameEn: false, taglineZh: false, taglineEn: false };
+    const nameZhInput = textInput(name.zh, (v) => { name.zh = v; touched.nameZh = true; dirty = true; });
+    const nameEnInput = textInput(name.en, (v) => { name.en = v; touched.nameEn = true; dirty = true; });
+    const taglineZhInput = textInput(tagline.zh, (v) => { tagline.zh = v; touched.taglineZh = true; dirty = true; });
+    const taglineEnInput = textInput(tagline.en, (v) => { tagline.en = v; touched.taglineEn = true; dirty = true; });
+
+    // 「⚡ 自动同步信息」：调 GET /api/github/prefill 拉公开资料预填表单；失败就地提示，不打断向导
+    const syncBtn = btn(t('onboardingGithubSync'), () => {
+      void (async () => {
+        const username = githubUsername.trim();
+        if (!username) {
+          error.textContent = t('onboardingGithubNeedUsername');
+          return;
+        }
+        error.textContent = '';
+        syncBtn.disabled = true; // loading 态防重复点击
+        syncBtn.textContent = t('onboardingGithubSyncing');
+        try {
+          const gh = await api.githubPrefill(username);
+          const patch = githubPrefillSuggestions(
+            { nameZh: name.zh, nameEn: name.en, taglineZh: tagline.zh, taglineEn: tagline.en },
+            touched,
+            gh
+          );
+          let filled = false;
+          if (patch.nameZh !== undefined) { name.zh = patch.nameZh; nameZhInput.value = patch.nameZh; filled = true; }
+          if (patch.nameEn !== undefined) { name.en = patch.nameEn; nameEnInput.value = patch.nameEn; filled = true; }
+          if (patch.taglineZh !== undefined) { tagline.zh = patch.taglineZh; taglineZhInput.value = patch.taglineZh; filled = true; }
+          if (patch.taglineEn !== undefined) { tagline.en = patch.taglineEn; taglineEnInput.value = patch.taglineEn; filled = true; }
+          // 博客/主页链接并入 site.yaml 的 profile.links 社交链接（去重，已存在则不动）
+          if (applyGithubBlogLink(cfg!, gh.blog)) filled = true;
+          if (filled) dirty = true;
+          state.setStatus(t('onboardingGithubSyncDone'), 'ok');
+        } catch (e) {
+          error.textContent = (e as Error).message;
+        } finally {
+          syncBtn.disabled = false;
+          syncBtn.textContent = t('onboardingGithubSync');
+        }
+      })();
+    });
+
     body.replaceChildren(
       el('p', { class: 'muted' }, t('onboardingStep1Hint')),
       el(
         'div',
         { class: 'row-fields' },
-        field(t('profileNameZh'), textInput(name.zh, (v) => { name.zh = v; dirty = true; })),
-        field(t('profileNameEn'), textInput(name.en, (v) => { name.en = v; dirty = true; }))
+        field(t('profileNameZh'), nameZhInput),
+        field(t('profileNameEn'), nameEnInput)
       ),
       el(
         'div',
         { class: 'row-fields' },
-        field(t('profileTaglineZh'), textInput(tagline.zh, (v) => { tagline.zh = v; dirty = true; })),
-        field(t('profileTaglineEn'), textInput(tagline.en, (v) => { tagline.en = v; dirty = true; }))
+        field(t('profileTaglineZh'), taglineZhInput),
+        field(t('profileTaglineEn'), taglineEnInput)
       ),
       field(
         t('githubUsername'),
-        textInput(githubUsername, (v) => { githubUsername = v; dirty = true; })
+        el(
+          'div',
+          { class: 'onboarding-github-row' },
+          textInput(githubUsername, (v) => { githubUsername = v; dirty = true; }),
+          syncBtn
+        )
       )
     );
     ops.replaceChildren(

@@ -25,6 +25,11 @@ import { readStreamContent, writeStreamContent, NotFoundError } from './stream.t
 import { buildZip, collectDataEntries, exportZipName } from './export.ts';
 import { importDataZip, previewBibtexImport, mergeBibtexImport } from './import.ts';
 import { shouldShowOnboarding, markOnboardingDone } from './onboarding.ts';
+import {
+  fetchGithubProfile,
+  GithubPrefillError,
+  GITHUB_USERNAME_RE,
+} from './github-prefill.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
@@ -50,6 +55,10 @@ export interface AdminServerOptions {
   rootDir?: string;
   /** dev server 管理器（测试可注入替身） */
   devManager?: DevServerManager;
+  /** GitHub 预填的 fetch 实现（测试可注入替身；缺省用全局 fetch） */
+  githubFetch?: typeof fetch;
+  /** GitHub 预填请求超时毫秒数（测试可注入；缺省 5000） */
+  githubTimeoutMs?: number;
 }
 
 type Json = Record<string, unknown>;
@@ -114,9 +123,11 @@ function sendError(res: http.ServerResponse, e: unknown): void {
         ? 404
         : e instanceof HashConflictError
           ? 409
-          : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
-            ? 400
-            : 500;
+          : e instanceof GithubPrefillError
+            ? e.status
+            : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
+              ? 400
+              : 500;
   sendJson(res, status, { error: msg });
 }
 
@@ -153,6 +164,20 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       // 新手向导（spec 19）：仅首次初始化（initialized）且未完成标记时自动弹出；实时查标记文件
       '/api/onboarding': ({ res }) =>
         sendJson(res, 200, { show: shouldShowOnboarding(dataDir, opts.initialized) }),
+      // 新手向导第 1 步「自动同步信息」（spec 19 §3.1）：GitHub 公开资料预填；
+      // 用户名非法 400，用户不存在 404，网络失败/超时 502（GithubPrefillError 经 sendError 映射）
+      '/api/github/prefill': async ({ query, res }) => {
+        const username = (query.get('username') ?? '').trim();
+        if (!GITHUB_USERNAME_RE.test(username)) {
+          sendJson(res, 400, { error: '非法的 GitHub 用户名 / Invalid GitHub username' });
+          return;
+        }
+        sendJson(
+          res,
+          200,
+          await fetchGithubProfile(username, opts.githubFetch ?? fetch, opts.githubTimeoutMs)
+        );
+      },
       // M12d：每页附 previewPath（overlay 顶栏页面切换下拉的跳转目标）
       '/api/pages': ({ res }) =>
         sendJson(res, 200, {

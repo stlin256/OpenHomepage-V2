@@ -23,6 +23,8 @@ import {
   applyFeatureToggles,
   applyOnboardingProfile,
   applyAccent,
+  githubPrefillSuggestions,
+  applyGithubBlogLink,
   ACCENT_PRESETS,
   type Obj,
 } from '../admin/shared/onboarding.ts';
@@ -103,6 +105,206 @@ describe('POST /api/onboarding/done 与 GET /api/onboarding', () => {
       await new Promise((resolve) => s2.close(resolve));
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+// ---- GET /api/github/prefill（注入 fetch 替身覆盖成功/404/超时三路径）----
+
+describe('GET /api/github/prefill', () => {
+  let root: string;
+  let server: Server;
+  let base: string;
+  /** 每个用例可换的 fetch 替身（经 AdminServerOptions.githubFetch 透传） */
+  let stubFetch: typeof fetch;
+  /** 记录替身收到的 url 与 headers，供断言 User-Agent / 请求地址 */
+  let lastCall: { url: string; headers: Record<string, string> };
+
+  async function api(p: string) {
+    const res = await fetch(base + p);
+    return { status: res.status, body: (await res.json()) as Record<string, unknown> };
+  }
+
+  beforeAll(async () => {
+    root = mkdtempSync(path.join(tmpdir(), 'oh-github-prefill-'));
+    server = createAdminServer({
+      dataDir: root,
+      initialized: true,
+      appJs: '',
+      // 包装一层转发，用例间可热替换 stubFetch；超时压到 50ms 便于测超时路径
+      githubFetch: ((url: RequestInfo | URL, init?: RequestInit) => {
+        lastCall = { url: String(url), headers: (init?.headers ?? {}) as Record<string, string> };
+        return stubFetch(url, init);
+      }) as typeof fetch,
+      githubTimeoutMs: 50,
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise((resolve) => server.close(resolve));
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it('成功：200 + 名片字段映射（上游 null 归一为空串），请求带 User-Agent 头', async () => {
+    stubFetch = (async () =>
+      new Response(
+        JSON.stringify({
+          name: 'San Zhang',
+          bio: 'PhD candidate',
+          blog: 'example.com',
+          avatar_url: 'https://avatars.example/u/1',
+          html_url: 'https://github.com/zhangsan',
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } }
+      )) as typeof fetch;
+    const r = await api('/api/github/prefill?username=zhangsan');
+    expect(r.status).toBe(200);
+    expect(r.body).toEqual({
+      name: 'San Zhang',
+      bio: 'PhD candidate',
+      blog: 'example.com',
+      avatarUrl: 'https://avatars.example/u/1',
+      htmlUrl: 'https://github.com/zhangsan',
+    });
+    expect(lastCall.url).toBe('https://api.github.com/users/zhangsan');
+    expect(lastCall.headers['user-agent']).toBeTruthy();
+  });
+
+  it('上游字段为 null 时归一为空串', async () => {
+    stubFetch = (async () =>
+      new Response(JSON.stringify({ name: null, bio: null, blog: null }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })) as typeof fetch;
+    const r = await api('/api/github/prefill?username=ghost');
+    expect(r.status).toBe(200);
+    expect(r.body).toEqual({ name: '', bio: '', blog: '', avatarUrl: '', htmlUrl: '' });
+  });
+
+  it('上游 404（用户不存在）→ 404 + 友好错误', async () => {
+    stubFetch = (async () => new Response('{}', { status: 404 })) as typeof fetch;
+    const r = await api('/api/github/prefill?username=nobody-xyz');
+    expect(r.status).toBe(404);
+    expect(String(r.body.error)).toContain('找不到 GitHub 用户');
+  });
+
+  it('网络失败 → 502 + 友好错误', async () => {
+    stubFetch = (async () => {
+      throw new TypeError('fetch failed');
+    }) as typeof fetch;
+    const r = await api('/api/github/prefill?username=zhangsan');
+    expect(r.status).toBe(502);
+    expect(String(r.body.error)).toContain('网络失败或超时');
+  });
+
+  it('超时（AbortController 到时中断）→ 502', async () => {
+    // 替身挂起直到被 abort，模拟超时；githubTimeoutMs=50ms
+    stubFetch = ((_url: RequestInfo | URL, init?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () =>
+          reject(new DOMException('The operation was aborted', 'AbortError'))
+        );
+      })) as typeof fetch;
+    const r = await api('/api/github/prefill?username=slowuser');
+    expect(r.status).toBe(502);
+    expect(String(r.body.error)).toContain('网络失败或超时');
+  });
+
+  it('上游其他非 2xx（如限流 403）→ 502', async () => {
+    stubFetch = (async () => new Response('{}', { status: 403 })) as typeof fetch;
+    const r = await api('/api/github/prefill?username=zhangsan');
+    expect(r.status).toBe(502);
+    expect(String(r.body.error)).toContain('HTTP 403');
+  });
+
+  it('非法用户名 → 400，且不发起上游请求', async () => {
+    let called = 0;
+    stubFetch = (async () => {
+      called++;
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch;
+    expect((await api('/api/github/prefill?username=')).status).toBe(400);
+    expect((await api('/api/github/prefill?username=-bad-')).status).toBe(400);
+    expect((await api('/api/github/prefill?username=../../etc')).status).toBe(400);
+    expect(called).toBe(0);
+  });
+});
+
+// ---- GitHub 预填纯逻辑：字段填充策略与博客链接合并 ----
+
+describe('githubPrefillSuggestions（不覆盖用户已输入内容）', () => {
+  const noTouch = { nameZh: false, nameEn: false, taglineZh: false, taglineEn: false };
+
+  it('全部为空时 name/bio 填入 zh/en 两侧', () => {
+    const out = githubPrefillSuggestions(
+      { nameZh: '', nameEn: '', taglineZh: '', taglineEn: '' },
+      noTouch,
+      { name: 'San Zhang', bio: 'PhD candidate' }
+    );
+    expect(out).toEqual({
+      nameZh: 'San Zhang',
+      nameEn: 'San Zhang',
+      taglineZh: 'PhD candidate',
+      taglineEn: 'PhD candidate',
+    });
+  });
+
+  it('已手改的非空字段不覆盖；未手改字段即使非空也允许预填', () => {
+    const out = githubPrefillSuggestions(
+      { nameZh: '张三', nameEn: 'Zhang San', taglineZh: '工程师', taglineEn: '' },
+      { nameZh: true, nameEn: false, taglineZh: true, taglineEn: false },
+      { name: 'San Zhang', bio: 'PhD candidate' }
+    );
+    // nameZh/taglineZh 已手改 → 不动；nameEn/taglineEn 未手改 → 预填
+    expect(out).toEqual({ nameEn: 'San Zhang', taglineEn: 'PhD candidate' });
+  });
+
+  it('手改过但当前已清空的字段允许预填（当前为空即可填）', () => {
+    const out = githubPrefillSuggestions(
+      { nameZh: '', nameEn: 'Mine', taglineZh: '', taglineEn: '' },
+      { nameZh: true, nameEn: true, taglineZh: false, taglineEn: false },
+      { name: 'San Zhang', bio: 'bio' }
+    );
+    expect(out.nameZh).toBe('San Zhang');
+    expect(out.nameEn).toBeUndefined(); // 手改且非空 → 不覆盖
+    expect(out.taglineZh).toBe('bio');
+  });
+
+  it('上游 name/bio 为空串或全空白时不出对应建议', () => {
+    const out = githubPrefillSuggestions(
+      { nameZh: '', nameEn: '', taglineZh: '', taglineEn: '' },
+      noTouch,
+      { name: '  ', bio: '' }
+    );
+    expect(out).toEqual({});
+  });
+});
+
+describe('applyGithubBlogLink（博客链接并入 profile.links）', () => {
+  it('裸域名补 https:// 并追加 Website 链接，返回 true', () => {
+    const cfg: Obj = { profile: { links: [{ label: 'GitHub', url: 'https://github.com/zs' }] } };
+    expect(applyGithubBlogLink(cfg, 'example.com/blog')).toBe(true);
+    expect((cfg.profile as Obj).links).toEqual([
+      { label: 'GitHub', url: 'https://github.com/zs' },
+      { label: 'Website', url: 'https://example.com/blog' },
+    ]);
+  });
+
+  it('已有同 URL（忽略大小写与末尾斜杠）时不重复添加，返回 false', () => {
+    const cfg: Obj = { profile: { links: [{ label: 'Website', url: 'https://Example.com/' }] } };
+    expect(applyGithubBlogLink(cfg, 'https://example.com')).toBe(false);
+    expect(((cfg.profile as Obj).links as unknown[]).length).toBe(1);
+  });
+
+  it('profile.links 缺失时补建；blog 为空不动配置', () => {
+    const cfg: Obj = {};
+    expect(applyGithubBlogLink(cfg, 'https://me.dev')).toBe(true);
+    expect((cfg.profile as Obj).links).toEqual([{ label: 'Website', url: 'https://me.dev' }]);
+
+    const before = JSON.stringify(cfg);
+    expect(applyGithubBlogLink(cfg, '   ')).toBe(false);
+    expect(JSON.stringify(cfg)).toBe(before);
   });
 });
 
