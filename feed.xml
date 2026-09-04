@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远的个人主页：机器学习研究、开源项目与阅读记录]]></description>
     <language>zh</language>
-    <lastBuildDate>Thu, 03 Sep 2026 19:21:14 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 04 Sep 2026 03:13:56 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/feed.xml"/>
     <item>
       <title><![CDATA[特性]]></title>
@@ -68,7 +68,7 @@
 
 <div class="md-table-wrap"><table><thead><tr><th>特性</th><th>语法</th><th>渲染方</th></tr></thead><tbody><tr><td>代码高亮</td><td><code>```python</code></td><td>Shiki</td></tr><tr><td>数学公式</td><td><code>$E=mc^2$</code></td><td>KaTeX</td></tr><tr><td>内嵌播放器</td><td><code>::bilibili{}</code></td><td>自定义指令</td></tr></tbody></table></div>
 <h2>代码高亮</h2>
-<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> torch</span></span>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0" data-language="python"><code class="language-python"><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> torch</span></span>
 <span class="line"></span>
 <span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">def</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> cosine_lr</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(step: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, total: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, base: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">float</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> 3e-4</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) -> </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">float</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">:</span></span>
 <span class="line"><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">    """余弦退火学习率。"""</span></span>

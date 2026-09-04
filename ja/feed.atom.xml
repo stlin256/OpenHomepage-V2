@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-03T19:21:15.114Z</updated>
+  <updated>2026-09-04T03:13:56.309Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.atom.xml"/>
     <entry>
       <title>機能</title>
@@ -65,7 +65,7 @@
 
 &lt;div class=&quot;md-table-wrap&quot;&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;機能&lt;/th&gt;&lt;th&gt;構文&lt;/th&gt;&lt;th&gt;レンダラー&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;コードハイライト&lt;/td&gt;&lt;td&gt;&lt;code&gt;```python&lt;/code&gt;&lt;/td&gt;&lt;td&gt;Shiki&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;数式&lt;/td&gt;&lt;td&gt;&lt;code&gt;$E=mc^2$&lt;/code&gt;&lt;/td&gt;&lt;td&gt;KaTeX&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;埋め込みプレイヤー&lt;/td&gt;&lt;td&gt;&lt;code&gt;::bilibili{}&lt;/code&gt;&lt;/td&gt;&lt;td&gt;カスタムディレクティブ&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;
 &lt;h2&gt;コードハイライト&lt;/h2&gt;
-&lt;pre class=&quot;shiki shiki-themes github-light github-dark&quot; style=&quot;--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e&quot; tabindex=&quot;0&quot;&gt;&lt;code&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch&lt;/span&gt;&lt;/span&gt;
+&lt;pre class=&quot;shiki shiki-themes github-light github-dark&quot; style=&quot;--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e&quot; tabindex=&quot;0&quot; data-language=&quot;python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;import&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt; torch&lt;/span&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt;def&lt;/span&gt;&lt;span style=&quot;--shiki-light:#6F42C1;--shiki-dark:#B392F0&quot;&gt; cosine_lr&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;(step: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;int&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;, total: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;int&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;, base: &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;--shiki-light:#D73A49;--shiki-dark:#F97583&quot;&gt; =&lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt; 3e-4&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;) -&gt; &lt;/span&gt;&lt;span style=&quot;--shiki-light:#005CC5;--shiki-dark:#79B8FF&quot;&gt;float&lt;/span&gt;&lt;span style=&quot;--shiki-light:#24292E;--shiki-dark:#E1E4E8&quot;&gt;:&lt;/span&gt;&lt;/span&gt;
 &lt;span class=&quot;line&quot;&gt;&lt;span style=&quot;--shiki-light:#032F62;--shiki-dark:#9ECBFF&quot;&gt;    &quot;&quot;&quot;Cosine-annealed learning rate.&quot;&quot;&quot;&lt;/span&gt;&lt;/span&gt;
