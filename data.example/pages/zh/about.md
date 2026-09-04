@@ -22,7 +22,7 @@ toc: false
     <span class="version-pill">
       <span class="version-dot" aria-hidden="true"></span>
       <span>Release</span>
-      <span class="version-label">v0.1.0</span>
+      <span class="version-label">v0.2.0</span>
     </span>
   </div>
 </div>
