@@ -41,7 +41,7 @@
 **OpenHomepage V2** is a lightweight, static personal homepage generator built on Astro. Featuring scholarly restraint and modern magazine typography, its content and layout are driven entirely by plain Markdown and YAML configuration files in your local `data/` directory, and deployed seamlessly to GitHub Pages via GitHub Actions.
 
 > [!TIP]
-> **Out-of-the-Box Experience**: The repository bundles a complete 4-language sample dataset (`data.example/`). You can clone the repo and immediately preview or build the site without any extra configuration.
+> **Out-of-the-Box Experience**: The repository bundles a complete 4-language sample dataset (`data.example/`) — clone the repo and preview or build instantly with zero configuration. `npm run setup` launches an **interactive initialization wizard** (quick personalized setup / full demo / blank start), and `npm run doctor` runs a one-stop health check for your environment, configs, and asset references.
 
 ---
 
@@ -357,7 +357,8 @@ cd OpenHomepage-V2
 # 2. Install dependencies
 npm install
 
-# 3. Initialize local data directory (creates data/ from sample)
+# 3. Run the interactive setup wizard
+#    (quick personalized setup / full demo / clean blank start)
 npm run setup
 
 # 4. Start local development server
@@ -366,8 +367,14 @@ npm run dev
 
 Open `http://localhost:4321` in your browser to view the site!
 
+The setup wizard offers three modes:
+
+- **⚡ Quick Wizard**: Enter your name, tagline, and GitHub username, pick a language set (single-language / bilingual / 4-language) and feature modules — get a clean, personalized `data/` directory.
+- **📦 Full Demo**: Copies the complete 4-language showcase from `data.example/` (also the automatic fallback in non-interactive environments such as CI).
+- **📄 Blank Start**: Generates only a minimal single-language skeleton for from-scratch tinkering.
+
 > [!NOTE]
-> If you have not run `npm run setup`, the site will automatically fall back to `data.example/` for instant preview and building.
+> If you have not run `npm run setup`, the site will automatically fall back to `data.example/` for instant preview and building. If `data/` already exists, the wizard safely skips to avoid overwriting your real data.
 
 ---
 
@@ -375,6 +382,8 @@ Open `http://localhost:4321` in your browser to view the site!
 
 | Command | Description | Default URL | Lifecycle |
 |---|---|---|---|
+| `npm run setup` | **Interactive initialization wizard** (quick / full demo / blank); falls back to demo copy in non-interactive environments | — | Exits on completion |
+| `npm run doctor` | **One-stop health check**: environment, configs, language dirs, asset references, directive syntax, ports; `--online` adds GitHub/RSS probes | — | Exits on completion (exit code `1` on fatal errors) |
 | `npm run admin` | **Launch local visual editor** (manages companion preview server automatically) | `http://127.0.0.1:4174` | Press `Ctrl+C` to terminate both |
 | `npm run dev` | Astro dev server with Vite Hot Module Reloading (HMR) | `http://localhost:4321` | Press `Ctrl+C` to stop |
 | `npm run build` | **Execute static production build** with automated WebP + AVIF derivation | — | Exits on completion |
@@ -394,11 +403,13 @@ Launch the admin workspace locally in your terminal:
 npm run admin       # Visit http://127.0.0.1:4174 (secure loopback address only)
 ```
 
+- **First-Run Onboarding Wizard**: When launched with freshly initialized data, a 3-step welcome card (profile → module toggles → accent palette) gets you started; reopen it anytime via the "🚀 Onboarding" button in the top bar.
 - **WYSIWYG on Real Rendered Pages**: Click "Visual Editing" to edit directly on the rendered page — hover outlines, in-place text editing, a right-side inspector for directive parameters and grid columns, block insertion/drag-reordering, `Ctrl+Z` undo/redo, and a typewriter streaming modal with live preview.
 - **Full-Site Visual Configuration**: Easily manage site details, social links, smart palette extraction from avatar, custom accent colors, automatic favicon generation, BGM playlist management, and GitHub/RSS subscriptions.
+- **BibTeX One-Click Import**: Paste BibTeX text or drop a `.bib` file under *Config → Publications*; entries are parsed, deduplicated by DOI/title, previewed, and merged into `publications.yaml` with an automatic snapshot.
 - **Markdown Source Fallback**: Retains a frontmatter form and raw full-page Markdown editor with idle autosaving (~1.5s).
 - **Autosave & Historical Snapshots**: Every edit automatically archives the previous version to `data/.snapshots/` for seamless rollback.
-- **One-Click Data Export**: Top navigation exports the entire workspace as `data.zip`, ready for secure hosting or automated CI consumption.
+- **Data Export & Import**: The top bar exports the entire workspace as `data.zip` and imports it back — path-traversal-safe extraction with an automatic pre-import backup, making migration across machines effortless.
 
 ---
 
