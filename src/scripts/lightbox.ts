@@ -5,12 +5,14 @@
  * - 移动端触摸滑动手势（Swipe Left / Right）流畅切图；
  * - 高分辨率变体按 -full 约定乐观加载，失败逐级回退；
  * - 图注 Caption / Alt 智能展示与防溢出排版；
- * - 关闭：✕ 按钮 / 点击背景 / Esc；开关动画纯 CSS。
+ * - 关闭：✕ 按钮 / 点击背景 / Esc；开关动画纯 CSS；
+ * - 加载指示：支持图片加载与切图转圈动画及平滑淡入。
  */
 import { pickLightboxSrc, fullBad } from "../lib/lightbox.ts";
 
 let galleryImages: HTMLImageElement[] = [];
 let currentGalleryIndex = 0;
+let currentLoadId = 0;
 let touchStartX = 0;
 let touchStartY = 0;
 
@@ -34,16 +36,34 @@ function updateImage(index: number): void {
   if (!pageSrc) return;
 
   const originalSrc = img.dataset.original || null;
+  const loadId = ++currentLoadId;
+
+  box.classList.add("is-loading");
+
   const showCandidate = () => {
     const next = pickLightboxSrc(pageSrc, (url) => !fullBad.has(url), originalSrc);
+    view.onload = () => {
+      if (loadId !== currentLoadId) return;
+      box.classList.remove("is-loading");
+    };
     view.onerror =
       next === pageSrc
-        ? null
+        ? () => {
+            if (loadId !== currentLoadId) return;
+            box.classList.remove("is-loading");
+          }
         : () => {
+            if (loadId !== currentLoadId) return;
             fullBad.add(next);
             showCandidate();
           };
     view.src = next;
+
+    if (view.complete && view.naturalWidth > 0) {
+      if (loadId === currentLoadId) {
+        box.classList.remove("is-loading");
+      }
+    }
   };
   showCandidate();
   view.alt = img.alt || "";
@@ -80,12 +100,12 @@ function openLightbox(img: HTMLImageElement): void {
   const box = overlay();
   if (!box) return;
 
-  const container = img.closest(".md-grid, .page-content, .markdown-body, main") || document.body;
+  const container = img.closest(".page-content, .markdown-body, main") || document.body;
   const rawImgs = Array.from(container.querySelectorAll<HTMLImageElement>("img"));
   galleryImages = rawImgs.filter(
     (i) =>
       i.closest(".markdown-body, .page-content") &&
-      !i.closest("a, button, .bgm-drawer, .intro-card, .qr-modal")
+      !i.closest("a, button, .bgm-drawer, .intro-card, .qr-modal, .lightbox, .footnote-drawer, .footnote-popover")
   );
 
   if (galleryImages.length === 0) {
@@ -111,6 +131,8 @@ function closeLightbox(box: HTMLElement): void {
   if (box.hidden || box.dataset.closing) return;
   box.dataset.closing = "1";
   box.classList.remove("open");
+  box.classList.remove("is-loading");
+  currentLoadId++;
   let done = false;
   const finish = () => {
     if (done) return;
@@ -119,7 +141,11 @@ function closeLightbox(box: HTMLElement): void {
     delete box.dataset.closing;
     document.body.style.overflow = "";
     const view = box.querySelector<HTMLImageElement>(".lightbox-img");
-    if (view) view.removeAttribute("src");
+    if (view) {
+      view.onload = null;
+      view.onerror = null;
+      view.removeAttribute("src");
+    }
     galleryImages = [];
   };
   box.addEventListener("transitionend", (e) => {
@@ -166,7 +192,7 @@ document.addEventListener("click", (e) => {
   const img = target.closest?.("img");
   if (!(img instanceof HTMLImageElement)) return;
   if (!img.closest(".markdown-body, .page-content")) return;
-  if (img.closest("a, button, .bgm-drawer, .intro-card, .qr-modal")) return;
+  if (img.closest("a, button, .bgm-drawer, .intro-card, .qr-modal, .lightbox, .footnote-drawer, .footnote-popover")) return;
   openLightbox(img);
 });
 
