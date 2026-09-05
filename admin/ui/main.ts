@@ -27,6 +27,7 @@ import { renderLanguages } from './views/languages.ts';
 import { renderAssets } from './views/assets.ts';
 import { renderPublicationsImport } from './views/publications.ts';
 import { openOnboardingWizard } from './views/onboarding.ts';
+import { openDeployGuide } from './views/deploy.ts';
 
 export interface AppState {
   lang: Lang;
@@ -298,6 +299,9 @@ async function boot(): Promise<void> {
   // 新手欢迎向导（spec 19）：顶栏按钮随时重开；首次初始化时自动弹出（见 boot 末尾）
   const onboardingBtn = btn(state.t('onboardingOpen'), () => openOnboardingWizard(state));
 
+  // 部署引导（spec 22）：导出 data.zip → 托管直链 → 配 Secrets → 触发 Actions 的检查清单卡片
+  const deployBtn = btn(state.t('deployOpen'), () => openDeployGuide(state));
+
   // 预览服务状态指示灯：绿=运行 / 黄=启动中 / 灰=未运行；点击手动停止/启动（重启=停后再启）
   const devDot = el('button', { class: 'dev-indicator', type: 'button' }) as HTMLButtonElement;
   devDot.append(el('span', { class: 'dev-dot' }));
@@ -395,6 +399,7 @@ async function boot(): Promise<void> {
       importBtn,
       importFileInput,
       exportBtn,
+      deployBtn,
       devDot,
       previewBtn,
       themeBtn,

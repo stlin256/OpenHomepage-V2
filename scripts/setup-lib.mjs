@@ -9,13 +9,9 @@ import { load as loadYaml, dump as dumpYaml } from 'js-yaml';
 /** 站点支持的语言（pages/<lang>/ 目录名） */
 export const KNOWN_LANGS = ['zh', 'en', 'ja', 'fr'];
 
-/** 语言体系预设：向导选项 → pages 语言目录列表（首项为默认语言） */
-export const LANG_PRESETS = {
-  zh: ['zh'],
-  en: ['en'],
-  'zh-en': ['zh', 'en'],
-  all: ['zh', 'en', 'ja', 'fr'],
-};
+// 场景化预设的单一数据源在 scripts/scene-presets.mjs（admin 新手向导共用，见 spec 22 §3）；
+// 此处原样 re-export，保持 setup-lib 对外 API 不变
+export { LANG_PRESETS, SCENE_PRESETS, SCENE_PRESET_KEYS, resolveScenePreset, langPresetKeyFor } from './scene-presets.mjs';
 
 /** 语言目录名 → site.language 取值 */
 export const LANG_TO_SITE_LANGUAGE = { zh: 'zh-CN', en: 'en', ja: 'ja', fr: 'fr' };
@@ -25,61 +21,6 @@ export const GITHUB_USERNAME_PLACEHOLDER = 'octocat';
 
 /** 可勾选的功能模块 */
 export const MODULE_KEYS = ['publications', 'github', 'rss', 'bgm', 'contact'];
-
-/**
- * 场景化预设（纯数据表）：快速向导的模块勾选与语言建议默认值。
- * 预设只是默认值——用户随后仍可逐项调整语言与模块。
- * 注意：映射只覆盖 MODULE_KEYS 五个可裁剪模块；经历时间轴 / 画廊 / 流式块由页面与
- * editorial_blocks 自带，不参与模块裁剪（见 spec 15 §2.1）。
- */
-export const SCENE_PRESETS = {
-  // 🎓 学术科研型：学术成果 + RSS 前沿动态 + GitHub 卡片，默认中英双语
-  academic: {
-    langs: LANG_PRESETS['zh-en'],
-    modules: { publications: true, github: true, rss: true, bgm: false, contact: true },
-  },
-  // 💻 开发者与开源作者：GitHub 热力图 + Pinned 仓库卡（流式块为示例页自带内容），默认中英双语
-  developer: {
-    langs: LANG_PRESETS['zh-en'],
-    modules: { publications: false, github: true, rss: false, bgm: false, contact: true },
-  },
-  // 🎨 创作者与摄影博主：BGM 播放列表 + 联系卡（画廊为示例页自带内容），默认仅中文
-  creator: {
-    langs: LANG_PRESETS['zh'],
-    modules: { publications: false, github: false, rss: false, bgm: true, contact: true },
-  },
-  // ⚡ 极简纯净名片：仅 profile + 联系卡，默认仅中文
-  minimal: {
-    langs: LANG_PRESETS['zh'],
-    modules: { publications: false, github: false, rss: false, bgm: false, contact: true },
-  },
-  // 🛠️ 自定义：现状全手动（中英双语 + 全模块默认开启）
-  custom: {
-    langs: LANG_PRESETS['zh-en'],
-    modules: { publications: true, github: true, rss: true, bgm: true, contact: true },
-  },
-};
-
-/** 场景预设 key 列表（向导按此顺序展示；custom 恒为兜底） */
-export const SCENE_PRESET_KEYS = ['academic', 'developer', 'creator', 'minimal', 'custom'];
-
-/**
- * 解析场景预设（纯函数）：未知/空 key 回退 custom。
- * 返回深拷贝，调用方可自由覆盖默认值而不污染数据表。
- */
-export function resolveScenePreset(key) {
-  const preset = SCENE_PRESETS[key] ?? SCENE_PRESETS.custom;
-  return { langs: [...preset.langs], modules: { ...preset.modules } };
-}
-
-/** 反查语言数组对应的 LANG_PRESETS key（把预设语言作为语言问题的默认选项）；无匹配回退 zh-en */
-export function langPresetKeyFor(langs) {
-  const list = Array.isArray(langs) ? langs : [];
-  for (const [key, value] of Object.entries(LANG_PRESETS)) {
-    if (value.length === list.length && value.every((v, i) => v === list[i])) return key;
-  }
-  return 'zh-en';
-}
 
 /** GitHub API 预填的超时时间（AbortController） */
 export const GITHUB_API_TIMEOUT_MS = 5000;

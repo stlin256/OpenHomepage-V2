@@ -1,5 +1,6 @@
 /** 编辑器前端 API 客户端：薄封装 fetch，错误抛后端 message */
 import type { GithubPrefillData } from '../shared/onboarding.ts';
+import type { DeployInfo } from '../shared/deploy.ts';
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init);
@@ -68,6 +69,8 @@ export interface LangOpResult {
 
 export const api = {
   info: () => req<{ initialized: boolean }>('/api/info'),
+  /** 部署引导（spec 22）：仓库 Secrets/Actions deep link（repoUrl 为 null 时需手填仓库地址） */
+  deployInfo: () => req<DeployInfo>('/api/deploy-info'),
   /** 新手向导（spec 19）：是否应自动弹出（首次初始化且未完成） */
   onboarding: () => req<{ show: boolean }>('/api/onboarding'),
   onboardingDone: () => req('/api/onboarding/done', { method: 'POST' }),

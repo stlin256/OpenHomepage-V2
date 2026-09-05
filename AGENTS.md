@@ -52,3 +52,11 @@
 - **后台数据导入**（spec 18，`admin/server/import.ts`）：BibTeX 导入（侧栏「配置 → 学术成果」，预览→去重→合并 publications.yaml，DOI/标题去重）与 data.zip 导入（顶栏「📥 导入 data.zip」，路径穿越整包拒绝，覆盖前自动备份至 `data/.snapshots/import-backup/`）。
 - **新手欢迎向导**（spec 19）：`ensureDataDir()` 返回 `initialized=true` 且无 `data/.onboarding-done` 标记时后台自动弹三步卡片（名片/模块编排/主题色盘）；顶栏「🚀 新手向导」可随时重开；完成或任意跳过均写标记。第 1 步支持「⚡ 自动同步信息」：`GET /api/github/prefill?username=`（`admin/server/github-prefill.ts`，5s 超时，404/502 友好降级），仅填充空字段、不覆盖用户已输入内容。
 - **语言管理面板**（spec 19 §4，`admin/server/languages.ts` + 侧栏「配置 → 语言管理」）：勾选式启停语言，停用 = `data/pages/<lang>/` 与 `data/streaming/<lang>/` 整目录归档至 `data/.archived_langs/`（可无损恢复，LocalizedText 键保留）。防护：默认语言（`site.language` 归一化后）锁定 400；停用 en 或剩余 <2 语言需 `confirm: true` 二次确认（响应带 `en-fallback`/`i18n-off` 机读警告）；归档/恢复目标冲突一律 409 不覆盖；操作前逐文件快照。扫描点结论：doctor/搜索/src 侧只扫活跃 `pages/` 天然排除归档，`data.zip` 导出包含归档目录（有测试守护）。
+
+## 部署引导与新手向导统一（spec 22，2026-09-05 落地）
+
+详细规格：`docs/specs/22-admin-deploy-guide.md`。
+
+- **「🚀 部署到线上」引导**：顶栏导出按钮旁（`admin/ui/views/deploy.ts`），四步清单卡片：导出 data.zip → 托管拿直链（私有 Release / Secret Gist / 对象存储，强调隐私）→ 配 Secrets（`DATA_SOURCE_URL`/`GH_PAT`/`ENABLE_EXAMPLE` 逐项说明 + deep link）→ 触发 Actions。仓库地址由 `GET /api/deploy-info`（`admin/server/deploy-info.ts`，读 git remote origin，5s 超时）探测；读不到则全 null 降级为前端手填拼链接，解析逻辑统一在 `admin/shared/deploy.ts`。
+- **新手向导第 0 步「场景预设」**：向导扩为四步（场景 → 名片 → 模块 → 主题色）。预设单一数据源抽到 `scripts/scene-presets.mjs`（+ `.d.mts` 类型声明），CLI setup 与 admin 共享防漂移，`setup-lib.mjs` 仅 re-export 行为不变。选定场景经 `admin/shared/scene-presets.ts` 的 `sceneDefaults()` 映射为第 2 步模块勾选默认值（github/rss + BGM/联系卡；publications 不参与、语言不裁剪），`custom`/未知 key 不动现状。完成页（第 3 步）给「前往语言管理」链接。
+- **doctor GH_PAT 引导**：`scripts/doctor-lib.ts` 在限流（403+额度 0）/401 的建议与 `--online` 新增的 token 环境变量检查（`checkGithubTokenEnv`，`GH_PAT`/`GITHUB_TOKEN`/`GH_TOKEN` 任一即 ok）中统一附生成页链接 https://github.com/settings/tokens 与 `read:user` scope 说明；两个 README 的 Secrets 小节同步补引导。

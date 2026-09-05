@@ -427,6 +427,8 @@ The project includes an automated GitHub Actions workflow (`.github/workflows/de
 | `DATA_SOURCE_URL` | Required for private data | Direct download URL to your private `data.zip` archive |
 | `GH_PAT` | Optional | Personal Access Token (`read:user`) for complete GitHub contribution calendar GraphQL API |
 
+> 💡 Generate a `GH_PAT` at [github.com/settings/tokens](https://github.com/settings/tokens) (select the `read:user` scope). The admin dashboard's **🚀 Deploy online** guide walks you through the whole Secrets setup step by step.
+
 ### Fail-Safe Snapshot Disaster Recovery
 - **Snapshot Recovery**: If `DATA_SOURCE_URL` becomes unreachable, CI automatically restores `data-snapshot.zip` from the previous successful deployment, refreshes dynamic GitHub/RSS data, and publishes successfully to prevent any downtime.
 - **Email Alert Trigger**: When a snapshot recovery occurs, the workflow terminates with an alert notice to notify repository maintainers via GitHub's native email notifications.

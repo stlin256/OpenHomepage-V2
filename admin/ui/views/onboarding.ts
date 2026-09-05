@@ -1,8 +1,10 @@
 /**
- * 新手欢迎向导（spec 19）：三步卡片弹窗（个人名片 → 模块编排 → 主题色盘）。
+ * 新手欢迎向导（spec 19 + spec 22 §3）：四步卡片弹窗（场景预设 → 个人名片 → 模块编排 → 主题色盘）。
  * 首次初始化 data/ 时自动弹出，也可由顶栏「🚀 新手向导」随时重开；
  * 完成或任何跳过/关闭路径都会写 data/.onboarding-done 标记（POST /api/onboarding/done），不再自动弹出。
- * 所有保存走既有 PUT /api/config/site（schema 校验 + 快照），配置改写逻辑在 shared/onboarding.ts。
+ * 所有保存走既有 PUT /api/config/site（schema 校验 + 快照），配置改写逻辑在 shared/onboarding.ts；
+ * 第 0 步场景预设只产出第 2 步模块勾选的默认值（shared/scene-presets.ts，数据源与 CLI setup 共享），
+ * 语言裁剪不做进向导——完成页给「前往语言管理」入口。
  */
 import { el, btn, textInput, checkbox, field } from '../dom.ts';
 import { api } from '../api.ts';
@@ -18,6 +20,7 @@ import {
   ACCENT_PRESETS,
   type Obj,
 } from '../../shared/onboarding.ts';
+import { sceneDefaults, SCENE_PRESET_KEYS, type SceneDefaults } from '../../shared/scene-presets.ts';
 import type { AppState } from '../main.ts';
 
 /** LocalizedText（string | {zh,en,...}）→ 双语输入初值 */
@@ -34,6 +37,15 @@ const BLOCK_LABEL_KEYS: Record<string, string> = {
   markdown: 'modMarkdown',
   github: 'modGithub',
   rss: 'modRss',
+};
+
+/** 第 0 步场景卡片的 i18n 键（标签 + 描述） */
+const SCENE_LABEL_KEYS: Record<string, { label: string; desc: string }> = {
+  academic: { label: 'sceneAcademic', desc: 'sceneAcademicDesc' },
+  developer: { label: 'sceneDeveloper', desc: 'sceneDeveloperDesc' },
+  creator: { label: 'sceneCreator', desc: 'sceneCreatorDesc' },
+  minimal: { label: 'sceneMinimal', desc: 'sceneMinimalDesc' },
+  custom: { label: 'sceneCustom', desc: 'sceneCustomDesc' },
 };
 
 export function openOnboardingWizard(state: AppState): void {
@@ -89,7 +101,54 @@ export function openOnboardingWizard(state: AppState): void {
     }
   };
 
-  const stepTitles = [t('onboardingStep1Title'), t('onboardingStep2Title'), t('onboardingStep3Title')];
+  const stepTitles = [
+    t('onboardingStep0Title'),
+    t('onboardingStep1Title'),
+    t('onboardingStep2Title'),
+    t('onboardingStep3Title'),
+  ];
+  /** 第 0 步选定的场景默认值；进入第 2 步首次渲染时消费（消费后置空，回退再进不覆盖用户改动） */
+  let pendingScene: SceneDefaults | null = null;
+
+  // ---- 第 0 步：场景预设（spec 22 §3）----
+  const renderStep0 = (): void => {
+    let selected = 'custom';
+    const cards = SCENE_PRESET_KEYS.map((key) => {
+      const radio = el('input', { type: 'radio', name: 'onboarding-scene', value: key }) as HTMLInputElement;
+      radio.checked = key === selected;
+      const card = el(
+        'label',
+        { class: `onboarding-module scene-card${key === selected ? ' on' : ''}` },
+        radio,
+        el(
+          'span',
+          { class: 'scene-card-text' },
+          el('span', {}, t(SCENE_LABEL_KEYS[key].label)),
+          el('span', { class: 'scene-card-desc' }, t(SCENE_LABEL_KEYS[key].desc))
+        )
+      );
+      radio.addEventListener('change', () => {
+        selected = key;
+        body.querySelectorAll('.scene-card').forEach((c) => c.classList.remove('on'));
+        card.classList.add('on');
+      });
+      return card;
+    });
+
+    body.replaceChildren(
+      el('p', { class: 'muted' }, t('onboardingStep0Hint')),
+      el('div', { class: 'onboarding-modules' }, ...cards)
+    );
+    ops.replaceChildren(
+      btn(t('onboardingSkipAll'), () => close(t('onboardingSkipped'))),
+      el('span', { class: 'topbar-spacer' }),
+      btn(t('onboardingNext'), () => {
+        // 选定场景 → 作为第 2 步模块勾选的默认值（custom/未知为 null，保持当前配置）
+        pendingScene = sceneDefaults(selected);
+        go(1);
+      }, 'btn-primary')
+    );
+  };
 
   // ---- 第 1 步：个人名片 ----
   const renderStep1 = (): void => {
@@ -212,7 +271,7 @@ export function openOnboardingWizard(state: AppState): void {
     ops.replaceChildren(
       btn(t('onboardingSkipAll'), () => close(t('onboardingSkipped'))),
       el('span', { class: 'topbar-spacer' }),
-      btn(t('onboardingSkipStep'), () => go(1)),
+      btn(t('onboardingSkipStep'), () => go(2)),
       btn(t('onboardingNext'), () => {
         void (async () => {
           applyOnboardingProfile(cfg!, {
@@ -223,7 +282,7 @@ export function openOnboardingWizard(state: AppState): void {
             githubUsername,
           });
           if (dirty && !(await saveCfg())) return;
-          go(1);
+          go(2);
         })();
       }, 'btn-primary')
     );
@@ -236,6 +295,19 @@ export function openOnboardingWizard(state: AppState): void {
     const enabled = new Set(enabledModuleKeys(cfg!));
     let bgmEnabled = (cfg!.bgm as Obj | undefined)?.enabled !== false;
     let contactEnabled = ((cfg!.contact as Obj | undefined)?.intro_card as Obj | undefined)?.enabled !== false;
+
+    // 消费第 0 步的场景默认值：只调 github/rss 勾选与 BGM/联系卡开关，其余保持配置现状
+    if (pendingScene) {
+      const d = pendingScene;
+      pendingScene = null;
+      if (d.modules.github) enabled.add('github');
+      else enabled.delete('github');
+      if (d.modules.rss) enabled.add('rss');
+      else enabled.delete('rss');
+      bgmEnabled = d.bgmEnabled;
+      contactEnabled = d.contactEnabled;
+      dirty = true;
+    }
 
     const moduleRows = candidates.map((c) => {
       const label = t(BLOCK_LABEL_KEYS[c.block] ?? c.block) + (c.id ? ` · ${c.id}` : '');
@@ -276,14 +348,14 @@ export function openOnboardingWizard(state: AppState): void {
     ops.replaceChildren(
       btn(t('onboardingSkipAll'), () => close(t('onboardingSkipped'))),
       el('span', { class: 'topbar-spacer' }),
-      btn(t('onboardingBack'), () => go(0)),
-      btn(t('onboardingSkipStep'), () => go(2)),
+      btn(t('onboardingBack'), () => go(1)),
+      btn(t('onboardingSkipStep'), () => go(3)),
       btn(t('onboardingNext'), () => {
         void (async () => {
           applyModuleSelection(cfg!, [...enabled]);
           applyFeatureToggles(cfg!, { bgmEnabled, contactEnabled });
           if (dirty && !(await saveCfg())) return;
-          go(2);
+          go(3);
         })();
       }, 'btn-primary')
     );
@@ -312,6 +384,16 @@ export function openOnboardingWizard(state: AppState): void {
         return sw;
       })
     );
+    // 语言裁剪不做进向导（spec 22 §3）：完成页给「前往语言管理」入口，点击=保存+完成+跳转
+    const gotoLanguages = el('a', { href: '#/config/languages', class: 'preview-link' }, t('onboardingGotoLanguages'));
+    gotoLanguages.addEventListener('click', (e) => {
+      e.preventDefault();
+      void (async () => {
+        if (dirty && !(await saveCfg())) return;
+        finish(t('onboardingDone'));
+        state.navigate('#/config/languages');
+      })();
+    });
     body.replaceChildren(
       el('p', { class: 'muted' }, t('onboardingStep3Hint')),
       swatches,
@@ -320,12 +402,13 @@ export function openOnboardingWizard(state: AppState): void {
         { class: 'accent-preview' },
         el('a', { href: '#', class: 'preview-link' }, t('previewLinkSample')),
         el('button', { class: 'btn btn-primary', type: 'button' }, t('previewButtonSample'))
-      )
+      ),
+      el('p', { class: 'muted' }, t('onboardingLangHint') + ' ', gotoLanguages)
     );
     ops.replaceChildren(
       btn(t('onboardingSkipAll'), () => close(t('onboardingSkipped'))),
       el('span', { class: 'topbar-spacer' }),
-      btn(t('onboardingBack'), () => go(1)),
+      btn(t('onboardingBack'), () => go(2)),
       btn(t('onboardingFinish'), () => {
         void (async () => {
           if (dirty && !(await saveCfg())) return;
@@ -335,13 +418,13 @@ export function openOnboardingWizard(state: AppState): void {
     );
   };
 
-  const renderers = [renderStep1, renderStep2, renderStep3];
+  const renderers = [renderStep0, renderStep1, renderStep2, renderStep3];
   const go = (next: number): void => {
     step = next;
     dirty = false;
     error.textContent = '';
     progress.textContent =
-      `${t('onboardingStep').replace('{0}', String(step + 1)).replace('{1}', '3')} · ${stepTitles[step]}`;
+      `${t('onboardingStep').replace('{0}', String(step + 1)).replace('{1}', String(renderers.length))} · ${stepTitles[step]}`;
     renderers[step]();
   };
 

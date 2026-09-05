@@ -18,6 +18,8 @@ import {
   checkLanguages,
   checkPorts,
   checkGithubApi,
+  checkGithubTokenEnv,
+  GITHUB_TOKEN_GUIDE_URL,
   checkRssSources,
   runDoctor,
   summarize,
@@ -300,6 +302,29 @@ describe('外部接口（注入 fetch 替身）', () => {
     expect((await checkGithubApi(failingFetch)).severity).toBe('warn');
   });
 
+  it('GitHub 检查限流 / 401 的建议附 token 生成页 deep link 与 read:user scope（spec 22 §4）', async () => {
+    const limited = await checkGithubApi(fakeFetch(403, { 'x-ratelimit-remaining': '0' }));
+    expect(limited.suggestion).toContain(GITHUB_TOKEN_GUIDE_URL);
+    expect(limited.suggestion).toContain('read:user');
+    const unauthorized = await checkGithubApi(fakeFetch(401));
+    expect(unauthorized.severity).toBe('warn');
+    expect(unauthorized.message).toContain('401');
+    expect(unauthorized.suggestion).toContain(GITHUB_TOKEN_GUIDE_URL);
+    expect(unauthorized.suggestion).toContain('read:user');
+  });
+
+  it('Token 环境变量检查：GH_PAT/GITHUB_TOKEN/GH_TOKEN 任一存在 → ok；全缺 → warn 附引导链接', () => {
+    for (const key of ['GH_PAT', 'GITHUB_TOKEN', 'GH_TOKEN']) {
+      expect(checkGithubTokenEnv({ [key]: 'x' }).severity).toBe('ok');
+    }
+    const missing = checkGithubTokenEnv({});
+    expect(missing.severity).toBe('warn');
+    expect(missing.suggestion).toContain(GITHUB_TOKEN_GUIDE_URL);
+    expect(missing.suggestion).toContain('read:user');
+    // 空字符串视为未配置
+    expect(checkGithubTokenEnv({ GH_PAT: '' }).severity).toBe('warn');
+  });
+
   it('RSS 源：2xx/3xx → ok；其余 → warn', async () => {
     const sources = [
       { name: 'A', url: 'https://a.example/feed' },
@@ -373,12 +398,30 @@ describe('runDoctor 编排', () => {
         fetchFn,
         probePortFn: freeProbe,
         nodeVersion: 'v20.0.0',
+        env: { GH_PAT: 'test-token' },
       });
       const items = report.sections.find((s) => s.id === 'online')!.items;
       expect(items.length).toBeGreaterThan(0);
-      // GitHub API 探测通过；fixture 未启用 RSS，源探测为 skip
+      // Token 配置检查 + GitHub API 探测通过；fixture 未启用 RSS，源探测为 skip
       expect(items[0].severity).toBe('ok');
       expect(items.every((i) => i.severity === 'ok' || i.severity === 'skip')).toBe(true);
+    });
+  });
+
+  it('--online 且未配置 token → 外部接口节首项为带引导链接的 warn（spec 22 §4）', async () => {
+    await withTempRootAsync(healthyFiles(), async (root) => {
+      const fetchFn: FetchLike = async () => ({ status: 200, headers: { get: () => null } });
+      const report = await runDoctor({
+        rootDir: root,
+        online: true,
+        fetchFn,
+        probePortFn: freeProbe,
+        nodeVersion: 'v20.0.0',
+        env: {},
+      });
+      const items = report.sections.find((s) => s.id === 'online')!.items;
+      expect(items[0].severity).toBe('warn');
+      expect(items[0].suggestion).toContain(GITHUB_TOKEN_GUIDE_URL);
     });
   });
 
