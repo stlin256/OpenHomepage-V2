@@ -1,7 +1,7 @@
 /**
  * rehype 内容装饰插件群：资产路径归一化与远程媒体本地化、图片懒加载、表格横向滚动包裹、
  * 脚注/外链/callout/timeline 装饰、publications 区块渲染、标题 slug、iframe 域名白名单过滤、
- * 站内链接本地化。自原 src/lib/markdown.ts 拆分而来（纯搬移，不改实现）。
+ * 站内链接本地化。rehypeContentDecorations 的装饰逻辑按节点类型拆分为扁平的 decorate* handler。
  */
 
 import { visit, SKIP } from 'unist-util-visit';
@@ -112,199 +112,243 @@ function calloutHeader(node: Element): void {
   delete node.properties?.dataCalloutTitle;
   delete node.properties?.dataCalloutSource;
 }
+/** 脚注回链箭头图标（替换默认 ↩ 文本） */
+function footnoteBackrefIcon(): ElementContent {
+  return hEl(
+    'svg',
+    {
+      className: ['footnote-backref-icon'],
+      viewBox: '0 0 24 24',
+      width: '13',
+      height: '13',
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: '2.2',
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+      ariaHidden: 'true',
+    },
+    [
+      hEl('path', { d: 'M9 14 4 9l5-5' }),
+      hEl('path', { d: 'M20 20v-7a4 4 0 0 0-4-4H4' }),
+    ],
+  );
+}
+
+/** 外链箭头图标（外链 <a> 与 timeline 条目标题共用） */
+function externalLinkIcon(): ElementContent {
+  return hEl(
+    'svg',
+    {
+      className: ['external-link-icon'],
+      viewBox: '0 0 24 24',
+      width: '12',
+      height: '12',
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: '2',
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+      ariaHidden: 'true',
+    },
+    [
+      hEl('path', { d: 'M7 17 17 7' }),
+      hEl('path', { d: 'M7 7h10v10' }),
+    ],
+  );
+}
+
+function isExternalHref(href: string): boolean {
+  return /^https?:\/\//i.test(href) || /^\/\//i.test(href);
+}
+
+function isFootnoteBackref(node: Element): boolean {
+  return (
+    'dataFootnoteBackref' in node.properties ||
+    'data-footnote-backref' in node.properties ||
+    classesOf(node).includes('data-footnote-backref') ||
+    classesOf(node).includes('footnote-backref')
+  );
+}
+
+/** 脚注回链 <a>：补 class，并用箭头图标替换 ↩ 文本（保留上标序号等其余子节点） */
+function decorateFootnoteBackref(node: Element): void {
+  const cls = classesOf(node);
+  if (!cls.includes('data-footnote-backref')) {
+    node.properties.className = [...cls, 'data-footnote-backref'];
+  }
+  const subIndexChildren = node.children.filter(
+    (c) => c.type !== 'text' || (c.value !== '↩' && c.value.trim() !== '↩')
+  );
+  node.children = [footnoteBackrefIcon(), ...subIndexChildren];
+}
+
+function isFootnoteRef(node: Element): boolean {
+  return 'dataFootnoteRef' in node.properties || 'data-footnote-ref' in node.properties;
+}
+
+function decorateFootnoteRef(node: Element): void {
+  const cls = classesOf(node);
+  if (!cls.includes('footnote-ref')) {
+    node.properties.className = [...cls, 'footnote-ref'];
+  }
+}
+
+/** 外链 <a>：新窗口打开 + noopener/noreferrer + class，追加箭头图标（纯媒体链接与已有图标跳过） */
+function decorateExternalLink(node: Element): void {
+  const href = String(node.properties.href).trim();
+  if (!isExternalHref(href)) return;
+  node.properties.target = '_blank';
+  node.properties.rel = ['noopener', 'noreferrer'];
+  const cls = classesOf(node);
+  if (!cls.includes('external-link')) {
+    node.properties.className = [...cls, 'external-link'];
+  }
+  const isImageOnly =
+    node.children.length > 0 &&
+    node.children.every(
+      (c) =>
+        (c.type === 'element' && (c.tagName === 'img' || c.tagName === 'video' || c.tagName === 'audio')) ||
+        (c.type === 'text' && !c.value.trim()),
+    );
+  const hasExternalIcon = node.children.some(
+    (c) =>
+      c.type === 'element' &&
+      (c.tagName === 'svg' || c.tagName === 'span') &&
+      classesOf(c).some(
+        (cn) => cn.includes('external-link-icon') || cn.includes('footnote-backref-icon'),
+      ),
+  );
+  if (!isImageOnly && !hasExternalIcon) {
+    node.children.push(externalLinkIcon());
+  }
+}
+
+function isFootnotesSection(node: Element): boolean {
+  return (
+    classesOf(node).includes('footnotes') ||
+    node.properties?.dataFootnotes != null ||
+    ('data-footnotes' in (node.properties || {}))
+  );
+}
+
+/** footnotes <section>：reveal 动画 + 标题/列表/条目 class 归一（单次遍历） */
+function decorateFootnotesSection(node: Element): void {
+  const cls = classesOf(node);
+  if (!cls.includes('reveal')) {
+    node.properties.className = [...cls, 'reveal'];
+  }
+  node.properties.style = '--delay:120ms';
+  for (const child of node.children) {
+    if (child.type !== 'element') continue;
+    if (child.tagName === 'h2' || child.tagName === 'h3' || child.properties?.id === 'footnote-label') {
+      child.properties.className = ['footnotes-title'];
+    }
+    if (child.tagName === 'ol') {
+      child.properties.className = ['footnotes-list'];
+      for (const item of child.children) {
+        if (item.type === 'element' && item.tagName === 'li') {
+          item.properties.className = ['footnote-item'];
+        }
+      }
+    }
+  }
+}
+
+function isTimelineSection(node: Element): boolean {
+  return node.properties?.dataTimeline === 'true' || classesOf(node).includes('timeline');
+}
+
+/** timeline 条目标题：有 URL 用 <a>（外链补图标与新窗口属性），否则 <h3> */
+function timelineItemHeading(url: string | null | undefined, itemTitle: string): ElementContent {
+  if (!url) {
+    return hEl('h3', { className: ['timeline-item-title'] }, itemTitle ? [hTxt(itemTitle)] : []);
+  }
+  const isExt = isExternalHref(url);
+  return hEl(
+    'a',
+    {
+      className: isExt ? ['timeline-item-title', 'external-link'] : ['timeline-item-title'],
+      href: url,
+      ...(isExt ? { target: '_blank', rel: ['noopener', 'noreferrer'] } : {}),
+    },
+    itemTitle
+      ? isExt
+        ? [hTxt(itemTitle), externalLinkIcon()]
+        : [hTxt(itemTitle)]
+      : [],
+  );
+}
+
+/** 单个 timeline 条目：div → li，子内容重排为 range / meta(标题+机构) / body 三段结构 */
+function buildTimelineItem(item: Element, index: number, lang: string | undefined, defaultLang?: string): void {
+  item.tagName = 'li';
+  item.properties.className = ['timeline-item', 'reveal'];
+  item.properties.style = "--delay:" + (index * 90) + "ms";
+  delete item.properties.dataTimelineItem;
+  const start = String(item.properties?.dataStart ?? '');
+  const end = item.properties?.dataEnd == null ? undefined : String(item.properties.dataEnd);
+  const range = hEl('p', { className: ['timeline-range'] }, [hTxt(timelineRangeText(start, end, lang, defaultLang))]);
+  const itemTitle = String(item.properties?.dataTimelineTitle ?? '');
+  const org = String(item.properties?.dataOrg ?? '');
+  const url = safeTimelineUrl(item.properties?.dataUrl == null ? undefined : String(item.properties.dataUrl));
+  const meta = hEl('div', { className: ['timeline-item-meta'] }, [
+    timelineItemHeading(url, itemTitle),
+    ...(org ? [hEl('p', { className: ['timeline-org'] }, [hTxt(org)])] : []),
+  ]);
+  const content = hEl('div', { className: ['timeline-item-body'] }, item.children);
+  item.children = [range, meta, content];
+  delete item.properties?.dataStart;
+  delete item.properties?.dataEnd;
+  delete item.properties?.dataTimelineTitle;
+  delete item.properties?.dataOrg;
+  delete item.properties?.dataUrl;
+}
+
+/** timeline <section>：标题上提为 h2，条目 div 收集重排为 <ol class="timeline-items"> */
+function decorateTimeline(node: Element, lang: string | undefined, defaultLang?: string): void {
+  node.properties.className = ['timeline', 'reveal'];
+  delete node.properties.dataTimeline;
+  const title = String(node.properties?.dataTimelineTitle ?? '');
+  if (title) node.children.unshift(hEl('h2', { className: ['timeline-title'] }, [hTxt(title)]));
+  delete node.properties?.dataTimelineTitle;
+  const items = node.children.filter((child): child is Element =>
+    child.type === 'element' && child.tagName === 'div' && (child.properties?.dataTimelineItem === 'true' || classesOf(child).includes('timeline-item'))
+  );
+  if (items.length === 0) return;
+  for (let i = 0; i < items.length; i++) {
+    buildTimelineItem(items[i], i, lang, defaultLang);
+  }
+  node.children = node.children.filter((child) => !items.includes(child as Element));
+  node.children.push(hEl('ol', { className: ['timeline-items'] }, items));
+}
+
 export function rehypeContentDecorations(lang: string | undefined, defaultLang?: string) {
   return (tree: HastRoot) => {
     visit(tree, 'element', (node) => {
-      if (
-        node.tagName === 'a' &&
-        node.properties &&
-        ('dataFootnoteBackref' in node.properties ||
-          'data-footnote-backref' in node.properties ||
-          classesOf(node).includes('data-footnote-backref') ||
-          classesOf(node).includes('footnote-backref'))
-      ) {
-        const cls = classesOf(node);
-        if (!cls.includes('data-footnote-backref')) {
-          node.properties.className = [...cls, 'data-footnote-backref'];
-        }
-        const svgIcon = hEl(
-          'svg',
-          {
-            className: ['footnote-backref-icon'],
-            viewBox: '0 0 24 24',
-            width: '13',
-            height: '13',
-            fill: 'none',
-            stroke: 'currentColor',
-            strokeWidth: '2.2',
-            strokeLinecap: 'round',
-            strokeLinejoin: 'round',
-            ariaHidden: 'true',
-          },
-          [
-            hEl('path', { d: 'M9 14 4 9l5-5' }),
-            hEl('path', { d: 'M20 20v-7a4 4 0 0 0-4-4H4' }),
-          ],
-        );
-        const subIndexChildren = node.children.filter(
-          (c) => c.type !== 'text' || (c.value !== '↩' && c.value.trim() !== '↩')
-        );
-        node.children = [svgIcon, ...subIndexChildren];
-      }
-      if (node.tagName === 'a' && node.properties && ('dataFootnoteRef' in node.properties || 'data-footnote-ref' in node.properties)) {
-        const cls = classesOf(node);
-        if (!cls.includes('footnote-ref')) {
-          node.properties.className = [...cls, 'footnote-ref'];
-        }
-      } else if (node.tagName === 'a' && node.properties?.href) {
-        const href = String(node.properties.href).trim();
-        const isExternal = /^https?:\/\//i.test(href) || /^\/\//i.test(href);
-        if (isExternal) {
-          node.properties.target = '_blank';
-          node.properties.rel = ['noopener', 'noreferrer'];
-          const cls = classesOf(node);
-          if (!cls.includes('external-link')) {
-            node.properties.className = [...cls, 'external-link'];
-          }
-          const isImageOnly =
-            node.children.length > 0 &&
-            node.children.every(
-              (c) =>
-                (c.type === 'element' && (c.tagName === 'img' || c.tagName === 'video' || c.tagName === 'audio')) ||
-                (c.type === 'text' && !c.value.trim()),
-            );
-          const hasExternalIcon = node.children.some(
-            (c) =>
-              c.type === 'element' &&
-              (c.tagName === 'svg' || c.tagName === 'span') &&
-              classesOf(c).some(
-                (cn) => cn.includes('external-link-icon') || cn.includes('footnote-backref-icon'),
-              ),
-          );
-          if (!isImageOnly && !hasExternalIcon) {
-            const extSvg = hEl(
-              'svg',
-              {
-                className: ['external-link-icon'],
-                viewBox: '0 0 24 24',
-                width: '12',
-                height: '12',
-                fill: 'none',
-                stroke: 'currentColor',
-                strokeWidth: '2',
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round',
-                ariaHidden: 'true',
-              },
-              [
-                hEl('path', { d: 'M7 17 17 7' }),
-                hEl('path', { d: 'M7 7h10v10' }),
-              ],
-            );
-            node.children.push(extSvg);
-          }
+      if (node.tagName === 'a' && node.properties) {
+        if (isFootnoteBackref(node)) decorateFootnoteBackref(node);
+        if (isFootnoteRef(node)) {
+          decorateFootnoteRef(node);
+        } else if (node.properties.href) {
+          decorateExternalLink(node);
         }
       }
-      if (node.tagName === 'section' && (classesOf(node).includes('footnotes') || node.properties?.dataFootnotes != null || ('data-footnotes' in (node.properties || {})))) {
-        const cls = classesOf(node);
-        if (!cls.includes('reveal')) {
-          node.properties.className = [...cls, 'reveal'];
-        }
-        node.properties.style = '--delay:120ms';
-        for (const child of node.children) {
-          if (child.type === 'element' && (child.tagName === 'h2' || child.tagName === 'h3' || child.properties?.id === 'footnote-label')) {
-            child.properties.className = ['footnotes-title'];
-          }
-        }
-        for (const child of node.children) {
-          if (child.type === 'element' && child.tagName === 'ol') {
-            child.properties.className = ['footnotes-list'];
-            for (const item of child.children) {
-              if (item.type === 'element' && item.tagName === 'li') {
-                item.properties.className = ['footnote-item'];
-              }
-            }
-          }
-        }
+      if (node.tagName === 'section' && isFootnotesSection(node)) {
+        decorateFootnotesSection(node);
       }
       if (node.tagName === 'aside' && classesOf(node).includes('callout')) {
         calloutHeader(node);
         return;
       }
-      if (node.tagName !== 'section' || !(node.properties?.dataTimeline === 'true' || classesOf(node).includes('timeline'))) return;
-      node.properties.className = ['timeline', 'reveal'];
-      delete node.properties.dataTimeline;
-      const title = String(node.properties?.dataTimelineTitle ?? '');
-      if (title) node.children.unshift(hEl('h2', { className: ['timeline-title'] }, [hTxt(title)]));
-      delete node.properties?.dataTimelineTitle;
-      const items = node.children.filter((child): child is Element =>
-        child.type === 'element' && child.tagName === 'div' && (child.properties?.dataTimelineItem === 'true' || classesOf(child).includes('timeline-item'))
-      );
-      if (items.length === 0) return;
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        item.tagName = 'li';
-        item.properties.className = ['timeline-item', 'reveal'];
-        item.properties.style = "--delay:" + (i * 90) + "ms";
-        delete item.properties.dataTimelineItem;
-        const start = String(item.properties?.dataStart ?? '');
-        const end = item.properties?.dataEnd == null ? undefined : String(item.properties.dataEnd);
-        const range = hEl('p', { className: ['timeline-range'] }, [hTxt(timelineRangeText(start, end, lang, defaultLang))]);
-        const itemTitle = String(item.properties?.dataTimelineTitle ?? '');
-        const org = String(item.properties?.dataOrg ?? '');
-        const url = safeTimelineUrl(item.properties?.dataUrl == null ? undefined : String(item.properties.dataUrl));
-        const isExt = Boolean(url && (/^https?:\/\//i.test(url) || /^\/\//i.test(url)));
-        const heading = hEl(
-          url ? 'a' : 'h3',
-          url
-            ? {
-                className: isExt ? ['timeline-item-title', 'external-link'] : ['timeline-item-title'],
-                href: url,
-                ...(isExt ? { target: '_blank', rel: ['noopener', 'noreferrer'] } : {}),
-              }
-            : { className: ['timeline-item-title'] },
-          itemTitle
-            ? isExt
-              ? [
-                  hTxt(itemTitle),
-                  hEl(
-                    'svg',
-                    {
-                      className: ['external-link-icon'],
-                      viewBox: '0 0 24 24',
-                      width: '12',
-                      height: '12',
-                      fill: 'none',
-                      stroke: 'currentColor',
-                      strokeWidth: '2',
-                      strokeLinecap: 'round',
-                      strokeLinejoin: 'round',
-                      ariaHidden: 'true',
-                    },
-                    [hEl('path', { d: 'M7 17 17 7' }), hEl('path', { d: 'M7 7h10v10' })],
-                  ),
-                ]
-              : [hTxt(itemTitle)]
-            : []
-        );
-        const meta = hEl('div', { className: ['timeline-item-meta'] }, [
-          heading,
-          ...(org ? [hEl('p', { className: ['timeline-org'] }, [hTxt(org)])] : []),
-        ]);
-        const content = hEl('div', { className: ['timeline-item-body'] }, item.children);
-        item.children = [range, meta, content];
-        delete item.properties?.dataStart;
-        delete item.properties?.dataEnd;
-        delete item.properties?.dataTimelineTitle;
-        delete item.properties?.dataOrg;
-        delete item.properties?.dataUrl;
+      if (node.tagName === 'section' && isTimelineSection(node)) {
+        decorateTimeline(node, lang, defaultLang);
       }
-      const list = hEl('ol', { className: ['timeline-items'] }, items);
-      node.children = node.children.filter((child) => !items.includes(child as Element));
-      node.children.push(list);
     });
   };
-}function publicationQueryOf(node: Element): PublicationQuery {
+}
+
+function publicationQueryOf(node: Element): PublicationQuery {
   const value = (key: string): string | undefined => {
     const v = node.properties?.[key];
     return typeof v === 'string' && v ? v : undefined;
@@ -337,7 +381,9 @@ export function rehypePublications(ctx: PublicationsConfig, lang?: string, defau
       return [SKIP, index];
     });
   };
-}function hastToText(node: ElementContent): string {
+}
+
+function hastToText(node: ElementContent): string {
   if (node.type === 'text') return node.value;
   if ('children' in node && Array.isArray(node.children)) {
     return node.children.map(hastToText).join('');
