@@ -412,6 +412,7 @@ npm run admin       # Visit http://127.0.0.1:4174 (secure loopback address only)
 - **Markdown Source Fallback**: Retains a frontmatter form and raw full-page Markdown editor with idle autosaving (~1.5s).
 - **Autosave & Historical Snapshots**: Every edit automatically archives the previous version to `data/.snapshots/` for seamless rollback.
 - **Data Export & Import**: The top bar exports the entire workspace as `data.zip` and imports it back — path-traversal-safe extraction with an automatic pre-import backup, making migration across machines effortless.
+- **AI-Assisted Content Editing**: The repository ships a project skill at `skills/editing-data/SKILL.md` that teaches AI coding agents the `data/` schemas, Markdown directives, and admin console capabilities — hand the repo to your agent and ask it to "add a page" or "rearrange the homepage" directly.
 
 ---
 

@@ -98,3 +98,8 @@
 - **「🚀 部署到线上」引导**：顶栏导出按钮旁（`admin/ui/views/deploy.ts`），四步清单卡片：导出 data.zip → 托管拿直链（私有 Release / Secret Gist / 对象存储，强调隐私）→ 配 Secrets（`DATA_SOURCE_URL`/`GH_PAT`/`ENABLE_EXAMPLE` 逐项说明 + deep link）→ 触发 Actions。仓库地址由 `GET /api/deploy-info`（`admin/server/deploy-info.ts`，读 git remote origin，5s 超时）探测；读不到则全 null 降级为前端手填拼链接，解析逻辑统一在 `admin/shared/deploy.ts`。
 - **新手向导第 0 步「场景预设」**：向导扩为四步（场景 → 名片 → 模块 → 主题色）。预设单一数据源抽到 `scripts/scene-presets.mjs`（+ `.d.mts` 类型声明），CLI setup 与 admin 共享防漂移，`setup-lib.mjs` 仅 re-export 行为不变。选定场景经 `admin/shared/scene-presets.ts` 的 `sceneDefaults()` 映射为第 2 步模块勾选默认值（github/rss + BGM/联系卡；publications 不参与、语言不裁剪），`custom`/未知 key 不动现状。完成页（第 3 步）给「前往语言管理」链接。
 - **doctor GH_PAT 引导**：`scripts/doctor-lib.ts` 在限流（403+额度 0）/401 的建议与 `--online` 新增的 token 环境变量检查（`checkGithubTokenEnv`，`GH_PAT`/`GITHUB_TOKEN`/`GH_TOKEN` 任一即 ok）中统一附生成页链接 https://github.com/settings/tokens 与 `read:user` scope 说明；两个 README 的 Secrets 小节同步补引导。
+
+## AI 内容编排 Skill（skills/editing-data）
+
+- **定位**：`skills/editing-data/SKILL.md` 是面向 AI 代理的 data/ 编辑规范（目录结构、多语言、frontmatter 字段、Markdown 指令、site.yaml 各模块配置、后台能力速查与禁忌），供"帮我改主页/加页面/改配置"类任务调用；`docs/design.md` 与 `docs/specs/06-editor.md` 均有引用，用户侧说明见两个 README 的「本地可视化编辑器」小节。
+- **维护要求**：新增或修改 data/ 配置项、Markdown 指令、frontmatter 字段、后台（admin/）功能时，必须同步更新该 SKILL.md，保持与实际能力一致。
