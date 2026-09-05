@@ -31,7 +31,7 @@
 - **typescript 固定 ^6**：`@astrojs/check` 的 peer 仅支持 TS ^5||^6；TS7 为原生移植版、无语言服务 API，astro check 无法工作，勿升级 typescript 到 7。
 - **data/ 播种兜底**：`tests/search.test.ts` 等用例依赖 `data/`（git 忽略的私有目录）；CI 在测试前执行 `test -d data || cp -r data.example data`（与 deploy.yml 示例模式一致）。本地请勿删除 `data/`。
 - **Dependabot**：`.github/dependabot.yml`——npm 每周更新，minor/patch 合并为一个分组 PR、major 单独 PR；github-actions 每周跟踪。
-- **社区文件**：`CONTRIBUTING.md`（中英双语，含三件套命令）、`CODE_OF_CONDUCT.md`、`SECURITY.md`；Issue 模板 `.github/ISSUE_TEMPLATE/`（`bug_report.yml` / `feature_request.yml` / `config.yml`，安全漏洞引导至私密渠道），PR 模板 `.github/PULL_REQUEST_TEMPLATE.md`。新增或修改模板时保持中英双语。
+- **社区文件**：位于 `.github/`（GitHub 社区健康文件约定位置）：`CONTRIBUTING.md`（中英双语，含三件套命令）、`CODE_OF_CONDUCT.md`、`SECURITY.md`；Issue 模板 `.github/ISSUE_TEMPLATE/`（`bug_report.yml` / `feature_request.yml` / `config.yml`，安全漏洞引导至私密渠道），PR 模板 `.github/PULL_REQUEST_TEMPLATE.md`。新增或修改模板时保持中英双语。
 
 ## 搜索范围切换控件（search scope toggle）
 
