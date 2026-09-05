@@ -1,5 +1,5 @@
-// 最小 e2e 冒烟集：Playwright 直出已构建的 dist/（astro preview）。
-// 运行前需先构建：`tsx scripts/generate-fonts.ts && npx astro build`（或完整 `npm run build`）。
+// 最小 e2e 冒烟集：Playwright 直出已构建的 dist/（e2e/serve-dist.ts 静态服务）。
+// 运行前需先构建：`npx tsx scripts/generate-fonts.ts && npx astro build`（或完整 `npm run build`）。
 // 注意 base：本配置假定根 base；CI e2e-smoke job 用 ASTRO_BASE='/' 构建保持一致。
 import { defineConfig, devices } from '@playwright/test';
 
@@ -20,7 +20,7 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'npm run preview -- --port 4173 --host 127.0.0.1',
+    command: 'npx tsx e2e/serve-dist.ts',
     url: 'http://127.0.0.1:4173/',
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
