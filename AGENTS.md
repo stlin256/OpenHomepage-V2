@@ -14,6 +14,14 @@
   - **默认不自动更新版本号**：即使进行了常规功能迭代、样式修复、性能优化或文档更新，也保持当前版本号不变，除非用户明确要求发版或升级版本。
   - 经用户指示发版时，标准流程为：`npm version patch|minor|major -m "Release v%s"`（自动改 package.json/lock、跑 sync-version 钩子、生成发版提交与 `v*` tag），随后 `git push --follow-tags`。禁止手改 `version` 字段或手动打 tag。
 
+## Release Note 规范（GitHub Releases）
+
+- **载体**：发版 tag（`v*`）推送后，用 `gh release create <tag>` 创建 GitHub Release；修改用 `gh release edit <tag>`。不维护仓库内 CHANGELOG 文件。
+- **标题**：纯英文，格式 `vX.Y.Z — Short English Title`（如 `v0.3.0 — Quality Gate & Publish Loop`）。
+- **正文**：中英双语，`## English` 在前、`## 中文` 在后，中间以 `---` 分隔；两版小节结构一一对应。
+- **内容组织**：按主题分组归纳（如功能体系 / 体验增强 / 工程化 / 重构），不逐条罗列 commit；首个版本可按大主题概括整个历史。
+- **latest 标记**：仅最新版本带 `Latest`；补发历史版本 Release 时用 `--latest=false`。
+
 ## 质量门禁与依赖治理（2026-09-05 落地）
 
 - **CI**：`.github/workflows/ci.yml`（`quality-gate`，push 到 main/master 与所有 PR 触发），步骤依次：`npm run lint` → `npm run check` → `npm test`。部署流（deploy.yml）不跑门禁，两者独立。
