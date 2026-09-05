@@ -24,6 +24,7 @@ import {
 } from './views/configs.ts';
 import { renderThemePicker } from './views/theme.ts';
 import { renderLanguages } from './views/languages.ts';
+import { renderDoctor } from './views/doctor.ts';
 import { renderAssets } from './views/assets.ts';
 import { renderPublicationsImport } from './views/publications.ts';
 import { openOnboardingWizard } from './views/onboarding.ts';
@@ -111,6 +112,10 @@ function renderSidebar(): void {
   sidebar.append(el('div', { class: 'side-title' }, t('navI18nSync')));
   sidebar.append(el('a', { class: 'side-item', href: '#/i18n-sync' }, t('navI18nSync')));
 
+  // 工具（spec 20）：健康检查（doctor）；动态数据刷新入口在顶栏
+  sidebar.append(el('div', { class: 'side-title' }, t('navTools')));
+  sidebar.append(el('a', { class: 'side-item', href: '#/doctor' }, t('navDoctor')));
+
   sidebar.append(el('div', { class: 'side-title' }, t('navAssets')));
   sidebar.append(el('a', { class: 'side-item', href: '#/assets' }, t('navAssets')));
   updateSideNav(sidebar);
@@ -197,6 +202,8 @@ async function renderMain(): Promise<void> {
       await (renderers[section] ?? renderSiteConfig)(main, state);
     } else if (name === 'i18n-sync') {
       await renderI18nSync(main, state);
+    } else if (name === 'doctor') {
+      await renderDoctor(main, state);
     } else if (name === 'assets') {
       await renderAssets(main, state);
     } else {
@@ -298,6 +305,50 @@ async function boot(): Promise<void> {
   // 新手欢迎向导（spec 19）：顶栏按钮随时重开；首次初始化时自动弹出（见 boot 末尾）
   const onboardingBtn = btn(state.t('onboardingOpen'), () => openOnboardingWizard(state));
 
+  // 动态数据刷新（spec 20）：抓取 GitHub/RSS 写入 .cache/（POST /api/prefetch）；
+  // 运行中禁用按钮防重复（服务端另有 409 并发守卫）；title 展示上次抓取时间
+  const refreshPrefetchTitle = async (prefetchBtn: HTMLButtonElement): Promise<void> => {
+    try {
+      const s = await api.prefetchStatus();
+      prefetchBtn.title = s.lastFetchedAt
+        ? state.t('prefetchLastRun').replace('{0}', new Date(s.lastFetchedAt).toLocaleString())
+        : state.t('prefetchNever');
+    } catch {
+      /* 探测失败不影响按钮可用 */
+    }
+  };
+  const prefetchBtn = btn(state.t('prefetchRefresh'), () => {
+    prefetchBtn.disabled = true;
+    prefetchBtn.textContent = state.t('prefetchRunning');
+    void api
+      .prefetch()
+      .then((r) => {
+        if (!r.ok) {
+          const detail = r.warnings.join('；');
+          state.setStatus(
+            detail ? `${state.t('prefetchFailed')}：${detail}` : state.t('prefetchFailed'),
+            'err'
+          );
+        } else if (r.warnings.length > 0) {
+          state.setStatus(
+            state.t('prefetchPartial').replace('{0}', String(r.warnings.length))
+          );
+        } else {
+          state.setStatus(
+            state.t('prefetchDone').replace('{0}', String(r.blocks.length)),
+            'ok'
+          );
+        }
+      })
+      .catch((e) => state.setStatus(`${state.t('prefetchFailed')}：${(e as Error).message}`, 'err'))
+      .finally(() => {
+        prefetchBtn.disabled = false;
+        prefetchBtn.textContent = state.t('prefetchRefresh');
+        void refreshPrefetchTitle(prefetchBtn);
+      });
+  });
+  void refreshPrefetchTitle(prefetchBtn);
+
   // 预览服务状态指示灯：绿=运行 / 黄=启动中 / 灰=未运行；点击手动停止/启动（重启=停后再启）
   const devDot = el('button', { class: 'dev-indicator', type: 'button' }) as HTMLButtonElement;
   devDot.append(el('span', { class: 'dev-dot' }));
@@ -391,6 +442,7 @@ async function boot(): Promise<void> {
       sidebarToggle,
       statusEl,
       el('span', { class: 'topbar-spacer' }),
+      prefetchBtn,
       onboardingBtn,
       importBtn,
       importFileInput,

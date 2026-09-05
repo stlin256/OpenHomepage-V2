@@ -66,6 +66,50 @@ export interface LangOpResult {
   warnings: string[];
 }
 
+// ---- 动态数据刷新与健康检查（spec 20） ----
+
+export interface PrefetchBlock {
+  key: string;
+  status: 'fresh' | 'cached' | 'stale' | 'partial' | 'placeholder' | 'error';
+  error: string | null;
+}
+
+export interface PrefetchStatus {
+  running: boolean;
+  /** 上次抓取时间（ISO；从未抓取为 null） */
+  lastFetchedAt: string | null;
+}
+
+export interface PrefetchResultView {
+  ok: boolean;
+  blocks: PrefetchBlock[];
+  warnings: string[];
+}
+
+export interface DoctorItemView {
+  severity: 'ok' | 'warn' | 'error' | 'skip';
+  message: string;
+  suggestion?: string;
+}
+
+export interface DoctorSectionView {
+  id: string;
+  title: string;
+  items: DoctorItemView[];
+}
+
+export interface DoctorReportView {
+  dataDir: string | null;
+  usedExample: boolean;
+  sections: DoctorSectionView[];
+}
+
+export interface DoctorCheckView {
+  online: boolean;
+  report: DoctorReportView;
+  summary: { ok: number; warn: number; error: number; skip: number };
+}
+
 export const api = {
   info: () => req<{ initialized: boolean }>('/api/info'),
   /** 新手向导（spec 19）：是否应自动弹出（首次初始化且未完成） */
@@ -134,6 +178,12 @@ export const api = {
   devStatus: () => req<DevStatus>('/api/dev-status'),
   devStart: () => req<DevStatus>('/api/dev/start', { method: 'POST' }),
   devStop: () => req<DevStatus>('/api/dev/stop', { method: 'POST' }),
+
+  // 动态数据刷新（spec 20）：运行中重复触发服务端返回 409
+  prefetchStatus: () => req<PrefetchStatus>('/api/prefetch/status'),
+  prefetch: () => req<PrefetchResultView>('/api/prefetch', { method: 'POST' }),
+  // 健康检查（spec 20）：默认离线，online=true 追加 GitHub API / RSS 源探测
+  doctor: (online = false) => req<DoctorCheckView>(`/api/doctor${online ? '?online=1' : ''}`),
 
   /** data.zip 导入（spec 18）：整包备份后覆盖写入 */
   importDataZip: async (buf: ArrayBuffer) => {

@@ -386,7 +386,7 @@ The setup wizard offers three modes:
 |---|---|---|---|
 | `npm run setup` | **Interactive initialization wizard** (quick / full demo / blank); falls back to demo copy in non-interactive environments | — | Exits on completion |
 | `npm run doctor` | **One-stop health check**: environment, configs, language dirs, asset references, directive syntax, ports; `--online` adds GitHub/RSS probes | — | Exits on completion (exit code `1` on fatal errors) |
-| `npm run admin` | **Launch local visual editor** (manages companion preview server automatically) | `http://127.0.0.1:4174` | Press `Ctrl+C` to terminate both |
+| `npm run admin` | **Launch local visual editor** (auto-opens browser; manages companion preview server; sidebar *Tools → Health check* runs the same checks as `npm run doctor`, and the top-bar button refreshes GitHub/RSS data like `npm run prefetch`) | `http://127.0.0.1:4174` | Press `Ctrl+C` to terminate both |
 | `npm run dev` | Astro dev server with Vite Hot Module Reloading (HMR) | `http://localhost:4321` | Press `Ctrl+C` to stop |
 | `npm run build` | **Execute static production build** with automated WebP + AVIF derivation | — | Exits on completion |
 | `npm run preview` | Preview production output in `dist/` locally | `http://localhost:4321` | Press `Ctrl+C` to stop |

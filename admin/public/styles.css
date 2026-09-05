@@ -675,3 +675,46 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
 .lang-name { font-weight: 600; font-family: ui-monospace, monospace; min-width: 36px; }
 .lang-row .btn { margin-left: auto; }
 .lang-warn { font-size: 13px; line-height: 1.7; margin: 6px 0; }
+
+/* 健康检查视图（spec 20）：级别徽标分色 + 建议折叠展开 */
+.doctor-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+.doctor-online {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.doctor-summary { font-size: 13px; font-weight: 600; }
+.doctor-summary.has-warn { color: #e65100; }
+.doctor-summary.has-error { color: var(--danger); }
+.doctor-section { margin: 6px 0 16px; }
+.doctor-list { display: flex; flex-direction: column; gap: 6px; }
+.doctor-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.doctor-badge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 11px;
+}
+.doctor-badge.ok { background: rgba(46, 125, 50, 0.12); color: #2e7d32; }
+.doctor-badge.warn { background: rgba(230, 81, 0, 0.15); color: #e65100; }
+.doctor-badge.error { background: rgba(192, 57, 43, 0.15); color: var(--danger); }
+.doctor-badge.skip { background: var(--border); color: var(--text-muted); }
+.doctor-msg { color: var(--text); }
+.doctor-detail { flex: 1; min-width: 0; }
+.doctor-detail .doctor-msg { cursor: pointer; }
+.doctor-suggestion { color: var(--text-muted); font-size: 12px; margin: 4px 0 2px; }
+html[data-theme='dark'] .doctor-badge.ok { color: #5cb860; }

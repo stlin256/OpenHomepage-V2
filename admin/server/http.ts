@@ -38,6 +38,13 @@ import {
 } from './github-prefill.ts';
 import { syncGithubAvatar } from './github-avatar.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
+import {
+  createPrefetchRunner,
+  PrefetchBusyError,
+  runDoctorCheck,
+  type DoctorCheckResult,
+  type PrefetchRun,
+} from './live-tools.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
 import { getBaseUrl } from '../../src/lib/base-url.ts';
@@ -66,6 +73,12 @@ export interface AdminServerOptions {
   githubFetch?: typeof fetch;
   /** GitHub 预填请求超时毫秒数（测试可注入；缺省 5000） */
   githubTimeoutMs?: number;
+  /** prefetch 缓存目录（spec 20；缺省 <rootDir>/.cache，测试可指向临时目录） */
+  cacheDir?: string;
+  /** prefetch 抓取实现（spec 20，测试可注入替身，零触网） */
+  prefetchRun?: PrefetchRun;
+  /** 健康检查实现（spec 20，测试可注入替身，零触网；rootDir 已由服务端绑定） */
+  doctorRun?: (online: boolean) => Promise<DoctorCheckResult>;
 }
 
 type Json = Record<string, unknown>;
@@ -132,7 +145,9 @@ function sendError(res: http.ServerResponse, e: unknown): void {
           ? 409
           : e instanceof LangConflictError
             ? 409
-            : e instanceof GithubPrefillError
+            : e instanceof PrefetchBusyError
+              ? 409
+              : e instanceof GithubPrefillError
             ? e.status
             : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
               ? 400
@@ -162,9 +177,15 @@ function previewPathFor(
 
 export function createAdminServer(opts: AdminServerOptions): http.Server {
   const { dataDir } = opts;
-  const dev =
-    opts.devManager ??
-    createDevServerManager({ rootDir: opts.rootDir ?? path.resolve(dataDir, '..') });
+  const rootDir = opts.rootDir ?? path.resolve(dataDir, '..');
+  const dev = opts.devManager ?? createDevServerManager({ rootDir });
+  // 动态数据刷新（spec 20）：进程内并发守卫 + 上次抓取时间（.cache/）
+  const prefetch = createPrefetchRunner({
+    dataDir,
+    cacheDir: opts.cacheDir ?? path.join(rootDir, '.cache'),
+    run: opts.prefetchRun,
+  });
+  const doctor = opts.doctorRun ?? ((online: boolean) => runDoctorCheck(rootDir, online));
 
   const routes: Record<string, Record<string, Handler>> = {
     GET: {
@@ -224,6 +245,14 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       '/api/history': ({ query, res }) =>
         sendJson(res, 200, historyState(dataDir, query.get('path') || undefined)),
       '/api/dev-status': async ({ res }) => sendJson(res, 200, await dev.status()),
+      // 动态数据刷新状态（spec 20）：是否运行中 + 上次抓取时间（页面加载时展示）
+      '/api/prefetch/status': ({ res }) => sendJson(res, 200, prefetch.status()),
+      // 健康检查（spec 20）：默认离线；?online=1 追加 GitHub API / RSS 源探测
+      '/api/doctor': async ({ query, res }) => {
+        const online = query.get('online') === '1' || query.get('online') === 'true';
+        const { report, summary } = await doctor(online);
+        sendJson(res, 200, { online, report, summary });
+      },
       // 可视化编辑（M12a）：页面正文可编辑块清单（坐标 + 内容 hash，供 overlay 陈旧检测）
       '/api/page/blocks': ({ query, res }) =>
         sendJson(res, 200, { blocks: listPageBlocks(dataDir, query.get('path') ?? '') }),
@@ -358,6 +387,8 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         sendJson(res, 200, historyRedo(dataDir, typeof body.path === 'string' && body.path !== '' ? body.path : undefined)),
       '/api/dev/start': async ({ res }) => sendJson(res, 200, await dev.start()),
       '/api/dev/stop': async ({ res }) => sendJson(res, 200, await dev.stop()),
+      // 动态数据刷新（spec 20）：抓取 GitHub/RSS 写 .cache/；运行中重复触发 409（PrefetchBusyError）
+      '/api/prefetch': async ({ res }) => sendJson(res, 200, await prefetch.run()),
       // favicon 上传：原始二进制图片 → 居中裁方 → 180/32 PNG 入 assets + 写回 site.favicon
       '/api/favicon': async ({ raw, res }) => {
         const outputs = await convertFavicon(raw);

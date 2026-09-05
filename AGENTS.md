@@ -52,3 +52,10 @@
 - **后台数据导入**（spec 18，`admin/server/import.ts`）：BibTeX 导入（侧栏「配置 → 学术成果」，预览→去重→合并 publications.yaml，DOI/标题去重）与 data.zip 导入（顶栏「📥 导入 data.zip」，路径穿越整包拒绝，覆盖前自动备份至 `data/.snapshots/import-backup/`）。
 - **新手欢迎向导**（spec 19）：`ensureDataDir()` 返回 `initialized=true` 且无 `data/.onboarding-done` 标记时后台自动弹三步卡片（名片/模块编排/主题色盘）；顶栏「🚀 新手向导」可随时重开；完成或任意跳过均写标记。第 1 步支持「⚡ 自动同步信息」：`GET /api/github/prefill?username=`（`admin/server/github-prefill.ts`，5s 超时，404/502 友好降级），仅填充空字段、不覆盖用户已输入内容。
 - **语言管理面板**（spec 19 §4，`admin/server/languages.ts` + 侧栏「配置 → 语言管理」）：勾选式启停语言，停用 = `data/pages/<lang>/` 与 `data/streaming/<lang>/` 整目录归档至 `data/.archived_langs/`（可无损恢复，LocalizedText 键保留）。防护：默认语言（`site.language` 归一化后）锁定 400；停用 en 或剩余 <2 语言需 `confirm: true` 二次确认（响应带 `en-fallback`/`i18n-off` 机读警告）；归档/恢复目标冲突一律 409 不覆盖；操作前逐文件快照。扫描点结论：doctor/搜索/src 侧只扫活跃 `pages/` 天然排除归档，`data.zip` 导出包含归档目录（有测试守护）。
+
+## 后台图形化工具入口（spec 20）
+
+- **顶栏「🔄 刷新动态数据」**：`POST /api/prefetch` 调 `runPrefetch()`（固定 force，60s 总超时兜底）写 `.cache/`；进程内并发守卫重复触发 409；`GET /api/prefetch/status` 从 `.cache/meta.json` 的 `updated_at`（回退缓存文件 mtime）给出上次抓取时间，展示在按钮 title。解决"改完 GitHub 用户名 / rss.yaml 忘记 prefetch 导致区块空态"的痛点。
+- **侧栏「工具 → 健康检查」**（`#/doctor`，`admin/ui/views/doctor.ts`）：`GET /api/doctor`（默认离线，`?online=1` 追加 GitHub API / RSS 探测）调 `runDoctor()`，报告按级别分色渲染、建议折叠展开，可一键重跑。
+- **自动打开浏览器**：`npm run admin` 启动后 `openBrowser()`（`admin/server/open-browser.ts`）零依赖开浏览器——Windows `cmd /c start "" <url>` / macOS `open` / Linux `xdg-open`；`ADMIN_NO_OPEN=1` 禁用，失败静默降级（URL 照常打印）。平台命令构造抽成纯函数 `buildOpenCommand` 供单测。
+- 服务端注入点：`AdminServerOptions` 的 `cacheDir` / `prefetchRun` / `doctorRun`（`admin/server/live-tools.ts`），测试全部替身零触网（`tests/admin-live-tools.test.ts`）。

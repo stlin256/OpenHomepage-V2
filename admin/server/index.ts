@@ -10,6 +10,7 @@ import { build } from 'esbuild';
 import { ensureDataDir } from './setup.ts';
 import { createAdminServer } from './http.ts';
 import { createDevServerManager } from './devserver.ts';
+import { openBrowser } from './open-browser.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
 import { getBaseUrl } from '../../src/lib/base-url.ts';
 
@@ -52,6 +53,8 @@ void renderMarkdown('```js\nwarmup\n```', { baseUrl: getBaseUrl() }).catch(() =>
 server.listen(port, '127.0.0.1', () => {
   console.log(`编辑器已启动 / Editor running:  http://127.0.0.1:${port}`);
   console.log('仅监听本机回环地址 / Listening on loopback only.');
+  // 自动打开浏览器（spec 20）：ADMIN_NO_OPEN=1 禁用；失败静默降级（URL 已打印）
+  if (process.env.ADMIN_NO_OPEN !== '1') openBrowser(adminOrigin);
 });
 
 // 一键全启动（批次 5）：编辑器启动时自动拉起预览 dev server——已在跑则探测接管不重复
