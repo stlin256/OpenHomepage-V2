@@ -13,6 +13,11 @@ updates:
       minor-patch:
         update-types: [minor, patch]
         patterns: ["*"]
+    ignore:
+      # typescript 固定 ^6：@astrojs/check 的 peer 仅支持 TS ^5||^6，
+      # TS7 无语言服务 API，astro check 无法工作（见 AGENTS.md 质量门禁一节）
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
