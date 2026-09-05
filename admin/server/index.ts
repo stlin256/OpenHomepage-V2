@@ -10,6 +10,8 @@ import { build } from 'esbuild';
 import { ensureDataDir } from './setup.ts';
 import { createAdminServer } from './http.ts';
 import { createDevServerManager } from './devserver.ts';
+import { createBuildManager } from './build.ts';
+import { createPreviewManager } from './preview.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
 import { getBaseUrl } from '../../src/lib/base-url.ts';
 
@@ -45,7 +47,19 @@ const overlayJs = overlayBundle.outputFiles[0].text;
 const port = Number(process.env.ADMIN_PORT ?? 4174);
 const adminOrigin = `http://127.0.0.1:${port}`;
 const devManager = createDevServerManager({ rootDir: root, adminOrigin });
-const server = createAdminServer({ dataDir, initialized, appJs, overlayJs, rootDir: root, devManager });
+// 发布视图（spec 21）：构建状态机与 dist 静态预览（admin 退出时一并清理，见 shutdown）
+const buildManager = createBuildManager({ rootDir: root });
+const previewManager = createPreviewManager({ rootDir: root });
+const server = createAdminServer({
+  dataDir,
+  initialized,
+  appJs,
+  overlayJs,
+  rootDir: root,
+  devManager,
+  buildManager,
+  previewManager,
+});
 // 预热 Markdown 渲染管线（Shiki/WASM/主题），消除首次打开预览窗口或编辑时的冷启动延迟
 void renderMarkdown('```js\nwarmup\n```', { baseUrl: getBaseUrl() }).catch(() => {});
 
@@ -73,15 +87,18 @@ void devManager.start().then(async () => {
   }
 });
 
-// admin 退出时连带终止由它 spawn 的 astro dev（Windows 走 taskkill /T 树杀，见 devserver.ts）
+// admin 退出时连带终止由它 spawn 的 astro dev（Windows 走 taskkill /T 树杀，见 devserver.ts）、
+// 取消进行中的构建并关闭 dist 预览服务（spec 21）
 let shuttingDown = false;
 const shutdown = () => {
   if (shuttingDown) return;
   shuttingDown = true;
-  void devManager.stop().finally(() => {
-    server.close();
-    process.exit(0);
-  });
+  void Promise.allSettled([devManager.stop(), buildManager.stop(), previewManager.stop()]).finally(
+    () => {
+      server.close();
+      process.exit(0);
+    }
+  );
 };
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);

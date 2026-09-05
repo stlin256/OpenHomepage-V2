@@ -52,3 +52,10 @@
 - **后台数据导入**（spec 18，`admin/server/import.ts`）：BibTeX 导入（侧栏「配置 → 学术成果」，预览→去重→合并 publications.yaml，DOI/标题去重）与 data.zip 导入（顶栏「📥 导入 data.zip」，路径穿越整包拒绝，覆盖前自动备份至 `data/.snapshots/import-backup/`）。
 - **新手欢迎向导**（spec 19）：`ensureDataDir()` 返回 `initialized=true` 且无 `data/.onboarding-done` 标记时后台自动弹三步卡片（名片/模块编排/主题色盘）；顶栏「🚀 新手向导」可随时重开；完成或任意跳过均写标记。第 1 步支持「⚡ 自动同步信息」：`GET /api/github/prefill?username=`（`admin/server/github-prefill.ts`，5s 超时，404/502 友好降级），仅填充空字段、不覆盖用户已输入内容。
 - **语言管理面板**（spec 19 §4，`admin/server/languages.ts` + 侧栏「配置 → 语言管理」）：勾选式启停语言，停用 = `data/pages/<lang>/` 与 `data/streaming/<lang>/` 整目录归档至 `data/.archived_langs/`（可无损恢复，LocalizedText 键保留）。防护：默认语言（`site.language` 归一化后）锁定 400；停用 en 或剩余 <2 语言需 `confirm: true` 二次确认（响应带 `en-fallback`/`i18n-off` 机读警告）；归档/恢复目标冲突一律 409 不覆盖；操作前逐文件快照。扫描点结论：doctor/搜索/src 侧只扫活跃 `pages/` 天然排除归档，`data.zip` 导出包含归档目录（有测试守护）。
+## Admin 发布闭环（2026-09-05 落地，spec 21）
+
+详细规格见 `docs/specs/21-admin-publish.md`。
+
+- **侧栏「发布」视图**（`#/publish`，`admin/ui/views/publish.ts`）：一键构建（`admin/server/build.ts`，分 5 阶段 spawn：fonts → og → astro build → css → images，node 直跑 tsx/astro CLI 避开 .cmd 壳；状态机 idle→running→success|failed，进行中重复启动 409；`stop()` 走 devserver 的 killProcessTree 树杀回 idle）；构建成功后「预览 dist」（`admin/server/preview.ts`，**进程内**复用 scripts/serve.ts 的 createStaticServer，127.0.0.1:4399，幂等/外部占用接管/退出时 close）；OG 分享卡预览（`admin/server/og-preview.ts`，进程内调 generateOgSvg 返回 SVG，不写盘不依赖 sharp，自定义 og_image 页面回传 custom 路径）。
+- **学术成果逐条编辑**（`admin/server/publications.ts` + 「学术成果」视图上半区）：列表 + 弹窗表单增删改，整文件 `GET/PUT /api/config/publications`，服务端逐条校验（必填约束对齐 src/lib/publications.ts normalizeItem + id 唯一 + type 枚举）+ createSnapshot 快照链路；未知字段（如 doi）编辑往返不丢；BibTeX 导入面板保留在下方。
+- 测试：`tests/admin-publish.test.ts`（假 spawn/probe runner，不真跑构建）、`tests/admin-publications.test.ts`（快照断言模式同 admin-configs）。

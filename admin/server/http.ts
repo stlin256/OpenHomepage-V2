@@ -38,6 +38,10 @@ import {
 } from './github-prefill.ts';
 import { syncGithubAvatar } from './github-avatar.ts';
 import { convertFavicon, saveFavicon } from './favicon.ts';
+import { createBuildManager, BuildConflictError, type BuildManager } from './build.ts';
+import { createPreviewManager, type PreviewManager } from './preview.ts';
+import { readPublications, writePublications } from './publications.ts';
+import { renderOgPreview } from './og-preview.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
 import { getBaseUrl } from '../../src/lib/base-url.ts';
@@ -66,6 +70,10 @@ export interface AdminServerOptions {
   githubFetch?: typeof fetch;
   /** GitHub 预填请求超时毫秒数（测试可注入；缺省 5000） */
   githubTimeoutMs?: number;
+  /** 构建管理器（测试可注入替身） */
+  buildManager?: BuildManager;
+  /** dist 预览管理器（测试可注入替身） */
+  previewManager?: PreviewManager;
 }
 
 type Json = Record<string, unknown>;
@@ -132,6 +140,8 @@ function sendError(res: http.ServerResponse, e: unknown): void {
           ? 409
           : e instanceof LangConflictError
             ? 409
+            : e instanceof BuildConflictError
+            ? 409
             : e instanceof GithubPrefillError
             ? e.status
             : /不存在|非法|缺少|必须|已存在|不能|不支持|过大|超限|not found/i.test(msg)
@@ -162,9 +172,13 @@ function previewPathFor(
 
 export function createAdminServer(opts: AdminServerOptions): http.Server {
   const { dataDir } = opts;
+  const rootDir = opts.rootDir ?? path.resolve(dataDir, '..');
   const dev =
     opts.devManager ??
-    createDevServerManager({ rootDir: opts.rootDir ?? path.resolve(dataDir, '..') });
+    createDevServerManager({ rootDir });
+  // 发布视图（spec 21）：构建状态机 + dist 静态预览（测试可注入替身）
+  const build = opts.buildManager ?? createBuildManager({ rootDir });
+  const distPreview = opts.previewManager ?? createPreviewManager({ rootDir });
 
   const routes: Record<string, Record<string, Handler>> = {
     GET: {
@@ -224,6 +238,17 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       '/api/history': ({ query, res }) =>
         sendJson(res, 200, historyState(dataDir, query.get('path') || undefined)),
       '/api/dev-status': async ({ res }) => sendJson(res, 200, await dev.status()),
+      // 发布视图（spec 21 §2）：构建状态轮询（阶段/日志尾部/成败）
+      '/api/build/status': ({ res }) => sendJson(res, 200, build.status()),
+      // 发布视图（spec 21 §3）：dist 静态预览状态
+      '/api/preview/status': async ({ res }) => sendJson(res, 200, await distPreview.status()),
+      // 学术成果逐条编辑（spec 21 §4）：整文件读（未知字段原样往返）
+      '/api/config/publications': ({ res }) =>
+        sendJson(res, 200, { data: readPublications(dataDir) }),
+      // OG 分享卡按需预览（spec 21 §5）：不跑构建不写盘，直接返回 SVG；
+      // 页面自定义 og_image 时返回 { custom }（与构建期跳过逻辑一致）
+      '/api/og-preview': ({ query, res }) =>
+        sendJson(res, 200, renderOgPreview(dataDir, query.get('lang') ?? '', query.get('file') ?? '')),
       // 可视化编辑（M12a）：页面正文可编辑块清单（坐标 + 内容 hash，供 overlay 陈旧检测）
       '/api/page/blocks': ({ query, res }) =>
         sendJson(res, 200, { blocks: listPageBlocks(dataDir, query.get('path') ?? '') }),
@@ -263,6 +288,11 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
       },
       '/api/config/rss': ({ body, res }) => {
         writeRssConfig(dataDir, body.data as never);
+        sendJson(res, 200, { ok: true });
+      },
+      // 学术成果逐条编辑（spec 21 §4）：整文件写回（逐条校验 + 快照 + 撤销链）
+      '/api/config/publications': ({ body, res }) => {
+        writePublications(dataDir, body.data as never);
         sendJson(res, 200, { ok: true });
       },
     },
@@ -358,6 +388,11 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
         sendJson(res, 200, historyRedo(dataDir, typeof body.path === 'string' && body.path !== '' ? body.path : undefined)),
       '/api/dev/start': async ({ res }) => sendJson(res, 200, await dev.start()),
       '/api/dev/stop': async ({ res }) => sendJson(res, 200, await dev.stop()),
+      // 发布视图（spec 21 §2/§3）：构建启动（进行中 409）/取消；dist 预览启停
+      '/api/build/start': ({ res }) => sendJson(res, 200, build.start()),
+      '/api/build/stop': async ({ res }) => sendJson(res, 200, await build.stop()),
+      '/api/preview/start': async ({ res }) => sendJson(res, 200, await distPreview.start()),
+      '/api/preview/stop': async ({ res }) => sendJson(res, 200, await distPreview.stop()),
       // favicon 上传：原始二进制图片 → 居中裁方 → 180/32 PNG 入 assets + 写回 site.favicon
       '/api/favicon': async ({ raw, res }) => {
         const outputs = await convertFavicon(raw);
