@@ -17,6 +17,8 @@
   "scripts": {
     "test": "vitest run",
     "check": "astro check",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "prefetch": "tsx scripts/prefetch.ts",
     "doctor": "tsx scripts/doctor.ts",
     "dev": "tsx scripts/generate-fonts.ts && astro dev",
@@ -76,17 +78,22 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@eslint/js": "^10.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^26.2.0",
     "beasties": "^0.4.3",
     "esbuild": "^0.28.2",
+    "eslint": "^10.10.0",
+    "eslint-plugin-astro": "^3.1.0",
+    "globals": "^17.12.0",
     "jimp": "^1.6.1",
     "jsdom": "^30.0.1",
     "playwright": "^1.62.1",
     "subset-font": "^2.7.0",
     "tsx": "^4.23.12",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.69.0",
     "vitest": "^4.1.11"
   }
 }

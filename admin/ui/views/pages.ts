@@ -1,6 +1,6 @@
 import { lintMarkdownContent } from '../../shared/diagnostics.ts';
 import { generatePageSkeleton } from '../../shared/skeleton.ts';
-﻿/**
+/**
  * 页面视图（M12e 重写，docs/specs/12 §4）：
  * frontmatter 纵向表单（标题/slug/nav/order/描述/notice）+ 整页源码 textarea（等宽，
  * 1.5s 停顿自动保存，兜底编辑面）+「可视化编辑」主按钮（确保 dev server 运行后打开
@@ -110,9 +110,6 @@ export async function renderPageEditor(
     initialNoticeColor = String(no.color ?? 'accent');
   }
 
-  let noticeTextInput: HTMLInputElement;
-  let noticeColorSelect: HTMLSelectElement;
-
   const syncNotice = () => {
     const text = noticeTextInput.value.trim();
     const color = noticeColorSelect.value;
@@ -126,8 +123,9 @@ export async function renderPageEditor(
     autosave.touch();
   };
 
-  noticeTextInput = textInput(initialNoticeText, () => syncNotice());
-  noticeColorSelect = select(
+  // syncNotice 仅作为输入事件回调在下方初始化完成后触发，const 后置声明无 TDZ 风险
+  const noticeTextInput = textInput(initialNoticeText, () => syncNotice());
+  const noticeColorSelect = select(
     [
       { value: 'accent', label: t('noticeColorAccent') },
       { value: 'yellow', label: t('noticeColorYellow') },

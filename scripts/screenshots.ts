@@ -321,7 +321,7 @@ const SHOTS: Shot[] = [
       await page.evaluate(() => {
         const d = document.querySelector("dialog.search-dialog");
         if (d) {
-          try { (d as HTMLDialogElement).close?.(); } catch {}
+          try { (d as HTMLDialogElement).close?.(); } catch { /* 弹窗未打开时忽略 */ }
           (d as HTMLElement).hidden = true;
           d.classList.remove("open");
         }
@@ -369,7 +369,7 @@ const SHOTS: Shot[] = [
       await page.evaluate(() => {
         const d = document.querySelector("dialog.qr-modal");
         if (d) {
-          try { (d as HTMLDialogElement).close?.(); } catch {}
+          try { (d as HTMLDialogElement).close?.(); } catch { /* 弹窗未打开时忽略 */ }
           d.removeAttribute("open");
         }
       });
@@ -637,7 +637,7 @@ async function shotLanguage(
       await dark.addInitScript(() => {
         try {
           sessionStorage.setItem("theme", "dark");
-        } catch {}
+        } catch { /* 存储不可用时忽略 */ }
       });
       const url = `${origin}${PAGE_URL.home[lang]}`;
       await dark.goto(url, { waitUntil: "domcontentloaded" });

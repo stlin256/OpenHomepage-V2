@@ -399,7 +399,7 @@ describe('mobile collapsible toc animation', () => {
   });
 
   it('prefers-reduced-motion 下直接切换状态，不调用 animate', () => {
-    const { details, summary, body } = setupCollapsible(false);
+    const { details, body } = setupCollapsible(false);
     window.matchMedia = vi.fn().mockImplementation((query: string) => ({
       matches: query.includes('prefers-reduced-motion'),
       media: query,
@@ -423,7 +423,7 @@ describe('mobile collapsible toc animation', () => {
 
   it('无 Web Animations API 环境下直接优雅降级切换 open 状态', () => {
     delete (HTMLElement.prototype as { animate?: unknown }).animate;
-    const { details, summary, body } = setupCollapsible(false);
+    const { details, body } = setupCollapsible(false);
     initToc();
 
     animateCollapsible(details, body, true);

@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import { cpSync, createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
+import { cpSync, createReadStream, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 

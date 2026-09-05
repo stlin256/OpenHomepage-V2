@@ -174,7 +174,7 @@ export function buildSearchIndexItem(input: {
   lang: string;
 }): SearchResultItem {
   // Strip ignored elements
-  let clean = input.html
+  const clean = input.html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
     .replace(/<pre\b[^>]*data-pagefind-ignore[^>]*>[\s\S]*?<\/pre>/gi, ' ')

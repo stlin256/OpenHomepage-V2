@@ -7,7 +7,7 @@
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import type { RssConfig, RssSource } from './config.ts';
+import type { RssConfig } from './config.ts';
 import { canonicalText, resolveText } from './localize.ts';
 import { truncateText, type RssCache, type RssEntry } from './prefetch.ts';
 

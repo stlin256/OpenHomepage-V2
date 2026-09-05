@@ -28,7 +28,7 @@ function readYamlFile(abs: string): unknown {
   try {
     return loadYaml(text);
   } catch (e) {
-    throw new Error(`YAML 解析失败（${path.basename(abs)}）：${(e as Error).message}`);
+    throw new Error(`YAML 解析失败（${path.basename(abs)}）：${(e as Error).message}`, { cause: e });
   }
 }
 

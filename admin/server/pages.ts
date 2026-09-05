@@ -71,7 +71,7 @@ export function listPages(dataDir: string): PageMeta[] {
     if (!statSync(langDir).isDirectory()) continue;
     for (const file of readdirSync(langDir)) {
       if (!file.endsWith('.md')) continue;
-      let fm: Record<string, unknown> = {};
+      let fm: Record<string, unknown>;
       try {
         fm = parsePage(readFileSync(path.join(langDir, file), 'utf8')).frontmatter;
       } catch {

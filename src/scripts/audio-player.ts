@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 自渲染音频播放器（:::audio）：保留原生 <audio> 内核、隐藏 UI 交给本地 JS。
  * 主题变量继承 global.css；播放前置 metadata 预载时长，点击才拉流。
  * 独占播放策略：页面同时只允许一个媒体播放（音频 / 视频 / BGM 互斥），
@@ -107,7 +107,7 @@ function initAudioPlayer(root: HTMLElement): void {
       try {
         if (audio.networkState === HTMLMediaElement.NETWORK_EMPTY) audio.load();
         await audio.play();
-      } catch {}
+      } catch { /* 播放被浏览器策略阻止时忽略 */ }
     } else {
       audio.pause();
       resumeBgmIfNeeded();

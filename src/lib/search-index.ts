@@ -1,10 +1,8 @@
 /**
  * 全站静态搜索索引生成器：构建期提取所有页面、标题、区块、学术论文、时间线与组件内容。
  */
-import { existsSync, readFileSync } from 'node:fs';
-import path from 'node:path';
-import { loadPages, detectLanguages, loadSiteConfig, resolveText, type PageEntry } from './config.ts';
-import { buildRoutes, normalizeLang, pageUrlPath, type RouteEntry } from './routes.ts';
+import { loadPages, detectLanguages, loadSiteConfig, resolveText } from './config.ts';
+import { buildRoutes, normalizeLang, pageUrlPath } from './routes.ts';
 import { loadPublications } from './publications.ts';
 import { generateHeadingSlug } from './toc.ts';
 import type { SearchResultItem } from './search.ts';

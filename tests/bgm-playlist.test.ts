@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveBgmPlaylist, type BgmTrack, BGM_DEFAULT_VOLUME } from "../src/lib/bgm-playlist.ts";
+import { resolveBgmPlaylist } from "../src/lib/bgm-playlist.ts";
 import type { SiteConfig } from "../src/lib/config.ts";
 
 describe("resolveBgmPlaylist", () => {

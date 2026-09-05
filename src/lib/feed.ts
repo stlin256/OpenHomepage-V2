@@ -87,7 +87,7 @@ function cdata(value: string): string {
   return `<![CDATA[${value.replace(/]]>/g, ']]&gt;')}]]>`;
 }
 
-function feedDescription(item: PageEntry, language: string): string {
+function feedDescription(item: PageEntry): string {
   if (item.description) return item.description;
   const text = item.body.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   return [...text].slice(0, 300).join('');
@@ -108,7 +108,7 @@ export function buildRssFeed(items: FeedItem[], options: FeedOptions): string {
       <guid isPermaLink="true">${xmlEsc(item.absoluteUrl)}</guid>
       <pubDate>${item.published.toUTCString()}</pubDate>
       ${item.updatedDate ? `<atom:updated>${iso(item.updatedDate)}</atom:updated>` : ''}
-      <description>${cdata(feedDescription(item, options.lang))}</description>
+      <description>${cdata(feedDescription(item))}</description>
       <content:encoded>${cdata(item.body)}</content:encoded>
       <dc:language>${xmlEsc(item.lang)}</dc:language>
     </item>`).join('\n');
@@ -135,7 +135,7 @@ export function buildAtomFeed(items: FeedItem[], options: FeedOptions): string {
       <link href="${xmlEsc(item.absoluteUrl)}"/>
       <published>${iso(item.published)}</published>
       <updated>${iso(item.updatedDate ?? item.published)}</updated>
-      <summary>${xmlEsc(feedDescription(item, options.lang))}</summary>
+      <summary>${xmlEsc(feedDescription(item))}</summary>
       <content type="html">${xmlEsc(item.body)}</content>
     </entry>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -162,7 +162,7 @@ export function buildJsonFeed(items: FeedItem[], options: FeedOptions): string {
       url: item.absoluteUrl,
       title: item.title,
       content_html: absolutizeUrls(item.body, options.baseUrl),
-      summary: feedDescription(item, options.lang),
+      summary: feedDescription(item),
       date_published: iso(item.published),
       ...(item.updatedDate ? { date_modified: iso(item.updatedDate) } : {}),
       language: item.lang,

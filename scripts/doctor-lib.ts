@@ -307,7 +307,7 @@ export function maskMarkdownLines(lines: string[], skipFrontmatter: boolean): bo
 
 /** 归一化素材引用：去 ./ 前缀、query/hash；非 assets/ 路径返回 null */
 export function normalizeAssetRef(raw: string): string | null {
-  let ref = raw.trim().replace(/^\.\//, '').split(/[?#]/)[0];
+  const ref = raw.trim().replace(/^\.\//, '').split(/[?#]/)[0];
   if (!ref.startsWith('assets/')) return null;
   return ref;
 }

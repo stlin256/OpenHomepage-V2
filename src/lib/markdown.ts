@@ -62,8 +62,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   // 编辑模式坐标注入必须在 remarkRehype 之前（mdast 阶段），且晚于自定义指令映射
   // （指令的 hProperties 先建好，这里合并 data-oh-src）
   if (options.editSource) processor.use(() => remarkEditSpans(options.editSource!));
-  processor
-    const ui = getUiLabels(options.lang);
+  const ui = getUiLabels(options.lang);
   processor.use(remarkRehype, {
     allowDangerousHtml: true,
     footnoteLabel: ui.footnotes.label,

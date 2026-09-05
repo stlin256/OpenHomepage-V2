@@ -70,7 +70,7 @@ export function normalizeNotice(raw: unknown): PageNotice | null {
     const rawText = String(obj.text ?? obj.content ?? obj.message ?? "").trim();
     if (!rawText) return null;
     const rawColor = String(obj.color ?? obj.variant ?? obj.type ?? "accent").trim();
-    let color: NoticeColor = "accent";
+    let color: NoticeColor;
     let customColor: string | undefined = undefined;
 
     if (rawColor === "yellow" || rawColor === "warning") {

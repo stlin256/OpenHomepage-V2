@@ -26,7 +26,7 @@ const defaultExec: ExecRemote = (rootDir) =>
   });
 
 export function readDeployInfo(rootDir: string, exec: ExecRemote = defaultExec): DeployInfo {
-  let remote = '';
+  let remote: string;
   try {
     remote = exec(rootDir);
   } catch {

@@ -207,7 +207,7 @@ describe('自定义指令：内嵌播放器', () => {
     const mockFetch = vi.fn(async () => ({ ok: false, status: 403 } as unknown as Response));
     const emptyCacheDir = path.join(tmpdir(), 'oh-bili-empty-' + Date.now());
     mkdirSync(emptyCacheDir, { recursive: true });
-    const html = await renderMarkdown('::bilibili{bvid="BV13z421U7cs"}', {
+    await renderMarkdown('::bilibili{bvid="BV13z421U7cs"}', {
       localizeAssets: {
         dataDir: path.join(emptyCacheDir, 'data'),
         fetchFn: mockFetch as any,

@@ -66,7 +66,7 @@ export async function renderI18nSync(
       const source = await api.page(sourceMeta.lang, sourceMeta.file);
       const skeletonBody = generatePageSkeleton(source.body);
       const title = String(source.frontmatter.title || targetSlug);
-      const r = await api.createPage(targetLang, `${title} [待翻译]`, targetSlug, skeletonBody);
+      await api.createPage(targetLang, `${title} [待翻译]`, targetSlug, skeletonBody);
       state.setStatus(t("skeletonCloned"), "ok");
       await reloadView();
     } catch (e) {

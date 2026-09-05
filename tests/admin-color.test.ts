@@ -76,7 +76,7 @@ describe('extractPalette 头像候选色提取', () => {
       ...Array.from({ length: 900 }, () => [250, 0, 0, 20]).flat(),
     ]);
     const palette = extractPalette(data, 3);
-    const [r, g, b] = hexToRgb(palette[0]);
+    const [r, g] = hexToRgb(palette[0]);
     expect(g).toBeGreaterThan(150);
     expect(r).toBeLessThan(80);
   });

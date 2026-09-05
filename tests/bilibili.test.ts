@@ -1,10 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   fetchBilibiliMeta,
-  loadBilibiliCache,
   saveBilibiliCache,
   resetBilibiliState,
 } from "../src/lib/bilibili.ts";

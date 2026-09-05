@@ -12,7 +12,7 @@ export const JITTER_RATIO = 0.4;
 export const PAUSE_MAX_MS = 400;
 
 /** 标点 token 判定（标点后加短停顿，spec 04 §2） */
-const PAUSE_RE = /[。，、！？；：…,.!?;:—–\-]$/;
+const PAUSE_RE = /[。，、！？；：…,.!?;:—–-]$/;
 
 export function isPauseToken(tokenText: string): boolean {
   return PAUSE_RE.test(tokenText.trimEnd());

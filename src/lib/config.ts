@@ -217,7 +217,7 @@ function readYaml(file: string): unknown {
   try {
     return loadYaml(text);
   } catch (e) {
-    throw new Error(`YAML 解析失败（${file}）：${(e as Error).message}`);
+    throw new Error(`YAML 解析失败（${file}）：${(e as Error).message}`, { cause: e });
   }
 }
 

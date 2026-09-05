@@ -1,0 +1,21 @@
+# Dependabot 依赖更新：npm 每周分组更新 + GitHub Actions 版本跟踪
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    # 大版本升级单独提 PR，便于人工评估破坏性变更
+    groups:
+      minor-patch:
+        update-types: [minor, patch]
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

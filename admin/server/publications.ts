@@ -37,7 +37,7 @@ export function readPublications(dataDir: string): PublicationsData {
   try {
     cfg = loadYaml(readFileSync(file, 'utf8'));
   } catch (e) {
-    throw new Error(`YAML 解析失败（publications.yaml）：${(e as Error).message}`);
+    throw new Error(`YAML 解析失败（publications.yaml）：${(e as Error).message}`, { cause: e });
   }
   const root: PublicationsData =
     cfg && typeof cfg === 'object' && !Array.isArray(cfg)

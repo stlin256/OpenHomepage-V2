@@ -57,7 +57,7 @@ function parseLocalAssetUrl(imageUrl: string): LocalAssetUrl | null {
   if (!imageUrl || /^(https?:|data:|blob:|\/\/)/i.test(imageUrl)) return null;
 
   let pathname: string;
-  let searchAndHash = '';
+  let searchAndHash: string;
   try {
     const url = new URL(imageUrl, 'https://image.invalid/');
     pathname = url.pathname;

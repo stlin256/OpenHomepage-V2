@@ -183,11 +183,11 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
       // html.js 标记：滚动显现等动效的初始隐藏态只在有 JS 时生效（无 JS 不隐藏内容）
       (function () {
         document.documentElement.classList.add('js');
-        var saved = null;
+        let saved = null;
         try {
           saved = sessionStorage.getItem('theme');
-        } catch (e) {}
-        var theme =
+        } catch { /* 存储不可用时按未设置处理 */ }
+        const theme =
           saved === 'light' || saved === 'dark'
             ? saved
             : defaultMode === 'light' || defaultMode === 'dark'
@@ -205,37 +205,37 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
         // normalize 与 src/lib/language.ts normalizeSiteLanguage 同一套规则（is:inline 无法 import，此处内联镜像）：
         // 归一化主语言子标签 + 对照 data-site-langs 校验是本站语言（支持任意语言目录，不写死语言列表）。
         (function () {
-          var siteLangs = (document.documentElement.dataset.siteLangs || '').split(',').filter(Boolean);
-          var normalize = function (value) {
-            var lang = (value || '').toLowerCase().split(/[-_]/)[0];
+          const siteLangs = (document.documentElement.dataset.siteLangs || '').split(',').filter(Boolean);
+          const normalize = function (value) {
+            const lang = (value || '').toLowerCase().split(/[-_]/)[0];
             if (!/^[a-z]{2,3}$/.test(lang)) return null;
             return siteLangs.length === 0 || siteLangs.indexOf(lang) !== -1 ? lang : null;
           };
-          var preferred = null;
+          let preferred = null;
           try {
             preferred = normalize(localStorage.getItem('oh-language'));
-          } catch (e) {}
+          } catch { /* 存储不可用时按未设置处理 */ }
           if (!preferred) preferred = normalize(navigator.language);
-          var current = document.documentElement.dataset.routeLang
+          const current = document.documentElement.dataset.routeLang
             ? normalize(document.documentElement.dataset.routeLang)
             : null;
           if (!preferred || !current || preferred === current) return;
 
-          var cleanBase = (baseUrl || '/').replace(/\/+$/, '');
-          var fullPath = location.pathname || '/';
-          var unbased = fullPath;
+          const cleanBase = (baseUrl || '/').replace(/\/+$/, '');
+          const fullPath = location.pathname || '/';
+          let unbased = fullPath;
           if (cleanBase && (fullPath === cleanBase || fullPath.indexOf(cleanBase + '/') === 0)) {
             unbased = fullPath.slice(cleanBase.length) || '/';
           }
-          var rest = unbased;
-          var prefix = '/' + current;
+          let rest = unbased;
+          const prefix = '/' + current;
           if (rest === prefix || rest.indexOf(prefix + '/') === 0) {
             rest = rest.slice(prefix.length) || '/';
           }
-          var targetPath = preferred === defaultLang
+          const targetPath = preferred === defaultLang
             ? (rest || '/')
             : (rest === '/' ? '/' + preferred + '/' : '/' + preferred + rest);
-          var newPath = (cleanBase ? cleanBase : '') + (targetPath.charAt(0) === '/' ? targetPath : '/' + targetPath);
+          const newPath = (cleanBase ? cleanBase : '') + (targetPath.charAt(0) === '/' ? targetPath : '/' + targetPath);
           location.replace(newPath + location.search + location.hash);
         })();
       </script>
@@ -513,27 +513,27 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
         // 脚本（interactions.ts），stream-player 据此不播打字机、流式块直接完整展开。
         (function () {
           try {
-            var params = new URLSearchParams(location.search);
-            var active = sessionStorage.getItem('oh-edit') === '1';
+            const params = new URLSearchParams(location.search);
+            let active = sessionStorage.getItem('oh-edit') === '1';
             if (params.get('edit') === '1') {
               sessionStorage.setItem('oh-edit', '1');
               active = true;
               params.delete('edit');
-              var q = params.toString();
+              const q = params.toString();
               history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
             }
             if (!active) return;
             document.documentElement.classList.add('oh-edit');
             window.__OH_ADMIN_ORIGIN__ = adminOrigin;
             window.__OH_PAGE_SOURCE__ = pageSource;
-            var link = document.createElement('link');
+            const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = adminOrigin + '/overlay.css';
             document.head.appendChild(link);
-            var s = document.createElement('script');
+            const s = document.createElement('script');
             s.src = adminOrigin + '/overlay.js';
             document.head.appendChild(s);
-          } catch (e) {}
+          } catch { /* 编辑引导失败时静默降级 */ }
         })();
       </script>
     )}

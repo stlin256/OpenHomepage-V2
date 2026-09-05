@@ -26,8 +26,16 @@ jobs:
 
       - run: npm ci
 
+      - name: 代码检查 / Lint (eslint)
+        run: npm run lint
+
       - name: 类型检查 / Type check (astro check)
         run: npm run check
+
+      # data/ 是私有数据且被 git 忽略，CI 检出后不存在；tests/search.test.ts 等
+      # 用例依赖该目录，按 deploy.yml 示例模式用 data.example/ 兜底播种
+      - name: 准备示例数据 / Seed example data (data.example → data)
+        run: test -d data || cp -r data.example data
 
       - name: 单元测试 / Unit tests (vitest run)
         run: npm test

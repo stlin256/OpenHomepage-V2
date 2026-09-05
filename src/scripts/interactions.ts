@@ -645,15 +645,12 @@ async function swapContent(
   // 遮罩自身完全透明，只作为切换期间的输入门；新页组件延迟到遮罩结束后初始化。
   let loadingTimer: ReturnType<typeof setTimeout> | null = null;
   let overlayShownAt = 0;
-  let overlayWasShown = false;
   if (minOverlayMs > 0) {
     showLoading();
-    overlayWasShown = true;
     overlayShownAt = Date.now();
   } else {
     loadingTimer = setTimeout(() => {
       showLoading();
-      overlayWasShown = true;
     }, 150);
   }
   let activatePage: (() => void) | null = null;

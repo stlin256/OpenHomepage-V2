@@ -107,7 +107,7 @@ const OPS = new Set(['replace', 'insert', 'delete', 'move', 'attrs']);
 
 /** replace/insert 的内容校验：同一解析器必须恰好解析出一个顶层块（防一次写入多块破坏坐标假设） */
 function assertSingleBlock(markdown: string): void {
-  let count = -1;
+  let count: number;
   try {
     count = parseBody(markdown).children.length;
   } catch {

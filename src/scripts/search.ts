@@ -300,7 +300,7 @@ export function initSearch(): void {
     const currentLang = lang;
     const scopeLang = currentScope === 'current' ? currentLang : 'all';
 
-    let allItems: SearchResultItem[] = [];
+    let allItems: SearchResultItem[];
     const siteIndex = await loadSiteSearchIndex();
     if (siteIndex.length > 0) {
       allItems = siteIndex;

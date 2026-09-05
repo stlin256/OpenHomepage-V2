@@ -24,7 +24,6 @@ import { PLAY_ICON_PATH, PAUSE_ICON_PATH, toEmbedDiv } from './embeds.ts';
 type Directive = ContainerDirective | LeafDirective | TextDirective;
 
 const WIDTH_RE = /^[\d.]+(%|px|em|rem|vw)$/;
-const CALLOUT_TYPES = new Set(['note', 'tip', 'warning', 'important', 'quote']);
 const CALLOUT_DEFAULT_TITLES: Record<string, Record<string, string>> = {
   zh: { note: '备注', tip: '提示', warning: '警告', important: '重要', quote: '引用' },
   en: { note: 'Note', tip: 'Tip', warning: 'Warning', important: 'Important', quote: 'Quote' },

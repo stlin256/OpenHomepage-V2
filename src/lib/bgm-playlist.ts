@@ -26,10 +26,10 @@ function cleanTrackTitle(src: string): string {
 }
 
 export function resolveBgmPlaylist(site: SiteConfig): ResolvedBgmPlaylist | null {
-  const bgm = site.bgm as any;
+  const bgm = site.bgm;
   if (!bgm || typeof bgm !== 'object' || bgm.enabled === false) return null;
 
-  const rawTracks: any[] = Array.isArray(bgm.tracks) ? bgm.tracks : [];
+  const rawTracks = Array.isArray(bgm.tracks) ? bgm.tracks : [];
   const tracks: BgmTrack[] = [];
 
   for (const t of rawTracks) {
