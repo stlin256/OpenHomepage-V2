@@ -20,11 +20,11 @@ jobs:
   build-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # 拉取上次部署产物（含 data 快照），首次部署容忍失败
       - name: 拉取上次 gh-pages 产物 / Fetch previous gh-pages output
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: gh-pages
           path: prev
