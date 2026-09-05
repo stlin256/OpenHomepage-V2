@@ -124,4 +124,6 @@ async function main(): Promise<void> {
 
 main().catch((err) => {
   console.error('OG image generation failed:', err);
+  // 构建链（admin/server/build.ts）按退出码判定阶段成败，失败必须非零退出
+  process.exitCode = 1;
 });

@@ -68,8 +68,10 @@ export function createStaticServer(plan: ServePlan, dist: string = distDir): htt
         res.end();
         return;
       }
+      // 前缀区间 bytes=start-end / 开口 bytes=start- / 后缀 bytes=-N（取最后 N 字节）。
+      // 后缀形式 match[1] 为空，end 固定为 size-1（不能取 match[2]，那是长度而非下标）。
       const start = match[1] ? Number(match[1]) : Math.max(0, size - Number(match[2] || 0));
-      const end = match[2] ? Number(match[2]) : size - 1;
+      const end = match[1] && match[2] ? Number(match[2]) : size - 1;
       if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || start >= size) {
         res.writeHead(416, { 'Content-Range': `bytes */${size}` });
         res.end();

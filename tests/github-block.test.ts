@@ -376,8 +376,7 @@ describe('heatTooltip（格子提示双语）', () => {
   it('德/西/葡语：0 与单复数特判', () => {
     expect(heatTooltip('2026-08-22', 0, 'de')).toBe('Keine Beiträge am 2026-08-22');
     expect(heatTooltip('2026-08-22', 1, 'de')).toBe('1 Beitrag am 2026-08-22');
-    // 注：源码复数实为 "Beitrage"（漏了变元音 ä，疑似 bug，见总结）
-    expect(heatTooltip('2026-08-22', 5, 'de')).toBe('5 Beitrage am 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'de')).toBe('5 Beiträge am 2026-08-22');
 
     expect(heatTooltip('2026-08-22', 0, 'es')).toBe('Sin contribuciones el 2026-08-22');
     expect(heatTooltip('2026-08-22', 1, 'es')).toBe('1 contribución el 2026-08-22');

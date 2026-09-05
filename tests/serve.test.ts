@@ -356,14 +356,18 @@ describe('createStaticServer 集成', () => {
       expect(clamped.status).toBe(206);
       expect(clamped.headers['content-range']).toBe('bytes 5-9/10');
       expect(clamped.body).toBe('56789');
+
+      // 后缀区间 bytes=-N（RFC 7233）：取最后 N 字节
+      const suffix = await request(`${base}/range.txt`, { headers: { range: 'bytes=-3' } });
+      expect(suffix.status).toBe(206);
+      expect(suffix.headers['content-range']).toBe('bytes 7-9/10');
+      expect(suffix.body).toBe('789');
     });
   });
 
   it('Range：非法格式 / 起点越界 / 区间倒置 → 416 + Content-Range bytes */size', async () => {
     await withServer(httpPlan, async (base) => {
-      // 注：'bytes=-3' 是合法的后缀区间（RFC 7233），但当前实现对 end 的计算
-      // 未区分后缀形式（end=3 < start=7）而返回 416——疑似源码 bug，此处锁定现状
-      for (const range of ['items=0-1', 'bytes=10-20', 'bytes=5-2', 'bytes=-3']) {
+      for (const range of ['items=0-1', 'bytes=10-20', 'bytes=5-2']) {
         const r = await request(`${base}/range.txt`, { headers: { range } });
         expect(r.status).toBe(416);
         expect(r.headers['content-range']).toBe('bytes */10');

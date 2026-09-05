@@ -189,12 +189,12 @@ describe('generate-og-images 脚本（子进程端到端）', () => {
     expect(r2.stdout).toContain('1 generated, 0 cached');
   });
 
-  it('data/ 与 data.example/ 均缺失：main().catch 捕获并打印失败日志，进程不崩', { timeout: 90_000 }, () => {
+  it('data/ 与 data.example/ 均缺失：main().catch 捕获并打印失败日志，非零退出', { timeout: 90_000 }, () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'oh-oggen-'));
     tempDirs.push(dir);
     const r = runScript(dir);
-    // catch 分支只 console.error 不设退出码，进程仍以 0 退出
-    expect(r.status).toBe(0);
+    // catch 分支打印错误并以非零退出码结束（构建链按退出码判定阶段成败）
+    expect(r.status).toBe(1);
     expect(r.stderr).toContain('OG image generation failed');
   });
 });

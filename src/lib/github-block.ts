@@ -209,7 +209,7 @@ export function heatTooltip(date: string, count: number, lang: string): string {
   }
   if (lang === 'de') {
     if (count === 0) return `Keine Beiträge am ${date}`;
-    return `${count} Beitrag${count === 1 ? '' : 'e'} am ${date}`;
+    return `${count} ${count === 1 ? 'Beitrag' : 'Beiträge'} am ${date}`;
   }
   if (lang === 'es') {
     if (count === 0) return `Sin contribuciones el ${date}`;

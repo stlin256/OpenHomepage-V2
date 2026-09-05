@@ -1,9 +1,9 @@
 /**
- * UI 文案 i18n 字典（zh / en / ja / fr）：站点内置的界面文案集中管理，
+ * UI 文案 i18n 字典：站点内置的界面文案集中管理，
  * 供构建侧组件与浏览器侧脚本共用。无 Node 依赖。
  *
- * 语言列表与 data/pages/<lang> 目录一致：zh、en、ja、fr。
- * 缺失语言回退到 en，再缺失回退到首个可用语言。
+ * 语言列表见 UI_LANGS（zh/en/ja/fr 等 17 种，多于 data/pages/<lang> 内置目录）。
+ * 语言码经 normalizeUiLang 归一化为主子标签；缺失或非法语言一律回退到 en。
  */
 
 /** 站点内置 UI 支持的语言码（与 data.example/pages 子目录一致） */
