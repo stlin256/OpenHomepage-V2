@@ -152,3 +152,183 @@ describe('编辑模式（M12g：<html class="oh-edit">）', () => {
     expect(content.innerHTML).toBe(''); // 尚未进入可视区，内容为空
   });
 });
+
+
+describe('初始化兜底与降级分支', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  function stubMatchMedia(matches = false): void {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: () => ({ matches }),
+    });
+  }
+
+  /** 构造即记录的 IO 替身；autoIntersect 时 observe 立即回报可见 */
+  function stubObserver(autoIntersect: boolean) {
+    const ioSpy = vi.fn();
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        constructor(private readonly callback: IntersectionObserverCallback) {
+          ioSpy();
+        }
+        observe(): void {
+          if (autoIntersect) {
+            this.callback(
+              [{ isIntersecting: true } as IntersectionObserverEntry],
+              this as unknown as IntersectionObserver,
+            );
+          }
+        }
+        disconnect(): void {}
+      },
+    );
+    return ioSpy;
+  }
+
+  it('tokens JSON 损坏时不抛错，直接完整呈现 noscript 兜底内容', () => {
+    stubMatchMedia();
+    const ioSpy = stubObserver(true);
+    document.body.innerHTML =
+      `<div class="stream-block" data-stream-id="bad" data-autoplay="true" data-speed="40">` +
+      `<div class="stream-content markdown-body"></div>` +
+      `<noscript><div class="stream-content markdown-body"><p>兜底内容</p></div></noscript>` +
+      `<script type="application/json" class="stream-tokens">{broken json</script>` +
+      `</div>`;
+
+    expect(() => initStreamBlocks()).not.toThrow();
+    const root = document.querySelector<HTMLElement>('.stream-block')!;
+    const content = root.querySelector<HTMLElement>(':scope > .stream-content')!;
+    // JSON 损坏走 renderFull：完整呈现、标记完成，且不创建光标/观察器
+    expect(content.textContent).toContain('兜底内容');
+    expect(root.classList.contains('stream-done')).toBe(true);
+    expect(root.querySelector('.stream-cursor')).toBeNull();
+    expect(ioSpy).not.toHaveBeenCalled();
+  });
+
+  it('缺少 .stream-content 或 tokens 脚本时跳过播放初始化', () => {
+    stubMatchMedia();
+    const ioSpy = stubObserver(true);
+    document.body.innerHTML =
+      `<div class="stream-block" id="no-tokens" data-stream-id="a" data-autoplay="true">` +
+      `<div class="stream-content markdown-body"></div></div>` +
+      `<div class="stream-block" id="no-content" data-stream-id="b" data-autoplay="true">` +
+      `<script type="application/json" class="stream-tokens">[]</script></div>`;
+
+    expect(() => initStreamBlocks()).not.toThrow();
+    expect(document.querySelector<HTMLElement>('#no-tokens')!.dataset.streamInit).toBe('1');
+    expect(document.querySelector<HTMLElement>('#no-content')!.dataset.streamInit).toBe('1');
+    expect(document.querySelectorAll('.stream-cursor').length).toBe(0);
+    expect(ioSpy).not.toHaveBeenCalled();
+  });
+
+  it('data-autoplay="false" 时直接完整呈现，不挂 IntersectionObserver', () => {
+    stubMatchMedia();
+    const ioSpy = stubObserver(true);
+    document.body.innerHTML =
+      `<div class="stream-block" data-stream-id="static" data-autoplay="false" data-speed="40">` +
+      `<div class="stream-content markdown-body"></div>` +
+      `<noscript><div class="stream-content markdown-body"><p>静态内容</p></div></noscript>` +
+      `<script type="application/json" class="stream-tokens">[{"t":"open","tag":"p","h":"<p>"},{"t":"text","w":"静"}]</script>` +
+      `</div>`;
+
+    initStreamBlocks();
+    const root = document.querySelector<HTMLElement>('.stream-block')!;
+    const content = root.querySelector<HTMLElement>(':scope > .stream-content')!;
+    expect(content.textContent).toContain('静态内容');
+    expect(root.classList.contains('stream-done')).toBe(true);
+    expect(ioSpy).not.toHaveBeenCalled();
+  });
+
+  it('prefers-reduced-motion 下初始化与重播按钮均只完整呈现', () => {
+    stubMatchMedia(true);
+    document.body.innerHTML =
+      `<div class="stream-block" data-stream-id="rm" data-autoplay="true" data-speed="40">` +
+      `<div class="stream-head"><button class="stream-replay" type="button">↻</button></div>` +
+      `<div class="stream-content markdown-body"></div>` +
+      `<noscript><div class="stream-content markdown-body"><p>完整内容</p></div></noscript>` +
+      `<script type="application/json" class="stream-tokens">[{"t":"open","tag":"p","h":"<p>"},{"t":"text","w":"完"}]</script>` +
+      `</div>`;
+
+    initStreamBlocks();
+    const root = document.querySelector<HTMLElement>('.stream-block')!;
+    const content = root.querySelector<HTMLElement>(':scope > .stream-content')!;
+    expect(content.textContent).toContain('完整内容');
+    expect(root.classList.contains('stream-done')).toBe(true);
+
+    // 显式重播在 reduced-motion 下同样降级为完整呈现
+    root.querySelector<HTMLButtonElement>('.stream-replay')!.click();
+    expect(content.textContent).toContain('完整内容');
+    expect(root.classList.contains('stream-playing')).toBe(false);
+  });
+
+  it('自动播放延迟期间点击重播：旧代际终止，连续文本 token 合并为单个文本节点', async () => {
+    vi.useFakeTimers();
+    stubMatchMedia();
+    stubObserver(true);
+    const tokens = [
+      { t: 'open', tag: 'p', h: '<p>' },
+      { t: 'text', w: '甲' },
+      { t: 'text', w: '乙' },
+      { t: 'close' },
+    ];
+    document.body.innerHTML =
+      `<div class="stream-block" data-stream-id="replay" data-autoplay="true" data-speed="10">` +
+      `<div class="stream-head"><button class="stream-replay" type="button">↻</button></div>` +
+      `<div class="stream-content markdown-body"></div>` +
+      `<noscript><div class="stream-content markdown-body"><p>甲乙</p></div></noscript>` +
+      `<script type="application/json" class="stream-tokens">${JSON.stringify(tokens)}</script>` +
+      `</div>`;
+
+    initStreamBlocks();
+    // IO 立即触发，自动播放处于 300ms 起始延迟内；此时重播应令旧代际作废
+    const root = document.querySelector<HTMLElement>('.stream-block')!;
+    root.querySelector<HTMLButtonElement>('.stream-replay')!.click();
+    await vi.runAllTimersAsync();
+
+    const paragraph = root.querySelector<HTMLElement>(':scope > .stream-content p')!;
+    // 内容只播放一次（旧代际已终止），且两段连续文本合并为同一文本节点
+    expect(paragraph.textContent).toBe('甲乙');
+    expect(paragraph.childNodes.length).toBe(1);
+    expect(root.classList.contains('stream-done')).toBe(true);
+    expect(root.classList.contains('stream-playing')).toBe(false);
+    expect(root.querySelector<HTMLElement>('.stream-cursor')!.hidden).toBe(true);
+  });
+
+  it('内容随 token 增长时以固定高度过渡，播放结束后释放高度', async () => {
+    vi.useFakeTimers();
+    stubMatchMedia();
+    stubObserver(true);
+    const tokens = [
+      { t: 'open', tag: 'p', h: '<p>' },
+      { t: 'text', w: '行' },
+      { t: 'close' },
+    ];
+    document.body.innerHTML =
+      `<div class="stream-block" data-stream-id="grow" data-autoplay="true" data-speed="10">` +
+      `<div class="stream-content markdown-body"></div>` +
+      `<noscript><div class="stream-content markdown-body"><p>行</p></div></noscript>` +
+      `<script type="application/json" class="stream-tokens">${JSON.stringify(tokens)}</script>` +
+      `</div>`;
+
+    initStreamBlocks();
+    const root = document.querySelector<HTMLElement>('.stream-block')!;
+    const content = root.querySelector<HTMLElement>(':scope > .stream-content')!;
+    // jsdom scrollHeight 恒为 0，stub 出增长量以触发动画分支
+    Object.defineProperty(content, 'scrollHeight', { configurable: true, value: 120 });
+
+    await vi.advanceTimersByTimeAsync(AUTOPLAY_START_DELAY_MS);
+    // 起始延迟结束后 token 已落地，高度被固定在增长后的值
+    expect(content.style.height).toBe('120px');
+    expect(root.classList.contains('stream-playing')).toBe(true);
+
+    await vi.runAllTimersAsync();
+    expect(content.style.height).toBe('');
+    expect(root.classList.contains('stream-done')).toBe(true);
+  });
+});

@@ -16,6 +16,7 @@
   },
   "scripts": {
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "check": "astro check",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -83,6 +84,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^26.2.0",
+    "@vitest/coverage-v8": "^4.1.11",
     "beasties": "^0.4.3",
     "esbuild": "^0.28.2",
     "eslint": "^10.10.0",

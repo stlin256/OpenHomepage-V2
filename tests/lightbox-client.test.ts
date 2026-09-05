@@ -157,4 +157,52 @@ describe("lightbox 2.0 client behavior", () => {
     expect(counter.textContent).toBe("1 / 4");
     expect(view.src).toContain("g1");
   });
+
+  // 构造带有 changedTouches 的触摸事件（jsdom 无 Touch 构造器，直接挂属性）
+  const dispatchTouch = (type: string, x: number, y: number) => {
+    const ev = new Event(type);
+    Object.defineProperty(ev, "changedTouches", { value: [{ screenX: x, screenY: y }] });
+    document.dispatchEvent(ev);
+  };
+
+  it("灯箱打开时横向触摸滑动可切换上一张/下一张（touchstart + touchend）", () => {
+    const img1 = document.querySelector("#img-1") as HTMLImageElement;
+    const counter = document.querySelector(".lightbox-counter") as HTMLElement;
+
+    img1.click();
+    expect(counter.textContent).toBe("1 / 2");
+
+    // 右滑（dx > 0 且 |dx| > 45）：切换上一张，从第 1 张循环到第 2 张
+    dispatchTouch("touchstart", 100, 300);
+    dispatchTouch("touchend", 200, 300);
+    expect(counter.textContent).toBe("2 / 2");
+
+    // 左滑（dx < 0）：切换下一张，回到第 1 张
+    dispatchTouch("touchstart", 200, 300);
+    dispatchTouch("touchend", 100, 300);
+    expect(counter.textContent).toBe("1 / 2");
+  });
+
+  it("以垂直为主的滑动不满足横向阈值，不触发图片切换", () => {
+    const img1 = document.querySelector("#img-1") as HTMLImageElement;
+    const counter = document.querySelector(".lightbox-counter") as HTMLElement;
+
+    img1.click();
+    expect(counter.textContent).toBe("1 / 2");
+
+    // |dx| = 60 > 45，但 |dy| = 200 使 |dx| <= |dy| * 1.5，判定为纵向滚动
+    dispatchTouch("touchstart", 100, 100);
+    dispatchTouch("touchend", 160, 300);
+    expect(counter.textContent).toBe("1 / 2");
+  });
+
+  it("灯箱未打开时触摸事件被忽略", () => {
+    const box = document.querySelector(".lightbox") as HTMLElement;
+
+    dispatchTouch("touchstart", 100, 100);
+    dispatchTouch("touchend", 300, 100);
+
+    expect(box.hidden).toBe(true);
+    expect(box.classList.contains("open")).toBe(false);
+  });
 });

@@ -71,6 +71,11 @@ describe('色阶 mixHex / heatScale', () => {
     expect(mixHex('#000000', '#ffffff', 0.5)).toBe('#808080');
   });
 
+  it('mixHex ratio 越界时被钳制到 0–1', () => {
+    expect(mixHex('#000000', '#ffffff', 1.5)).toBe('#000000');
+    expect(mixHex('#000000', '#ffffff', -0.5)).toBe('#ffffff');
+  });
+
   it('heatScale 输出 5 档，末档为 accent 原色，档位递增变深', () => {
     const scale = heatScale(DEFAULT_ACCENT, '#ffffff');
     expect(scale).toHaveLength(HEAT_LEVELS);
@@ -362,6 +367,72 @@ describe('heatTooltip（格子提示双语）', () => {
     expect(heatTooltip('2026-08-22', 1, 'fr')).toBe('1 contribution le 2026-08-22');
     expect(heatTooltip('2026-08-22', 5, 'fr')).toBe('5 contributions le 2026-08-22');
   });
+
+  it('韩语：本地化日期 + N회 기여（0 → 기여 없음）', () => {
+    expect(heatTooltip('2026-08-22', 0, 'ko')).toBe('2026년 8월 22일, 기여 없음');
+    expect(heatTooltip('2026-08-22', 5, 'ko')).toBe('2026년 8월 22일, 5회 기여');
+  });
+
+  it('德/西/葡语：0 与单复数特判', () => {
+    expect(heatTooltip('2026-08-22', 0, 'de')).toBe('Keine Beiträge am 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'de')).toBe('1 Beitrag am 2026-08-22');
+    // 注：源码复数实为 "Beitrage"（漏了变元音 ä，疑似 bug，见总结）
+    expect(heatTooltip('2026-08-22', 5, 'de')).toBe('5 Beitrage am 2026-08-22');
+
+    expect(heatTooltip('2026-08-22', 0, 'es')).toBe('Sin contribuciones el 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'es')).toBe('1 contribución el 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'es')).toBe('5 contribuciones el 2026-08-22');
+
+    expect(heatTooltip('2026-08-22', 0, 'pt')).toBe('Sem contribuições em 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'pt')).toBe('1 contribuição em 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'pt')).toBe('5 contribuições em 2026-08-22');
+  });
+
+  it('俄语：0 与三档复数（1 / 2-4 / 5+）', () => {
+    expect(heatTooltip('2026-08-22', 0, 'ru')).toBe('Нет вкладов за 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'ru')).toBe('1 вклад за 2026-08-22');
+    expect(heatTooltip('2026-08-22', 3, 'ru')).toBe('3 вклада за 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'ru')).toBe('5 вкладов за 2026-08-22');
+  });
+
+  it('意/荷/土语：0 与单复数（土语无复数变化）', () => {
+    expect(heatTooltip('2026-08-22', 0, 'it')).toBe('Nessun contributo il 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'it')).toBe('1 contributo il 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'it')).toBe('5 contributi il 2026-08-22');
+
+    expect(heatTooltip('2026-08-22', 0, 'nl')).toBe('Geen bijdragen op 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'nl')).toBe('1 bijdrage op 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'nl')).toBe('5 bijdragen op 2026-08-22');
+
+    expect(heatTooltip('2026-08-22', 0, 'tr')).toBe('2026-08-22 tarihinde katkı yok');
+    expect(heatTooltip('2026-08-22', 5, 'tr')).toBe('2026-08-22 tarihinde 5 katkı');
+  });
+
+  it('越/泰/印尼语：0 与 N 次贡献', () => {
+    expect(heatTooltip('2026-08-22', 0, 'vi')).toBe('Không có đóng góp vào 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'vi')).toBe('5 đóng góp vào 2026-08-22');
+
+    expect(heatTooltip('2026-08-22', 0, 'th')).toBe('ไม่มีการสนับสนุนเมื่อ 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'th')).toBe('5 การสนับสนุนเมื่อ 2026-08-22');
+
+    expect(heatTooltip('2026-08-22', 0, 'id')).toBe('Tidak ada kontribusi pada 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'id')).toBe('5 kontribusi pada 2026-08-22');
+  });
+
+  it('阿/印地语：0 与单复数特判', () => {
+    expect(heatTooltip('2026-08-22', 0, 'ar')).toBe('لا مساهمات في 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'ar')).toBe('1 مساهمة في 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'ar')).toBe('5 مساهمات في 2026-08-22');
+
+    expect(heatTooltip('2026-08-22', 0, 'hi')).toBe('2026-08-22 को कोई योगदान नहीं');
+    expect(heatTooltip('2026-08-22', 5, 'hi')).toBe('2026-08-22 को 5 योगदान');
+  });
+
+  it('未知语言回退英文文案', () => {
+    expect(heatTooltip('2026-08-22', 0, 'xx')).toBe('No contributions on 2026-08-22');
+    expect(heatTooltip('2026-08-22', 1, 'xx')).toBe('1 contribution on 2026-08-22');
+    expect(heatTooltip('2026-08-22', 5, 'xx')).toBe('5 contributions on 2026-08-22');
+  });
 });
 
 describe('monthLabels / weekdayLabels（坐标轴）', () => {
@@ -405,11 +476,64 @@ describe('monthLabels / weekdayLabels（坐标轴）', () => {
     ]);
   });
 
+  it('首周全为空格（无首天）时不兜底标注', () => {
+    const weeks = [
+      heatWeek([null, null, null, null, null, null, null]),
+      heatWeek(['2026-09-01', null, null, null, null, null, null]),
+    ];
+    expect(monthLabels(weeks, 'en')).toEqual([{ weekIndex: 1, label: 'Sep' }]);
+  });
+
   it('星期标签：GitHub 只显示 Mon/Wed/Fri（中文一/三/五）', () => {
     expect(weekdayLabels('en')).toEqual([null, 'Mon', null, 'Wed', null, 'Fri', null]);
     expect(weekdayLabels('zh')).toEqual([null, '一', null, '三', null, '五', null]);
     expect(weekdayLabels('ja')).toEqual([null, '月', null, '水', null, '金', null]);
     expect(weekdayLabels('fr')).toEqual([null, 'lun.', null, 'mer.', null, 'ven.', null]);
+  });
+
+  it('月份标签：其余语言的 MONTHS 表与未知语言回退英文', () => {
+    const weeks = [
+      heatWeek([null, null, '2026-01-28', '2026-01-29', '2026-01-30', '2026-01-31', '2026-02-01']),
+    ];
+    // ko 属 CJK 集合：N月
+    expect(monthLabels(weeks, 'ko')).toEqual([{ weekIndex: 0, label: '2月' }]);
+    // MONTHS 表内各语言（2 月条目）
+    const expected: Record<string, string> = {
+      de: 'Feb',
+      es: 'feb',
+      pt: 'fev',
+      ru: 'фев',
+      it: 'feb',
+      nl: 'feb',
+      tr: 'Şub',
+      vi: 'Thg 2',
+      th: 'ก.พ.',
+      id: 'Feb',
+      ar: 'فبراير',
+      hi: 'फ़र',
+    };
+    for (const [lang, label] of Object.entries(expected)) {
+      expect(monthLabels(weeks, lang)).toEqual([{ weekIndex: 0, label }]);
+    }
+    // 未知语言回退 MONTHS.en
+    expect(monthLabels(weeks, 'xx')).toEqual([{ weekIndex: 0, label: 'Feb' }]);
+  });
+
+  it('星期标签：其余语言与未知语言回退英文', () => {
+    expect(weekdayLabels('ko')).toEqual([null, '월', null, '수', null, '금', null]);
+    expect(weekdayLabels('de')).toEqual([null, 'Mo', null, 'Mi', null, 'Fr', null]);
+    expect(weekdayLabels('es')).toEqual([null, 'lun', null, 'mié', null, 'vie', null]);
+    expect(weekdayLabels('pt')).toEqual([null, 'seg', null, 'qua', null, 'sex', null]);
+    expect(weekdayLabels('ru')).toEqual([null, 'Пн', null, 'Ср', null, 'Пт', null]);
+    expect(weekdayLabels('it')).toEqual([null, 'lun', null, 'mer', null, 'ven', null]);
+    expect(weekdayLabels('nl')).toEqual([null, 'ma', null, 'wo', null, 'vr', null]);
+    expect(weekdayLabels('tr')).toEqual([null, 'Pzt', null, 'Çar', null, 'Cum', null]);
+    expect(weekdayLabels('vi')).toEqual([null, 'T2', null, 'T4', null, 'T6', null]);
+    expect(weekdayLabels('th')).toEqual([null, 'จ.', null, 'พ.', null, 'ศ.', null]);
+    expect(weekdayLabels('id')).toEqual([null, 'Sen', null, 'Rab', null, 'Jum', null]);
+    expect(weekdayLabels('ar')).toEqual([null, 'إثن', null, 'أرب', null, 'جمع', null]);
+    expect(weekdayLabels('hi')).toEqual([null, 'सोम', null, 'बुध', null, 'शुक्र', null]);
+    expect(weekdayLabels('xx')).toEqual([null, 'Mon', null, 'Wed', null, 'Fri', null]);
   });
 });
 

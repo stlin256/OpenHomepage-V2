@@ -705,3 +705,358 @@ describe("interactions：代码块人体工学与一键复制", () => {
     expect(document.querySelectorAll(".publication-copy").length).toBe(1);
   });
 });
+
+describe("interactions：导航开关、外链与嵌入播放器初始化", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    document.documentElement.className = "";
+    // 清空语言列表，避免 bootstrap 语言引导在无前缀路由上误触发真实 fetch
+    document.documentElement.dataset.siteLangs = "";
+    sessionStorage.clear();
+    localStorage.clear();
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    });
+    class MockIntersectionObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    Object.defineProperty(window, "IntersectionObserver", {
+      configurable: true,
+      value: MockIntersectionObserver,
+    });
+    vi.resetModules();
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("点击 .nav-toggle 开合移动端导航，点击导航外区域自动收起", async () => {
+    document.body.innerHTML = [
+      "<header class='site-header'>",
+      "<button class='nav-toggle' aria-expanded='false' aria-label='菜单'></button>",
+      "<nav class='site-nav'><a href='/'>主页</a></nav>",
+      "</header>",
+      "<main class='site-main'><p>正文</p></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+    const btn = document.querySelector<HTMLButtonElement>(".nav-toggle")!;
+
+    btn.click();
+    expect(document.body.classList.contains("nav-open")).toBe(true);
+    expect(btn.getAttribute("aria-expanded")).toBe("true");
+
+    btn.click();
+    expect(document.body.classList.contains("nav-open")).toBe(false);
+    expect(btn.getAttribute("aria-expanded")).toBe("false");
+
+    // 再次打开后，点击导航与按钮之外的区域应自动收起。
+    // 注：同文件先前用例动态 import 残留的 document 监听器会先一步移除 nav-open，
+    // 使本模块的监听器提前 return（真实页面单实例无此问题），故这里只断言 class 行为。
+    btn.click();
+    expect(document.body.classList.contains("nav-open")).toBe(true);
+    document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(document.body.classList.contains("nav-open")).toBe(false);
+  });
+
+  it("markdown 外链自动补 target=_blank 与 rel=noopener，已有标注与站内链接不受影响", async () => {
+    document.body.innerHTML = [
+      "<main class='site-main'><div class='markdown-body'>",
+      "<a id='ext-plain' href='https://example.com/a'>外链</a>",
+      "<a id='ext-rel' href='//cdn.example.com/b' rel='nofollow' target='_self'>协议相对</a>",
+      "<a id='ext-kept' href='https://example.com/c' rel='noopener' target='_blank'>已标注</a>",
+      "<a id='internal' href='/inside/'>站内</a>",
+      "</div></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    const plain = document.querySelector<HTMLAnchorElement>("#ext-plain")!;
+    expect(plain.getAttribute("target")).toBe("_blank");
+    expect(plain.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(plain.classList.contains("external-link")).toBe(true);
+
+    // 已有 target 不覆盖；rel 缺少 noopener 时重写为安全值
+    const withRel = document.querySelector<HTMLAnchorElement>("#ext-rel")!;
+    expect(withRel.getAttribute("target")).toBe("_self");
+    expect(withRel.getAttribute("rel")).toBe("noopener noreferrer");
+
+    // 已含 noopener 的 rel 原样保留
+    const kept = document.querySelector<HTMLAnchorElement>("#ext-kept")!;
+    expect(kept.getAttribute("rel")).toBe("noopener");
+
+    const internal = document.querySelector<HTMLAnchorElement>("#internal")!;
+    expect(internal.getAttribute("target")).toBeNull();
+    expect(internal.getAttribute("rel")).toBeNull();
+    expect(internal.classList.contains("external-link")).toBe(false);
+  });
+
+  it("嵌入播放器点击/键盘激活为 iframe，重复触发不重建", async () => {
+    document.body.innerHTML = [
+      "<main class='site-main'><div class='markdown-body'>",
+      "<div class='embed-player' id='embed-click' data-embed-src='https://player.example.com/embed/1' data-embed-title='演示视频'></div>",
+      "<div class='embed-player' id='embed-key' data-embed-src='https://player.example.com/embed/2'></div>",
+      "<div class='embed-player' id='embed-space' data-embed-src='https://player.example.com/embed/3'></div>",
+      "</div></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+
+    const clickBox = document.querySelector<HTMLElement>("#embed-click")!;
+    clickBox.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const iframe = clickBox.querySelector("iframe");
+    expect(iframe).not.toBeNull();
+    expect(iframe?.getAttribute("src")).toBe("https://player.example.com/embed/1");
+    expect(iframe?.getAttribute("title")).toBe("演示视频");
+    expect(clickBox.classList.contains("is-active")).toBe(true);
+
+    // 已激活后重复点击不重建 iframe
+    clickBox.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(clickBox.querySelectorAll("iframe").length).toBe(1);
+
+    // 无关按键不激活；Enter 激活并使用默认标题
+    const keyBox = document.querySelector<HTMLElement>("#embed-key")!;
+    keyBox.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true, cancelable: true }));
+    expect(keyBox.querySelector("iframe")).toBeNull();
+    keyBox.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    const keyIframe = keyBox.querySelector("iframe");
+    expect(keyIframe).not.toBeNull();
+    expect(keyIframe?.getAttribute("title")).toBe("Video player");
+
+    // 空格键同样激活
+    const spaceBox = document.querySelector<HTMLElement>("#embed-space")!;
+    spaceBox.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true }));
+    expect(spaceBox.querySelector("iframe")).not.toBeNull();
+  });
+
+  it("scrollToAnchor 优先采用目标元素 scrollMarginTop 作为顶部偏移", async () => {
+    document.body.innerHTML = "<main class='site-main'><h2 id='anchor-target'>目标</h2></main>";
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo;
+    Object.defineProperty(window, "innerWidth", { value: 1280, configurable: true });
+
+    const target = document.querySelector<HTMLElement>("#anchor-target")!;
+    target.getBoundingClientRect = () => ({
+      top: 500,
+      bottom: 540,
+      height: 40,
+      width: 300,
+      left: 0,
+      right: 300,
+      x: 0,
+      y: 500,
+      toJSON: () => {},
+    });
+
+    const { scrollToAnchor } = await import("../src/scripts/interactions.ts");
+    const gosSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation(() => ({ scrollMarginTop: "96px" }) as unknown as CSSStyleDeclaration);
+    try {
+      scrollToAnchor(target);
+      // targetTop (500) - scrollMarginTop (96) = 404
+      expect(scrollTo).toHaveBeenCalledWith({ top: 404, behavior: "smooth" });
+    } finally {
+      gosSpy.mockRestore();
+    }
+  });
+});
+
+describe("interactions：通知横幅关闭与 BibTeX 复制", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    document.documentElement.className = "";
+    // 清空语言列表，避免 bootstrap 语言引导在无前缀路由上误触发真实 fetch
+    document.documentElement.dataset.siteLangs = "";
+    sessionStorage.clear();
+    localStorage.clear();
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    });
+    class MockIntersectionObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    Object.defineProperty(window, "IntersectionObserver", {
+      configurable: true,
+      value: MockIntersectionObserver,
+    });
+    vi.resetModules();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("点击关闭按钮后横幅进入淡出并在 350ms 后从 DOM 移除", async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = [
+      "<div class='notice-banner visible'>",
+      "<button class='notice-banner-close' aria-label='关闭'>×</button>",
+      "<span>公告内容</span>",
+      "</div>",
+      "<main class='site-main'></main>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+    const banner = document.querySelector<HTMLElement>(".notice-banner")!;
+    document.querySelector<HTMLButtonElement>(".notice-banner-close")!.click();
+
+    expect(banner.classList.contains("dismissing")).toBe(true);
+    expect(banner.classList.contains("visible")).toBe(false);
+
+    // jsdom 不触发 transitionend，由 350ms 兜底定时器移除
+    await vi.advanceTimersByTimeAsync(350);
+    expect(banner.isConnected).toBe(false);
+  });
+
+  it("BibTeX 复制成功：写入剪贴板并切换按钮文案，1.8s 后还原", async () => {
+    vi.useFakeTimers();
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, { clipboard: { writeText: writeTextMock } });
+    document.documentElement.dataset.routeLang = "zh";
+    document.body.innerHTML = [
+      "<div class='publication-item'>",
+      "<button type='button' class='publication-copy' data-copy-bibtex='bibtex-p1'>复制 BibTeX</button>",
+      "<div class='publication-bibtex'><pre id='bibtex-p1' tabindex='0'>@article{p1, title={T}}</pre></div>",
+      "</div>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+    const btn = document.querySelector<HTMLButtonElement>(".publication-copy")!;
+    btn.click();
+
+    await vi.waitFor(() => {
+      expect(btn.textContent).toBe("已复制");
+    });
+    expect(writeTextMock).toHaveBeenCalledWith("@article{p1, title={T}}");
+    expect(btn.getAttribute("aria-live")).toBe("polite");
+
+    await vi.advanceTimersByTimeAsync(1800);
+    expect(btn.textContent).toBe("复制 BibTeX");
+  });
+
+  it("BibTeX 复制失败：英文页面提示快捷键复制并聚焦源文本", async () => {
+    vi.useFakeTimers();
+    const writeTextMock = vi.fn().mockRejectedValue(new Error("denied"));
+    Object.assign(navigator, { clipboard: { writeText: writeTextMock } });
+    document.documentElement.dataset.routeLang = "en";
+    document.body.innerHTML = [
+      "<div class='publication-item'>",
+      "<button type='button' class='publication-copy' data-copy-bibtex='bibtex-p2'>Copy BibTeX</button>",
+      "<div class='publication-bibtex'><pre id='bibtex-p2' tabindex='0'>@article{p2}</pre></div>",
+      "</div>",
+    ].join("");
+
+    await import("../src/scripts/interactions.ts");
+    const btn = document.querySelector<HTMLButtonElement>(".publication-copy")!;
+    const source = document.querySelector<HTMLElement>("#bibtex-p2")!;
+    btn.click();
+
+    await vi.waitFor(() => {
+      expect(btn.textContent).toBe("Press Ctrl/Cmd+C");
+    });
+    expect(document.activeElement).toBe(source);
+
+    await vi.advanceTimersByTimeAsync(1800);
+    expect(btn.textContent).toBe("Copy BibTeX");
+  });
+});
+
+describe("interactions：popstate 回退与语言引导", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    document.documentElement.className = "";
+    sessionStorage.clear();
+    localStorage.clear();
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn(() => ({
+        matches: false,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+    });
+    class MockIntersectionObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+    Object.defineProperty(window, "IntersectionObserver", {
+      configurable: true,
+      value: MockIntersectionObserver,
+    });
+    vi.resetModules();
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("popstate 事件触发不 push 历史的内容交换", async () => {
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='zh'><head><title>特性</title></head><body>",
+      "<main class='site-main'><p>回退后的内容</p></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({ ok: true, text: async () => targetHtml }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.documentElement.dataset.routeLang = "zh";
+    document.documentElement.dataset.siteLangs = "zh,en";
+    localStorage.setItem("oh-language", "zh");
+    document.body.innerHTML = "<main class='site-main'><p>当前页</p></main>";
+    history.pushState(null, "", "/features/");
+
+    await import("../src/scripts/interactions.ts");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/features/");
+    });
+    await vi.waitFor(() => {
+      expect(document.querySelector("main.site-main")?.textContent).toBe("回退后的内容");
+    });
+  });
+
+  it("localStorage 偏好语言与当前路由不一致时，bootstrap 自动交换到偏好语言", async () => {
+    const targetHtml = [
+      "<!doctype html><html data-route-lang='en'><head><title>Home</title></head><body>",
+      "<main class='site-main'><p>English home</p></main>",
+      "</body></html>",
+    ].join("");
+    const fetchMock = vi.fn(async () => ({ ok: true, text: async () => targetHtml }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    document.documentElement.dataset.routeLang = "zh";
+    document.documentElement.dataset.siteLangs = "zh,en";
+    localStorage.setItem("oh-language", "en");
+    document.body.innerHTML = "<main class='site-main'><p>中文首页</p></main>";
+    history.pushState(null, "", "/");
+
+    await import("../src/scripts/interactions.ts");
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/en/");
+    });
+    await vi.waitFor(() => {
+      expect(document.querySelector("main.site-main")?.textContent).toBe("English home");
+    });
+    expect(document.documentElement.dataset.routeLang).toBe("en");
+  });
+});
