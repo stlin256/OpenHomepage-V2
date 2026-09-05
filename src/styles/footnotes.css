@@ -1,0 +1,781 @@
+/* 富媒体脚注（角标、桌面浮窗、移动端抽屉、文末列表）及 About 页 Hero/版本胶囊样式（拆自 global.css） */
+/* ==========================================================================
+   富媒体脚注（Rich Media Footnotes）：角标、桌面浮窗、移动端抽屉与文末列表
+   ========================================================================== */
+
+.markdown-body sup {
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  top: -0.5em;
+}
+
+.markdown-body a[data-footnote-ref],
+.markdown-body a.footnote-ref {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  color: var(--accent);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin: 0 0.18rem;
+  transition:
+    color 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.markdown-body a[data-footnote-ref]:hover,
+.markdown-body a[data-footnote-ref]:focus-visible,
+.markdown-body a[data-footnote-ref].is-footnote-active {
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px var(--accent-glow);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* 桌面端浮动气泡（Popover） */
+.footnote-popover {
+  position: absolute;
+  z-index: 960;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  padding: 0.85rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: top center;
+  transition:
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.2s;
+}
+
+.footnote-popover.arrow-bottom {
+  transform-origin: bottom center;
+  transform: translateY(-6px) scale(0.98);
+}
+
+.footnote-popover.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s;
+}
+
+.footnote-popover[hidden] {
+  display: none !important;
+}
+
+.footnote-popover-arrow {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--card);
+  border: 1px solid var(--border-strong);
+  transform: rotate(45deg);
+  z-index: -1;
+}
+
+.footnote-popover.arrow-top .footnote-popover-arrow {
+  top: -6px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.footnote-popover.arrow-bottom .footnote-popover-arrow {
+  bottom: -6px;
+  border-left: none;
+  border-top: none;
+}
+
+.footnote-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.45rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.footnote-popover-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.footnote-popover-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.footnote-popover-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.footnote-popover-close:hover {
+  color: var(--text);
+  background: var(--hover-bg);
+}
+
+.footnote-popover-body {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.footnote-popover-body p {
+  margin: 0;
+}
+
+.footnote-popover-body p + p {
+  margin-top: 0.5rem;
+}
+
+.footnote-popover-body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.footnote-popover-body a:hover {
+  color: var(--accent-hover);
+}
+
+.footnote-popover-body code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  padding: 0.1em 0.35em;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* 移动端抽屉与遮罩（Drawer & Backdrop） */
+.footnote-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 998;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.footnote-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.25s ease, visibility 0s;
+}
+
+.footnote-backdrop[hidden] {
+  display: none !important;
+}
+
+.footnote-drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-height: 70vh;
+  background: var(--card);
+  border-top: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  padding: 0.75rem 1.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.28s;
+}
+
+.footnote-drawer.open {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s;
+}
+
+.footnote-drawer[hidden] {
+  display: none !important;
+}
+
+.footnote-drawer-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-strong);
+  border-radius: 2px;
+  margin: 0.25rem auto 0.25rem;
+  opacity: 0.8;
+}
+
+.footnote-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.footnote-drawer-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footnote-drawer-badge {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.footnote-drawer-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.footnote-drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.footnote-drawer-close:hover {
+  color: var(--text);
+  background: var(--hover-bg);
+}
+
+.footnote-drawer-body {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text);
+  word-break: break-word;
+  padding: 0.25rem 0;
+}
+
+.footnote-drawer-body p {
+  margin: 0;
+}
+
+.footnote-drawer-body p + p {
+  margin-top: 0.65rem;
+}
+
+.footnote-drawer-body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footnote-drawer-footer {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.footnote-drawer-jump-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.55rem 1rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+
+.footnote-drawer-jump-btn:hover {
+  color: var(--accent);
+  background: var(--hover-bg);
+  border-color: var(--accent);
+}
+
+/* 文末脚注列表（section.footnotes） */
+section.footnotes {
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--border-strong);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.footnotes-title {
+  font-size: 1.15rem;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 1.25rem 0;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footnotes-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 1.1em;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.footnotes-list {
+  padding-left: 1.5rem;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.footnote-item {
+  margin-bottom: 0.85rem;
+  padding-left: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.footnote-item:target {
+  color: var(--text);
+  background: var(--accent-glow);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  margin-left: -0.5rem;
+  outline: 1px solid var(--accent);
+}
+
+.footnote-item p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.footnote-item p + p {
+  margin-top: 0.4rem;
+}
+
+.footnote-item strong {
+  color: var(--text);
+}
+
+.footnote-item a:not(.data-footnote-backref) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footnote-item a:not(.data-footnote-backref):hover {
+  color: var(--accent-hover);
+}
+
+.data-footnote-backref,
+.footnote-backref {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.4rem;
+  font-size: 0.85em;
+  color: var(--accent);
+  text-decoration: none;
+  opacity: 0.75;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.data-footnote-backref:hover,
+.footnote-backref:hover {
+  opacity: 1;
+  background: var(--accent-glow);
+  transform: translateX(-2px);
+}
+
+.data-footnote-backref .footnote-backref-icon,
+.footnote-backref .footnote-backref-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.data-footnote-backref sup,
+.footnote-backref sup {
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  font-weight: 700;
+  margin-left: 2px;
+  line-height: 1;
+  top: -0.35em;
+}
+
+/* 页脚品牌 Logo 与文字排版（亮色立体阴影 / 暗色发光 / 悬停斜光掠影） */
+.site-footer a.footer-brand,
+.site-footer a[href*="OpenHomepage-V2"] {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text) !important;
+  text-decoration: none !important;
+  letter-spacing: -0.015em;
+  display: inline-flex;
+  align-items: baseline;
+  vertical-align: baseline;
+  white-space: nowrap;
+  gap: 0.22em;
+  padding: 0.05rem 0.25rem;
+  margin: 0 0.15rem;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  transition: filter 0.25s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.site-footer a.footer-brand .brand-name,
+.site-footer a[href*="OpenHomepage-V2"] .brand-name {
+  color: var(--text) !important;
+}
+
+.site-footer a.footer-brand .footer-brand-v2,
+.site-footer a.footer-brand span.footer-brand-v2,
+.site-footer a.footer-brand em,
+.site-footer a[href*="OpenHomepage-V2"] .footer-brand-v2,
+.site-footer a[href*="OpenHomepage-V2"] span,
+.site-footer a[href*="OpenHomepage-V2"] em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-terracotta, #c85a32) !important;
+  transition: color 0.15s ease;
+}
+
+html[data-theme="dark"] .site-footer a.footer-brand .footer-brand-v2,
+html[data-theme="dark"] .site-footer a.footer-brand span.footer-brand-v2,
+html[data-theme="dark"] .site-footer a.footer-brand em,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] span,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
+  color: var(--color-terracotta, #f87171) !important;
+}
+
+/* 斜着掠过的光效伪元素（高光粒子束） */
+.site-footer a.footer-brand::after,
+.site-footer a[href*="OpenHomepage-V2"]::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -140%;
+  width: 50%;
+  height: 220%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 20%,
+    rgba(255, 255, 255, 0.98) 50%,
+    rgba(255, 255, 255, 0.35) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+html[data-theme="dark"] .site-footer a.footer-brand::after,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]::after {
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 20%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.45) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* 悬停态：亮色立体阴影 + 掠光动画（不浮动） */
+.site-footer a.footer-brand:hover,
+.site-footer a[href*="OpenHomepage-V2"]:hover {
+  color: var(--text) !important;
+  text-decoration: none !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.14));
+}
+
+.site-footer a.footer-brand:hover::after,
+.site-footer a[href*="OpenHomepage-V2"]:hover::after {
+  animation: brand-shimmer 1.3s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+}
+
+/* 悬停态：暗色发光（Glow）+ 掠光动画 */
+html[data-theme="dark"] .site-footer a.footer-brand:hover,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover {
+  filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.65)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.35));
+}
+
+.site-footer a.footer-brand:hover .footer-brand-v2,
+.site-footer a[href*="OpenHomepage-V2"]:hover .footer-brand-v2,
+.site-footer a[href*="OpenHomepage-V2"]:hover span,
+.site-footer a[href*="OpenHomepage-V2"]:hover em {
+  color: var(--color-terracotta, #c85a32) !important;
+}
+
+html[data-theme="dark"] .site-footer a.footer-brand:hover .footer-brand-v2,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover .footer-brand-v2,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover span,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
+  color: var(--color-terracotta, #f87171) !important;
+}
+
+@keyframes brand-shimmer {
+  0% {
+    left: -140%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: 240%;
+    opacity: 0;
+  }
+}
+
+
+/* ---- About 页面 Hero Banner、Slogan 与版本胶囊 Badge ---- */
+.about-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 1rem 2.25rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.about-banner-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
+
+.about-brand-banner {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.28em;
+  user-select: none;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  text-decoration: none;
+}
+
+.about-brand-banner:hover {
+  transform: scale(1.02);
+}
+
+.about-brand-main {
+  color: var(--text);
+  font-family: var(--font-serif);
+}
+
+.about-brand-v2 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-terracotta, #c85a32);
+}
+
+html[data-theme="dark"] .about-brand-v2 {
+  color: var(--color-terracotta, #f87171);
+}
+
+.about-slogan {
+  margin: 0 0 1.25rem;
+  max-width: 58ch;
+  line-height: 1.55;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+.about-slogan strong {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.35rem;
+}
+
+.about-version-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.85rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease,
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.version-pill:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-subtle));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.version-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  display: inline-block;
+  animation: version-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes version-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .version-dot {
+    animation: none;
+  }
+  .about-brand-banner {
+    transition: none;
+  }
+  .version-pill {
+    transition: none;
+  }
+}
+
+.version-label {
+  color: var(--accent);
+  font-weight: 700;
+}

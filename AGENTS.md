@@ -17,7 +17,7 @@
 - 控件类名：`.search-scope-toggle`（位于 `src/layouts/BaseLayout.astro` 的 `.search-form` 内）。
 - 交互逻辑：`src/scripts/search.ts` 中的 `updateScopeToggle()`，点击在 `current`（当前语言）/ `all`（全部语言）之间切换，刷新按钮文案、`data-scope`、`aria-pressed` 并重新触发搜索。
 - `aria-pressed="true"` 表示已展开为"全部语言"，`false` 表示"当前语言"。
-- CSS：`src/styles/global.css` 的 `.search-scope-toggle` 规则。
+- CSS：`src/styles/overlays.css` 的 `.search-scope-toggle` 规则。
 
 ### i18n 文案（`src/lib/search.ts` 的 `SEARCH_I18N`）
 
@@ -40,7 +40,7 @@
 - **桌面端**（@media (hover: hover) and (min-width: 769px)）：鼠标悬浮 .bgm-toggle 即显隐卡片（纯 CSS，同 .lang-switcher:hover .lang-menu），.bgm-switcher::after 桥接间隙防 hover 断开；点按按钮仍为播放/暂停。无遮罩。
 - **移动端**（@media (max-width: 768px)）：点按 .bgm-toggle 切换 .bgm-drawer.open（底部抽屉上滑动画 + .bgm-backdrop 淡入遮罩，同搜索）；点遮罩 / Esc 关闭。卡片显隐与遮罩均由 opacity/visibility/transform 过渡完成（开关动画）。
 - **JS**：src/scripts/bgm.ts 用 setDrawerOpen(drawer, open) 切换 .open 与 aria-expanded；isMobile() 按 (max-width: 768px) 区分点击行为。原有 openDrawer/closeDrawer/hidden+animationend 方案已移除。
-- 卡片内按钮（播放/上一首/下一首）的 hover scale + active 缩放反馈见 .bgm-ctrl-btn。
+- 卡片内按钮（播放/上一首/下一首）的 hover scale + active 缩放反馈见 `src/styles/overlays.css` 的 .bgm-ctrl-btn。
 
 ## OOTB 开箱即用体系（2026-09-04 落地）
 

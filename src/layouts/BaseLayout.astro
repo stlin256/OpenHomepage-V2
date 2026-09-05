@@ -13,6 +13,11 @@ import '@fontsource-variable/newsreader/opsz-italic.css';
 import 'katex/dist/katex.min.css';
 import '../styles/fonts.css';
 import '../styles/global.css';
+import '../styles/editorial.css';
+import '../styles/markdown-body.css';
+import '../styles/home-blocks.css';
+import '../styles/overlays.css';
+import '../styles/footnotes.css';
 import type { AccentTheme } from '../lib/theme.ts';
 import type { BackgroundTheme } from '../lib/theme.ts';
 import type { ResolvedIntroCard } from '../lib/config.ts';
@@ -429,7 +434,7 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
       </div>
     </dialog>
 
-    {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 global.css */}
+    {/* 图片灯箱骨架（spec 03 §5）：交互在 src/scripts/lightbox.ts，开/关动画在 home-blocks.css */}
     {introCard && <ContactCard card={introCard} lang={lang} />}
     {/* 富媒体脚注：桌面浮窗与移动端抽屉 */}
     <div class="footnote-popover" role="tooltip" aria-hidden="true" hidden>
