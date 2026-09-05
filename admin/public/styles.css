@@ -661,6 +661,27 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
   object-fit: cover;
 }
 
+/* 新手向导第 0 步 场景预设（spec 22 §3）：单选卡片，选中态描边 */
+.scene-card { align-items: flex-start; }
+.scene-card input[type='radio'] { margin-top: 3px; }
+.scene-card.on { border-color: var(--accent); }
+.scene-card-text { display: flex; flex-direction: column; gap: 2px; }
+.scene-card-desc { font-size: 12px; color: var(--text-muted); }
+
+/* 「部署到线上」引导卡片（spec 22）：步骤清单 + deep link 行 */
+.deploy-modal {
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+.deploy-step { display: flex; flex-direction: column; gap: 6px; }
+.deploy-step-title { margin: 8px 0 0; text-transform: none; letter-spacing: 0; }
+.deploy-step .muted { margin: 0; }
+.deploy-hosting-list { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; }
+.deploy-privacy { margin: 0; font-size: 12.5px; color: var(--danger); }
+.deploy-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.deploy-repo-field .input { width: 100%; box-sizing: border-box; }
+
 
 /* 语言管理面板（spec 19 §4）：语言行与确认对话框风险文案 */
 .lang-list { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 20px; }

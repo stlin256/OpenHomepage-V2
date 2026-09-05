@@ -569,7 +569,24 @@ export type FetchLike = (
 
 export const ONLINE_TIMEOUT_MS = 8000;
 
-/** GitHub API 连通性：2xx → ok（附剩余额度）；403 且额度 0 → rate limit 警告；其余 → warn */
+/** GH_PAT 生成页 deep link（spec 22 §4）；所需 scope：read:user */
+export const GITHUB_TOKEN_GUIDE_URL = 'https://github.com/settings/tokens';
+
+/** Token 引导文案：限流 / 401 / 未配置 token 的输出统一附此指引 */
+const GITHUB_TOKEN_GUIDE = `生成 Token：${GITHUB_TOKEN_GUIDE_URL}（scope 勾选 read:user），本地配 GH_PAT 环境变量、线上部署配同名仓库 Secret`;
+
+/** GitHub Token 环境变量检查（--online 时随外部接口节输出）：GH_PAT → GITHUB_TOKEN → GH_TOKEN 任一存在即视为已配置 */
+export function checkGithubTokenEnv(env: Record<string, string | undefined>): DoctorItem {
+  if (env.GH_PAT || env.GITHUB_TOKEN || env.GH_TOKEN) {
+    return ok('已配置 GitHub Token（GH_PAT / GITHUB_TOKEN / GH_TOKEN）');
+  }
+  return warn(
+    '未配置 GitHub Token（匿名访问 rate limit 仅 60 次/小时，贡献日历 GraphQL 数据将不完整）',
+    `${GITHUB_TOKEN_GUIDE}。`
+  );
+}
+
+/** GitHub API 连通性：2xx → ok（附剩余额度）；403 且额度 0 → rate limit 警告；401 → 鉴权失败；其余 → warn */
 export async function checkGithubApi(
   fetchFn: FetchLike = fetch as unknown as FetchLike,
   timeoutMs: number = ONLINE_TIMEOUT_MS,
@@ -586,8 +603,11 @@ export async function checkGithubApi(
     if (res.status === 403 && remaining === '0') {
       return warn(
         'GitHub API rate limit 已耗尽（HTTP 403）',
-        '配置 GH_PAT 环境变量提升额度（prefetch 会按 GH_PAT → GITHUB_TOKEN → GH_TOKEN 取用）。'
+        `配置 GH_PAT 环境变量提升额度（prefetch 会按 GH_PAT → GITHUB_TOKEN → GH_TOKEN 取用）。${GITHUB_TOKEN_GUIDE}。`
       );
+    }
+    if (res.status === 401) {
+      return warn('GitHub API 鉴权失败（HTTP 401，Token 无效或已过期）', `${GITHUB_TOKEN_GUIDE}，并更新已配置的旧 Token。`);
     }
     return warn(`GitHub API 返回 HTTP ${res.status}`, '检查网络代理或稍后重试；不影响本地构建。');
   } catch (e) {
@@ -632,6 +652,8 @@ export interface DoctorOptions {
   fetchFn?: FetchLike;
   probePortFn?: (port: number) => Promise<PortStatus>;
   timeoutMs?: number;
+  /** 环境变量表（GitHub Token 配置检查用；缺省读 process.env，测试注入替身） */
+  env?: Record<string, string | undefined>;
 }
 
 export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
@@ -671,7 +693,11 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
   push('ports', '端口占用', await checkPorts(undefined, options.probePortFn));
 
   if (options.online) {
-    const items: DoctorItem[] = [await checkGithubApi(options.fetchFn, options.timeoutMs)];
+    // GitHub Token 配置检查（spec 22 §4）：未配置时附生成页 deep link 与 read:user scope 说明
+    const items: DoctorItem[] = [
+      checkGithubTokenEnv(options.env ?? process.env),
+      await checkGithubApi(options.fetchFn, options.timeoutMs),
+    ];
     let sources: { name: string; url: string }[] = [];
     if (site.config?.rss && site.config.rss.enabled !== false) {
       try {

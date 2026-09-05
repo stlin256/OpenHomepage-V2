@@ -427,6 +427,8 @@ npm run admin       # 浏览器访问 http://127.0.0.1:4174（仅监听本地安
 | `DATA_SOURCE_URL` | 私有部署必填 | 存放私有 `data.zip` 压缩包的直接下载直链（支持预签名 URL） |
 | `GH_PAT` | 可选 | 具备 `read:user` 权限的 GitHub Token，用于拉取完整的 GraphQL 贡献日历数据 |
 
+> 💡 `GH_PAT` 可在 [github.com/settings/tokens](https://github.com/settings/tokens) 生成（scope 勾选 `read:user`）；后台顶栏的「🚀 部署到线上」引导会逐步带你完成 Secrets 配置。
+
 ### 容灾降级与邮件告警机制
 - **容灾快照恢复**：若配置的 `DATA_SOURCE_URL` 下载失败，CI 会自动拉取上一次成功构建的快照包（`data-snapshot.zip`）继续构建，刷新动态 GitHub/RSS 数据后完成发布，确保线上站点绝不宕机。
 - **邮件提醒触发**：快照恢复执行后，工作流会以告警状态结束，利用 GitHub 原生机制向维护者发送邮件提醒。

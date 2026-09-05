@@ -67,3 +67,11 @@
 - **侧栏「发布」视图**（`#/publish`，`admin/ui/views/publish.ts`）：一键构建（`admin/server/build.ts`，分 5 阶段 spawn：fonts → og → astro build → css → images，node 直跑 tsx/astro CLI 避开 .cmd 壳；状态机 idle→running→success|failed，进行中重复启动 409；`stop()` 走 devserver 的 killProcessTree 树杀回 idle）；构建成功后「预览 dist」（`admin/server/preview.ts`，**进程内**复用 scripts/serve.ts 的 createStaticServer，127.0.0.1:4399，幂等/外部占用接管/退出时 close）；OG 分享卡预览（`admin/server/og-preview.ts`，进程内调 generateOgSvg 返回 SVG，不写盘不依赖 sharp，自定义 og_image 页面回传 custom 路径）。
 - **学术成果逐条编辑**（`admin/server/publications.ts` + 「学术成果」视图上半区）：列表 + 弹窗表单增删改，整文件 `GET/PUT /api/config/publications`，服务端逐条校验（必填约束对齐 src/lib/publications.ts normalizeItem + id 唯一 + type 枚举）+ createSnapshot 快照链路；未知字段（如 doi）编辑往返不丢；BibTeX 导入面板保留在下方。
 - 测试：`tests/admin-publish.test.ts`（假 spawn/probe runner，不真跑构建）、`tests/admin-publications.test.ts`（快照断言模式同 admin-configs）。
+
+## 部署引导与新手向导统一（spec 22，2026-09-05 落地）
+
+详细规格：`docs/specs/22-admin-deploy-guide.md`。
+
+- **「🚀 部署到线上」引导**：顶栏导出按钮旁（`admin/ui/views/deploy.ts`），四步清单卡片：导出 data.zip → 托管拿直链（私有 Release / Secret Gist / 对象存储，强调隐私）→ 配 Secrets（`DATA_SOURCE_URL`/`GH_PAT`/`ENABLE_EXAMPLE` 逐项说明 + deep link）→ 触发 Actions。仓库地址由 `GET /api/deploy-info`（`admin/server/deploy-info.ts`，读 git remote origin，5s 超时）探测；读不到则全 null 降级为前端手填拼链接，解析逻辑统一在 `admin/shared/deploy.ts`。
+- **新手向导第 0 步「场景预设」**：向导扩为四步（场景 → 名片 → 模块 → 主题色）。预设单一数据源抽到 `scripts/scene-presets.mjs`（+ `.d.mts` 类型声明），CLI setup 与 admin 共享防漂移，`setup-lib.mjs` 仅 re-export 行为不变。选定场景经 `admin/shared/scene-presets.ts` 的 `sceneDefaults()` 映射为第 2 步模块勾选默认值（github/rss + BGM/联系卡；publications 不参与、语言不裁剪），`custom`/未知 key 不动现状。完成页（第 3 步）给「前往语言管理」链接。
+- **doctor GH_PAT 引导**：`scripts/doctor-lib.ts` 在限流（403+额度 0）/401 的建议与 `--online` 新增的 token 环境变量检查（`checkGithubTokenEnv`，`GH_PAT`/`GITHUB_TOKEN`/`GH_TOKEN` 任一即 ok）中统一附生成页链接 https://github.com/settings/tokens 与 `read:user` scope 说明；两个 README 的 Secrets 小节同步补引导。

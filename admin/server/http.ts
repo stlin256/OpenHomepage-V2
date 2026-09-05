@@ -49,6 +49,7 @@ import { createBuildManager, BuildConflictError, type BuildManager } from './bui
 import { createPreviewManager, type PreviewManager } from './preview.ts';
 import { readPublications, writePublications } from './publications.ts';
 import { renderOgPreview } from './og-preview.ts';
+import { readDeployInfo } from './deploy-info.ts';
 import { pageUrlPath, normalizeLang } from '../../src/lib/routes.ts';
 import { renderMarkdown } from '../../src/lib/markdown.ts';
 import { getBaseUrl } from '../../src/lib/base-url.ts';
@@ -221,6 +222,10 @@ export function createAdminServer(opts: AdminServerOptions): http.Server {
           await fetchGithubProfile(username, opts.githubFetch ?? fetch, opts.githubTimeoutMs)
         );
       },
+      // 部署引导（spec 22）：git remote origin → GitHub 仓库 Secrets/Actions deep link；
+      // 读不到（非 git 仓库/非 GitHub 托管）时字段为 null，前端降级为手填仓库地址
+      '/api/deploy-info': ({ res }) =>
+        sendJson(res, 200, readDeployInfo(opts.rootDir ?? path.resolve(dataDir, '..'))),
       // M12d：每页附 previewPath（overlay 顶栏页面切换下拉的跳转目标）
       '/api/pages': ({ res }) =>
         sendJson(res, 200, {
