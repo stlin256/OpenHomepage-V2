@@ -1,0 +1,55 @@
+name: 🐛 Bug 报告 / Bug Report
+description: 报告一个问题或异常行为 / Report a problem or unexpected behavior
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请先搜索已有 issue 避免重复。安全问题请勿在此公开报告，请走 [Security Advisory](https://github.com/stlin256/OpenHomepage-V2/security/advisories/new)。
+        Thanks for reporting! Please search existing issues first. For security issues, use the private advisory channel instead.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述 / Description
+      description: 清晰描述遇到的问题 / A clear description of the problem
+      placeholder: 发生了什么？/ What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤 / Steps to Reproduce
+      description: 最小化复现步骤 / Minimal steps to reproduce
+      placeholder: |
+        1. npm run dev
+        2. 打开 …
+        3. 点击 …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际行为 / Expected vs. Actual Behavior
+      placeholder: 预期：… / 实际：…
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 环境 / Environment
+      description: 操作系统、Node 版本、浏览器（如涉及前端）/ OS, Node version, browser (if frontend)
+      placeholder: "Windows 11, Node 24, Chrome 140"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与截图 / Logs & Screenshots
+      description: 相关报错日志（请用代码块包裹）/ Relevant error logs (wrap in code blocks)
+      render: shell

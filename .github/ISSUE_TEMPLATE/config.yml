@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🔒 安全漏洞 / Security Vulnerability
+    url: https://github.com/stlin256/OpenHomepage-V2/security/advisories/new
+    about: 安全问题请勿公开提 issue，请使用私密报告渠道 / Please report security issues privately, not via public issues
+  - name: 📖 贡献指南 / Contributing Guide
+    url: https://github.com/stlin256/OpenHomepage-V2/blob/master/CONTRIBUTING.md
+    about: 提交 PR 前请先阅读 / Please read before submitting a PR
