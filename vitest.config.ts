@@ -2,8 +2,13 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    // 只收单测目录；e2e/*.spec.ts 归 Playwright，避免被 vitest 误扫
+    include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
+      // 覆盖率门槛制度化：lines/statements/functions ≥90；branches 当前 81%，
+      // 先卡 80 防退化，后续补测再提
+      thresholds: { lines: 90, statements: 90, functions: 90, branches: 80 },
       include: ['src/lib/**', 'src/scripts/**', 'admin/server/**', 'admin/shared/**', 'scripts/**'],
       exclude: [
         '**/*.d.ts',

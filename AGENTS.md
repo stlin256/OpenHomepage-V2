@@ -24,8 +24,9 @@
 
 ## 质量门禁与依赖治理（2026-09-05 落地）
 
-- **CI**：`.github/workflows/ci.yml`（`quality-gate`，push 到 main/master 与所有 PR 触发），步骤依次：`npm run lint` → `npm run check` → `npm test`。部署流（deploy.yml）不跑门禁，两者独立。
+- **CI**：`.github/workflows/ci.yml`（`quality-gate`，push 到 main/master 与所有 PR 触发），步骤依次：`npm run lint` → `npm run check` → `npm run test:coverage`。部署流（deploy.yml）不跑门禁，两者独立。
 - **本地提交前必跑三件套**：`npm run lint`（ESLint flat 配置 `eslint.config.mjs`：js/ts/astro recommended，globals 按目录分浏览器/Node，仅 3 条规则针对性放宽）、`npm run check`（astro check，依赖 devDep `@astrojs/check`）、`npm test`（vitest run）。
+- **覆盖率门槛制度化（2026-09-05 落地）**：`vitest.config.ts` 断言 lines/statements/functions ≥90、branches ≥80（branches 暂卡 80 防退化，后续补测再提）；CI 跑 `npm run test:coverage`，本地自查同命令。vitest `include` 已收紧为 `tests/**/*.test.ts`，`e2e/*.spec.ts` 归 Playwright。
 - **typescript 固定 ^6**：`@astrojs/check` 的 peer 仅支持 TS ^5||^6；TS7 为原生移植版、无语言服务 API，astro check 无法工作，勿升级 typescript 到 7。
 - **data/ 播种兜底**：`tests/search.test.ts` 等用例依赖 `data/`（git 忽略的私有目录）；CI 在测试前执行 `test -d data || cp -r data.example data`（与 deploy.yml 示例模式一致）。本地请勿删除 `data/`。
 - **Dependabot**：`.github/dependabot.yml`——npm 每周更新，minor/patch 合并为一个分组 PR、major 单独 PR；github-actions 每周跟踪。

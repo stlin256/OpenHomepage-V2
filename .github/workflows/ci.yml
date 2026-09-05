@@ -1,4 +1,4 @@
-# CI 质量门禁：类型检查（astro check）+ 单元测试（vitest run）
+# CI 质量门禁：类型检查（astro check）+ 单元测试与覆盖率门槛（vitest run --coverage）
 name: CI
 
 on:
@@ -37,5 +37,5 @@ jobs:
       - name: 准备示例数据 / Seed example data (data.example → data)
         run: test -d data || cp -r data.example data
 
-      - name: 单元测试 / Unit tests (vitest run)
-        run: npm test
+      - name: 单元测试 + 覆盖率门槛 / Unit tests with coverage thresholds (vitest run --coverage)
+        run: npm run test:coverage
