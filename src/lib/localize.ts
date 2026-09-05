@@ -6,11 +6,13 @@ export type LocalizedText = string | Record<string, string>;
 /**
  * 多语言映射解析：纯字符串原样返回；{ zh, en, ... } 映射按语言取值，
  * 缺 key 回退 en → 网站主语言（传入 defaultLang 时）→ 任意可用值。
+ * field / lang 允许为 undefined（缺字段、调用方可选语言），安全回退。
  */
-export function resolveText(field: LocalizedText, lang: string, defaultLang?: string): string {
+export function resolveText(field: LocalizedText | undefined, lang: string | undefined, defaultLang?: string): string {
   if (typeof field === 'string') return field;
+  if (!field) return '';
   const value =
-    field[lang] ??
+    (lang !== undefined ? field[lang] : undefined) ??
     field.en ??
     (defaultLang ? field[defaultLang] : undefined) ??
     Object.values(field)[0];

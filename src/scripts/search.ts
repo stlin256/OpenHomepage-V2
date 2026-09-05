@@ -81,7 +81,7 @@ function collectLocalSearchItems(): SearchResultItem[] {
   });
 
   // 3. Navigation links & home blocks
-  document.querySelectorAll<HTMLAnchorElement>('.site-nav a, .home-block a, .publication-item, .timeline-item, .rss-card, .editorial-item, .callout').forEach((el, idx) => {
+  document.querySelectorAll<Element>('.site-nav a, .home-block a, .publication-item, .timeline-item, .rss-card, .editorial-item, .callout').forEach((el, idx) => {
     const link = el instanceof HTMLAnchorElement ? el : el.querySelector<HTMLAnchorElement>('a');
     const titleEl = el.querySelector('h2, h3, h4, .publication-title, .timeline-item-title, .callout-title, .rss-title, .editorial-item-title') || el;
     const title = titleEl.textContent?.trim();

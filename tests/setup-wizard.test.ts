@@ -415,14 +415,12 @@ describe('fetchGithubProfile（注入 fetch 替身）', () => {
 
   it('成功但字段缺失：name/bio/blog/avatarUrl 回退为空字符串', async () => {
     const fakeFetch = async () => ({ ok: true, json: async () => ({ login: 'octocat', name: null }) });
-    // @ts-expect-error 替身无需完整 Response 形态
     const gh = await fetchGithubProfile('octocat', { fetchImpl: fakeFetch });
     expect(gh).toEqual({ name: '', bio: '', blog: '', avatarUrl: '' });
   });
 
   it('404 / 非 200：静默返回 null，不抛出', async () => {
     const fakeFetch = async () => ({ ok: false, status: 404, json: async () => ({ message: 'Not Found' }) });
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(fetchGithubProfile('ghost-user', { fetchImpl: fakeFetch })).resolves.toBeNull();
   });
 
@@ -431,7 +429,6 @@ describe('fetchGithubProfile（注入 fetch 替身）', () => {
       new Promise((_resolve, reject) => {
         init.signal.addEventListener('abort', () => reject(new Error('The operation was aborted')));
       });
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(fetchGithubProfile('slow-user', { fetchImpl: fakeFetch, timeoutMs: 20 })).resolves.toBeNull();
   });
 
@@ -439,7 +436,6 @@ describe('fetchGithubProfile（注入 fetch 替身）', () => {
     const boom = async () => {
       throw new Error('ECONNREFUSED');
     };
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(fetchGithubProfile('octocat', { fetchImpl: boom })).resolves.toBeNull();
     await expect(fetchGithubProfile('   ')).resolves.toBeNull();
     await expect(fetchGithubProfile('octocat', { fetchImpl: null })).resolves.toBeNull();
@@ -467,7 +463,6 @@ function avatarFetch(bytes: Buffer, contentLength?: number) {
 describe('downloadGithubAvatar（注入 fetch 替身）', () => {
   it('成功：PNG magic bytes 嗅探为 png，带回原始字节与请求头', async () => {
     const { fakeFetch, calls } = avatarFetch(PNG_BYTES);
-    // @ts-expect-error 替身无需完整 Response 形态
     const got = await downloadGithubAvatar('https://avatars.githubusercontent.com/u/583231?v=4', { fetchImpl: fakeFetch });
     expect(got?.ext).toBe('png');
     expect(Buffer.compare(got!.buffer, PNG_BYTES)).toBe(0);
@@ -477,7 +472,6 @@ describe('downloadGithubAvatar（注入 fetch 替身）', () => {
 
   it('成功：JPEG magic bytes 嗅探为 jpg', async () => {
     const { fakeFetch } = avatarFetch(JPEG_BYTES);
-    // @ts-expect-error 替身无需完整 Response 形态
     const got = await downloadGithubAvatar('https://example.com/a', { fetchImpl: fakeFetch });
     expect(got?.ext).toBe('jpg');
     expect(Buffer.compare(got!.buffer, JPEG_BYTES)).toBe(0);
@@ -485,7 +479,6 @@ describe('downloadGithubAvatar（注入 fetch 替身）', () => {
 
   it('无法识别的格式（非 PNG/JPEG）：静默返回 null', async () => {
     const { fakeFetch } = avatarFetch(GIF_BYTES);
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(downloadGithubAvatar('https://example.com/a.gif', { fetchImpl: fakeFetch })).resolves.toBeNull();
   });
 
@@ -499,31 +492,26 @@ describe('downloadGithubAvatar（注入 fetch 替身）', () => {
         return new ArrayBuffer(0);
       },
     });
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(downloadGithubAvatar('https://example.com/big.png', { fetchImpl: fakeFetch })).resolves.toBeNull();
     expect(bodyRead).toBe(false);
   });
 
   it('实际体积超上限（无 Content-Length）：读完仍放弃返回 null', async () => {
     const { fakeFetch } = avatarFetch(Buffer.concat([PNG_BYTES, Buffer.alloc(GITHUB_AVATAR_MAX_BYTES)]));
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(downloadGithubAvatar('https://example.com/big.png', { fetchImpl: fakeFetch })).resolves.toBeNull();
   });
 
   it('非 200 / 网络错误 / 超时 / 空 URL / 无 fetch：静默返回 null', async () => {
     const notOk = async () => ({ ok: false, status: 404 });
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: notOk })).resolves.toBeNull();
     const boom = async () => {
       throw new Error('ECONNREFUSED');
     };
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: boom })).resolves.toBeNull();
     const slow = (_url: string, init: any) =>
       new Promise((_resolve, reject) => {
         init.signal.addEventListener('abort', () => reject(new Error('The operation was aborted')));
       });
-    // @ts-expect-error 替身无需完整 Response 形态
     await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: slow, timeoutMs: 20 })).resolves.toBeNull();
     await expect(downloadGithubAvatar('  ')).resolves.toBeNull();
     await expect(downloadGithubAvatar('https://example.com/a.png', { fetchImpl: null })).resolves.toBeNull();

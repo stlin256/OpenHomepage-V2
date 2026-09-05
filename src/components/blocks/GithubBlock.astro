@@ -203,7 +203,17 @@ const LABELS = {
   },
 } as const;
 const L2 = lang in LABELS ? lang : 'en';
-const L = (LABELS as Record<string, typeof LABELS.en>)[L2];
+type GithubBlockLabels = {
+  total: (n: string) => string;
+  totalAlt: (n: string) => string;
+  updated: string;
+  placeholder: string;
+  empty: string;
+  heatLabel: string;
+  less: string;
+  more: string;
+};
+const L = (LABELS as Record<string, GithubBlockLabels>)[L2];
 
 const scales = buildHeatScales(accent.light.accent, accent.dark.accent);
 // 色阶只挂在区块根上；define:vars 会把同一组变量复制到所有 scoped 后代节点。

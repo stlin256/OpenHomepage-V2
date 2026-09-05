@@ -84,7 +84,7 @@ const LABELS_EXT: Record<string, { empty: string; updated: string }> = {
     'updated': 'डेटा अपडेट'
   }
 };
-const ALL_LABELS = { ...LABELS, ...LABELS_EXT };
+const ALL_LABELS: Record<string, { empty: string; updated: string }> = { ...LABELS, ...LABELS_EXT };
 const L = ALL_LABELS[lang as string] ?? ALL_LABELS.en;
 
 const hasContent =

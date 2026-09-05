@@ -161,7 +161,7 @@ export function rehypeContentDecorations(lang: string | undefined, defaultLang?:
         const isExternal = /^https?:\/\//i.test(href) || /^\/\//i.test(href);
         if (isExternal) {
           node.properties.target = '_blank';
-          node.properties.rel = 'noopener noreferrer';
+          node.properties.rel = ['noopener', 'noreferrer'];
           const cls = classesOf(node);
           if (!cls.includes('external-link')) {
             node.properties.className = [...cls, 'external-link'];
@@ -260,7 +260,7 @@ export function rehypeContentDecorations(lang: string | undefined, defaultLang?:
             ? {
                 className: isExt ? ['timeline-item-title', 'external-link'] : ['timeline-item-title'],
                 href: url,
-                ...(isExt ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
+                ...(isExt ? { target: '_blank', rel: ['noopener', 'noreferrer'] } : {}),
               }
             : { className: ['timeline-item-title'] },
           itemTitle

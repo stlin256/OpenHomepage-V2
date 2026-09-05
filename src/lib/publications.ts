@@ -1,4 +1,4 @@
-﻿/**
+/**
  * P0 学术成果数据层：publications.yaml + 可选 BibTeX 文件。
  * 纯 Node/纯函数实现，构建期完成过滤、排序、分组与 HTML 生成，页面运行时零脚本
  * （仅 BibTeX 复制按钮通过事件委托渐进增强）。
@@ -142,7 +142,7 @@ function normalizeItem(raw: Record<string, unknown>, index: number): Publication
 
 export function loadPublications(dataDir: string, warn: (message: string) => void = console.warn): PublicationsConfig {
   const file = path.join(dataDir, 'publications.yaml');
-  const raw = loadYaml(readFileSync(file, 'utf8')) as Partial<PublicationsConfig> & { items?: unknown[] };
+  const raw = loadYaml(readFileSync(file, 'utf8')) as Omit<Partial<PublicationsConfig>, 'items'> & { items?: unknown[] };
   const items = (raw.items ?? []).map((item, i) => normalizeItem(item as Record<string, unknown>, i));
   const cfg: PublicationsConfig = {
     enabled: raw.enabled !== false,

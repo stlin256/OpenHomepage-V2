@@ -20,7 +20,7 @@ export interface FeedOptions {
   siteTitle: string;
   baseUrl: string;
   lang: string;
-  defaultLang: string;
+  defaultLang?: string;
   updated?: Date;
   description?: string;
 }

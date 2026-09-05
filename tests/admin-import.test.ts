@@ -337,7 +337,7 @@ describe('POST /api/import-data 与 /api/import/bibtex', () => {
 
   it('上传 zip 覆盖写入并返回摘要', async () => {
     const zip = buildZip([{ name: 'site.yaml', data: Buffer.from('site: { title: New }') }]);
-    const res = await fetch(`${base}/api/import-data`, { method: 'POST', body: zip });
+    const res = await fetch(`${base}/api/import-data`, { method: 'POST', body: new Uint8Array(zip) });
     expect(res.status).toBe(200);
     const data = (await res.json()) as { ok: boolean; files: number; backup: string };
     expect(data.files).toBe(1);
@@ -347,7 +347,7 @@ describe('POST /api/import-data 与 /api/import/bibtex', () => {
 
   it('含路径穿越的 zip 返回 400 且不落盘', async () => {
     const zip = buildZip([{ name: '../evil.yaml', data: Buffer.from('evil') }]);
-    const res = await fetch(`${base}/api/import-data`, { method: 'POST', body: zip });
+    const res = await fetch(`${base}/api/import-data`, { method: 'POST', body: new Uint8Array(zip) });
     expect(res.status).toBe(400);
     expect(existsSync(path.join(root, 'evil.yaml'))).toBe(false);
   });

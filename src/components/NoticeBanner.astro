@@ -81,7 +81,7 @@ const ARIA_EXT: Record<string, { region: string; close: string }> = {
     'close': 'सूचना बंद करें'
   }
 };
-const ALL_ARIA = { ...ARIA_LABELS, ...ARIA_EXT };
+const ALL_ARIA: Record<string, { region: string; close: string }> = { ...ARIA_LABELS, ...ARIA_EXT };
 const ariaLabels = ALL_ARIA[lang as string] ?? ALL_ARIA.en;
 ---
 

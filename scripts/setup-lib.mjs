@@ -26,10 +26,17 @@ export const MODULE_KEYS = ['publications', 'github', 'rss', 'bgm', 'contact'];
 export const GITHUB_API_TIMEOUT_MS = 5000;
 
 /**
+ * fetch 替身签名：宽松结构（参数/返回值均为 any），测试可注入部分实现的假 Response。
+ * @typedef {(url: string, init?: any) => Promise<any>} FetchLike
+ */
+
+/**
  * 拉取 GitHub 公开资料用于快速向导预填（纯逻辑，fetch 可注入替身）。
  * 请求 https://api.github.com/users/<username>，带 User-Agent 头与 5 秒超时。
  * 任何失败（网络错误 / 非 200 / 超时 / JSON 异常 / 无 fetch）均静默返回 null，绝不抛出。
  * 成功返回 { name, bio, blog, avatarUrl }（缺失字段为空字符串）。
+ * @param {string} username
+ * @param {{ fetchImpl?: FetchLike | null, timeoutMs?: number }} [options]
  */
 export async function fetchGithubProfile(username, { fetchImpl = globalThis.fetch, timeoutMs = GITHUB_API_TIMEOUT_MS } = {}) {
   const user = username?.trim();
@@ -72,6 +79,8 @@ function sniffImageExt(buf) {
  * GITHUB_AVATAR_MAX_BYTES 即放弃。按 magic bytes 嗅探扩展名（png/jpg）。
  * 任何失败（网络错误 / 非 200 / 超时 / 超限 / 无法识别的格式）均静默返回 null，绝不抛出。
  * 成功返回 { buffer: Buffer, ext: 'png' | 'jpg' }。
+ * @param {string} avatarUrl
+ * @param {{ fetchImpl?: FetchLike | null, timeoutMs?: number }} [options]
  */
 export async function downloadGithubAvatar(avatarUrl, { fetchImpl = globalThis.fetch, timeoutMs = GITHUB_API_TIMEOUT_MS } = {}) {
   const url = avatarUrl?.trim();
@@ -280,6 +289,8 @@ export function generateQuickData(options, { exampleDir, destDir }) {
 /**
  * 纯净空白模式：最小骨架（不依赖 data.example）。
  * lang 缺省 zh；site.yaml 只含校验必填字段，github.username 用占位符。
+ * @param {string} destDir
+ * @param {{ lang?: string, name?: string, githubUser?: string }} [options]
  */
 export function generateBlankData(destDir, { lang = 'zh', name, githubUser } = {}) {
   const displayName = name?.trim() || (lang === 'zh' ? '我的主页' : 'My Homepage');
@@ -308,6 +319,7 @@ export function generateBlankData(destDir, { lang = 'zh', name, githubUser } = {
  * 编排入口：跳过判断 → 参数/非交互分流 → 交互时调用注入的 ask。
  * ask 仅在交互且无参数时调用，签名 ask() → Promise<{ mode: 'quick'|'example'|'blank', options? }>。
  * 返回 { mode: 'skipped' | 'example' | 'blank' | 'quick' }。
+ * @param {{ rootDir: string, argv?: string[], env?: Record<string, string | undefined>, isTTY?: boolean, ask?: () => Promise<{ mode: 'quick' | 'example' | 'blank', options?: any }> }} [options]
  */
 export async function runSetup({ rootDir, argv = [], env = {}, isTTY = false, ask } = {}) {
   const exampleDir = path.join(rootDir, 'data.example');

@@ -12,7 +12,7 @@ const baseItem = {
   authors: ['Zhiyuan Lin', 'Alice Doe'],
   year: 2026,
   date: '2026-05-12',
-  type: 'conference',
+  type: 'conference' as const,
   venue: 'OSDI 2026',
   tags: ['systems', 'inference'],
   links: { pdf: 'assets/papers/x.pdf', code: 'https://github.com/a/b' },
@@ -40,7 +40,7 @@ describe('publications config', () => {
     const cfg = loadPublications('data.example');
     expect(cfg.enabled).toBe(true);
     expect(cfg.items.length).toBeGreaterThanOrEqual(5);
-    expect(cfg.items[0].note?.zh).toContain('第一作者');
+    expect((cfg.items[0].note as Record<string, string> | undefined)?.zh).toContain('第一作者');
     expect(cfg.items[0].bibtex).toContain('lin2026efficient');
   });
 

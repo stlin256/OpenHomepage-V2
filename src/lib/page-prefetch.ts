@@ -55,7 +55,7 @@ export function languageAlternatePaths(document: Document, currentPath: string):
 export function responsiveImageCandidates(document: Document): PrefetchImageCandidate[] {
   const view = document.defaultView;
   const devicePixelRatio = view?.devicePixelRatio ?? 1;
-  const mediaMatches = (source: HTMLSourceElement): boolean => {
+  const mediaMatches = (source: Element): boolean => {
     const media = source.getAttribute('media');
     if (!media) return true;
     if (typeof view?.matchMedia !== 'function') return false;
