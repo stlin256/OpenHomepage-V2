@@ -59,7 +59,7 @@ jobs:
       # 轻量构建：冒烟不依赖 OG 图与图片/CSS 优化；ASTRO_BASE='/' 固定根 base，
       # 避免 GITHUB_ACTIONS 下自动取仓库名作 base 导致预览路径漂移
       - name: 构建 / Build (fonts + astro build)
-        run: tsx scripts/generate-fonts.ts && npx astro build
+        run: npx tsx scripts/generate-fonts.ts && npx astro build
         env:
           ASTRO_BASE: '/'
 
