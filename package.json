@@ -29,6 +29,7 @@
     "preview": "astro preview",
     "serve": "tsx scripts/serve.ts",
     "screenshots": "tsx scripts/screenshots.ts",
+    "version": "node scripts/sync-version.mjs && git add data.example/pages",
     "generate:fonts": "tsx scripts/generate-fonts.ts",
     "optimize:critical-css": "tsx scripts/optimize-critical-css.ts"
   },

@@ -4,11 +4,15 @@
 
 ## 版本号维护机制（Version Maintenance Policy）
 
-- **当前版本号**：`0.2.0`（Git tag: `v0.2.0`，`package.json` 中的 `version: "0.2.0"`，About 页面胶囊标识 `v0.2.0`）。
+- **唯一事实来源**：`package.json` 的 `version` 字段。任何文件（含本文件）都不再硬编码版本号。
+- **派生机制**：
+  - `package-lock.json`、发版提交与 Git tag（`v*`）由 `npm version` 自动生成。
+  - About 页面版本胶囊不写死：示例内容 `data.example/pages/<lang>/about.md` 使用 `v{{version}}` 占位符，构建期由 `src/lib/version.ts` 的 `substituteVersion()` 在 `renderMarkdown` 与搜索索引处注入。用户自己的 `data/pages/` 内容同样可使用该占位符。
+  - `scripts/sync-version.mjs` 挂在 `package.json` 的 `version` 生命周期钩子上，发版时校验 lock 一致性并把示例内容中残留的硬编码版本胶囊自愈为占位符。
 - **更新原则与请示机制**：
   - **更新版本号必须主动请示用户**，获得明确确认后方可递增版本或打新 tag。
   - **默认不自动更新版本号**：即使进行了常规功能迭代、样式修复、性能优化或文档更新，也保持当前版本号不变，除非用户明确要求发版或升级版本。
-  - 经用户指示升级版本时，需同步更新 `package.json` 的 `version` 字段、各语言 `about.md` 中的胶囊 Tag 文案，并打对应 Git tag（例如 `git tag -a v0.2.0 -m "Release v0.2.0"`）提交推送。
+  - 经用户指示发版时，标准流程为：`npm version patch|minor|major -m "Release v%s"`（自动改 package.json/lock、跑 sync-version 钩子、生成发版提交与 `v*` tag），随后 `git push --follow-tags`。禁止手改 `version` 字段或手动打 tag。
 
 ## 质量门禁与依赖治理（2026-09-05 落地）
 

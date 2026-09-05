@@ -5,10 +5,11 @@ import { loadPages, detectLanguages, loadSiteConfig, resolveText } from './confi
 import { buildRoutes, normalizeLang, pageUrlPath } from './routes.ts';
 import { loadPublications } from './publications.ts';
 import { generateHeadingSlug } from './toc.ts';
+import { substituteVersion } from './version.ts';
 import type { SearchResultItem } from './search.ts';
 
 function cleanMarkdown(raw: string): string {
-  return raw
+  return substituteVersion(raw)
     .replace(/```[\s\S]*?```/g, ' ') // code blocks
     .replace(/`([^`]+)`/g, '$1') // inline code
     .replace(/!\[.*?\]\(.*?\)/g, ' ') // images

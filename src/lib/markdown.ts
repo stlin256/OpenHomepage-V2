@@ -4,6 +4,7 @@
  * 能力：GFM、Shiki 明暗双主题代码高亮、KaTeX 数学公式、自定义指令
  * （bilibili/youtube/video/audio/figure/grid/cell/stream/ghcard，见 docs/specs/03）、
  * HTML 混写白名单过滤（剔除 script/事件属性/非白名单 iframe）。
+ * renderMarkdown 入口额外做 {{version}} 占位符替换（版本号见 version.ts）。
  *
  * 实现已拆分至 src/lib/markdown/ 目录（types/utils/sanitize/embeds/directives/
  * edit-spans/decorations），本文件只做管线组装与公共 API re-export，
@@ -23,6 +24,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import { getBaseUrl } from './base-url.ts';
 import { getUiLabels } from './ui-i18n.ts';
+import { substituteVersion } from './version.ts';
 import { buildSanitizeSchema } from './markdown/sanitize.ts';
 import { remarkCustomDirectives } from './markdown/directives.ts';
 import { remarkEditSpans, rehypeStreamEmbeds, rehypeGhCards, rehypeEditorialEmbeds } from './markdown/edit-spans.ts';
@@ -129,5 +131,5 @@ export async function renderMarkdown(
     processor = createMarkdownProcessor(options);
     processorCache.set(key, processor);
   }
-  return String(await processor.process(markdown));
+  return String(await processor.process(substituteVersion(markdown)));
 }

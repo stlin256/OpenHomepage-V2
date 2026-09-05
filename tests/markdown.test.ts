@@ -601,3 +601,13 @@ describe('富媒体脚注（Footnotes Pipeline）', () => {
     expect(html).toContain('<sup>3</sup>');
   });
 });
+
+
+describe('版本号占位符（{{version}}）', () => {
+  it('渲染时替换为 package.json 的 version', async () => {
+    const { default: pkg } = await import('../package.json');
+    const html = await renderMarkdown('<span class="version-label">v{{version}}</span>');
+    expect(html).toContain(`v${pkg.version}`);
+    expect(html).not.toContain('{{version}}');
+  });
+});
