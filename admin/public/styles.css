@@ -718,3 +718,56 @@ html[data-theme='dark'] .theme-toggle .icon-dark { display: block; }
 .doctor-detail .doctor-msg { cursor: pointer; }
 .doctor-suggestion { color: var(--text-muted); font-size: 12px; margin: 4px 0 2px; }
 html[data-theme='dark'] .doctor-badge.ok { color: #5cb860; }
+
+/* 发布视图（spec 21）：构建阶段指示 + 滚动日志 + dist 预览 + OG 分享卡 */
+.build-stages { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.build-stage {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.build-stage.active { border-color: var(--accent); color: var(--accent); }
+.build-stage.done { border-color: var(--accent); color: var(--accent); opacity: 0.65; }
+.build-ok { color: var(--accent); }
+.build-log {
+  max-height: 260px;
+  overflow: auto;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.og-generate-row { align-items: center; }
+.og-generate-row .input { flex: 1; min-width: 0; }
+.og-preview-box { margin-top: 12px; }
+.og-preview-img {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* 学术成果条目管理（spec 21 §4）：条目行 + 编辑弹窗 */
+.pub-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.pub-row-main { flex: 1; min-width: 0; }
+.pub-form-modal { width: min(640px, calc(100vw - 32px)); max-width: 640px; }
+.pub-form-row { display: flex; gap: 10px; }
+.pub-form-row .field { flex: 1; min-width: 0; }
+.pub-links-label { margin-top: 10px; }
+.pub-bib-title { margin-top: 28px; }

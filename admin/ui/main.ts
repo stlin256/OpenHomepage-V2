@@ -26,7 +26,8 @@ import { renderThemePicker } from './views/theme.ts';
 import { renderLanguages } from './views/languages.ts';
 import { renderDoctor } from './views/doctor.ts';
 import { renderAssets } from './views/assets.ts';
-import { renderPublicationsImport } from './views/publications.ts';
+import { renderPublications } from './views/publications.ts';
+import { renderPublish } from './views/publish.ts';
 import { openOnboardingWizard } from './views/onboarding.ts';
 
 export interface AppState {
@@ -118,6 +119,10 @@ function renderSidebar(): void {
 
   sidebar.append(el('div', { class: 'side-title' }, t('navAssets')));
   sidebar.append(el('a', { class: 'side-item', href: '#/assets' }, t('navAssets')));
+
+  // 发布（spec 21）：一键构建 + dist 预览 + OG 分享卡预览
+  sidebar.append(el('div', { class: 'side-title' }, t('navPublish')));
+  sidebar.append(el('a', { class: 'side-item', href: '#/publish' }, t('navPublish')));
   updateSideNav(sidebar);
 }
 
@@ -196,10 +201,12 @@ async function renderMain(): Promise<void> {
         rss: renderRssConfig,
         streaming: renderStreamingConfig,
         languages: renderLanguages,
-        publications: renderPublicationsImport,
+        publications: renderPublications,
         theme: renderThemePicker,
       };
       await (renderers[section] ?? renderSiteConfig)(main, state);
+    } else if (name === 'publish') {
+      currentCleanup = await renderPublish(main, state);
     } else if (name === 'i18n-sync') {
       await renderI18nSync(main, state);
     } else if (name === 'doctor') {

@@ -185,6 +185,25 @@ export const api = {
   // 健康检查（spec 20）：默认离线，online=true 追加 GitHub API / RSS 源探测
   doctor: (online = false) => req<DoctorCheckView>(`/api/doctor${online ? '?online=1' : ''}`),
 
+  // 发布视图（spec 21）：构建状态机 + dist 静态预览
+  buildStatus: () => req<BuildStatus>('/api/build/status'),
+  buildStart: () => req<BuildStatus>('/api/build/start', { method: 'POST' }),
+  buildStop: () => req<BuildStatus>('/api/build/stop', { method: 'POST' }),
+  previewStatus: () => req<DistPreviewStatus>('/api/preview/status'),
+  previewStart: () => req<DistPreviewStatus>('/api/preview/start', { method: 'POST' }),
+  previewStop: () => req<DistPreviewStatus>('/api/preview/stop', { method: 'POST' }),
+
+  // 学术成果逐条编辑（spec 21 §4）：整文件读写
+  publications: () => req<{ data: PublicationsData }>('/api/config/publications'),
+  savePublications: (data: PublicationsData) =>
+    req('/api/config/publications', json('PUT', { data })),
+
+  // OG 分享卡按需预览（spec 21 §5）
+  ogPreview: (lang: string, file: string) =>
+    req<OgPreviewResult>(
+      `/api/og-preview?lang=${encodeURIComponent(lang)}&file=${encodeURIComponent(file)}`
+    ),
+
   /** data.zip 导入（spec 18）：整包备份后覆盖写入 */
   importDataZip: async (buf: ArrayBuffer) => {
     const res = await fetch('/api/import-data', {
@@ -219,4 +238,58 @@ export interface ImportedPub {
   type: string;
   venue: string;
   bibtex_key: string;
+}
+
+// ---- 发布视图（spec 21） ----
+
+export interface BuildStatus {
+  status: 'idle' | 'running' | 'success' | 'failed';
+  stages: string[];
+  stageIndex: number;
+  logTail: string[];
+  error: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+}
+
+export interface DistPreviewStatus {
+  up: boolean;
+  managed: boolean;
+  url: string | null;
+  port: number;
+  error: string | null;
+}
+
+/** 学术成果条目（保留未知字段如 doi，编辑往返不丢） */
+export type PubItem = Record<string, unknown> & {
+  id?: string;
+  title?: string;
+  authors?: string[];
+  year?: number;
+  date?: string;
+  type?: string;
+  venue?: string;
+  venue_short?: string;
+  badges?: string[];
+  tags?: string[];
+  note?: Record<string, string> | string;
+  abstract?: Record<string, string> | string;
+  links?: Record<string, string>;
+  bibtex_key?: string;
+  teaser?: string;
+  order?: number;
+};
+
+export interface PublicationsData {
+  enabled?: boolean;
+  bibtex_file?: string;
+  highlight_authors?: string[];
+  items: PubItem[];
+  [key: string]: unknown;
+}
+
+export interface OgPreviewResult {
+  custom: string | null;
+  svg: string | null;
+  title: string;
 }

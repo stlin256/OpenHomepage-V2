@@ -59,3 +59,11 @@
 - **侧栏「工具 → 健康检查」**（`#/doctor`，`admin/ui/views/doctor.ts`）：`GET /api/doctor`（默认离线，`?online=1` 追加 GitHub API / RSS 探测）调 `runDoctor()`，报告按级别分色渲染、建议折叠展开，可一键重跑。
 - **自动打开浏览器**：`npm run admin` 启动后 `openBrowser()`（`admin/server/open-browser.ts`）零依赖开浏览器——Windows `cmd /c start "" <url>` / macOS `open` / Linux `xdg-open`；`ADMIN_NO_OPEN=1` 禁用，失败静默降级（URL 照常打印）。平台命令构造抽成纯函数 `buildOpenCommand` 供单测。
 - 服务端注入点：`AdminServerOptions` 的 `cacheDir` / `prefetchRun` / `doctorRun`（`admin/server/live-tools.ts`），测试全部替身零触网（`tests/admin-live-tools.test.ts`）。
+
+## Admin 发布闭环（2026-09-05 落地，spec 21）
+
+详细规格见 `docs/specs/21-admin-publish.md`。
+
+- **侧栏「发布」视图**（`#/publish`，`admin/ui/views/publish.ts`）：一键构建（`admin/server/build.ts`，分 5 阶段 spawn：fonts → og → astro build → css → images，node 直跑 tsx/astro CLI 避开 .cmd 壳；状态机 idle→running→success|failed，进行中重复启动 409；`stop()` 走 devserver 的 killProcessTree 树杀回 idle）；构建成功后「预览 dist」（`admin/server/preview.ts`，**进程内**复用 scripts/serve.ts 的 createStaticServer，127.0.0.1:4399，幂等/外部占用接管/退出时 close）；OG 分享卡预览（`admin/server/og-preview.ts`，进程内调 generateOgSvg 返回 SVG，不写盘不依赖 sharp，自定义 og_image 页面回传 custom 路径）。
+- **学术成果逐条编辑**（`admin/server/publications.ts` + 「学术成果」视图上半区）：列表 + 弹窗表单增删改，整文件 `GET/PUT /api/config/publications`，服务端逐条校验（必填约束对齐 src/lib/publications.ts normalizeItem + id 唯一 + type 枚举）+ createSnapshot 快照链路；未知字段（如 doi）编辑往返不丢；BibTeX 导入面板保留在下方。
+- 测试：`tests/admin-publish.test.ts`（假 spawn/probe runner，不真跑构建）、`tests/admin-publications.test.ts`（快照断言模式同 admin-configs）。
