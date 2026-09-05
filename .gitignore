@@ -22,3 +22,7 @@ debug.log
 
 # 测试覆盖率报告
 coverage/
+
+# Playwright e2e 产物
+playwright-report/
+test-results/

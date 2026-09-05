@@ -60,8 +60,8 @@ export default tseslint.config(
     },
   },
   {
-    // 根级 Node 配置文件
-    files: ['*.{mjs,cjs,js}'],
+    // 根级 Node 配置文件 + e2e（Playwright 跑在 Node）
+    files: ['*.{mjs,cjs,js,ts}', 'e2e/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,

@@ -39,3 +39,41 @@ jobs:
 
       - name: 单元测试 + 覆盖率门槛 / Unit tests with coverage thresholds (vitest run --coverage)
         run: npm run test:coverage
+
+  # 最小 e2e 冒烟：构建 dist/ 后用 Playwright 跑 e2e/*.spec.ts（astro preview 直出）
+  e2e-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: 准备示例数据 / Seed example data (data.example → data)
+        run: test -d data || cp -r data.example data
+
+      # 轻量构建：冒烟不依赖 OG 图与图片/CSS 优化；ASTRO_BASE='/' 固定根 base，
+      # 避免 GITHUB_ACTIONS 下自动取仓库名作 base 导致预览路径漂移
+      - name: 构建 / Build (fonts + astro build)
+        run: tsx scripts/generate-fonts.ts && npx astro build
+        env:
+          ASTRO_BASE: '/'
+
+      # PLAYWRIGHT_BROWSERS_PATH=0 把浏览器装进 node_modules（同 scripts/screenshots.ts 约定）
+      - name: 安装 Playwright Chromium / Install Playwright Chromium
+        run: PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install --with-deps chromium
+
+      - name: e2e 冒烟 / Playwright smoke tests
+        run: npm run test:e2e
+
+      - name: 上传测试报告 / Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
