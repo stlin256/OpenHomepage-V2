@@ -1,0 +1,6 @@
+# Robots.txt generated automatically by OpenHomepage-V2
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://stlin256.github.io/OpenHomepage-V2/sitemap.xml
