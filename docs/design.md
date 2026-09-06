@@ -139,7 +139,7 @@
 19. [x] 后台动态工具与健康入口 → [docs/specs/20-admin-live-tools.md](specs/20-admin-live-tools.md)（在线 prefetch 刷新、doctor 图形化面板、启动自动打开浏览器）
 20. [x] Admin 发布闭环与学术编辑 → [docs/specs/21-admin-publish.md](specs/21-admin-publish.md)（一键构建与进程内 dist 预览、OG 卡片预览、学术成果逐条编辑）
 21. [x] 部署引导与新手向导统一 → [docs/specs/22-admin-deploy-guide.md](specs/22-admin-deploy-guide.md)（线上部署清单、仓库地址探测、预设共享、PAT 引导）
-22. [ ] 自动化 Sitemap 与 Robots → [docs/specs/23-sitemap-and-robots.md](specs/23-sitemap-and-robots.md)（多语言 xhtml:link 关联、x-default 回退、动态 sitemap.xml 与 robots.txt）
-23. [ ] 学术与个人结构化数据（JSON-LD） → [docs/specs/24-structured-data.md](specs/24-structured-data.md)（ProfilePage/Person 学者名片、ScholarlyArticle 论文成果、BlogPosting/Article 富摘要）
+22. [x] 自动化 Sitemap 与 Robots → [docs/specs/23-sitemap-and-robots.md](specs/23-sitemap-and-robots.md)（多语言 xhtml:link 关联、x-default 回退、动态 sitemap.xml 与 robots.txt）
+23. [x] 学术与个人结构化数据（JSON-LD） → [docs/specs/24-structured-data.md](specs/24-structured-data.md)（ProfilePage/Person 学者名片、ScholarlyArticle 论文成果、BlogPosting/Article 富摘要）
 
 另：已建立 `skills/editing-data/SKILL.md`，指导 AI 正确编辑 data/ 文件夹。

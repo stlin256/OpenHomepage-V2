@@ -36,7 +36,7 @@ data/
 
 1. **页面与 Frontmatter**：改内容直接编辑 `data/pages/<语言>/<slug>.md`。新建页面必须写 frontmatter：
    - 基础字段：`title`（必填）、`nav`（默认 true）、`order`（导航排序，小的在前，主页固定 0）、`slug`（缺省用文件名，主页固定 index.md 对应 `/`）、`description`（SEO）。
-   - 增强字段：`toc: true|auto|false`（长文目录）、`toc_depth: 2-4`（目录深度，默认 3）、`reading_progress: true`（顶部阅读进度条）、`notice: "提示文案"`（或 `{text, color: "accent|yellow|red|custom", delay: 500}` 顶端通知横幅）、`date: "YYYY-MM-DD"`（发布日期，Feed 收录与排序）、`updated: "YYYY-MM-DD"`、`feed: false`（显式从本站 Feed 排除）、`og_image: "assets/..."`（社交分享卡片封面覆盖）。
+   - 增强字段：`toc: true|auto|false`（长文目录）、`toc_depth: 2-4`（目录深度，默认 3）、`reading_progress: true`（顶部阅读进度条）、`notice: "提示文案"`（或 `{text, color: "accent|yellow|red|custom", delay: 500}` 顶端通知横幅）、`date: "YYYY-MM-DD"`（发布日期，Feed 收录与排序）、`updated: "YYYY-MM-DD"`、`feed: false`（显式从本站 Feed 排除）、`og_image: "assets/..."`（社交分享卡片封面覆盖）、`sitemap: false`（显式从 sitemap.xml 排除）、`priority: 0.8`、`changefreq: "weekly"`、`type: "article|post|page"`（指定文章/博客类型供 JSON-LD 结构化数据使用）。
    - 多语言：把文件复制到另一语言目录（如 `pages/zh/research.md` → `pages/en/research.md`）并翻译；缺译页面按回退链静默渲染。
 2. **Markdown 扩展指令**：可用指令包括：
    - 媒体类：`::bilibili{bvid="..."}`、`::youtube{id="..."}`、`:::video{src="..." [poster="..."]}`、`:::audio{src="..." [title="..."] [description="..."] [cover="..."]}`（支持紧凑模式与带封面的卡片模式，与 BGM 保持独占播放/自动续播）。
@@ -58,9 +58,10 @@ data/
 8. **RSS 与原创 Feed**：
    - 外部 RSS 聚合：加源在 `rss.yaml` 的 `sources` 追加；curated 模式逐篇配 `url` + 可选 `note`/`cover`（封面未显式声明时 prefetch 会自动抓取 `og:image`）。
    - 本站原创 Feed：在 `site.yaml` 中配置 `feed: { enabled: true, formats: ["rss", "atom", "json"], limit: 50 }`，自动生成各语言下的 `/feed.xml`、`/feed.atom.xml`、`/feed.json`。
-9. **素材与灯箱**：图片放入 `data/assets/`，Markdown 和 YAML 里用 `assets/xxx.jpg` 相对路径引用（不要引用 data/ 之外的路径）。支持同名 `-full` 后缀约定（如 `assets/hero-full.jpg`）供灯箱优先加载高清大图；正文中引用的远程 http(s) 媒体构建时会自动本地化到 `data/assets/remote/`。
-10. **校验与测试**：改完 YAML 至少用 YAML 解析器校验语法；跑 `npm test` 守护纯函数行为与组件逻辑，必要时跑 `npm run build` 验证静态构建产物。
-11. **不要做的事**：
+9. **SEO 与搜索引擎**：site.yaml 可选配置 seo: { sitemap: { enabled: true, changefreq: "weekly" }, robots: { enabled: true, allow: ["/"], disallow: [] } }。构建期自动生成 dist/sitemap.xml（带多语言 xhtml:link 双向关联与 x-default）与 dist/robots.txt，并在页面 <head> 中注入 Schema.org JSON-LD 学者名片、论文与文章结构化数据。
+10. **素材与灯箱**：图片放入 `data/assets/`，Markdown 和 YAML 里用 `assets/xxx.jpg` 相对路径引用（不要引用 data/ 之外的路径）。支持同名 `-full` 后缀约定（如 `assets/hero-full.jpg`）供灯箱优先加载高清大图；正文中引用的远程 http(s) 媒体构建时会自动本地化到 `data/assets/remote/`。
+11. **校验与测试**：改完 YAML 至少用 YAML 解析器校验语法；跑 `npm test` 守护纯函数行为与组件逻辑，必要时跑 `npm run build` 验证静态构建产物。
+12. **不要做的事**：
    - 不要把 data/ 提交进 git（已在 .gitignore，不要移除该规则）；
    - 不要在配置里写入 token/密码等机密（GitHub PAT 只配在仓库 Secrets）；
    - 不要手写 `.cache/` 里的文件（由 prefetch 与构建生成）；

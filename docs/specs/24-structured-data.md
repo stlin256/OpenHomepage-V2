@@ -1,6 +1,6 @@
 # 24：学术与个人结构化数据（Schema.org / JSON-LD）（规格）
 
-> 状态：待实现。
+> 状态：已实现。
 > 来源：SEO、学术传播与现代 Web 标准增强路线（一之 2）。
 > 目标：在构建期自动为首页、普通文章页及学术成果生成合规的 Schema.org JSON-LD 结构化数据，嵌入 `<head>` 的 `<script type="application/ld+json">` 中，帮助 Google、Google Scholar、Bing 等搜索引擎精准识别学者身份、学术论文元数据及原创文章，赋予站点顶级富摘要（Rich Snippets）与知识图谱呈现能力。
 > 全局约束：零前端运行时 JS；零外部 schema 库依赖（纯原生 TypeScript 序列化）；严格防范 JSON 脚本注入（XSS 防护）；与 `data/site.yaml`、`data/publications.yaml` 及 `data/pages/*.md` 紧密绑定；按 TDD 实施，测试覆盖率严格达标（lines/statements/functions ≥90%、branches ≥80%）。

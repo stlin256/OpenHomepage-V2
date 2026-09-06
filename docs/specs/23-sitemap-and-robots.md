@@ -1,6 +1,6 @@
 # 23：自动化 Sitemap.xml 与 Robots.txt（规格）
 
-> 状态：待实现。
+> 状态：已实现。
 > 来源：SEO、学术传播与现代 Web 标准增强路线（一之 1）。
 > 目标：在构建期全自动生成完全合规、适配多语言双向关联（`xhtml:link hreflang`）的 `sitemap.xml` 与动态指向站点地图的 `robots.txt`，保证全站静态可预测、零前端运行时 JS 开销。
 > 全局约束：零新增运行时依赖；产物符合 Sitemaps.org 与 Google Search Console 官方规范；严格支持 `data/` 多语言路由与 `x-default` 回退链；按 TDD 实施，单测覆盖率严格满足门槛（lines/statements/functions ≥90%、branches ≥80%）。
