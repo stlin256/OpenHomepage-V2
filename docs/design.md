@@ -129,7 +129,17 @@
 9. [x] 动效清单与性能预算 → [docs/specs/09-animations.md](specs/09-animations.md)（九项动效按清单；性能预算为软目标）
 10. [x] 主题色变量体系（明暗双主题下的语义色） → [docs/specs/10-theme-colors.md](specs/10-theme-colors.md)（中性色固定 + accent 可配；深色自动校正）
 11. [x] i18n（页面多语言 / 编辑器 / CI 文案） → [docs/specs/11-i18n.md](specs/11-i18n.md)（子目录分语言；缺译回退 en；配置文案双语映射；编辑器中英可切；workflow 注解双语）
-12. [ ] P0 学术内容与站点 Feed → [docs/specs/13-p0-content-academic-and-feed.md](specs/13-p0-content-academic-and-feed.md)（论文/BibTeX、时间线、callout、原创 RSS/Atom/JSON Feed；多端、秒开、双主题、TDD 全局门槛）
-13. [ ] P1 搜索/OG/TOC/播放列表 → [docs/specs/14-p1-search-og-toc-playlist.md](specs/14-p1-search-og-toc-playlist.md)（Ctrl+K 静态搜索、构建期 OG 图、长文目录与阅读进度、BGM playlist；渐进增强与按需加载）
+12. [x] P0 学术内容与站点 Feed → [docs/specs/13-p0-content-academic-and-feed.md](specs/13-p0-content-academic-and-feed.md)（论文/BibTeX、时间线、callout、原创 RSS/Atom/JSON Feed；多端、秒开、双主题、TDD 全局门槛）
+13. [x] P1 搜索/OG/TOC/播放列表 → [docs/specs/14-p1-search-og-toc-playlist.md](specs/14-p1-search-og-toc-playlist.md)（Ctrl+K 静态搜索、构建期 OG 图、长文目录与阅读进度、BGM playlist；渐进增强与按需加载）
+14. [x] 初始化交互式向导 → [docs/specs/15-setup-wizard.md](specs/15-setup-wizard.md)（快速向导、场景预设、GitHub API 预填、纯净空白与示例回退）
+15. [x] 站点健康自检与诊断 → [docs/specs/16-doctor.md](specs/16-doctor.md)（离线/在线多级诊断、配置与资产校验、退出码机制）
+16. [x] 多平台部署与容器化 → [docs/specs/17-deployment.md](specs/17-deployment.md)（Dockerfile、docker-compose、Vercel、Netlify、DevContainer）
+17. [x] 后台数据导入与恢复 → [docs/specs/18-admin-data-import.md](specs/18-admin-data-import.md)（BibTeX 导入合并与 data.zip 导入覆盖备份）
+18. [x] 新手欢迎向导与语言管理 → [docs/specs/19-admin-onboarding.md](specs/19-admin-onboarding.md)（四步新手向导、自动同步、归档式语言管理）
+19. [x] 后台动态工具与健康入口 → [docs/specs/20-admin-live-tools.md](specs/20-admin-live-tools.md)（在线 prefetch 刷新、doctor 图形化面板、启动自动打开浏览器）
+20. [x] Admin 发布闭环与学术编辑 → [docs/specs/21-admin-publish.md](specs/21-admin-publish.md)（一键构建与进程内 dist 预览、OG 卡片预览、学术成果逐条编辑）
+21. [x] 部署引导与新手向导统一 → [docs/specs/22-admin-deploy-guide.md](specs/22-admin-deploy-guide.md)（线上部署清单、仓库地址探测、预设共享、PAT 引导）
+22. [ ] 自动化 Sitemap 与 Robots → [docs/specs/23-sitemap-and-robots.md](specs/23-sitemap-and-robots.md)（多语言 xhtml:link 关联、x-default 回退、动态 sitemap.xml 与 robots.txt）
+23. [ ] 学术与个人结构化数据（JSON-LD） → [docs/specs/24-structured-data.md](specs/24-structured-data.md)（ProfilePage/Person 学者名片、ScholarlyArticle 论文成果、BlogPosting/Article 富摘要）
 
 另：已建立 `skills/editing-data/SKILL.md`，指导 AI 正确编辑 data/ 文件夹。

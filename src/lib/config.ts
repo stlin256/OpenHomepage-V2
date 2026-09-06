@@ -13,11 +13,30 @@ export type { LocalizedText };
 export { resolveText, normalizeNotice };
 export type { PageNotice };
 
+export interface SeoConfig {
+  sitemap?: {
+    enabled?: boolean;
+    changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+    priority?: {
+      home?: number;
+      pages?: number;
+    };
+  };
+  robots?: {
+    enabled?: boolean;
+    allow?: string[];
+    disallow?: string[];
+    crawl_delay?: number | null;
+  };
+}
+
 export interface SiteConfig {
   site: {
     title: LocalizedText;
     description?: LocalizedText;
     language?: string;
+    /** 站点完整 URL / 规范域名，如 https://stlin256.github.io */
+    url?: string;
     /** 站点图标（favicon），相对 data/ 的路径，如 assets/favicon.svg（svg/png/ico） */
     favicon?: string;
   };
@@ -118,6 +137,8 @@ export interface SiteConfig {
     autoplay?: boolean;
     speed?: number;
   }[];
+  /** SEO 与搜索引擎爬虫配置（spec 23/24） */
+  seo?: SeoConfig;
 }
 
 export interface EditorialAction {
@@ -195,6 +216,14 @@ export interface PageEntry {
   updated?: string;
   /** 缺省 true；显式 false 排除 */
   feedEnabled?: boolean;
+  /** Sitemap 控制：false 从 sitemap.xml 排除，缺省 true */
+  sitemap?: boolean;
+  /** Sitemap 覆盖更新频率 */
+  changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+  /** Sitemap 覆盖权重 */
+  priority?: number;
+  /** 页面类型：article | post | page（供 JSON-LD 使用） */
+  type?: 'article' | 'post' | 'page';
   /** P1 长文目录（TOC）：true | false | 'auto' */
   toc?: boolean | 'auto';
   tocDepth?: number;
@@ -310,6 +339,14 @@ export function loadPages(dataDir: string): PageEntry[] {
       const ogImage = typeof data.og_image === 'string' ? data.og_image : typeof data.ogImage === 'string' ? data.ogImage : undefined;
       const ogTitle = typeof data.og_title === 'string' ? data.og_title : typeof data.ogTitle === 'string' ? data.ogTitle : undefined;
       const ogDescription = typeof data.og_description === 'string' ? data.og_description : typeof data.ogDescription === 'string' ? data.ogDescription : undefined;
+      const sitemap = data.sitemap === false ? false : undefined;
+      const changefreq = typeof data.changefreq === 'string' && ['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never'].includes(data.changefreq)
+        ? (data.changefreq as PageEntry['changefreq'])
+        : undefined;
+      const priority = typeof data.priority === 'number' ? data.priority : undefined;
+      const pageType = typeof data.type === 'string' && ['article', 'post', 'page'].includes(data.type)
+        ? (data.type as PageEntry['type'])
+        : undefined;
 
       pages.push({
         lang,
@@ -322,6 +359,10 @@ export function loadPages(dataDir: string): PageEntry[] {
         date: typeof data.date === 'string' ? data.date : undefined,
         updated: typeof data.updated === 'string' ? data.updated : undefined,
         feedEnabled: (data.feed as Record<string, unknown> | undefined)?.enabled === false ? false : data.feed_enabled === false ? false : undefined,
+        sitemap,
+        changefreq,
+        priority,
+        type: pageType,
         toc,
         tocDepth,
         readingProgress,
