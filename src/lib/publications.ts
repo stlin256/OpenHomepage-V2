@@ -18,6 +18,9 @@ export interface PublicationLinks {
   project?: string;
   slides?: string;
   dataset?: string;
+  doi?: string;
+  arxiv?: string;
+  [key: string]: string | undefined;
 }
 
 export interface PublicationItem {
@@ -29,6 +32,7 @@ export interface PublicationItem {
   type?: PublicationType;
   venue: string;
   venue_short?: string;
+  doi?: string;
   badges?: string[];
   tags?: string[];
   note?: LocalizedText;
@@ -129,6 +133,7 @@ function normalizeItem(raw: Record<string, unknown>, index: number): Publication
     type: raw.type as PublicationType | undefined,
     venue,
     venue_short: typeof raw.venue_short === 'string' ? raw.venue_short : undefined,
+    doi: typeof raw.doi === 'string' ? raw.doi : undefined,
     badges: Array.isArray(raw.badges) ? raw.badges.filter((b): b is string => typeof b === 'string') : undefined,
     tags: Array.isArray(raw.tags) ? raw.tags.filter((t): t is string => typeof t === 'string') : undefined,
     note: raw.note as LocalizedText | undefined,

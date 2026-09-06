@@ -59,6 +59,7 @@ import StreamBlock from '../components/blocks/StreamBlock.astro';
 import EditorialBlock from '../components/EditorialBlock.astro';
 import NoticeBanner from '../components/NoticeBanner.astro';
 import { renderEditorialBlock } from '../lib/editorial-block.ts';
+import { buildPageJsonLdString } from '../lib/jsonld.ts';
 import { editCfgValue, editCfgBlockName } from '../lib/edit-cfg.ts';
 import { localizeInternalHref } from '../lib/routes.ts';
 import { withBase, getBaseUrl } from '../lib/base-url.ts';
@@ -281,6 +282,18 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   localizeAssets: { dataDir },
   ...(editSource ? { editSource } : {}),
 });
+// spec 24 结构化数据 JSON-LD 计算
+const jsonLd = buildPageJsonLdString({
+  site,
+  page: route.page,
+  publications,
+  lang: contentLang,
+  defaultLang,
+  siteUrl: Astro.site ?? site.site.url,
+  baseUrl,
+  isHome,
+});
+
 const isFeaturesPage = route.page.slug === 'features';
 const profileSlotMarker = '<div data-feature-slot="profile"></div>';
 const githubSlotMarker = '<div data-feature-slot="github"></div>';
@@ -323,6 +336,7 @@ if (
   ogMeta={ogMeta}
   readingProgress={readingProgress}
   editPageSource={editSource}
+  jsonLd={jsonLd}
 >
   {isHome ? (
       <div class="home">

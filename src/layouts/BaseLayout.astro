@@ -67,6 +67,8 @@ interface Props {
   readingProgress?: boolean;
   /** 可视化编辑（M12b）：当前页正文的 data/ 相对路径，注入 bootstrap 供 overlay 定位插入目标（空页面无块坐标时必需） */
   editPageSource?: string;
+  /** 结构化数据 JSON-LD（spec 24） */
+  jsonLd?: string | null;
 }
 
 const {
@@ -93,6 +95,7 @@ const {
   ogMeta,
   readingProgress,
   editPageSource,
+  jsonLd,
 } = Astro.props;
 
 const baseUrl = getBaseUrl();
@@ -176,6 +179,8 @@ const activePlaylist: ResolvedBgmPlaylist | null = bgmPlaylist ?? (bgm ? {
         href={new URL(f.href, Astro.site)}
       />
     ))}
+
+    {jsonLd && <script type="application/ld+json" is:inline set:html={jsonLd} />}
 
     <script is:inline define:vars={{ defaultMode }}>
       // 首帧绘制前确定主题，避免闪烁：sessionStorage 用户选择 > site.yaml default_mode > 跟随系统。
