@@ -272,7 +272,9 @@ const bodyHtml = await renderMarkdown(route.page.body, {
   baseUrl,
   lang: contentLang,
   defaultLang,
-  headingSlugs: hasToc,
+  // 标题锚点：生产渲染给所有正文 h2/h3/h4 补 id 与 # 锚点；编辑模式保持原 headingSlugs 行为
+  headingSlugs: editSource ? hasToc : true,
+  headingAnchors: !editSource,
   ...(publications?.enabled === false ? {} : publications ? { publications } : {}),
   streamEmbeds,
   ghCards: { htmlByRepo: ghHtmlByRepo },

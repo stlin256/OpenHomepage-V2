@@ -25,6 +25,8 @@ export interface MarkdownOptions {
   /** 学术成果配置（data/publications.yaml 归一化结果） */
   publications?: PublicationsConfig;
   headingSlugs?: boolean;
+  /** 给带 id 的正文标题追加 # 锚点链接（分享小节深链）；需与 headingSlugs 配合 */
+  headingAnchors?: boolean;
   toc?: boolean | 'auto';
   /** Shiki 明暗双主题（CSS 变量双写方案，前端按主题切换 var） */
   shikiThemes?: { light: string; dark: string };

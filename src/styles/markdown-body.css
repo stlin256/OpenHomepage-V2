@@ -13,6 +13,37 @@
   line-height: 1.35;
   margin: 2em 0 0.6em;
 }
+/* 标题锚点：悬停/聚焦时在标题右侧显示 # 链接，便于分享小节深链 */
+.markdown-body .heading-anchor {
+  display: inline-block;
+  margin-left: 0.4em;
+  padding: 0 0.15em;
+  color: var(--text-muted);
+  opacity: 0;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.78em;
+  line-height: 1;
+  transform: translateY(-0.05em);
+  transition: opacity 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+.markdown-body h2:hover .heading-anchor,
+.markdown-body h3:hover .heading-anchor,
+.markdown-body h4:hover .heading-anchor,
+.markdown-body .heading-anchor:focus-visible {
+  opacity: 1;
+}
+.markdown-body .heading-anchor:hover,
+.markdown-body .heading-anchor:focus-visible {
+  color: var(--accent);
+}
+@media (hover: none) {
+  .markdown-body .heading-anchor {
+    opacity: 0.55;
+  }
+}
 .markdown-body > :first-child {
   margin-top: 0;
 }
@@ -638,6 +669,7 @@ html.js .timeline-item.reveal.revealed {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .heading-anchor,
   .timeline-item.reveal,
   .publication-item,
   .publication-teaser,

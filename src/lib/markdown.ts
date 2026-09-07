@@ -38,6 +38,7 @@ import {
   rehypeContentDecorations,
   rehypePublications,
   rehypeHeadingSlugs,
+  rehypeHeadingAnchors,
   rehypeFilterIframes,
   rehypeLocalizeHrefs,
 } from './markdown/decorations.ts';
@@ -97,7 +98,8 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
     .use(() => rehypeContentDecorations(options.lang, options.defaultLang))
     .use(rehypeFilterIframes)
     .use(rehypeWrapTables);
-  if (options.headingSlugs || options.toc) processor.use(rehypeHeadingSlugs);
+  if (options.headingSlugs || options.toc || options.headingAnchors) processor.use(rehypeHeadingSlugs);
+  if (options.headingAnchors) processor.use(() => rehypeHeadingAnchors(options.lang));
   if (options.publications) {
     processor.use(() => rehypePublications(options.publications!, options.lang, options.defaultLang, baseUrl));
   }

@@ -85,6 +85,11 @@ export interface TocLabels {
   title: string;
 }
 
+/** 标题锚点 */
+export interface HeadingsLabels {
+  anchorLabel: string;
+}
+
 /** 学术成果 */
 export interface PublicationsLabels {
   abstract: string;
@@ -119,6 +124,7 @@ export interface UiLabels {
   embed: EmbedLabels;
   directive: DirectiveLabels;
   toc: TocLabels;
+  headings: HeadingsLabels;
   publications: PublicationsLabels;
   footnotes: FootnotesLabels;
   code: CodeLabels;
@@ -165,6 +171,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name) => `未知指令 ${name}`,
     },
     toc: { title: '文章目录' },
+    headings: { anchorLabel: '链接到本节' },
     publications: {
       abstract: '摘要',
       copyBibtex: '复制 BibTeX',
@@ -220,6 +227,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name) => `Unknown directive: ${name}`,
     },
     toc: { title: 'Contents' },
+    headings: { anchorLabel: 'Link to this section' },
     publications: {
       abstract: 'Abstract',
       copyBibtex: 'Copy BibTeX',
@@ -275,6 +283,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name) => `不明なディレクティブ: ${name}`,
     },
     toc: { title: '目次' },
+    headings: { anchorLabel: 'このセクションへのリンク' },
     publications: {
       abstract: '概要',
       copyBibtex: 'BibTeX をコピー',
@@ -330,6 +339,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name) => `Directive inconnue : ${name}`,
     },
     toc: { title: 'Sommaire' },
+    headings: { anchorLabel: 'Lien vers cette section' },
     publications: {
       abstract: 'Résumé',
       copyBibtex: 'Copier BibTeX',
@@ -385,6 +395,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Unbekannte Anweisung: ${name}`,
     },
     toc: { title: 'Inhaltsverzeichnis' },
+    headings: { anchorLabel: 'Link zu diesem Abschnitt' },
     publications: {
       abstract: 'Zusammenfassung',
       copyBibtex: 'BibTeX kopieren',
@@ -440,6 +451,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Directiva desconocida: ${name}`,
     },
     toc: { title: 'Contenido' },
+    headings: { anchorLabel: 'Enlace a esta sección' },
     publications: {
       abstract: 'Resumen',
       copyBibtex: 'Copiar BibTeX',
@@ -495,6 +507,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `알 수 없는 지시어: ${name}`,
     },
     toc: { title: '목차' },
+    headings: { anchorLabel: '이 섹션 링크' },
     publications: {
       abstract: '요약',
       copyBibtex: 'BibTeX 복사',
@@ -550,6 +563,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Diretiva desconhecida: ${name}`,
     },
     toc: { title: 'Conteúdo' },
+    headings: { anchorLabel: 'Link para esta seção' },
     publications: {
       abstract: 'Resumo',
       copyBibtex: 'Copiar BibTeX',
@@ -605,6 +619,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Неизвестная директива: ${name}`,
     },
     toc: { title: 'Содержание' },
+    headings: { anchorLabel: 'Ссылка на этот раздел' },
     publications: {
       abstract: 'Аннотация',
       copyBibtex: 'Копировать BibTeX',
@@ -660,6 +675,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Direttiva sconosciuta: ${name}`,
     },
     toc: { title: 'Indice' },
+    headings: { anchorLabel: 'Link a questa sezione' },
     publications: {
       abstract: 'Riassunto',
       copyBibtex: 'Copia BibTeX',
@@ -715,6 +731,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Onbekende instructie: ${name}`,
     },
     toc: { title: 'Inhoud' },
+    headings: { anchorLabel: 'Link naar deze sectie' },
     publications: {
       abstract: 'Samenvatting',
       copyBibtex: 'BibTeX kopiëren',
@@ -770,6 +787,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Bilinmeyen yönerge: ${name}`,
     },
     toc: { title: 'İçindekiler' },
+    headings: { anchorLabel: 'Bu bölüme bağlantı' },
     publications: {
       abstract: 'Özet',
       copyBibtex: 'BibTeX kopyala',
@@ -825,6 +843,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Chỉ thị không xác định: ${name}`,
     },
     toc: { title: 'Mục lục' },
+    headings: { anchorLabel: 'Liên kết đến mục này' },
     publications: {
       abstract: 'Tóm tắt',
       copyBibtex: 'Sao chép BibTeX',
@@ -880,6 +899,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `คำสั่งที่ไม่รู้จัก: ${name}`,
     },
     toc: { title: 'สารบัญ' },
+    headings: { anchorLabel: 'ลิงก์ไปยังส่วนนี้' },
     publications: {
       abstract: 'บทคัดย่อ',
       copyBibtex: 'คัดลอก BibTeX',
@@ -935,6 +955,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `Direktif tidak dikenal: ${name}`,
     },
     toc: { title: 'Daftar isi' },
+    headings: { anchorLabel: 'Tautan ke bagian ini' },
     publications: {
       abstract: 'Abstrak',
       copyBibtex: 'Salin BibTeX',
@@ -990,6 +1011,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `توجيه غير معروف: ${name}`,
     },
     toc: { title: 'المحتويات' },
+    headings: { anchorLabel: 'رابط إلى هذا القسم' },
     publications: {
       abstract: 'ملخص',
       copyBibtex: 'نسخ BibTeX',
@@ -1045,6 +1067,7 @@ export const UI_LABELS: Record<UiLang, UiLabels> = {
       unknown: (name: string) => `अज्ञात निर्देश: ${name}`,
     },
     toc: { title: 'विषय-सूची' },
+    headings: { anchorLabel: 'इस अनुभाग का लिंक' },
     publications: {
       abstract: 'सारांश',
       copyBibtex: 'BibTeX कॉपी करें',

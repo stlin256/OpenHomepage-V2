@@ -11,6 +11,7 @@ import { withBase } from '../base-url.ts';
 import { localizeRemoteAsset } from '../remote-assets.ts';
 import { renderPublications, type PublicationsConfig, type PublicationQuery } from '../publications.ts';
 import { generateHeadingSlug } from '../toc.ts';
+import { getUiLabels } from '../ui-i18n.ts';
 import { hEl, hTxt, hastText, classesOf } from './utils.ts';
 import { CALLOUT_ICON_PATHS, safeTimelineUrl, timelineRangeText } from './directives.ts';
 import { IFRAME_SRC_ALLOWLIST } from './sanitize.ts';
@@ -452,6 +453,31 @@ export function rehypeHeadingSlugs() {
       const slug = generateHeadingSlug(text, existing, index++);
       node.properties = node.properties || {};
       node.properties.id = slug;
+    });
+  };
+}
+
+/** 标题锚点：给已有 id 的 h2/h3/h4 末尾追加一个 # 锚点链接（悬停/聚焦显现） */
+export function rehypeHeadingAnchors(lang?: string) {
+  const label = getUiLabels(lang).headings.anchorLabel;
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node: Element) => {
+      if (!['h2', 'h3', 'h4'].includes(node.tagName)) return;
+      const id = node.properties?.id;
+      if (typeof id !== 'string' || !id) return;
+      // 脚注标题等生成性标题不追加锚点
+      if (classesOf(node).includes('footnotes-title') || id === 'footnote-label') return;
+      // 幂等：编辑模式或重复处理时避免追加第二个锚点
+      if (node.children.some((child) => child.type === 'element' && classesOf(child as Element).includes('heading-anchor'))) {
+        return;
+      }
+      node.children.push(
+        hEl(
+          'a',
+          { className: ['heading-anchor'], href: `#${id}`, ariaLabel: label },
+          [hEl('span', { ariaHidden: 'true' }, [hTxt('#')])],
+        ),
+      );
     });
   };
 }
