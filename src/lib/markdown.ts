@@ -33,6 +33,7 @@ import {
   rehypeNormalizeAssetPaths,
   rehypeLocalizeRemoteAssets,
   rehypeLazyImages,
+  rehypeMermaidBlocks,
   rehypeWrapTables,
   rehypeContentDecorations,
   rehypePublications,
@@ -77,6 +78,7 @@ export function createMarkdownProcessor(options: MarkdownOptions = {}) {
   })
     .use(rehypeRaw)
     .use(rehypeKatex)
+    .use(rehypeMermaidBlocks)
     .use(rehypeShiki, {
     themes,
     defaultColor: false,

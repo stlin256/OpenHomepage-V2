@@ -63,6 +63,7 @@
     "js-yaml": "^5.3.0",
     "katex": "^0.18.4",
     "mdast-util-directive": "^3.1.0",
+    "mermaid": "^11.17.2",
     "prosemirror-history": "^1.5.0",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",

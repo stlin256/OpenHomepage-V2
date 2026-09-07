@@ -40,6 +40,7 @@ const zh = {
   directiveStream: "打字机 (::stream)",
   directiveVideo: "视频卡片 (::bilibili)",
   directiveAudio: "音频播放器 (:::audio)",
+  directiveMermaid: "Mermaid 图表 (:::mermaid)",
 
   navPages: '页面',
   diagnosticsTitle: "写作诊断与排错",
@@ -121,6 +122,7 @@ const zh = {
   dirVideo: '本地视频',
   dirAudio: '音频',
   dirFigure: '配图 (figure)',
+  dirMermaid: 'Mermaid 图表',
   dirGrid: '多栏网格',
   dirStream: '流式区块',
   dirGhcard: 'GitHub 卡片',
@@ -593,6 +595,7 @@ const en: Record<DictKey, string> = {
   directiveStream: "Streaming (::stream)",
   directiveVideo: "Video (::bilibili)",
   directiveAudio: "Audio Player (:::audio)",
+  directiveMermaid: "Mermaid diagram (:::mermaid)",
 
   navPages: 'Pages',
   diagnosticsTitle: "Diagnostics & Linting",
@@ -674,6 +677,7 @@ const en: Record<DictKey, string> = {
   dirVideo: 'Local video',
   dirAudio: 'Audio',
   dirFigure: 'Figure',
+  dirMermaid: 'Mermaid diagram',
   dirGrid: 'Grid',
   dirStream: 'Streaming block',
   dirGhcard: 'GitHub card',

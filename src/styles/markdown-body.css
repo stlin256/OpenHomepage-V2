@@ -142,6 +142,34 @@
   background: transparent;
 }
 
+/* Mermaid 图表：无 JS 时展示源码，JS 渲染成功后切换为 SVG */
+.mermaid-block {
+  margin: 1.5rem 0;
+}
+.mermaid-rendered {
+  display: none;
+  overflow-x: auto;
+  padding: 0.25rem 0;
+}
+.mermaid-rendered svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+.mermaid-block[data-mermaid-ready='true'] .mermaid-source {
+  display: none;
+}
+.mermaid-block[data-mermaid-ready='true'] .mermaid-rendered {
+  display: block;
+}
+.mermaid-block[data-mermaid-error]:not([data-mermaid-error='']) .mermaid-source {
+  display: block;
+}
+.mermaid-block[data-mermaid-error]:not([data-mermaid-error='']) .mermaid-rendered {
+  display: none;
+}
+
 .markdown-body pre {
   background: var(--card);
   padding: 1rem 1.25rem;
@@ -847,4 +875,3 @@ html[data-theme='dark'] .shiki span {
 html[data-theme='dark'] .shiki {
   background-color: var(--shiki-dark-bg);
 }
-

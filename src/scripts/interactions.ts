@@ -17,6 +17,7 @@ import { initToc } from './toc.ts';
 import { initFootnotes } from './footnotes.ts';
 import { scheduleTabPrefetch } from './tab-prefetch.ts';
 import { fetchPageHtml } from './page-cache.ts';
+import { initMermaidBlocks } from './mermaid.ts';
 import { localizedPathname, normalizeSiteLanguage, type SiteLanguage } from '../lib/language.ts';
 import './lightbox.ts';
 import { getUiLabels } from '../lib/ui-i18n.ts';
@@ -315,6 +316,7 @@ export function initCodeBlocks(): void {
   document.querySelectorAll<HTMLElement>(".markdown-body pre, .page-content pre").forEach((pre) => {
     if (
       pre.closest(".code-block-wrapper") ||
+      pre.closest(".mermaid-block") ||
       pre.closest(".publication-bibtex") ||
       pre.closest(".publication-item") ||
       pre.dataset.codeEnhanced === "true" ||
@@ -626,6 +628,7 @@ function initAll(): void {
   initToc();
   initFootnotes();
   initCodeBlocks();
+  void initMermaidBlocks();
   initExternalLinks();
   scheduleTabPrefetch();
 }

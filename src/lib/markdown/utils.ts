@@ -24,3 +24,10 @@ export function classesOf(node: Element): string[] {
 export function escapeAttrValue(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
+
+/** 提取 hast 子树内的纯文本内容（用于 Mermaid 源码等不需要格式化的文本块） */
+export function hastText(node: ElementContent): string {
+  if (node.type === 'text') return node.value;
+  if ('children' in node) return node.children.map(hastText).join('');
+  return '';
+}

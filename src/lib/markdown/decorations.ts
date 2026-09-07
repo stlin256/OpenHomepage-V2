@@ -11,7 +11,7 @@ import { withBase } from '../base-url.ts';
 import { localizeRemoteAsset } from '../remote-assets.ts';
 import { renderPublications, type PublicationsConfig, type PublicationQuery } from '../publications.ts';
 import { generateHeadingSlug } from '../toc.ts';
-import { hEl, hTxt, classesOf } from './utils.ts';
+import { hEl, hTxt, hastText, classesOf } from './utils.ts';
 import { CALLOUT_ICON_PATHS, safeTimelineUrl, timelineRangeText } from './directives.ts';
 import { IFRAME_SRC_ALLOWLIST } from './sanitize.ts';
 import { wrapFragmentForEdit } from './edit-spans.ts';
@@ -70,6 +70,53 @@ export function rehypeLazyImages() {
       if (node.tagName === 'img' && node.properties && node.properties.loading == null) {
         node.properties.loading = 'lazy';
       }
+    });
+  };
+}
+
+/** 从 code 元素判断语言是否为 mermaid（兼容 language-mermaid 与 data-language） */
+function mermaidCodeLanguage(code: Element): boolean {
+  const className = classesOf(code).find((cls) => cls.startsWith('language-'));
+  if (className?.replace('language-', '').toLowerCase() === 'mermaid') return true;
+  const dataLanguage = code.properties?.dataLanguage ?? code.properties?.dataLang;
+  return typeof dataLanguage === 'string' && dataLanguage.toLowerCase() === 'mermaid';
+}
+
+/**
+ * 将 ```mermaid 代码块改写为 .mermaid-block 源码块，交给客户端 mermaid 渲染。
+ * 必须在 Shiki 之前运行，避免 mermaid 被当作普通高亮代码处理。
+ */
+export function rehypeMermaidBlocks() {
+  return (tree: HastRoot) => {
+    visit(tree, 'element', (node: Element, index, parent) => {
+      if (node.tagName !== 'pre' || parent == null || index == null) return;
+      const code = node.children.find(
+        (child): child is Element => child.type === 'element' && child.tagName === 'code',
+      );
+      if (!code || !mermaidCodeLanguage(code)) return;
+
+      const source = hastText(code);
+      const block: Element = {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['mermaid-block'], dataMermaid: 'true' },
+        children: [
+          {
+            type: 'element',
+            tagName: 'pre',
+            properties: { className: ['mermaid-source'] },
+            children: [
+              {
+                type: 'element',
+                tagName: 'code',
+                properties: {},
+                children: [{ type: 'text', value: source }],
+              },
+            ],
+          },
+        ],
+      };
+      parent.children[index] = block;
     });
   };
 }

@@ -265,6 +265,16 @@ function setDirectivePlaceholder(
   data.hChildren = [{ type: 'text', value: hint }];
 }
 
+/** 提取容器指令内部原始源码（用于 :::mermaid 等需要保留 DSL 文本的指令） */
+function directiveBodySource(node: ContainerDirective, file: VFile): string {
+  const first = node.children[0]?.position?.start?.offset;
+  const last = node.children[node.children.length - 1]?.position?.end?.offset;
+  if (first != null && last != null && last >= first) {
+    return String(file).slice(first, last);
+  }
+  return '';
+}
+
 export function remarkCustomDirectives(baseUrl: string | undefined, editMode: boolean, lang?: string, defaultLang?: string, publications?: PublicationsConfig) {
   return (tree: Root, file: VFile) => {
     visit(tree, (node) => {
@@ -296,6 +306,16 @@ export function remarkCustomDirectives(baseUrl: string | undefined, editMode: bo
       };
 
       switch (name) {
+        case 'mermaid': {
+          const source = directiveBodySource(directive as ContainerDirective, file);
+          setElement('div', { className: ['mermaid-block'], dataMermaid: 'true' });
+          data.hChildren = [
+            hEl('pre', { className: ['mermaid-source'] }, [
+              hEl('code', {}, [hTxt(source)]),
+            ]),
+          ];
+          break;
+        }
         case 'bilibili':
         case 'youtube': {
           const embed = toEmbedDiv(name, attrs, baseUrl, lang);
