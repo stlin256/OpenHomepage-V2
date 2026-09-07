@@ -42,6 +42,7 @@ data/
    - 媒体类：`::bilibili{bvid="..."}`、`::youtube{id="..."}`、`:::video{src="..." [poster="..."]}`、`:::audio{src="..." [title="..."] [description="..."] [cover="..."]}`（支持紧凑模式与带封面的卡片模式，与 BGM 保持独占播放/自动续播）。
    - 版式类：`:::figure{src="..." [caption="..."] [width="70%"] [align="left|center|right"]}`、`::::grid{cols=2}` + `:::cell`（嵌套指令外层冒号数必须多于内层）、`::stream{id="..."}`、`::ghcard{repo="owner/repo"}`、`::editorial{id="..."}`。
    - 注记卡片类：`:::note{title="..."}`、`:::tip{title="..."}`、`:::warning{title="..."}`、`:::important{title="..."}`、`:::quote{title="..." source="..."}`（语义化杂志风卡片，title 缺省自动多语言回退）。
+   - 图表类：`:::mermaid`（内容为 Mermaid DSL，如 `flowchart TD` / `sequenceDiagram` / `gantt`），也可直接用标准 ` ```mermaid ` 代码块；服务端输出源码块，浏览器按需渲染为 SVG，无 JS/渲染失败时保留源码。
    - 学术与经历类：
      - `::publications{tag="..." type="conference|journal|..." year="2026" group="year|type|none" sort="date-desc|date-asc|venue|order" limit="20"}`（学术成果列表，支持 BibTeX 一键复制与摘要折叠）。
      - `::::timeline{title="..."}` + `:::timeline-item{start="2022" [end="2026"] [title="..."] [org="..."] [url="..."] [highlight="true"]}`（经历时间线，**`start` 为必填项**，`end` 缺省自动显示当前“至今/Present”文案）。

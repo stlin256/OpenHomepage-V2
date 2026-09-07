@@ -23,6 +23,7 @@ export interface MermaidRenderer {
 let rendererPromise: Promise<MermaidRenderer> | null = null;
 let themeObserverStarted = false;
 let lastObservedTheme: MermaidTheme | null = null;
+let observedRenderer: MermaidRenderer | null = null;
 let nextBlockId = 0;
 
 function loadMermaidRenderer(): Promise<MermaidRenderer> {
@@ -129,7 +130,8 @@ export async function rerenderMermaidBlocks(
   }
 }
 
-function ensureThemeObserver(): void {
+function ensureThemeObserver(renderer?: MermaidRenderer): void {
+  if (renderer) observedRenderer = renderer;
   if (themeObserverStarted || typeof MutationObserver === 'undefined') return;
   themeObserverStarted = true;
   lastObservedTheme = currentMermaidTheme();
@@ -138,7 +140,7 @@ function ensureThemeObserver(): void {
     const nextTheme = currentMermaidTheme();
     if (nextTheme === lastObservedTheme) return;
     lastObservedTheme = nextTheme;
-    void rerenderMermaidBlocks();
+    void rerenderMermaidBlocks(document, observedRenderer ?? undefined);
   });
   observer.observe(document.documentElement, {
     attributes: true,
@@ -155,9 +157,9 @@ export async function initMermaidBlocks(
   );
   if (blocks.length === 0) return;
 
-  ensureThemeObserver();
   const activeRenderer = renderer ?? await loadMermaidRenderer();
   activeRenderer.initialize(mermaidConfigFor(currentMermaidTheme()));
+  ensureThemeObserver(activeRenderer);
   for (const block of blocks) {
     await renderMermaidBlock(block, activeRenderer);
   }

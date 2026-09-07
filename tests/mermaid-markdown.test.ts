@@ -11,7 +11,7 @@ describe('Mermaid 源码块与指令', () => {
     expect(html).toContain('<div class="mermaid-block" data-mermaid="true">');
     expect(html).toContain('<pre class="mermaid-source">');
     expect(html).toContain('graph TD;');
-    expect(html).toContain('A --&gt; B;');
+    expect(html).toContain('A --> B;');
     expect(html).not.toContain('shiki');
   });
 
@@ -20,13 +20,13 @@ describe('Mermaid 源码块与指令', () => {
     expect(html).toContain('<div class="mermaid-block" data-mermaid="true">');
     expect(html).toContain('<pre class="mermaid-source">');
     expect(html).toContain('graph TD;');
-    expect(html).toContain('A --&gt; B;');
+    expect(html).toContain('A --> B;');
   });
 
   it('Mermaid 源码中的 HTML 作为文本转义，不进入可执行 DOM', async () => {
     const html = await renderMarkdown('```mermaid\n<script>alert(1)</script>\n```');
     expect(html).not.toContain('<script>');
-    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('&#x3C;script>');
   });
 
   it('普通代码块仍走 Shiki 高亮', async () => {

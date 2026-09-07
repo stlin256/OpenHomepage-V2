@@ -110,6 +110,18 @@ Self-hosted media (native tags):
 
 ::stream{id="welcome"}
 
+## Mermaid diagram
+
+A horizontal `flowchart LR` keeps the example compact on the page:
+
+:::mermaid
+flowchart LR
+  A[Write] --> B[Build]
+  B --> C[Publish]
+  C --> D[Read]
+  B --> E[Search]
+:::
+
 ## Editorial components
 
 The complete kit below is embedded by `::editorial{id="features"}` from `editorial_blocks` in `site.yaml`. It covers actions, numbered list cards, tiles, archive cards, and a divider:

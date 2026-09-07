@@ -106,6 +106,18 @@ $$
 
 ::stream{id="welcome"}
 
+## Mermaid 図
+
+`flowchart LR` で横向きに配置し、ページ内の縦スペースを抑えています：
+
+:::mermaid
+flowchart LR
+  A[執筆] --> B[ビルド]
+  B --> C[公開]
+  C --> D[閲覧]
+  B --> E[検索]
+:::
+
 ## エディトリアルコンポーネント
 
 以下の完全なキットは、`site.yaml` の `editorial_blocks` から `::editorial{id="features"}` で埋め込まれています。アクション、番号付きリストカード、タイル、アーカイブカード、区切り線を網羅しています：

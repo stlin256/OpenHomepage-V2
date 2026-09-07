@@ -110,6 +110,18 @@ $$
 
 ::stream{id="welcome"}
 
+## Mermaid 流程图
+
+用 `flowchart LR` 横向排列，适合放在页面里而不占太多纵向空间：
+
+:::mermaid
+flowchart LR
+  A[写作] --> B[构建]
+  B --> C[发布]
+  C --> D[阅读]
+  B --> E[搜索]
+:::
+
 ## 编辑风组件
 
 下面的完整组件套件由 `::editorial{id="features"}` 从 `site.yaml` 的 `editorial_blocks` 嵌入，覆盖按钮组、编号列表、磁贴、归档卡和分割线：

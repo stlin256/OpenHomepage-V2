@@ -63,7 +63,30 @@
 
 **Speculation Rules**：生产构建注入 Chromium 可理解的 prefetch-only 规则（`eagerness: moderate`），仅用于站内链接 hover/pointerdown 时预热 HTTP 缓存；不使用 prerender，也不改变自定义 fetch + 内容交换的点击路径。其他浏览器忽略该规则，功能等价回退到现有 fetch。
 
-## 5. 注意事项
+## 5. Mermaid 图表
+
+原生支持 Mermaid 流程图与图表，写法二选一：
+
+````markdown
+```mermaid
+flowchart TD
+  A[开始] --> B[结束]
+```
+````
+
+```markdown
+:::mermaid
+flowchart TD
+  A[开始] --> B[结束]
+:::
+```
+
+- 两种写法在服务端都输出 `.mermaid-block` 源码块；浏览器端按需加载 Mermaid，把 DSL 渲染为 SVG。
+- 无 JavaScript 时展示 Mermaid 源码，便于阅读与复制；渲染失败时同样保留源码，不阻断页面。
+- 图表颜色使用站点 CSS 变量，随亮/暗主题切换自动重渲染。
+- Mermaid 源码中的 HTML 一律作为文本转义，不进入可执行 DOM。
+
+## 6. 注意事项
 
 - 指令参数一律用 `key="value"` 形式；未识别指令按普通文本段落降级渲染，不报错。
 - 编辑器（Milkdown）为这些指令提供自定义节点，保持所见即所得；`::editorial` 显示标题、描述和组件数量预览。

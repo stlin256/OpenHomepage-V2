@@ -106,6 +106,18 @@ Médias auto-hébergés (balises natives) :
 
 ::stream{id="welcome"}
 
+## Diagramme Mermaid
+
+Un `flowchart LR` horizontal garde l'exemple compact dans la page :
+
+:::mermaid
+flowchart LR
+  A[Écrire] --> B[Compiler]
+  B --> C[Publier]
+  C --> D[Lire]
+  B --> E[Chercher]
+:::
+
 ## Composants éditoriaux
 
 Le kit complet ci-dessous est intégré par `::editorial{id="features"}` depuis `editorial_blocks` dans `site.yaml`. Il couvre les actions, les cartes liste numérotées, les tuiles, les cartes archive et un séparateur :
