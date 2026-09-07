@@ -498,7 +498,7 @@ section.footnotes {
   top: -0.35em;
 }
 
-/* 页脚品牌 Logo 与文字排版（亮色立体阴影 / 暗色发光 / 悬停斜光掠影） */
+/* 页脚品牌 Logo 与文字排版（亮色立体阴影 / 暗色发光 / 悬停斜光掠影 / 全体高亮渐变） */
 .site-footer a.footer-brand,
 .site-footer a[href*="OpenHomepage-V2"] {
   font-family: var(--font-serif);
@@ -518,7 +518,7 @@ section.footnotes {
   position: relative;
   overflow: hidden;
   border-radius: 4px;
-  transition: filter 0.25s ease;
+  transition: filter 0.35s ease 0s, color 0.35s ease 0s;
   cursor: pointer;
   user-select: none;
 }
@@ -538,7 +538,7 @@ section.footnotes {
   font-style: italic;
   font-weight: 600;
   color: var(--color-terracotta, #c85a32) !important;
-  transition: color 0.15s ease;
+  transition: color 0.35s ease 0s;
 }
 
 html[data-theme="dark"] .site-footer a.footer-brand .footer-brand-v2,
@@ -547,6 +547,35 @@ html[data-theme="dark"] .site-footer a.footer-brand em,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] span,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"] em {
   color: var(--color-terracotta, #f87171) !important;
+}
+
+/* 整个 Logo 极高亮度辉光层（掠光完成后平滑渐变显现） */
+.site-footer a.footer-brand::before,
+.site-footer a[href*="OpenHomepage-V2"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(200, 90, 50, 0.22) 55%,
+    transparent 85%
+  );
+  mix-blend-mode: screen;
+  transition: opacity 0.35s ease 0s;
+}
+
+html[data-theme="dark"] .site-footer a.footer-brand::before,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(248, 113, 113, 0.35) 60%,
+    transparent 90%
+  );
 }
 
 /* 斜着掠过的光效伪元素（高光粒子束） */
@@ -584,36 +613,59 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]::after {
   );
 }
 
-/* 悬停态：亮色立体阴影 + 掠光动画（不浮动） */
+/* 移入整行或悬停徽标：触发掠光动画；掠光过后整个 Logo 渐变进入极高亮度状态 */
+.site-footer:hover a.footer-brand,
+.site-footer:hover a[href*="OpenHomepage-V2"],
 .site-footer a.footer-brand:hover,
-.site-footer a[href*="OpenHomepage-V2"]:hover {
+.site-footer a[href*="OpenHomepage-V2"]:hover,
+.site-footer a.footer-brand:focus-visible,
+.site-footer a[href*="OpenHomepage-V2"]:focus-visible {
   color: var(--text) !important;
   text-decoration: none !important;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.14));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.16)) drop-shadow(0 0 14px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 24px rgba(200, 90, 50, 0.45));
+  transition: filter 0.5s cubic-bezier(0.2, 0.8, 0.25, 1) 0.6s,
+              color 0.5s cubic-bezier(0.2, 0.8, 0.25, 1) 0.6s;
 }
 
+.site-footer:hover a.footer-brand::before,
+.site-footer:hover a[href*="OpenHomepage-V2"]::before,
+.site-footer a.footer-brand:hover::before,
+.site-footer a[href*="OpenHomepage-V2"]:hover::before,
+.site-footer a.footer-brand:focus-visible::before,
+.site-footer a[href*="OpenHomepage-V2"]:focus-visible::before {
+  opacity: 1;
+  transition: opacity 0.5s cubic-bezier(0.2, 0.8, 0.25, 1) 0.6s;
+}
+
+.site-footer:hover a.footer-brand::after,
+.site-footer:hover a[href*="OpenHomepage-V2"]::after,
 .site-footer a.footer-brand:hover::after,
-.site-footer a[href*="OpenHomepage-V2"]:hover::after {
+.site-footer a[href*="OpenHomepage-V2"]:hover::after,
+.site-footer a.footer-brand:focus-visible::after,
+.site-footer a[href*="OpenHomepage-V2"]:focus-visible::after {
   animation: brand-shimmer 1.3s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
 }
 
-/* 悬停态：暗色发光（Glow）+ 掠光动画 */
+/* 悬停态（暗色模式）：强发光 + 粒子束掠光动画 */
+html[data-theme="dark"] .site-footer:hover a.footer-brand,
+html[data-theme="dark"] .site-footer:hover a[href*="OpenHomepage-V2"],
 html[data-theme="dark"] .site-footer a.footer-brand:hover,
-html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover {
-  filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.65)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.35));
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover,
+html[data-theme="dark"] .site-footer a.footer-brand:focus-visible,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:focus-visible {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 24px rgba(248, 113, 113, 0.75));
 }
 
-.site-footer a.footer-brand:hover .footer-brand-v2,
-.site-footer a[href*="OpenHomepage-V2"]:hover .footer-brand-v2,
-.site-footer a[href*="OpenHomepage-V2"]:hover span,
-.site-footer a[href*="OpenHomepage-V2"]:hover em {
-  color: var(--color-terracotta, #c85a32) !important;
-}
-
+html[data-theme="dark"] .site-footer:hover a.footer-brand .footer-brand-v2,
+html[data-theme="dark"] .site-footer:hover a[href*="OpenHomepage-V2"] .footer-brand-v2,
+html[data-theme="dark"] .site-footer:hover a[href*="OpenHomepage-V2"] span,
+html[data-theme="dark"] .site-footer:hover a[href*="OpenHomepage-V2"] em,
 html[data-theme="dark"] .site-footer a.footer-brand:hover .footer-brand-v2,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover .footer-brand-v2,
 html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover span,
-html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em,
+html[data-theme="dark"] .site-footer a.footer-brand:focus-visible .footer-brand-v2,
+html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:focus-visible .footer-brand-v2 {
   color: var(--color-terracotta, #f87171) !important;
 }
 
@@ -634,15 +686,37 @@ html[data-theme="dark"] .site-footer a[href*="OpenHomepage-V2"]:hover em {
   }
 }
 
-/* HDR 支持：HDR 显示器上高光以真实 10-bit HDR 白帧掠过。
-   Chromium 目前不会把 color(display-p3 N N N) 这类 CSS 颜色提升为真正 HDR，
-   因此这里复用参考页做法：在 media query 命中时叠加一张 tiny 10-bit AVIF HDR 白帧，
-   并用 mask-image 复刻原 SDR 斜光形状。图片加载失败时仍回退到底层 SDR 渐变。 */
+/* HDR 支持：HDR 显示器上高光及整个 Logo 辉光层以真实 10-bit HDR 白帧渲染。 */
 @media (dynamic-range: high), (video-dynamic-range: high) {
   :root {
     --footer-hdr-highlight: url("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAACQAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAIAAAACAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQBMAAAAABNjb2xybmNseAAJABAACQAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACxtZGF0EgAKCRgZv/9ihIgEgjIVEZACSSSRALSDWh0OcWLT/Laowj+g");
   }
 
+  /* HDR 状态下整块 Logo 的背景辉光（::before）叠加 10-bit Rec.2100 PQ 极高亮度 */
+  .site-footer a.footer-brand::before,
+  .site-footer a[href*="OpenHomepage-V2"]::before {
+    background-image: var(--footer-hdr-highlight);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    -webkit-mask-image: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.45) 55%,
+      transparent 85%
+    );
+    mask-image: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.45) 55%,
+      transparent 85%
+    );
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  /* HDR 状态下掠光高光条（::after） */
   .site-footer a.footer-brand::after,
   .site-footer a[href*="OpenHomepage-V2"]::after {
     background-image:
