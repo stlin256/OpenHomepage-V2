@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="fr">
   <title>Zhiyuan Lin</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-07T14:21:09.683Z</updated>
+  <updated>2026-09-07T16:08:59.767Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/fr/feed.atom.xml"/>
     <entry>
       <title>Fonctionnalités</title>
@@ -113,6 +113,13 @@
 &lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;Bloc de streaming&lt;/strong&gt; :&lt;/p&gt;
 &lt;div class=&quot;stream-block&quot; data-stream-id=&quot;welcome&quot;&gt;&lt;/div&gt;
+&lt;h2&gt;Diagramme Mermaid&lt;/h2&gt;
+&lt;p&gt;Un &lt;code&gt;flowchart LR&lt;/code&gt; horizontal garde l&apos;exemple compact dans la page :&lt;/p&gt;
+&lt;div class=&quot;mermaid-block&quot; data-mermaid=&quot;true&quot;&gt;&lt;pre class=&quot;mermaid-source&quot;&gt;&lt;code&gt;flowchart LR
+  A[Écrire] --&gt; B[Compiler]
+  B --&gt; C[Publier]
+  C --&gt; D[Lire]
+  B --&gt; E[Chercher]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h2&gt;Composants éditoriaux&lt;/h2&gt;
 &lt;p&gt;Le kit complet ci-dessous est intégré par &lt;code&gt;::editorial{id=&quot;features&quot;}&lt;/code&gt; depuis &lt;code&gt;editorial_blocks&lt;/code&gt; dans &lt;code&gt;site.yaml&lt;/code&gt;. Il couvre les actions, les cartes liste numérotées, les tuiles, les cartes archive et un séparateur :&lt;/p&gt;
 &lt;div class=&quot;editorial-embed&quot; data-editorial-id=&quot;features&quot;&gt;&lt;/div&gt;

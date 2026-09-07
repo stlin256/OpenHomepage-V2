@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远の個人ホームページ：機械学習研究、オープンソース、読書記録]]></description>
     <language>ja</language>
-    <lastBuildDate>Mon, 07 Sep 2026 14:21:09 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 07 Sep 2026 16:09:00 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.xml"/>
     <item>
       <title><![CDATA[機能]]></title>
@@ -116,6 +116,13 @@
 <div class="gh-card" data-repo="ggml-org/llama.cpp"></div>
 <p><strong>ストリーミングブロック</strong>：</p>
 <div class="stream-block" data-stream-id="welcome"></div>
+<h2>Mermaid 図</h2>
+<p><code>flowchart LR</code> で横向きに配置し、ページ内の縦スペースを抑えています：</p>
+<div class="mermaid-block" data-mermaid="true"><pre class="mermaid-source"><code>flowchart LR
+  A[執筆] --> B[ビルド]
+  B --> C[公開]
+  C --> D[閲覧]
+  B --> E[検索]</code></pre></div>
 <h2>エディトリアルコンポーネント</h2>
 <p>以下の完全なキットは、<code>site.yaml</code> の <code>editorial_blocks</code> から <code>::editorial{id="features"}</code> で埋め込まれています。アクション、番号付きリストカード、タイル、アーカイブカード、区切り線を網羅しています：</p>
 <div class="editorial-embed" data-editorial-id="features"></div>

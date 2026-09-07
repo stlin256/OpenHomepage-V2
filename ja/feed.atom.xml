@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-07T14:21:09.739Z</updated>
+  <updated>2026-09-07T16:08:59.809Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/ja/feed.atom.xml"/>
     <entry>
       <title>機能</title>
@@ -113,6 +113,13 @@
 &lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;ストリーミングブロック&lt;/strong&gt;：&lt;/p&gt;
 &lt;div class=&quot;stream-block&quot; data-stream-id=&quot;welcome&quot;&gt;&lt;/div&gt;
+&lt;h2&gt;Mermaid 図&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;flowchart LR&lt;/code&gt; で横向きに配置し、ページ内の縦スペースを抑えています：&lt;/p&gt;
+&lt;div class=&quot;mermaid-block&quot; data-mermaid=&quot;true&quot;&gt;&lt;pre class=&quot;mermaid-source&quot;&gt;&lt;code&gt;flowchart LR
+  A[執筆] --&gt; B[ビルド]
+  B --&gt; C[公開]
+  C --&gt; D[閲覧]
+  B --&gt; E[検索]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h2&gt;エディトリアルコンポーネント&lt;/h2&gt;
 &lt;p&gt;以下の完全なキットは、&lt;code&gt;site.yaml&lt;/code&gt; の &lt;code&gt;editorial_blocks&lt;/code&gt; から &lt;code&gt;::editorial{id=&quot;features&quot;}&lt;/code&gt; で埋め込まれています。アクション、番号付きリストカード、タイル、アーカイブカード、区切り線を網羅しています：&lt;/p&gt;
 &lt;div class=&quot;editorial-embed&quot; data-editorial-id=&quot;features&quot;&gt;&lt;/div&gt;

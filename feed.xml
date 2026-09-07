@@ -5,7 +5,7 @@
     <link>https://stlin256.github.io/OpenHomepage-V2/</link>
     <description><![CDATA[林知远的个人主页：机器学习研究、开源项目与阅读记录]]></description>
     <language>zh</language>
-    <lastBuildDate>Mon, 07 Sep 2026 14:21:09 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 07 Sep 2026 16:08:59 GMT</lastBuildDate>
     <atom:link rel="self" type="application/rss+xml" href="https://stlin256.github.io/OpenHomepage-V2/feed.xml"/>
     <item>
       <title><![CDATA[特性]]></title>
@@ -116,6 +116,13 @@
 <div class="gh-card" data-repo="ggml-org/llama.cpp"></div>
 <p><strong>Streaming Block</strong>：插入一个流式区块（定义在 <code>site.yaml</code> 的 <code>streaming_blocks</code>）：</p>
 <div class="stream-block" data-stream-id="welcome"></div>
+<h2>Mermaid 流程图</h2>
+<p>用 <code>flowchart LR</code> 横向排列，适合放在页面里而不占太多纵向空间：</p>
+<div class="mermaid-block" data-mermaid="true"><pre class="mermaid-source"><code>flowchart LR
+  A[写作] --> B[构建]
+  B --> C[发布]
+  C --> D[阅读]
+  B --> E[搜索]</code></pre></div>
 <h2>编辑风组件</h2>
 <p>下面的完整组件套件由 <code>::editorial{id="features"}</code> 从 <code>site.yaml</code> 的 <code>editorial_blocks</code> 嵌入，覆盖按钮组、编号列表、磁贴、归档卡和分割线：</p>
 <div class="editorial-embed" data-editorial-id="features"></div>

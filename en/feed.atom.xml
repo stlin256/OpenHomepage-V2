@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <title>Zhiyuan Lin</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-07T14:21:09.631Z</updated>
+  <updated>2026-09-07T16:08:59.720Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/en/feed.atom.xml"/>
     <entry>
       <title>Features</title>
@@ -113,6 +113,13 @@
 &lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;Streaming Block&lt;/strong&gt;:&lt;/p&gt;
 &lt;div class=&quot;stream-block&quot; data-stream-id=&quot;welcome&quot;&gt;&lt;/div&gt;
+&lt;h2&gt;Mermaid diagram&lt;/h2&gt;
+&lt;p&gt;A horizontal &lt;code&gt;flowchart LR&lt;/code&gt; keeps the example compact on the page:&lt;/p&gt;
+&lt;div class=&quot;mermaid-block&quot; data-mermaid=&quot;true&quot;&gt;&lt;pre class=&quot;mermaid-source&quot;&gt;&lt;code&gt;flowchart LR
+  A[Write] --&gt; B[Build]
+  B --&gt; C[Publish]
+  C --&gt; D[Read]
+  B --&gt; E[Search]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h2&gt;Editorial components&lt;/h2&gt;
 &lt;p&gt;The complete kit below is embedded by &lt;code&gt;::editorial{id=&quot;features&quot;}&lt;/code&gt; from &lt;code&gt;editorial_blocks&lt;/code&gt; in &lt;code&gt;site.yaml&lt;/code&gt;. It covers actions, numbered list cards, tiles, archive cards, and a divider:&lt;/p&gt;
 &lt;div class=&quot;editorial-embed&quot; data-editorial-id=&quot;features&quot;&gt;&lt;/div&gt;

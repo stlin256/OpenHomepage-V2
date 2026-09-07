@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="zh">
   <title>林知远</title>
   <id>https://stlin256.github.io/OpenHomepage-V2/</id>
-  <updated>2026-09-07T14:21:09.437Z</updated>
+  <updated>2026-09-07T16:08:59.514Z</updated>
   <link rel="self" href="https://stlin256.github.io/OpenHomepage-V2/feed.atom.xml"/>
     <entry>
       <title>特性</title>
@@ -113,6 +113,13 @@
 &lt;div class=&quot;gh-card&quot; data-repo=&quot;ggml-org/llama.cpp&quot;&gt;&lt;/div&gt;
 &lt;p&gt;&lt;strong&gt;Streaming Block&lt;/strong&gt;：插入一个流式区块（定义在 &lt;code&gt;site.yaml&lt;/code&gt; 的 &lt;code&gt;streaming_blocks&lt;/code&gt;）：&lt;/p&gt;
 &lt;div class=&quot;stream-block&quot; data-stream-id=&quot;welcome&quot;&gt;&lt;/div&gt;
+&lt;h2&gt;Mermaid 流程图&lt;/h2&gt;
+&lt;p&gt;用 &lt;code&gt;flowchart LR&lt;/code&gt; 横向排列，适合放在页面里而不占太多纵向空间：&lt;/p&gt;
+&lt;div class=&quot;mermaid-block&quot; data-mermaid=&quot;true&quot;&gt;&lt;pre class=&quot;mermaid-source&quot;&gt;&lt;code&gt;flowchart LR
+  A[写作] --&gt; B[构建]
+  B --&gt; C[发布]
+  C --&gt; D[阅读]
+  B --&gt; E[搜索]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;h2&gt;编辑风组件&lt;/h2&gt;
 &lt;p&gt;下面的完整组件套件由 &lt;code&gt;::editorial{id=&quot;features&quot;}&lt;/code&gt; 从 &lt;code&gt;site.yaml&lt;/code&gt; 的 &lt;code&gt;editorial_blocks&lt;/code&gt; 嵌入，覆盖按钮组、编号列表、磁贴、归档卡和分割线：&lt;/p&gt;
 &lt;div class=&quot;editorial-embed&quot; data-editorial-id=&quot;features&quot;&gt;&lt;/div&gt;
