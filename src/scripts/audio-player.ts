@@ -39,7 +39,7 @@ export function pauseOtherMedia(current: HTMLMediaElement): void {
   for (const media of document.querySelectorAll<HTMLMediaElement>('audio, video')) {
     if (media === current || media === bgm || media.paused) continue;
     media.pause();
-    const root = media.closest('.audio-player');
+    const root = media.closest('.audio-player, .video-player');
     if (root) root.classList.remove(ACTIVE_ROOT_CLASS);
   }
 }

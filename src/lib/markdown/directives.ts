@@ -210,6 +210,198 @@ function toAudioPlayer(
  * 纯冒号段落判定：嵌套容器指令未遵守「外层冒号数多于内层」时，多余的闭合围栏
  * 会解析成普通文本段落（如 <p>:::</p>），这类残留没有内容语义，直接移除。
  */
+/**
+ * `:::video` 自渲染播放器结构（Scheme B 杂志卡片整合式）：
+ * 保留原生 <video> 内核供解码与硬件加速，外层包装定制控件、居中大播放按键与顶栏。
+ * 顶栏仅展示标题与徽章（时长在底栏已有），播放时顶部渐隐消失、暂停时渐显恢复；
+ * 底部控制栏移除快进/快退按钮，保持界面极简克制；
+ * 居中播放三角严格进行几何与视知觉光学居中。
+ */
+function toVideoPlayer(
+  attrs: Record<string, string>,
+  baseUrl?: string,
+  lang?: string,
+): { properties: Properties; children: ElementContent[] } {
+  const src = withBase(attrs.src, baseUrl);
+  const poster = attrs.poster ? withBase(attrs.poster, baseUrl) : undefined;
+  const title = attrs.title || "";
+  const badge = attrs.badge ?? attrs.tag ?? "";
+  const preload =
+    attrs.preload && ["none", "metadata", "auto"].includes(attrs.preload)
+      ? attrs.preload
+      : "metadata";
+
+  const properties: Properties = {
+    className: ["video-player", "md-video"],
+    role: "region",
+    ariaLabel: title || (lang === "zh" ? "视频播放器" : "Video player"),
+    tabIndex: 0,
+  };
+  if (title) properties["data-title"] = title;
+
+  // 1. 原生 <video> 内核（供解码、海报与 rehypeNormalizeAssetPaths / rehypeLocalizeRemoteAssets 寻址）
+  const videoProps: Properties = {
+    className: ["video-element"],
+    src,
+    preload,
+    playsInline: true,
+  };
+  if (poster) videoProps.poster = poster;
+  const videoEl = hEl("video", videoProps);
+
+  // 2. 视频渐变背景蒙版
+  const scrimEl = hEl("div", { className: ["video-scrim"], ariaHidden: "true" });
+
+  const children: ElementContent[] = [videoEl, scrimEl];
+
+  // 3. 顶部信息条（仅展示标题/标签，不展示时长；播放时渐隐、暂停时渐现）
+  if (title || badge) {
+    const titleGroupChildren: ElementContent[] = [];
+    if (badge) {
+      titleGroupChildren.push(hEl("span", { className: ["video-top-badge"] }, [hTxt(badge)]));
+    }
+    if (title) {
+      titleGroupChildren.push(hEl("span", { className: ["video-top-title"] }, [hTxt(title)]));
+    }
+    const topTitleGroup = hEl("div", { className: ["video-top-title-group"] }, titleGroupChildren);
+    const topBar = hEl("div", { className: ["video-topbar"] }, [topTitleGroup]);
+    children.push(topBar);
+  }
+
+  // 4. 居中大播放按钮（数学与视知觉光学居中）
+  const bigPlayBtn = hEl(
+    "button",
+    {
+      className: ["video-big-play"],
+      type: "button",
+      ariaLabel: lang === "zh" ? "播放视频" : "Play video",
+    },
+    [
+      hEl(
+        "svg",
+        { className: ["icon-big-play"], viewBox: "0 0 24 24", fill: "currentColor", ariaHidden: "true" },
+        [
+          hEl("path", {
+            d: "M8.5 6.8a1.2 1.2 0 0 0-1.7 1.05v8.3a1.2 1.2 0 0 0 1.7 1.05l7.2-4.15a1.2 1.2 0 0 0 0-2.1L8.5 6.8z",
+          }),
+        ],
+      ),
+    ],
+  );
+  children.push(bigPlayBtn);
+
+  // 5. 缓冲转圈占位
+  children.push(hEl("div", { className: ["video-spinner"], ariaHidden: "true" }));
+
+  // 6. 底部控制栏
+  // 6.1 进度条
+  const tooltip = hEl("div", { className: ["video-progress-tooltip"] }, [hTxt("00:00")]);
+  const progressBuffer = hEl("div", { className: ["video-progress-buffer"] });
+  const progressPlayed = hEl("div", { className: ["video-progress-played"] }, [
+    hEl("div", { className: ["video-progress-thumb"] }),
+  ]);
+  const progressRail = hEl("div", { className: ["video-progress-rail"] }, [progressBuffer, progressPlayed]);
+  const progressWrap = hEl(
+    "div",
+    { className: ["video-progress-wrap"], role: "slider", ariaLabel: lang === "zh" ? "播放进度" : "Progress" },
+    [tooltip, progressRail],
+  );
+
+  // 6.2 左侧按钮：播放/暂停、音量、时间
+  const btnPlayPause = hEl(
+    "button",
+    { className: ["video-btn", "btn-play-pause"], type: "button", ariaLabel: lang === "zh" ? "播放/暂停" : "Play/Pause" },
+    [
+      hEl("svg", { className: ["icon-play"], viewBox: "0 0 24 24", fill: "currentColor", ariaHidden: "true" }, [
+        hEl("path", {
+          d: "M8.5 6.8a1.2 1.2 0 0 0-1.7 1.05v8.3a1.2 1.2 0 0 0 1.7 1.05l7.2-4.15a1.2 1.2 0 0 0 0-2.1L8.5 6.8z",
+        }),
+      ]),
+      hEl("svg", { className: ["icon-pause"], viewBox: "0 0 24 24", fill: "currentColor", ariaHidden: "true" }, [
+        hEl("rect", { x: "6", y: "5", width: "4", height: "14", rx: "1" }),
+        hEl("rect", { x: "14", y: "5", width: "4", height: "14", rx: "1" }),
+      ]),
+      hEl("svg", { className: ["icon-replay"], viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ariaHidden: "true" }, [
+        hEl("path", { d: "M1 4v6h6" }),
+        hEl("path", { d: "M3.51 15a9 9 0 1 0 2.13-9.36L1 10" }),
+      ]),
+    ],
+  );
+
+  const btnVol = hEl(
+    "button",
+    { className: ["video-btn", "btn-volume"], type: "button", ariaLabel: lang === "zh" ? "音量" : "Volume" },
+    [
+      hEl("svg", { className: ["icon-vol-high"], viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ariaHidden: "true" }, [
+        hEl("path", { d: "M11 5L6 9H2v6h4l5 4V5z", fill: "currentColor", stroke: "none" }),
+        hEl("path", { d: "M15.54 8.46a5 5 0 0 1 0 7.07" }),
+        hEl("path", { d: "M19.07 4.93a10 10 0 0 1 0 14.14" }),
+      ]),
+      hEl("svg", { className: ["icon-vol-low"], viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ariaHidden: "true" }, [
+        hEl("path", { d: "M11 5L6 9H2v6h4l5 4V5z", fill: "currentColor", stroke: "none" }),
+        hEl("path", { d: "M15.54 8.46a5 5 0 0 1 0 7.07" }),
+      ]),
+      hEl("svg", { className: ["icon-vol-mute"], viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ariaHidden: "true" }, [
+        hEl("path", { d: "M11 5L6 9H2v6h4l5 4V5z", fill: "currentColor", stroke: "none" }),
+        hEl("line", { x1: "23", y1: "9", x2: "17", y2: "15" }),
+        hEl("line", { x1: "17", y1: "9", x2: "23", y2: "15" }),
+      ]),
+    ],
+  );
+
+  const volRail = hEl("div", { className: ["video-volume-rail"] }, [hEl("div", { className: ["video-volume-fill"] })]);
+  const volBox = hEl("div", { className: ["video-volume-box"] }, [volRail]);
+  const volWrap = hEl("div", { className: ["video-volume-wrap"] }, [btnVol, volBox]);
+
+  const timeDisplay = hEl("div", { className: ["video-time"] }, [
+    hEl("span", { className: ["video-time-cur"] }, [hTxt("00:00")]),
+    hEl("span", { className: ["sep"] }, [hTxt("/")]),
+    hEl("span", { className: ["video-time-dur"] }, [hTxt("--:--")]),
+  ]);
+
+  const leftGroup = hEl("div", { className: ["video-ctrl-group", "left"] }, [btnPlayPause, volWrap, timeDisplay]);
+
+  // 6.3 右侧按钮：倍速、画中画、全屏
+  const speedBtn = hEl("button", { className: ["video-btn", "btn-speed"], type: "button", ariaLabel: lang === "zh" ? "倍速" : "Speed" }, [hTxt("1.0x")]);
+  const speedItems = ["0.5", "0.75", "1.0", "1.25", "1.5", "2.0"].map((s) =>
+    hEl("div", { className: ["speed-item", ...(s === "1.0" ? ["active"] : [])], "data-speed": s }, [hTxt(s + "x")]),
+  );
+  const speedMenu = hEl("div", { className: ["video-speed-menu"] }, speedItems);
+  const speedWrap = hEl("div", { className: ["video-speed-wrap"] }, [speedBtn, speedMenu]);
+
+  const pipBtn = hEl(
+    "button",
+    { className: ["video-btn", "btn-pip"], type: "button", ariaLabel: lang === "zh" ? "画中画" : "Picture in Picture" },
+    [
+      hEl("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ariaHidden: "true" }, [
+        hEl("rect", { x: "2", y: "4", width: "20", height: "16", rx: "2" }),
+        hEl("rect", { x: "12", y: "10", width: "8", height: "8", rx: "1", fill: "currentColor" }),
+      ]),
+    ],
+  );
+
+  const fsBtn = hEl(
+    "button",
+    { className: ["video-btn", "btn-fullscreen"], type: "button", ariaLabel: lang === "zh" ? "全屏" : "Fullscreen" },
+    [
+      hEl("svg", { className: ["icon-fs-enter"], viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ariaHidden: "true" }, [
+        hEl("path", { d: "M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" }),
+      ]),
+      hEl("svg", { className: ["icon-fs-exit"], viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", ariaHidden: "true" }, [
+        hEl("path", { d: "M4 14h6m0 0v6m0-6L3 21m17-7h-6m0 0v6m0-6l7 7M10 4v6m0 0H4m6 0L3 3m10 7h6m-6 0V4m0 6l7-7" }),
+      ]),
+    ],
+  );
+
+  const rightGroup = hEl("div", { className: ["video-ctrl-group", "right"] }, [speedWrap, pipBtn, fsBtn]);
+  const ctrlRow = hEl("div", { className: ["video-ctrl-row"] }, [leftGroup, rightGroup]);
+  const controls = hEl("div", { className: ["video-controls"] }, [progressWrap, ctrlRow]);
+
+  children.push(controls);
+
+  return { properties, children };
+}
+
 function isStrayFenceParagraph(node: Content): boolean {
   if (node.type !== 'paragraph' || node.children.length !== 1) return false;
   const child = node.children[0];
@@ -326,13 +518,9 @@ export function remarkCustomDirectives(baseUrl: string | undefined, editMode: bo
         }
         case 'video': {
           if (!attrs.src) return degrade('params');
-          const properties: Properties = {
-            src: withBase(attrs.src, baseUrl),
-            controls: true,
-            preload: attrs.preload ?? 'metadata',
-          };
-          if (attrs.poster) properties.poster = withBase(attrs.poster, baseUrl);
-          setElement(name, properties);
+          const video = toVideoPlayer(attrs, baseUrl, lang);
+          setElement('div', video.properties);
+          data.hChildren = video.children;
           break;
         }
         case 'audio': {

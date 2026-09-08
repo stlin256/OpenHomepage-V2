@@ -39,7 +39,7 @@ data/
    - 增强字段：`toc: true|auto|false`（长文目录）、`toc_depth: 2-4`（目录深度，默认 3）、`reading_progress: true`（顶部阅读进度条）、`notice: "提示文案"`（或 `{text, color: "accent|yellow|red|custom", delay: 500}` 顶端通知横幅）、`date: "YYYY-MM-DD"`（发布日期，Feed 收录与排序）、`updated: "YYYY-MM-DD"`、`feed: false`（显式从本站 Feed 排除）、`og_image: "assets/..."`（社交分享卡片封面覆盖）、`sitemap: false`（显式从 sitemap.xml 排除）、`priority: 0.8`、`changefreq: "weekly"`、`type: "article|post|page"`（指定文章/博客类型供 JSON-LD 结构化数据使用）。
    - 多语言：把文件复制到另一语言目录（如 `pages/zh/research.md` → `pages/en/research.md`）并翻译；缺译页面按回退链静默渲染。
 2. **Markdown 扩展指令**：可用指令包括：
-   - 媒体类：`::bilibili{bvid="..."}`、`::youtube{id="..."}`、`:::video{src="..." [poster="..."]}`、`:::audio{src="..." [title="..."] [description="..."] [cover="..."]}`（支持紧凑模式与带封面的卡片模式，与 BGM 保持独占播放/自动续播）。
+   - 媒体类：`::bilibili{bvid="..."}`、`::youtube{id="..."}`、`:::video{src="..." [poster="..."] [title="..."] [badge="..."]}`（自渲染杂志卡片播放器，支持标题、无时长顶栏播放渐隐、纯内联 SVG 矢量图标、进度拖拽、倍速与全屏/画中画，与 BGM 保持独占播放/自动续播）、`:::audio{src="..." [title="..."] [description="..."] [cover="..."]}`（支持紧凑模式与带封面的卡片模式，与 BGM 保持独占播放/自动续播）。
    - 版式类：`:::figure{src="..." [caption="..."] [width="70%"] [align="left|center|right"]}`、`::::grid{cols=2}` + `:::cell`（嵌套指令外层冒号数必须多于内层）、`::stream{id="..."}`、`::ghcard{repo="owner/repo"}`、`::editorial{id="..."}`。
    - 注记卡片类：`:::note{title="..."}`、`:::tip{title="..."}`、`:::warning{title="..."}`、`:::important{title="..."}`、`:::quote{title="..." source="..."}`（语义化杂志风卡片，title 缺省自动多语言回退）。
    - 图表类：`:::mermaid`（内容为 Mermaid DSL，如 `flowchart TD` / `sequenceDiagram` / `gantt`），也可直接用标准 ` ```mermaid ` 代码块；服务端输出源码块，浏览器按需渲染为 SVG，无 JS/渲染失败时保留源码。

@@ -39,7 +39,7 @@ export function buildSanitizeSchema(): Schema {
       'ariaHidden', 'ariaLabel', 'ariaLabelledBy', 'ariaDescribedBy',
     ],
     iframe: ['src', 'width', 'height', 'allowFullScreen', 'loading', 'referrerPolicy', 'title'],
-    video: ['src', 'poster', 'controls', 'preload', 'width', 'height'],
+    video: ['src', 'poster', 'controls', 'preload', 'width', 'height', 'playsinline', 'playsInline'],
     audio: ['src', 'controls', 'preload'],
     a: [...(defaultSchema.attributes?.a ?? ['href']), 'target', 'rel'],
     img: [...(defaultSchema.attributes?.img ?? ['src', 'alt', 'title']), 'loading', 'decoding', 'sizes', 'width', 'height', 'referrerPolicy', 'referrerpolicy'],

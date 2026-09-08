@@ -1101,3 +1101,530 @@ html.js .reveal.revealed {
   .markdown-body .audio-scroll.scrolling .audio-scroll-text { animation: none; transform: none; }
 }
 
+
+/* ==========================================================================
+   自渲染视频播放器（:::video 杂志卡片整合式 Scheme B）
+   采用 GPU 复合属性（scaleX / opacity / translate3d）驱动动效，避免高频快滑卡顿
+   ========================================================================== */
+.markdown-body .video-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin: 1.5em 0;
+  background: #0d0e0c;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-soft);
+  user-select: none;
+  contain: layout paint;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.markdown-body .video-player:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.markdown-body .video-player.is-playing {
+  border-color: var(--accent);
+}
+
+/* 核心原生 video */
+.markdown-body .video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000000;
+  cursor: pointer;
+}
+
+/* 背景渐隐蒙版（提升控件文字对比度） */
+.markdown-body .video-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.22) 28%,
+    transparent 55%
+  );
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.markdown-body .video-player.is-playing.is-idle .video-scrim {
+  opacity: 0;
+}
+
+/* 顶部信息条（仅展示标题/徽章，不显示时长；播放时渐隐消失，暂停时平滑恢复） */
+.markdown-body .video-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: linear-gradient(to bottom, rgba(14, 15, 13, 0.78) 0%, transparent 100%);
+  color: #ffffff;
+  z-index: 12;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+  will-change: opacity, transform;
+}
+
+.markdown-body .video-player.is-playing .video-topbar {
+  opacity: 0;
+  transform: translate3d(0, -8px, 0);
+  pointer-events: none;
+}
+
+.markdown-body .video-top-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.markdown-body .video-top-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.markdown-body .video-top-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+/* 居中大播放按钮（数学与视知觉光学居中） */
+.markdown-body .video-big-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(20, 22, 19, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease,
+              opacity 0.25s ease,
+              border-color 0.2s ease;
+  will-change: transform, opacity;
+}
+
+.markdown-body .video-big-play:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.markdown-body .video-big-play:active {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+.markdown-body .video-big-play svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  fill: currentColor;
+}
+
+.markdown-body .video-player.is-playing .video-big-play {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.75);
+}
+
+/* 缓冲转圈 */
+.markdown-body .video-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: videoSpin 0.75s linear infinite;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 11;
+}
+
+.markdown-body .video-player.is-buffering .video-spinner {
+  opacity: 1;
+}
+
+@keyframes videoSpin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 底部控制栏（平铺不挡字幕，闲置时自动下收） */
+.markdown-body .video-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  padding: 0.45rem 1rem 0.65rem;
+  background: linear-gradient(to top, rgba(14, 15, 13, 0.94) 0%, rgba(14, 15, 13, 0.6) 72%, transparent 100%);
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.markdown-body .video-player.is-playing.is-idle .video-controls {
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  pointer-events: none;
+}
+
+/* 进度条轨道 */
+.markdown-body .video-progress-wrap {
+  position: relative;
+  width: 100%;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+  margin-bottom: 0.35rem;
+}
+
+.markdown-body .video-progress-tooltip {
+  position: absolute;
+  bottom: 22px;
+  left: 0;
+  transform: translateX(-50%);
+  background: rgba(18, 19, 17, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  padding: 0.18rem 0.45rem;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+  z-index: 30;
+}
+
+.markdown-body .video-progress-wrap:hover .video-progress-tooltip,
+.markdown-body .video-progress-wrap.is-dragging .video-progress-tooltip {
+  opacity: 1;
+}
+
+.markdown-body .video-progress-rail {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.24);
+  border-radius: var(--radius-pill);
+  overflow: visible;
+  transition: height 0.18s ease;
+}
+
+.markdown-body .video-progress-wrap:hover .video-progress-rail,
+.markdown-body .video-progress-wrap.is-dragging .video-progress-rail {
+  height: 6px;
+}
+
+.markdown-body .video-progress-buffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-pill);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+.markdown-body .video-progress-played {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  will-change: transform;
+}
+
+.markdown-body .video-progress-thumb {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.markdown-body .video-progress-wrap:hover .video-progress-thumb,
+.markdown-body .video-progress-wrap.is-dragging .video-progress-thumb {
+  transform: translateY(-50%) scale(1);
+}
+
+/* 控制按钮行 */
+.markdown-body .video-ctrl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.markdown-body .video-ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.markdown-body .video-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.12s ease;
+  flex-shrink: 0;
+}
+
+.markdown-body .video-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.markdown-body .video-btn:active {
+  transform: scale(0.92);
+}
+
+.markdown-body .video-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  pointer-events: none;
+}
+
+.markdown-body .btn-play-pause .icon-pause {
+  display: none;
+}
+
+.markdown-body .btn-play-pause .icon-replay {
+  display: none;
+}
+
+/* 时间显示 */
+.markdown-body .video-time {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0 0.4rem;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.markdown-body .video-time .sep {
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0.15rem;
+}
+
+.markdown-body .video-time-dur {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* 音量滑动条 */
+.markdown-body .video-volume-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.markdown-body .video-volume-box {
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+  display: flex;
+  align-items: center;
+}
+
+.markdown-body .video-volume-wrap:hover .video-volume-box,
+.markdown-body .video-volume-wrap:focus-within .video-volume-box {
+  width: 60px;
+  opacity: 1;
+  margin-left: 0.25rem;
+}
+
+.markdown-body .video-volume-rail {
+  position: relative;
+  width: 56px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.26);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.markdown-body .video-volume-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: #ffffff;
+  border-radius: var(--radius-pill);
+  transform-origin: 0 50%;
+  transform: scaleX(1);
+}
+
+.markdown-body .btn-volume .icon-vol-low,
+.markdown-body .btn-volume .icon-vol-mute {
+  display: none;
+}
+
+/* 倍速菜单 */
+.markdown-body .video-speed-wrap {
+  position: relative;
+}
+
+.markdown-body .btn-speed {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  min-width: 44px;
+  height: 32px;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.markdown-body .btn-speed:hover {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.markdown-body .video-speed-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(24, 26, 23, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0;
+  min-width: 88px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 40;
+}
+
+.markdown-body .video-speed-menu.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+.markdown-body .video-speed-menu .speed-item {
+  padding: 0.32rem 0.75rem;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.markdown-body .video-speed-menu .speed-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.markdown-body .video-speed-menu .speed-item.active {
+  color: var(--accent);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.markdown-body .btn-fullscreen .icon-fs-exit {
+  display: none;
+}
+
+/* 移动端与减弱动效适配 */
+@media (max-width: 768px) {
+  .markdown-body .video-topbar { padding: 0.65rem 0.85rem; }
+  .markdown-body .video-controls { padding: 0.35rem 0.75rem 0.55rem; }
+  .markdown-body .video-volume-box { display: none; }
+  .markdown-body .video-btn { width: 38px; height: 38px; }
+  .markdown-body .video-progress-wrap { height: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .markdown-body .video-player,
+  .markdown-body .video-topbar,
+  .markdown-body .video-big-play,
+  .markdown-body .video-controls,
+  .markdown-body .video-progress-thumb,
+  .markdown-body .video-speed-menu {
+    transition: none !important;
+    animation: none !important;
+  }
+}

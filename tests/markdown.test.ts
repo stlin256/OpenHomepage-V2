@@ -259,15 +259,26 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('aria-label="Play YouTube video: Mock YouTube Video Title"');
   });
 
-  it(':::video 渲染原生 video 标签', async () => {
+  it(':::video 渲染自渲染播放器容器（Scheme B 杂志卡片整合式，结构完整）', async () => {
     const html = await renderMarkdown(
-      ':::video{src="assets/demo.mp4" poster="assets/cover.png"}\n:::'
+      ':::video{src="assets/demo.mp4" poster="assets/cover.png" title="演示视频" badge="4K"}\n:::'
     );
-    expect(html).toContain('<video');
-    expect(html).toContain('controls');
-    expect(html).toContain('preload="metadata"');
+    expect(html).toContain('class="video-player md-video"');
+    expect(html).toContain('class="video-element"');
     expect(html).toContain('src="/assets/demo.mp4"');
     expect(html).toContain('poster="/assets/cover.png"');
+    expect(html).toContain('class="video-big-play"');
+    expect(html).toContain('class="video-controls"');
+    expect(html).toContain('class="video-topbar"');
+    expect(html).toContain('class="video-top-badge"');
+    expect(html).toContain('4K');
+    expect(html).toContain('演示视频');
+    expect(html).toContain('class="video-progress-wrap"');
+    expect(html).toContain('class="video-btn btn-play-pause"');
+    expect(html).toContain('class="video-btn btn-volume"');
+    expect(html).toContain('class="video-btn btn-speed"');
+    expect(html).toContain('class="video-btn btn-pip"');
+    expect(html).toContain('class="video-btn btn-fullscreen"');
   });
 
   it(':::audio 渲染自渲染播放器容器（A 紧凑标题模式，结构完整）', async () => {

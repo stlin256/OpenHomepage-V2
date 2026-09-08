@@ -883,7 +883,9 @@ html.js .timeline-item.reveal.revealed {
 /* :::video/:::audio 原生媒体块（修正 C）：裸标签默认是内联元素（300px 宽、
    贴文本基线、无块间距），与 figure/embed-player 对齐为杂志全宽块，增加渲染隔离 */
 .markdown-body video,
-.markdown-body audio {
+.markdown-body audio,
+.markdown-body .video-player,
+.markdown-body .audio-player {
   display: block;
   width: 100%;
   margin: 1.5em 0;

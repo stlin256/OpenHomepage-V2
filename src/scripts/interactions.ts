@@ -10,7 +10,8 @@ import { initMotion } from './motion.ts';
 import { initThemeToggle } from './theme.ts';
 import { initBgm } from './bgm.ts';
 import { initHeatmapTooltips } from './heatmap.ts';
-import { initAudioPlayers, pauseOtherMedia, resumeBgmIfNeeded } from './audio-player.ts';
+import { initAudioPlayers } from './audio-player.ts';
+import { initVideoPlayers } from './video-player.ts';
 import { initImageFade } from './image-fade.ts';
 import { initSearch } from './search.ts';
 import { initToc } from './toc.ts';
@@ -220,18 +221,7 @@ function initEmbedPlayers(): void {
 function initEmbeddedMedia(): void {
   initAudioPlayers();
   initEmbedPlayers();
-  for (const media of document.querySelectorAll<HTMLMediaElement>('.markdown-body video')) {
-    if (media.dataset.mediaLoaded === '1') continue;
-    media.dataset.mediaLoaded = '1';
-    ['play', 'playing', 'pause', 'ended'].forEach(evt => {
-      media.addEventListener(evt, () => {
-        if (evt === 'play' || evt === 'playing') pauseOtherMedia(media);
-        else {
-          resumeBgmIfNeeded();
-        }
-      });
-    });
-  }
+  initVideoPlayers();
 }
 
 
