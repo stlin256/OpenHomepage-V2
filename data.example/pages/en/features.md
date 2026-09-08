@@ -85,7 +85,7 @@ Players render the official iframe directly in a responsive 16:9 container (`loa
 
 Self-hosted media (native tags):
 
-:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg"}
+:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg" title="Flower close-up"}
 :::
 
 :::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}

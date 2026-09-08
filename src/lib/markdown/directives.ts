@@ -212,7 +212,7 @@ function toAudioPlayer(
  */
 /**
  * `:::video` 自渲染播放器结构（Scheme B 杂志卡片整合式）：
- * 保留原生 <video> 内核供解码与硬件加速，外层包装定制控件、居中大播放按键与顶栏。
+ * 保留原生 <video> 内核供解码与硬件加速，外层包装独立标题栏、定制控件与居中大播放按键。
  * 顶栏仅展示标题与徽章（时长在底栏已有），播放时顶部渐隐消失、暂停时渐显恢复；
  * 底部控制栏移除快进/快退按钮，保持界面极简克制；
  * 居中播放三角严格进行几何与视知觉光学居中。
@@ -239,7 +239,11 @@ function toVideoPlayer(
   };
   if (title) properties["data-title"] = title;
 
-  // 1. 原生 <video> 内核（供解码、海报与 rehypeNormalizeAssetPaths / rehypeLocalizeRemoteAssets 寻址）
+  // 1. 画幅层：标题栏作为画幅内的覆盖层，不在视频外额外占高度或制造黑边。
+  const children: ElementContent[] = [];
+  const stageChildren: ElementContent[] = [];
+
+  // 原生 <video> 内核（供解码、海报与 rehypeNormalizeAssetPaths / rehypeLocalizeRemoteAssets 寻址）
   const videoProps: Properties = {
     className: ["video-element"],
     src,
@@ -248,13 +252,13 @@ function toVideoPlayer(
   };
   if (poster) videoProps.poster = poster;
   const videoEl = hEl("video", videoProps);
+  stageChildren.push(videoEl);
 
-  // 2. 视频渐变背景蒙版
+  // 3. 视频渐变背景蒙版
   const scrimEl = hEl("div", { className: ["video-scrim"], ariaHidden: "true" });
+  stageChildren.push(scrimEl);
 
-  const children: ElementContent[] = [videoEl, scrimEl];
-
-  // 3. 顶部信息条（仅展示标题/标签，不展示时长；播放时渐隐、暂停时渐现）
+  // 3. 顶部信息条覆盖在画幅上方（仅展示标题/标签，不展示时长；播放时渐隐、暂停时渐显）
   if (title || badge) {
     const titleGroupChildren: ElementContent[] = [];
     if (badge) {
@@ -264,8 +268,7 @@ function toVideoPlayer(
       titleGroupChildren.push(hEl("span", { className: ["video-top-title"] }, [hTxt(title)]));
     }
     const topTitleGroup = hEl("div", { className: ["video-top-title-group"] }, titleGroupChildren);
-    const topBar = hEl("div", { className: ["video-topbar"] }, [topTitleGroup]);
-    children.push(topBar);
+    stageChildren.push(hEl("div", { className: ["video-topbar"] }, [topTitleGroup]));
   }
 
   // 4. 居中大播放按钮（数学与视知觉光学居中）
@@ -288,10 +291,10 @@ function toVideoPlayer(
       ),
     ],
   );
-  children.push(bigPlayBtn);
+  stageChildren.push(bigPlayBtn);
 
   // 5. 缓冲转圈占位
-  children.push(hEl("div", { className: ["video-spinner"], ariaHidden: "true" }));
+  stageChildren.push(hEl("div", { className: ["video-spinner"], ariaHidden: "true" }));
 
   // 6. 底部控制栏
   // 6.1 进度条
@@ -397,7 +400,8 @@ function toVideoPlayer(
   const ctrlRow = hEl("div", { className: ["video-ctrl-row"] }, [leftGroup, rightGroup]);
   const controls = hEl("div", { className: ["video-controls"] }, [progressWrap, ctrlRow]);
 
-  children.push(controls);
+  stageChildren.push(controls);
+  children.push(hEl("div", { className: ["video-stage"] }, stageChildren));
 
   return { properties, children };
 }

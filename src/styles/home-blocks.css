@@ -1132,10 +1132,22 @@ html.js .reveal.revealed {
   border-color: var(--accent);
 }
 
+/* 画幅层：与播放器同尺寸，标题栏和控件都覆盖在画面上 */
+.markdown-body .video-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0d0e0c;
+}
+
 /* 核心原生 video */
 .markdown-body .video-element {
   width: 100%;
   height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
   object-fit: cover;
   display: block;
   background: #000000;
@@ -1161,7 +1173,7 @@ html.js .reveal.revealed {
   opacity: 0;
 }
 
-/* 顶部信息条（仅展示标题/徽章，不显示时长；播放时渐隐消失，暂停时平滑恢复） */
+/* 顶部信息条覆盖在画幅上方（不在画幅外单独占位） */
 .markdown-body .video-topbar {
   position: absolute;
   top: 0;

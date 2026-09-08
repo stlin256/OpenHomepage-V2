@@ -85,7 +85,7 @@ $$
 
 自建媒体（原生标签）：
 
-:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg"}
+:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg" title="花卉特写"}
 :::
 
 :::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}

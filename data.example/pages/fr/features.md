@@ -81,7 +81,7 @@ Les lecteurs affichent directement l'iframe officielle dans un conteneur 16:9 re
 
 Médias auto-hébergés (balises natives) :
 
-:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg"}
+:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg" title="Gros plan floral"}
 :::
 
 :::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}

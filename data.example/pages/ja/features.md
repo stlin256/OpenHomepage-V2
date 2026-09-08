@@ -81,7 +81,7 @@ $$
 
 セルフホストメディア（ネイティブタグ）：
 
-:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg"}
+:::video{src="assets/feature-flower.mp4" poster="assets/feature-flower-poster.jpg" title="花のクローズアップ"}
 :::
 
 :::audio{src="assets/bgm.mp3" title="Goldberg Variations, BWV 988 · Aria"}

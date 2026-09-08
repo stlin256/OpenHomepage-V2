@@ -4,6 +4,7 @@
  *
  * @vitest-environment jsdom
  */
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let initVideoPlayers: () => void;
@@ -118,6 +119,17 @@ function setupSingleVideoPlayer(attrs = ''): { root: HTMLElement; video: HTMLVid
   initVideoPlayers();
   return { root, video };
 }
+
+describe('视频播放器布局回归', () => {
+  it('画幅内覆盖模式清除原生 video 的外边距与边框，避免顶部黑边', () => {
+    const css = readFileSync('src/styles/home-blocks.css', 'utf8');
+    const start = css.indexOf('.markdown-body .video-element {');
+    const end = css.indexOf('}', start);
+    const rule = css.slice(start, end);
+    expect(rule).toContain('margin: 0;');
+    expect(rule).toContain('border: 0;');
+  });
+});
 
 describe('formatTime 辅助函数', () => {
   it('正确格式化秒数与异常边界', () => {

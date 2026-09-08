@@ -270,7 +270,12 @@ describe('自定义指令：内嵌播放器', () => {
     expect(html).toContain('class="video-big-play"');
     expect(html).toContain('class="video-controls"');
     expect(html).toContain('class="video-topbar"');
+    expect(html).toContain('class="video-stage"');
     expect(html).toContain('class="video-top-badge"');
+    const topbarIndex = html.indexOf('class="video-topbar"');
+    const stageIndex = html.indexOf('class="video-stage"');
+    expect(topbarIndex).toBeGreaterThan(stageIndex);
+    expect(html.slice(stageIndex, topbarIndex)).toContain('class="video-element"');
     expect(html).toContain('4K');
     expect(html).toContain('演示视频');
     expect(html).toContain('class="video-progress-wrap"');
