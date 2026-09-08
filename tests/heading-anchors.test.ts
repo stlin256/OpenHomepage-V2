@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
 import { renderMarkdown } from '../src/lib/markdown.ts';
 
 describe('markdown heading anchors', () => {
@@ -39,6 +40,19 @@ describe('markdown heading anchors', () => {
     const html = await renderMarkdown('## Section', { headingSlugs: true });
     expect(html).not.toContain('heading-anchor');
   }, 60000);
+
+  it('enforces mobile-hidden and desktop-only responsive rules in markdown-body.css', () => {
+    const css = fs.readFileSync("src/styles/markdown-body.css", "utf8");
+
+    // 移动端及触控端必须彻底隐藏 # 井号
+    expect(css).toMatch(/@media\s*\(\s*max-width:\s*768px\s*\)\s*,\s*\(\s*hover:\s*none\s*\)\s*\{[\s\S]*?\.markdown-body\s+\.heading-anchor\s*\{[\s\S]*?display:\s*none\s*!important/);
+
+    // 严禁旧版触控设备常驻显示 opacity: 0.55 的回退
+    expect(css).not.toMatch(/@media\s*\(\s*hover:\s*none\s*\)\s*\{[\s\S]*?opacity:\s*0\.55/);
+
+    // 桌面端（min-width: 769px）交互显现
+    expect(css).toMatch(/@media\s*\(\s*min-width:\s*769px\s*\)\s*\{[\s\S]*?\.markdown-body\s+h2:hover\s+\.heading-anchor/);
+  });
 
   it('skips generated footnote titles', async () => {
     const html = await renderMarkdown(

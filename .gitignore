@@ -8,6 +8,7 @@ reusable-components.md
 .astro/
 .scratch/
 .tmp/
+tmp/
 node_modules/
 dist/
 dist-*/

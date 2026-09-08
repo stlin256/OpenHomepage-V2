@@ -13,7 +13,7 @@
   line-height: 1.35;
   margin: 2em 0 0.6em;
 }
-/* 标题锚点：悬停/聚焦时在标题右侧显示 # 链接，便于分享小节深链 */
+/* 标题锚点：仅桌面端在悬停/聚焦时在标题右侧显示 # 链接，移动端永远隐藏 */
 .markdown-body .heading-anchor {
   display: inline-block;
   margin-left: 0.4em;
@@ -29,19 +29,22 @@
   transition: opacity 0.15s ease, color 0.15s ease;
   user-select: none;
 }
-.markdown-body h2:hover .heading-anchor,
-.markdown-body h3:hover .heading-anchor,
-.markdown-body h4:hover .heading-anchor,
-.markdown-body .heading-anchor:focus-visible {
-  opacity: 1;
+@media (min-width: 769px) {
+  .markdown-body h2:hover .heading-anchor,
+  .markdown-body h3:hover .heading-anchor,
+  .markdown-body h4:hover .heading-anchor,
+  .markdown-body .heading-anchor:focus-visible {
+    opacity: 1;
+  }
+  .markdown-body .heading-anchor:hover,
+  .markdown-body .heading-anchor:focus-visible {
+    color: var(--accent);
+  }
 }
-.markdown-body .heading-anchor:hover,
-.markdown-body .heading-anchor:focus-visible {
-  color: var(--accent);
-}
-@media (hover: none) {
+/* 移动端与触控设备：标题处永远不显示井号，仅在桌面端显示 */
+@media (max-width: 768px), (hover: none) {
   .markdown-body .heading-anchor {
-    opacity: 0.55;
+    display: none !important;
   }
 }
 .markdown-body > :first-child {

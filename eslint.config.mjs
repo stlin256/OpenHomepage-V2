@@ -14,6 +14,7 @@ export default tseslint.config(
       '.cache/',
       '.scratch/',
       '.tmp/',
+      'tmp/',
       'node_modules/',
       'coverage/',
       'data/',
