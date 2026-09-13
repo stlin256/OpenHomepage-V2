@@ -54,7 +54,7 @@ jobs:
           USE_EXAMPLE_DATA: ${{ secrets.USE_EXAMPLE_DATA }}
           DATA_SOURCE_URL: ${{ secrets.DATA_SOURCE_URL }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
