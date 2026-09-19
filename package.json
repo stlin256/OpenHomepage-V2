@@ -87,7 +87,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^30.0.0",
     "@types/node": "^26.5.0",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.1",
     "beasties": "^0.5.4",
     "esbuild": "^0.28.2",
     "eslint": "^10.10.0",
