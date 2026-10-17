@@ -88,6 +88,20 @@ document.addEventListener('animationend', (event) => {
   brand.classList.remove('is-shimmering');
 });
 
+/** 关于页品牌行加载 1 秒后自动完整播放一次掠光，沿用页脚 HDR/SDR 样式。 */
+function scheduleAboutBrandShimmer(): void {
+  const brand = document.querySelector<HTMLElement>('.about-brand-banner');
+  if (!brand || brand.dataset.initialShimmerScheduled) return;
+  brand.dataset.initialShimmerScheduled = '1';
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+  window.setTimeout(() => {
+    if (!brand.isConnected) return;
+    brand.classList.add('is-shimmering');
+    window.setTimeout(() => brand.classList.remove('is-shimmering'), 1800);
+  }, 1000);
+}
+
 const normalizeLanguage = (value: string | null | undefined): SiteLanguage | null =>
   normalizeSiteLanguage(value, siteLanguages());
 
@@ -647,6 +661,7 @@ function initExternalLinks(): void {
 function initAll(): void {
   initThemeToggle();
   initNavToggle();
+  scheduleAboutBrandShimmer();
   initStreamBlocks();
   initMotion();
   initBgm();
