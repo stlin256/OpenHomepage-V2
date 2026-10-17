@@ -29,9 +29,10 @@ function buildSwitcherFixture(): void {
     '  <button class="bgm-toggle" hidden aria-expanded="false"></button>',
     '  <div class="bgm-backdrop"></div>',
     '  <div class="bgm-drawer">',
-    '    <div class="bgm-current-title"></div>',
-    '    <div class="bgm-current-artist"></div>',
-    '    <img class="bgm-current-cover" alt="" />',
+    '    <div class="bgm-current-info">',
+    '      <img class="bgm-current-cover" alt="" />',
+    '      <div class="bgm-current-text"><div class="bgm-current-title"></div><div class="bgm-current-artist"></div></div>',
+    '    </div>',
     '    <button class="bgm-play-btn"><span class="icon-play"></span><span class="icon-pause"></span></button>',
     '    <button class="bgm-prev-btn"></button>',
     '    <button class="bgm-next-btn"></button>',
@@ -278,6 +279,38 @@ describe('initBgm 播放列表与抽屉交互', () => {
     document.querySelector<HTMLElement>('.bgm-prev-btn')!.click();
     expect(audio.src).toContain('/assets/b.mp3');
     expect(localStorage.getItem('oh-bgm-track')).toBe('1');
+  });
+
+  it('切歌时封面与曲目信息按前进/后退方向推移并微缩 400ms', () => {
+    buildSwitcherFixture();
+    const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio')!;
+    stubAudioPlayback(audio);
+    const calls: Array<{ frames: Keyframe[]; options: KeyframeAnimationOptions }> = [];
+    const originalAnimate = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'animate');
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      value: vi.fn((frames: Keyframe[], options: KeyframeAnimationOptions) => {
+        calls.push({ frames, options });
+        return { cancel: vi.fn() } as unknown as Animation;
+      }),
+    });
+
+    try {
+      initBgm();
+      document.querySelector<HTMLElement>('.bgm-next-btn')!.click();
+      expect(calls).toHaveLength(2);
+      expect(calls[0]!.frames[0]?.transform).toContain('translateX(22px)');
+      expect(calls[0]!.options.duration).toBe(400);
+
+      calls.length = 0;
+      document.querySelector<HTMLElement>('.bgm-prev-btn')!.click();
+      expect(calls).toHaveLength(2);
+      expect(calls[0]!.frames[0]?.transform).toContain('translateX(-22px)');
+      expect(calls[0]!.options.duration).toBe(400);
+    } finally {
+      if (originalAnimate) Object.defineProperty(HTMLElement.prototype, 'animate', originalAnimate);
+      else Reflect.deleteProperty(HTMLElement.prototype, 'animate');
+    }
   });
 
   it('点击播放列表项切换到对应曲目并同步高亮与封面', () => {

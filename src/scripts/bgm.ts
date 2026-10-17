@@ -92,6 +92,20 @@ function setDrawerOpen(drawer: HTMLElement, open: boolean): void {
   toggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
+function animateTrackEntry(element: HTMLElement | null, direction: -1 | 1): void {
+  if (!element || typeof element.animate !== 'function') return;
+  element.getAnimations?.().forEach((animation) => animation.cancel());
+  // 下一首从右侧进入，上一首从左侧进入，与切歌方向一致。
+  const offset = direction > 0 ? '22px' : '-22px';
+  element.animate(
+    [
+      { opacity: 0, transform: `translateX(${offset}) scale(0.96)` },
+      { opacity: 1, transform: 'translateX(0) scale(1)' },
+    ],
+    { duration: 400, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+  );
+}
+
 export function initBgm(): void {
   const audio = document.querySelector<HTMLAudioElement>('audio.bgm-audio');
   const btn = document.querySelector<HTMLElement>('.bgm-toggle');
@@ -129,12 +143,13 @@ export function initBgm(): void {
     currentTrackIndex = Math.min(tracks.length - 1, readSavedTrackIndex());
   }
 
-  const syncDrawer = () => {
+  const syncDrawer = (direction?: -1 | 1) => {
     if (!drawer) return;
     const current = tracks[currentTrackIndex] || tracks[0];
     const titleEl = drawer.querySelector('.bgm-current-title');
     const artistEl = drawer.querySelector('.bgm-current-artist');
     const coverEl = drawer.querySelector<HTMLImageElement>('.bgm-current-cover');
+    const textEl = drawer.querySelector<HTMLElement>('.bgm-current-text');
     const slider = drawer.querySelector<HTMLInputElement>('.bgm-volume-slider');
     const playIcon = drawer.querySelector<HTMLElement>('.bgm-play-btn .icon-play');
     const pauseIcon = drawer.querySelector<HTMLElement>('.bgm-play-btn .icon-pause');
@@ -147,6 +162,10 @@ export function initBgm(): void {
       } else if (!coverEl.classList.contains('bgm-cover-placeholder')) {
         coverEl.src = '';
       }
+    }
+    if (direction) {
+      animateTrackEntry(coverEl, direction);
+      animateTrackEntry(textEl, direction);
     }
     if (slider) slider.value = String(audio.volume);
     if (playIcon && pauseIcon) {
@@ -163,44 +182,50 @@ export function initBgm(): void {
     });
   };
 
-  const sync = () => {
+  const sync = (direction?: -1 | 1) => {
     const playing = !audio.paused;
     btn.classList.toggle('playing', playing);
     btn.setAttribute('aria-pressed', playing ? 'true' : 'false');
-    syncDrawer();
+    syncDrawer(direction);
   };
 
-  const switchTrack = (index: number, shouldPlay = true) => {
-    if (index < 0) index = tracks.length - 1;
-    if (index >= tracks.length) index = 0;
-    currentTrackIndex = index;
-    writeSavedTrackIndex(index);
+  const switchTrack = (index: number, shouldPlay = true, direction?: -1 | 1) => {
+    const previousIndex = currentTrackIndex;
+    const nextIndex = (index + tracks.length) % tracks.length;
+    const entryDirection = direction ?? (nextIndex >= previousIndex ? 1 : -1);
+    currentTrackIndex = nextIndex;
+    writeSavedTrackIndex(nextIndex);
     const track = tracks[currentTrackIndex];
     if (track) {
       audio.src = track.src;
-      updateMediaSession(track, audio, () => switchTrack(currentTrackIndex - 1), () => switchTrack(currentTrackIndex + 1));
+      updateMediaSession(
+        track,
+        audio,
+        () => switchTrack(currentTrackIndex - 1, true, -1),
+        () => switchTrack(currentTrackIndex + 1, true, 1),
+      );
       if (shouldPlay) {
         writeSaved('1');
         playAudio(audio);
       }
     }
-    sync();
+    sync(entryDirection);
   };
 
   // Audio events
   if (!audio.dataset.bgmBound) {
     audio.dataset.bgmBound = '1';
-    audio.addEventListener('play', sync);
-    audio.addEventListener('pause', sync);
+    audio.addEventListener('play', () => sync());
+    audio.addEventListener('pause', () => sync());
     audio.addEventListener('ended', () => {
       if (tracks.length > 1) {
-        switchTrack(currentTrackIndex + 1, true);
+        switchTrack(currentTrackIndex + 1, true, 1);
       }
     });
     audio.addEventListener('error', () => {
       // On load error, skip to next track once
       if (tracks.length > 1) {
-        switchTrack(currentTrackIndex + 1, !audio.paused);
+        switchTrack(currentTrackIndex + 1, !audio.paused, 1);
       }
     });
   }
@@ -256,11 +281,11 @@ export function initBgm(): void {
     });
 
     drawer.querySelector('.bgm-prev-btn')?.addEventListener('click', () => {
-      switchTrack(currentTrackIndex - 1, true);
+      switchTrack(currentTrackIndex - 1, true, -1);
     });
 
     drawer.querySelector('.bgm-next-btn')?.addEventListener('click', () => {
-      switchTrack(currentTrackIndex + 1, true);
+      switchTrack(currentTrackIndex + 1, true, 1);
     });
 
     const volumeSlider = drawer.querySelector<HTMLInputElement>('.bgm-volume-slider');
@@ -280,7 +305,7 @@ export function initBgm(): void {
       item.addEventListener('click', () => {
         const idx = Number(item.dataset.trackIndex);
         if (Number.isInteger(idx)) {
-          switchTrack(idx, true);
+          switchTrack(idx, true, idx >= currentTrackIndex ? 1 : -1);
         }
       });
     });
@@ -291,7 +316,12 @@ export function initBgm(): void {
   // Set initial media session metadata
   const currentTrack = tracks[currentTrackIndex] || tracks[0];
   if (currentTrack) {
-    updateMediaSession(currentTrack, audio, () => switchTrack(currentTrackIndex - 1), () => switchTrack(currentTrackIndex + 1));
+    updateMediaSession(
+      currentTrack,
+      audio,
+      () => switchTrack(currentTrackIndex - 1, true, -1),
+      () => switchTrack(currentTrackIndex + 1, true, 1),
+    );
   }
 
   // Autoplay / Resume logic

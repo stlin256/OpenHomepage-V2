@@ -410,6 +410,20 @@
   margin: 0 0.5rem;
   border-radius: var(--radius-sm);
 }
+.search-item-enter {
+  animation: search-result-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--search-item-index, 0) * 45ms);
+}
+@keyframes search-result-enter {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 .search-result-link {
   display: block;
   padding: 0.65rem 0.75rem;
@@ -419,6 +433,11 @@
   transition:
     background-color 0.15s ease,
     transform 0.15s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .search-item-enter {
+    animation: none;
+  }
 }
 .search-result-link:hover,
 .search-item.active .search-result-link {

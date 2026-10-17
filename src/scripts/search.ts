@@ -243,7 +243,7 @@ export function initSearch(): void {
     void performSearch(input?.value ?? '');
   });
 
-  const renderResults = () => {
+  const renderResults = (animateEntrance = false) => {
     if (!resultsList) return;
     const lang = document.documentElement.dataset.routeLang || 'zh';
     const dict = getSearchI18n(lang);
@@ -262,7 +262,7 @@ export function initSearch(): void {
     resultsList.innerHTML = currentResults
       .map(
         (item, idx) => `
-      <li class="search-item ${idx === activeIndex ? 'active' : ''}" data-index="${idx}">
+      <li class="search-item ${idx === activeIndex ? 'active' : ''}${animateEntrance ? ' search-item-enter' : ''}" data-index="${idx}" style="--search-item-index:${Math.min(idx, 6)}">
         <a href="${formatSearchUrl(item.url)}" class="search-result-link">
           <div class="search-result-header">
             <span class="search-result-title">${item.title}</span>
@@ -312,7 +312,7 @@ export function initSearch(): void {
 
     currentResults = filterSearchResults(allItems, query, { lang: scopeLang }).slice(0, 12);
     activeIndex = currentResults.length > 0 ? 0 : -1;
-    renderResults();
+    renderResults(true);
   };
 
   input?.addEventListener('input', () => {

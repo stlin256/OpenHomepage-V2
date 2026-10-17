@@ -157,6 +157,25 @@ describe('全局搜索客户端 initSearch', () => {
     expect(resultsList.querySelectorAll('.search-item')).toHaveLength(1);
   });
 
+  it('新搜索结果逐条轻推入，键盘切换选中项不重播入场动画', async () => {
+    stubFetchIndex([zhItem, { ...enItem, id: '/zh/b', url: '/zh/b', lang: 'zh' }]);
+    await init();
+    const { input, resultsList } = queryEls();
+
+    input.value = 'test';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await vi.advanceTimersByTimeAsync(100);
+    await flushAsync();
+
+    const enteredItems = [...resultsList.querySelectorAll<HTMLLIElement>('.search-item')];
+    expect(enteredItems).toHaveLength(2);
+    expect(enteredItems.every((item) => item.classList.contains('search-item-enter'))).toBe(true);
+    expect(enteredItems.map((item) => item.style.getPropertyValue('--search-item-index'))).toEqual(['0', '1']);
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect([...resultsList.querySelectorAll<HTMLLIElement>('.search-item')].every((item) => !item.classList.contains('search-item-enter'))).toBe(true);
+  });
+
   it('英文环境下范围按钮使用英文文案', async () => {
     document.documentElement.dataset.routeLang = 'en';
     stubFetchIndex([]);
