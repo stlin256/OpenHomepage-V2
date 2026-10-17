@@ -414,6 +414,9 @@
   animation: search-result-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: calc(var(--search-item-index, 0) * 45ms);
 }
+.search-dialog.is-typing .search-item-enter {
+  animation: none;
+}
 @keyframes search-result-enter {
   from {
     opacity: 0;

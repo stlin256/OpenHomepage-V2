@@ -111,6 +111,7 @@ export function initSearch(): void {
   let activeIndex = -1;
   let currentResults: SearchResultItem[] = [];
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let animationDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   let searchGeneration = 0;
   let isClosing = false;
 
@@ -173,6 +174,9 @@ export function initSearch(): void {
 
   const closeSearch = () => {
     if (dialog.hidden || isClosing) return;
+    if (animationDebounceTimer) clearTimeout(animationDebounceTimer);
+    animationDebounceTimer = null;
+    dialog.classList.remove('is-typing');
     isClosing = true;
     dialog.classList.remove('open');
     dialog.classList.add('closing');
@@ -317,6 +321,12 @@ export function initSearch(): void {
 
   input?.addEventListener('input', () => {
     updateClearBtn();
+    dialog.classList.add('is-typing');
+    if (animationDebounceTimer) clearTimeout(animationDebounceTimer);
+    animationDebounceTimer = setTimeout(() => {
+      dialog.classList.remove('is-typing');
+      animationDebounceTimer = null;
+    }, 240);
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       void performSearch(input.value);

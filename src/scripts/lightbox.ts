@@ -15,6 +15,8 @@ let currentGalleryIndex = 0;
 let currentLoadId = 0;
 let touchStartX = 0;
 let touchStartY = 0;
+let lastWheelSwitchAt = 0;
+const WHEEL_SWITCH_INTERVAL = 400;
 
 function overlay(): HTMLElement | null {
   return document.querySelector<HTMLElement>(".lightbox");
@@ -137,6 +139,7 @@ function openLightbox(img: HTMLImageElement): void {
   updateImage(currentGalleryIndex);
 
   box.hidden = false;
+  lastWheelSwitchAt = 0;
   void box.offsetWidth;
   box.classList.add("open");
   document.body.style.overflow = "hidden";
@@ -225,6 +228,29 @@ document.addEventListener("keydown", (e) => {
     nextImage();
   }
 });
+
+document.addEventListener(
+  "wheel",
+  (e) => {
+    const box = overlay();
+    if (!box || box.hidden || e.ctrlKey) return;
+
+    // 灯箱打开时拦住页面滚动；仅用纵向滚轮切图，横向手势不触发。
+    e.preventDefault();
+    if (e.deltaY === 0 || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+
+    const now = Date.now();
+    if (now - lastWheelSwitchAt < WHEEL_SWITCH_INTERVAL) return;
+    lastWheelSwitchAt = now;
+
+    if (e.deltaY > 0) {
+      nextImage();
+    } else {
+      prevImage();
+    }
+  },
+  { passive: false }
+);
 
 document.addEventListener(
   "touchstart",
