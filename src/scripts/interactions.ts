@@ -48,6 +48,46 @@ function siteLanguages(): string[] {
   return (document.documentElement.dataset.siteLangs ?? '').split(',').filter(Boolean);
 }
 
+/** 页脚品牌掠光触发后完整播放，避免鼠标离开时 CSS hover 取消动画。 */
+const footerBrandShimmerTimers = new WeakMap<HTMLAnchorElement, number>();
+
+function startFooterBrandShimmer(target: EventTarget | null): void {
+  if (!(target instanceof Element)) return;
+  const brand = target.closest<HTMLAnchorElement>(
+    '.site-footer a.footer-brand, .site-footer a[href*="OpenHomepage-V2"]',
+  );
+  if (!brand || brand.classList.contains('is-shimmering')) return;
+
+  brand.classList.add('is-shimmering');
+  footerBrandShimmerTimers.set(
+    brand,
+    window.setTimeout(() => brand.classList.remove('is-shimmering'), 1800),
+  );
+}
+
+document.addEventListener('pointerover', (event) => {
+  if (
+    event.relatedTarget instanceof Node &&
+    event.target instanceof Node &&
+    event.target.contains(event.relatedTarget)
+  ) {
+    return;
+  }
+  startFooterBrandShimmer(event.target);
+});
+document.addEventListener('focusin', (event) => startFooterBrandShimmer(event.target));
+document.addEventListener('animationend', (event) => {
+  if (event.animationName !== 'brand-shimmer' || !(event.target instanceof Element)) return;
+  const brand = event.target.closest<HTMLAnchorElement>(
+    '.site-footer a.footer-brand, .site-footer a[href*="OpenHomepage-V2"]',
+  );
+  if (!brand) return;
+  const timer = footerBrandShimmerTimers.get(brand);
+  if (timer !== undefined) window.clearTimeout(timer);
+  footerBrandShimmerTimers.delete(brand);
+  brand.classList.remove('is-shimmering');
+});
+
 const normalizeLanguage = (value: string | null | undefined): SiteLanguage | null =>
   normalizeSiteLanguage(value, siteLanguages());
 
