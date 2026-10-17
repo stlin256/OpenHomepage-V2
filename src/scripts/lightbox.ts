@@ -20,7 +20,7 @@ function overlay(): HTMLElement | null {
   return document.querySelector<HTMLElement>(".lightbox");
 }
 
-function updateImage(index: number): void {
+function updateImage(index: number, direction?: -1 | 1): void {
   const box = overlay();
   const view = box?.querySelector<HTMLImageElement>(".lightbox-img");
   const counter = box?.querySelector<HTMLElement>(".lightbox-counter");
@@ -42,9 +42,28 @@ function updateImage(index: number): void {
 
   const showCandidate = () => {
     const next = pickLightboxSrc(pageSrc, (url) => !fullBad.has(url), originalSrc);
-    view.onload = () => {
-      if (loadId !== currentLoadId) return;
+    let revealed = false;
+    const reveal = () => {
+      if (loadId !== currentLoadId || revealed) return;
+      revealed = true;
       box.classList.remove("is-loading");
+      if (direction !== undefined && box.classList.contains("open")) {
+        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+        if (!reduceMotion && typeof view.animate === "function") {
+          const offset = direction > 0 ? "2.5%" : "-2.5%";
+          const animation = view.animate(
+            [
+              { opacity: 0.25, transform: `translateX(${offset}) scale(1.025)` },
+              { opacity: 1, transform: "translateX(0) scale(1)" },
+            ],
+            { duration: 400, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+          );
+          animation.onfinish = () => animation.cancel();
+        }
+      }
+    };
+    view.onload = () => {
+      reveal();
     };
     view.onerror =
       next === pageSrc
@@ -59,11 +78,7 @@ function updateImage(index: number): void {
           };
     view.src = next;
 
-    if (view.complete && view.naturalWidth > 0) {
-      if (loadId === currentLoadId) {
-        box.classList.remove("is-loading");
-      }
-    }
+    if (view.complete && view.naturalWidth > 0) reveal();
   };
   showCandidate();
   view.alt = img.alt || "";
@@ -156,12 +171,12 @@ function closeLightbox(box: HTMLElement): void {
 
 function prevImage(): void {
   if (galleryImages.length <= 1) return;
-  updateImage(currentGalleryIndex - 1);
+  updateImage(currentGalleryIndex - 1, -1);
 }
 
 function nextImage(): void {
   if (galleryImages.length <= 1) return;
-  updateImage(currentGalleryIndex + 1);
+  updateImage(currentGalleryIndex + 1, 1);
 }
 
 document.addEventListener("click", (e) => {
